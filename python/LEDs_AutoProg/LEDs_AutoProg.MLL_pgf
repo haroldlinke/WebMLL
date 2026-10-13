@@ -1,0 +1,5 @@
+Head:	Program_Generator configuration file	V1.0
+Sheet:	DCC	DCC
+Line:	Act					LED auf dem Mainboard 			RGB_Heartbeat(#LED)	0	1	0	0	0
+Line:	Act		100	AnAus					ConstrWarnLightRGB6(#LED, #InCh, 5, 255, 100 ms, 0 ms, 500 ms)	1	6	1	0	0
+Line:	Act								// Set_LED_OutpPinLst(27 32 16 14 18 19 23 0)			0	0	

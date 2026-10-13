@@ -1,0 +1,463 @@
+# pyMobaLedLib Web-Oberfläche – Installation und Betrieb
+*Datei-Version: 2.02 (2026-10-13)*
+
+Windows · macOS · Linux-Desktop · Raspberry Pi
+
+Der Programmgenerator läuft als Web-Oberfläche: Das Programm startet auf dem Rechner, an dem der Arduino per USB hängt, und
+du bedienst es im Browser (Edge, Chrome, Firefox, Safari). Es benutzt dieselben Programmdateien wie die Tk-Version.
+Diese Anleitung gilt für alle vier Systeme. Lies Kapitel 1 und 2 und danach das Kapitel für dein System.
+
+## 1. Welches System, welches Skript?
+
+| System | Kapitel | Installationsskript (im Projektordner) | Läuft als | Starten |
+|---|---|---|---|---|
+| Windows 10 / 11 | 3 | `install\install_windows.bat` | Programm im Konsolenfenster | Verknüpfung „pyMobaLedLib - Web“ auf dem Desktop |
+| macOS 10.13 oder neuer | 4 | `install/install_mac.command` | App `pyMobaLedLib.app` | Programm auf dem Schreibtisch |
+| Linux-Desktop (Debian, Linux Mint, Ubuntu, Fedora, Arch …) | 5 | `install/install_linux.sh` | Programm im Benutzerkonto | Symbol im Anwendungsmenü und auf dem Schreibtisch |
+| Raspberry Pi (Dauerbetrieb, auch ohne Bildschirm) | 6 | `pi/install_pi.sh` | Systemdienst, startet beim Hochfahren | Desktop-Symbol, oder Browser von einem anderen Rechner |
+
+Gemeinsam ist allen: Der Ordner **`install`** (und für Linux und Pi der Ordner **`pi`**) liegt **im Projektordner, neben `headless_web.py`**. Die
+Skripte bestimmen den Projektordner selbst als den Ordner über ihrem eigenen. Es muss kein Pfad eingetragen werden.
+
+## 2. Gemeinsame Grundlagen
+
+### 2.1 Dateien und Ordnerstruktur
+
+Der **gesamte Projektordner `python`** (mit `pyMobaLedLib.py`, `headless_web.py` und allen anderen Programmdateien) liegt auf dem Rechner, auf dem das
+Programm läuft. Er enthält die Unterordner `install` (Skripte für Windows, macOS und Linux) und `pi` (Skripte für den Raspberry Pi; das Skript für
+die Bibliotheken wird auch unter Linux benutzt). Nicht nötig: `__pycache__`, `headless.log`, `.autosave.json`.
+
+Beispiele für die Lage des Projektordners: `D:\Development\github\pyMobaLedLib\python` (Windows), `~/mobaledlib/python` (Linux, Pi). Die Skripte
+legen im Projektordner die Python-Umgebung `venv_web` bzw. `venv` an.
+
+### 2.2 Die ARDUINO IDE: Version 1.8.19, nicht 2.x
+
+Das Programm benutzt die **ARDUINO IDE 1.8.19** zum Kompilieren und Hochladen. Die neue **IDE 2.x wird nicht unterstützt.** Sie steht auf der Startseite
+von arduino.cc und wird deshalb oft aus Versehen installiert. Eine vorhandene IDE 2.x stört nicht, es wird zusätzlich die Version 1.8.19 gebraucht.
+
+**Am einfachsten installiert sie das Installationsskript** mit der passenden Option:
+
+| System | Option | Ziel |
+|---|---|---|
+| Windows | `install_windows.bat /ide` | `C:\Program Files (x86)\Arduino` (Installer von arduino.cc, Rückfrage der Benutzerkontensteuerung) |
+| macOS | `bash install_mac.command --with-arduino-ide` | `/Applications/Arduino.app` (ohne Schreibrecht `~/Applications`) |
+| Linux-Desktop | `bash install_linux.sh --with-arduino-ide` | `~/arduino-1.8.19` (ohne root) |
+| Raspberry Pi | `sudo bash install_pi.sh --with-arduino-ide` | `/opt/arduino-1.8.19` (Version für 64-Bit-ARM) |
+
+Die Option prüft zuerst, ob die IDE 1.8 schon vorhanden ist, und lädt dann nichts. Danach werden auch die Bibliotheken installiert (Abschnitt 2.3).
+
+**Von Hand:** Auf arduino.cc unter *Software* im Abschnitt **„Legacy IDE (1.8.x)“** die Version für das System laden (Windows Installer, macOS, Linux 64 bit
+bzw. ARM 64 bit).
+
+**Wie das Programm die IDE findet:** Unter Windows in `C:\Program Files (x86)\Arduino` bzw. `C:\Program Files\Arduino`, unter macOS in
+`/Applications/Arduino.app` bzw. `~/Applications`, unter Linux in `~/arduino-1.8*/arduino`, `/opt/arduino*/arduino` oder im Suchpfad (`arduino`), oder über
+die Umgebungsvariable `MLL_ARDUINO_EXE`. Ein eigener Pfad in „ARDUINO Einstellungen“ („Individuellen Pfad … verwenden“) hat Vorrang.
+
+### 2.3 Bibliotheken, Boards und der Reiter „Libraries“
+
+Zum Kompilieren braucht das Programm die Bibliothek **MobaLedLib** im Sketchbook-Ordner der IDE (Windows `Dokumente\Arduino\libraries`, macOS
+`~/Documents/Arduino/libraries`, Linux und Pi `~/Arduino/libraries`) und weitere Bibliotheken in bestimmten Versionen, zum Beispiel FastLED. Das Programm
+prüft die Bibliotheken und Boards beim Start („Überprüfe Bibliotheken und Boards“) und installiert fehlende in der geforderten Version.
+
+- **MobaLedLib** installiert das Installationsskript mit den Optionen aus 2.2, nachträglich mit `/libs` (Windows), `--with-arduino-libs` (macOS und Linux)
+  bzw. `bash pi/install_arduino_libs.sh` (Pi). Oder in der IDE: *Sketch → Bibliothek einbinden → Bibliotheken verwalten …*, „MobaLedLib“ suchen, *Installieren*.
+- **Warum zuerst FastLED:** Die IDE zieht fehlende Abhängigkeiten von MobaLedLib immer in der **neuesten** Version nach, das Programm verlangt aber
+  bestimmte Versionen (zum Beispiel FastLED 3.9.12). Die Skripte installieren deshalb zuerst FastLED in der geforderten Version und danach MobaLedLib. Die
+  Voreinstellung ist 3.9.12, änderbar mit `MLL_FASTLED_VERSION=x.y.z` (Pi und Linux: `MLL_FASTLED_VERSION=x.y.z bash install_arduino_libs.sh`).
+- **Kontrolle im Reiter „Libraries“:** Er zeigt die installierten Bibliotheken mit ihrer Version und die geforderten Versionen. Es ist ein ausgeblendetes Blatt:
+  In „Programm Einstellungen“ **„Programmgenerator versteckte Tabellen anzeigen“** anhaken und speichern, dann erscheint der Reiter unter der Tabelle. Über der
+  Tabelle stehen die Knöpfe des Blatts:
+  1. **Check actual versions** liest die installierten Versionen neu ein und setzt in der Spalte „Select“ einen **Haken (✓)** bei jeder fehlenden oder falschen
+     Bibliothek (zum Beispiel FastLED 3.10.x statt 3.9.12).
+  2. **Install selected** installiert alle Zeilen mit Haken in der geforderten Version neu. Das Programm fragt vorher nach und zeigt den Verlauf im Fenster
+     „Installation der Boards und Bibliotheken“.
+  3. **Delete selected** löscht die Bibliotheken bzw. Boards der Zeilen mit Haken.
+
+  Den Haken einer Zeile setzt oder entfernst du mit einem **Klick in die Zelle der Spalte „Select“**.
+- **Boards** (zum Beispiel Raspberry Pi Pico) installiert das Programm über denselben Reiter. Linux und Pi: auch mit
+  `bash pi/install_arduino_libs.sh --pico` (mit Version `--pico=5.4.2`). Boards sind groß (mehrere hundert MB) und brauchen Zeit. Arduino Nano/Uno/Mega
+  (`arduino:avr`) sind in der IDE 1.8.19 schon enthalten.
+- **ESP32:** Das Programm verlangt das ESP32-Paket in der Version 1.0.4. Auf Windows (Intel/AMD) und Intel-Macs ist das wie bei der Tk-Version. Auf dem
+  Raspberry Pi und anderen 64-Bit-ARM-Rechnern (auch Macs mit Apple-Chip, nicht geprüft) fehlen für diese Version die Werkzeuge, siehe Kapitel 10.
+
+### 2.4 Starten, Beenden, Speichern
+
+- Die Oberfläche öffnet sich im Browser unter `http://localhost:8080`. Der Start dauert 20 bis 60 Sekunden. Ist sie schon gestartet, öffnet ein weiterer
+  Doppelklick auf das Symbol nur den Browser.
+- **Beenden:** Knopf **„Beenden“** in der Oberfläche (oben rechts). Unter Windows schließt sich dabei das Konsolenfenster. Auf dem Pi startet der Dienst danach
+  von selbst neu.
+- Es sollte immer nur **ein Browser** gleichzeitig mit der Oberfläche arbeiten.
+- **Tk-Version und Web-Version nicht gleichzeitig benutzen:** Beide arbeiten mit denselben Konfigurations- und Tabellendateien.
+- **Speichern:** Das Programm speichert beim Beenden („Speichern und beenden“) und zwischendurch automatisch in die Datei `.autosave.json` im Projektordner.
+  Dateien aus dem Menü „Datei“ werden im Browser heruntergeladen bzw. hochgeladen. Eine PGF-Datei kannst du auch einfach auf die Tabelle ziehen.
+- **Meldungen** stehen in der Datei `headless.log` im Projektordner (außerdem `headless-console.log` bei macOS und Linux, `journalctl` auf dem Pi). Welche
+  Programmversion läuft, steht unter dem Titel der Oberfläche (zum Beispiel „headless_web 1.13“) und in den Köpfen der Dateien („Datei-Version“).
+
+### 2.5 Das Programmsymbol
+
+Das Symbol ist das des originalen ProgrammGenerators (Ring aus bunten LEDs, Tabelle, Stift) mit einer kleinen blauen Weltkugel unten rechts, damit man die
+Web-Version vom Tk-Programm unterscheiden kann. Dieselbe Datei steht als Symbol im Browserreiter. `install/make_icons.py` erzeugt daraus `mobaledlib.png`
+(Verknüpfungen, Raspberry Pi), `favicon.png`, `mobaledlib.ico` (Windows) und `mobaledlib.icns` (macOS). Ohne Weltkugel: `python make_icons.py --plain`.
+Die Vorlage `mobaledlib_source.png` ist nur 128 × 128 Pixel groß und wirkt vergrößert etwas weich; wer sie höher aufgelöst hat, ersetzt die Datei und startet
+`make_icons.py` noch einmal.
+
+## 3. Windows
+
+**Voraussetzungen:** Windows 10 oder 11, Python 3.10 oder neuer (das Skript bietet die Installation an), Internet für die Installation der Python-Pakete.
+
+**Installation**
+
+1. Im Ordner `install` **`install_windows.bat` doppelklicken**. Für alles in einem Zug (IDE und Bibliotheken) in einer Eingabeaufforderung im Ordner `install`
+   `install_windows.bat /ide` eingeben.
+   Meldet Windows „Der Computer wurde durch Windows geschützt“: *Weitere Informationen → Trotzdem ausführen*.
+2. Das Skript sucht Python 3.10 oder neuer. Fehlt es, bietet es die Installation von Python 3.12 mit `winget` an und sucht danach in den Standardordnern weiter,
+   die Installation läuft dann ohne Pause weiter. Findet es Python danach nicht, meldet es das: **Dann den PC neu starten** (oder ab- und wieder anmelden) und
+   das Skript noch einmal starten. Erst nach dem Neustart kennt Windows den neuen Suchpfad von Python.
+3. Es legt die Python-Umgebung `venv_web` im Projektordner an, installiert die Pakete aus `requirements-web.txt`, erzeugt das Programmsymbol und legt auf dem
+   Desktop die Verknüpfung **„pyMobaLedLib - Web“** an.
+4. Mit `/ide` lädt es die IDE 1.8.19 (ca. 130 MB) von arduino.cc und führt den Installer still aus. Windows fragt nach der Erlaubnis (Benutzerkontensteuerung);
+   den Treiber für den USB-Anschluss bitte zulassen. Danach installiert es FastLED und MobaLedLib. (Nur die Bibliotheken, wenn die IDE schon da ist: `/libs`.)
+5. Am Ende läuft ein Test der Installation (`pi_check.py`, etwa eine Minute). Ohne ihn: `/nocheck`.
+
+| Option | Wirkung |
+|---|---|
+| `/ide` | ARDUINO IDE 1.8.19 laden und installieren, dazu `/libs` |
+| `/libs` | Bibliotheken FastLED (3.9.12) und MobaLedLib mit `arduino_debug.exe` installieren |
+| `/nocheck` | ohne den Test der Installation am Ende |
+
+**Starten:** Verknüpfung auf dem Desktop doppelklicken (oder `install\start_windows.bat`). Es öffnet sich ein (minimiertes) Konsolenfenster und nach 20 bis
+60 Sekunden der Browser. Das Konsolenfenster nicht schließen. **Beenden:** Knopf „Beenden“ in der Oberfläche.
+
+**Besonderheiten:** Der Pfad des Projektordners sollte kein `'` und kein `&` enthalten (sonst kann die Verknüpfung nicht angelegt werden; dann
+`install\start_windows.bat` per Rechtsklick → *Senden an → Desktop*). Die Windows-Firewall fragt nicht, weil die Oberfläche nur auf dem eigenen Rechner lauscht.
+
+## 4. macOS
+
+**Voraussetzungen:** macOS 10.13 oder neuer, Python 3.10 oder neuer (das von macOS mitgelieferte Python ist zu alt), Internet. **macOS 10.11 und 10.12 gehen
+nicht:** Für diese Systeme gibt es keine fertigen Pakete (zum Beispiel `orjson`), die Installation der Python-Pakete scheitert.
+
+**Installation**
+
+1. Im Ordner `install` **`install_mac.command` doppelklicken**. Ist es nicht ausführbar, im Terminal `chmod +x install/install_mac.command` und dann
+   `bash install/install_mac.command`. Für alles in einem Zug: `bash install_mac.command --with-arduino-ide`.
+2. Das Skript sucht Python 3.10 oder neuer und bietet bei fehlendem Python die Installation mit Homebrew an. Sonst: Python 3.12 von python.org installieren
+   und das Skript noch einmal starten.
+3. Es legt `venv_web` im Projektordner an, installiert die Pakete, erzeugt das Symbol und legt auf dem Schreibtisch das Programm **`pyMobaLedLib.app`** an.
+4. Mit `--with-arduino-ide` lädt es `arduino-1.8.19-macosx.zip` (ca. 200 MB) und kopiert `Arduino.app` nach *Programme*, danach installiert es FastLED und
+   MobaLedLib. Auf Macs mit Apple-Chip fragt macOS beim ersten Start der IDE nach Rosetta: bitte zustimmen. (Nur die Bibliotheken: `--with-arduino-libs`.)
+5. Am Ende läuft ein Test der Installation (ohne ihn: `--nocheck`).
+
+| Option | Wirkung |
+|---|---|
+| `--with-arduino-ide` | ARDUINO IDE 1.8.19 laden und installieren, dazu `--with-arduino-libs` |
+| `--with-arduino-libs` | Bibliotheken FastLED (3.9.12) und MobaLedLib mit der IDE installieren |
+| `--nocheck` | ohne den Test der Installation am Ende |
+
+**Starten:** `pyMobaLedLib` auf dem Schreibtisch doppelklicken. Beim ersten Mal fragt macOS eventuell: Rechtsklick → *Öffnen* → *Öffnen*. Die Oberfläche
+startet ohne Terminalfenster und öffnet den Browser. Meldungen: `headless-console.log` und `headless.log` im Projektordner. Zum Beobachten im Terminal:
+`install/start_mac.command`. **Beenden:** Knopf „Beenden“ in der Oberfläche.
+
+## 5. Linux-Desktop (Debian, Linux Mint, Ubuntu, Fedora, Arch …)
+
+Das Programm läuft im Benutzerkonto, ohne Systemdienst. Du startest es mit einem Symbol, die Oberfläche öffnet sich im Browser.
+
+**Voraussetzungen:** Debian 12, Linux Mint 21 / 22, Ubuntu 22.04 oder neuer (Fedora, Arch, openSUSE gehen auch, die Paketnamen setzt das Skript). **Python 3.10 oder
+neuer** (Mint 20 und Debian 11 sind zu alt). Ein Benutzer mit `sudo` (nur für die Systempakete und die Gruppe `dialout`). Internet.
+
+**Installation** (als normaler Benutzer, **ohne** sudo):
+
+```bash
+cd ~/mobaledlib/python/install
+bash install_linux.sh --with-arduino-ide
+```
+
+Das Skript erledigt der Reihe nach:
+
+1. Systempakete (`python3`, `python3-venv`, `python3-pip`, `curl`, `xz-utils`), nur was fehlt, mit einer Passwortabfrage von `sudo`.
+2. Prüfung auf Python 3.10 oder neuer.
+3. Die Python-Umgebung `venv_web` im Projektordner mit den Paketen aus `requirements-web.txt`.
+4. Der Benutzer kommt in die Gruppe **`dialout`** (Zugriff auf `/dev/ttyUSB0`, `/dev/ttyACM0`). **Danach einmal ab- und wieder anmelden.**
+5. Mit `--with-arduino-ide`: die IDE 1.8.19 nach `~/arduino-1.8.19` (etwa 150 MB) und danach FastLED und MobaLedLib.
+6. Ein Eintrag im Anwendungsmenü (Entwicklung / Elektronik) und ein Symbol auf dem Schreibtisch.
+7. Ein Test der Installation (`pi_check.py`, etwa eine Minute).
+
+| Option | Wirkung |
+|---|---|
+| `--with-arduino-ide` | IDE 1.8.19 laden, dazu `--with-arduino-libs` |
+| `--with-arduino-libs` | nur die Bibliotheken (die IDE ist schon da) |
+| `--no-desktop-icon` | kein Symbol auf dem Schreibtisch |
+| `--no-dialout` | die Gruppe `dialout` nicht eintragen |
+| `--no-check` | ohne den Test der Installation |
+
+Das Skript kann **mehrfach** laufen (zum Beispiel nach einem Update).
+
+**Starten:** Symbol „pyMobaLedLib“ doppelklicken (Schreibtisch oder Anwendungsmenü), oder `install/start_linux.sh`. Beim ersten Doppelklick fragt der
+Dateimanager (Nemo, Nautilus, Dolphin) eventuell **„Ausführen“** bzw. **„Starter vertrauen“**; sonst Rechtsklick → *Ausführen erlauben* (Mint: in den
+Eigenschaften *Als Programm ausführen*). **Beenden:** Knopf „Beenden“ in der Oberfläche. Zum Beobachten der Meldungen `install/start_linux.sh` im Terminal
+starten. Auf dem Desktop läuft die IDE mit deinem Bildschirm, es wird kein virtuelles Display gebraucht.
+
+## 6. Raspberry Pi (Dauerdienst)
+
+Der Programmgenerator läuft als Dienst auf dem Pi. Du startest ihn mit einem **Desktop-Symbol** oder öffnest ihn mit dem Browser, auf dem Pi selbst oder von
+jedem Rechner im Netz. Der Arduino/Pico steckt per USB am Pi. Es wird kein Tk gebraucht.
+
+**Voraussetzungen:** Raspberry Pi 4 oder 5 (ein Pi 3 läuft, Kompilieren dauert dort deutlich länger); Raspberry Pi OS **64 Bit**, **Trixie** (Debian 13,
+Python 3.13) oder Bookworm, mit Desktop für das Symbol (Lite geht auch, dann ohne Symbol); 2 GB RAM sollten reichen, 4 GB sind sicherer; ein Benutzer mit
+`sudo`-Recht (im Folgenden `pi`, bei dir kann er anders heißen); Internet für die Installation.
+
+### 6.1 Dateien auf den Pi bringen
+
+Der **gesamte Projektordner `python`** kommt auf den Pi, so wie er auf dem PC läuft. Auf dem Pi liegt er **in** `~/mobaledlib`:
+
+```
+/home/pi/mobaledlib/python/                  <- Projektordner (hier liegt headless_web.py)
+/home/pi/mobaledlib/python/pi/               <- Installationsskripte (install_pi.sh ...)
+```
+
+So entsteht es mit einer ZIP-Datei:
+
+1. Auf dem PC den **Ordner `python` selbst** als ZIP packen (nicht nur seinen Inhalt), ohne `__pycache__`.
+2. Die ZIP-Datei auf den Pi in den Ordner `~/mobaledlib` kopieren (`mkdir -p ~/mobaledlib`, falls es ihn nicht gibt).
+3. Dort **„Hier entpacken“**: Es entsteht automatisch der Ordner `python` mit allen Dateien darunter. (Enthält die ZIP nur den Inhalt ohne Ordner, würden die
+   Dateien lose in `~/mobaledlib` landen: dann mit „Entpacken nach …“ in einen neuen Ordner `python` entpacken.)
+
+Alternativ im Terminal:
+
+```bash
+# vom Windows-PC (PowerShell); zuvor auf dem Pi:  mkdir -p ~/mobaledlib
+scp -r D:\Development\github\pyMobaLedLib\python pi@raspberrypi.local:/home/pi/mobaledlib/
+# oder auf dem Pi:  git clone <dein Repository> ~/mobaledlib       (das Repository enthält den Ordner python)
+```
+
+### 6.2 Installation (ein Befehl)
+
+```bash
+cd /home/pi/mobaledlib/python/pi
+sudo bash install_pi.sh --with-arduino-ide
+```
+
+Das Skript erledigt der Reihe nach:
+
+1. Systempakete (Python, venv, `xvfb`, ein paar Bibliotheken für die Java-IDE),
+2. eine eigene Python-Umgebung `venv` mit den Paketen aus `requirements-pi.txt`,
+3. Zugriff auf die USB-Anschlüsse (Gruppe `dialout`),
+4. `/etc/mobaledlib-web.env` mit Port und Passwort (Voreinstellung: Benutzer `mobaledlib`, Passwort `mobaledlib`, im Programm änderbar, siehe Kapitel 8),
+5. den Starter für das Desktop-Symbol und eine sudo-Regel, mit der du **nur** den Dienst `mobaledlib-web` ohne Passwort starten, anhalten und neu starten
+   sowie den Pi herunterfahren und neu starten darfst,
+6. das **Desktop-Symbol** (6.3),
+7. die ARDUINO IDE 1.8.19 (nur mit `--with-arduino-ide`, etwa 150 MB Download) und die Bibliothek MobaLedLib mit ihren Abhängigkeiten,
+8. den Dienst `mobaledlib-web` (startet beim Hochfahren) und einen Test der Installation (`pi_check.py`).
+
+| Option | Wirkung |
+|---|---|
+| `--with-arduino-ide` | IDE 1.8.19 laden, dazu `--with-arduino-libs` |
+| `--with-arduino-libs` | nur die Bibliotheken |
+| `--port 9000` | anderer Port (Voreinstellung 8080) |
+| `--password GEHEIM` | anderes Anfangspasswort festlegen (Voreinstellung: `mobaledlib`) |
+| `--local-only` | nur auf dem Pi erreichbar, kein Passwort |
+| `--desktop-icon` / `--no-desktop-icon` | Symbol auch ohne erkannten Desktop / kein Symbol |
+| `--no-check` | ohne den Test der Installation |
+
+Das Skript kann **mehrfach** laufen (zum Beispiel nach einem Update). Vorhandene Einstellungen bleiben erhalten. Windows-Zeilenenden (CRLF) in den Skripten
+entfernt das Skript selbst. Falls schon der Start mit `$'\r': command not found` abbricht: `sed -i 's/\r$//' install_pi.sh` und noch einmal starten.
+
+### 6.3 Das Desktop-Symbol
+
+Nach der Installation liegt auf dem Desktop das Symbol **„pyMobaLedLib“** (und ein Eintrag im Startmenü unter Entwicklung / Elektronik). Ein Doppelklick:
+
+1. startet den Dienst, wenn er nicht läuft (nach einem „Beenden“ im Programm zum Beispiel),
+2. wartet, bis die Oberfläche bereit ist (20 bis 60 Sekunden, dabei erscheint die Meldung „pyMobaLedLib wird gestartet“),
+3. öffnet die Oberfläche in einem **eigenen Chromium-Fenster** ohne Adressleiste. Fehlt Chromium, nimmt er Firefox, sonst den Standardbrowser. Mit
+   `MLL_BROWSER=<Programm>` wählst du einen anderen.
+
+Auf dem Pi selbst brauchst du **kein Passwort** (Zugriffe von `localhost`). Aus dem Netz gilt es weiter. Fragt der Desktop beim ersten Doppelklick, ob die Datei
+ausgeführt werden soll, wähle „Ausführen“. Kommt nichts, starte den Starter im Terminal, dann siehst du die Meldung:
+`/home/pi/mobaledlib/python/pi/start_mobaledlib.sh`.
+
+### 6.4 ARDUINO IDE und Bibliotheken auf dem Pi
+
+Die allgemeinen Hinweise stehen in 2.2 und 2.3. Besonderheiten des Pi:
+
+- Mit `--with-arduino-ide` lädt das Skript die IDE 1.8.19 für 64-Bit-ARM (`linuxaarch64`) und packt sie nach `/opt/arduino-1.8.19`. Von Hand: die Datei
+  `arduino-1.8.19-linuxaarch64.tar.xz` laden, nach `/opt` auspacken.
+- Die Bibliothek MobaLedLib installiert das Skript **ohne sudo** als der Benutzer, unter dem der Dienst läuft (sie liegt in `~/Arduino/libraries/MobaLedLib`):
+  ```bash
+  bash ~/mobaledlib/python/pi/install_arduino_libs.sh
+  sudo systemctl restart mobaledlib-web
+  ```
+- Boards, gleich mit Version:
+  ```bash
+  bash ~/mobaledlib/python/pi/install_arduino_libs.sh --pico            # Raspberry Pi Pico (RP2040)
+  bash ~/mobaledlib/python/pi/install_arduino_libs.sh --pico=5.4.2 --esp32
+  ```
+  (Das ESP32-Paket lässt sich auf dem Pi nicht installieren, siehe Kapitel 10.)
+
+### 6.5 Alltag auf dem Pi
+
+| Was | Befehl |
+|---|---|
+| Starten | Desktop-Symbol (oder `sudo systemctl start mobaledlib-web`) |
+| Läuft der Dienst? | `systemctl status mobaledlib-web` |
+| Meldungen ansehen | `journalctl -u mobaledlib-web -f` (und die Datei `headless.log` im Projektordner) |
+| Neu starten / anhalten | `sudo systemctl restart mobaledlib-web` / `sudo systemctl stop mobaledlib-web` |
+| Nicht mehr beim Hochfahren starten | `sudo systemctl disable mobaledlib-web` |
+| Installation prüfen | `cd ~/mobaledlib/python && MLL_TK_ROOT=0 venv/bin/python pi_check.py` |
+| Herunterfahren / Neustart | Menü **Datei → Raspberry Pi herunterfahren ...** (bzw. **neu starten ...**), siehe 6.6 |
+| Alles wieder entfernen | `sudo bash ~/mobaledlib/python/pi/uninstall_pi.sh` (Projektordner, venv und IDE bleiben) |
+
+Der Knopf **„Beenden“** in der Oberfläche beendet das Programm. Der Dienst startet danach von selbst neu; mit dem Symbol öffnest du die Oberfläche dann wieder.
+Soll er aus bleiben: `sudo systemctl stop mobaledlib-web`.
+
+### 6.6 Raspberry Pi herunterfahren
+
+Ein Pi sollte nicht einfach vom Strom getrennt werden: Dabei kann die SD-Karte beschädigt werden. Die Oberfläche hat deshalb im Menü **Datei** die Einträge
+**Raspberry Pi herunterfahren ...** und **Raspberry Pi neu starten ...** (nur auf dem Pi sichtbar).
+
+1. Eine Rückfrage fragt: **Speichern und herunterfahren**, **Ohne Speichern** oder Abbrechen.
+2. Das Programm wird wie beim Knopf „Beenden“ ordentlich abgeschlossen (Tabellen und Konfiguration sichern, Arduino trennen).
+3. Es erscheint die Seite „Der Raspberry Pi wird heruntergefahren“. Danach läuft `sudo systemctl poweroff`.
+4. **Warte, bis die grüne LED am Pi nicht mehr blinkt** (etwa 10 Sekunden), dann kannst du den Strom trennen.
+
+Dafür muss der Dienstbenutzer `systemctl poweroff` und `systemctl reboot` ohne Passwort ausführen dürfen. Das legt `install_pi.sh` an (sudo-Regel) und
+trägt `MLL_ALLOW_SHUTDOWN=1` in `/etc/mobaledlib-web.env` ein. Bei einer älteren Installation einmal `sudo bash ~/mobaledlib/python/pi/install_pi.sh --no-check`
+ausführen. Fehlt die Regel, sagt die Oberfläche das und beendet das Programm nicht. Im Terminal geht es auch mit `sudo shutdown -h now`.
+
+**Mit einem Taster am Pi (optional):** Ein Taster zwischen GPIO 3 (Pin 5) und GND (Pin 6) kann den Pi herunterfahren und wieder starten. In
+`/boot/firmware/config.txt` die Zeile `dtoverlay=gpio-shutdown` ergänzen und neu starten. Das Programm wird dabei nicht gefragt: Der Dienst wird von systemd
+beendet, nicht gespeichert. Vorher in der Oberfläche speichern.
+
+## 7. Aktualisieren und Deinstallieren
+
+| System | Aktualisieren | Deinstallieren |
+|---|---|---|
+| alle | Neue Programmdateien in den Projektordner kopieren (die Version steht im Dateikopf und unter dem Titel der Oberfläche), Oberfläche neu starten | – |
+| Windows | Neue Pakete: `venv_web\Scripts\pip install -U -r install\requirements-web.txt`, oder das Skript noch einmal ausführen | Verknüpfung und Ordner `venv_web` löschen |
+| macOS | `venv_web/bin/pip install -U -r install/requirements-web.txt`, oder das Skript noch einmal ausführen | `pyMobaLedLib.app` und Ordner `venv_web` löschen |
+| Linux-Desktop | `venv_web/bin/pip install -U -r install/requirements-web.txt`, oder `install_linux.sh` noch einmal | `bash install/uninstall_linux.sh` (mit `--purge` auch `venv_web`) |
+| Raspberry Pi | `sudo bash ~/mobaledlib/python/pi/install_pi.sh --no-check` (aktualisiert auch die Python-Pakete) | `sudo bash ~/mobaledlib/python/pi/uninstall_pi.sh` |
+
+Beim Deinstallieren bleiben Projektordner, ARDUINO IDE und Bibliotheken erhalten.
+
+**Sichern:** die Konfigurationsdateien im Projektordner (zum Beispiel `MobaLedTest_config.json`) und deine Anlagendateien. Die Daten der Tabelle speicherst du
+mit dem Menü „Datei“ als Download im Browser (die Datei landet auf dem Rechner, an dem du sitzt). Auf dem Pi geht auch ein fertiges Abbild der SD-Karte
+(Raspberry Pi Imager oder `dd`).
+
+## 8. Zugriff aus dem Netz und Passwort
+
+Standardmäßig ist die Oberfläche **nur auf dem eigenen Rechner** erreichbar (`http://localhost:8080`). Auf dem **Raspberry Pi** ist sie im Netz erreichbar und mit
+einem Passwort geschützt. Beim Aufruf von einem anderen Rechner fragt der Browser nach Benutzername und Passwort.
+
+**Voreinstellung auf dem Pi:** Benutzername **`mobaledlib`**, Passwort **`mobaledlib`**. Auf dem Pi selbst (Desktop-Symbol) ist kein Passwort nötig.
+
+**Passwort ändern (empfohlen, sobald der Pi im Netz erreichbar ist):** In der Oberfläche **Programm Einstellungen** öffnen, im Block **„Zugriff über das Netz
+(Web-Oberfläche)“** das neue Passwort zweimal eingeben (mindestens 4 Zeichen) und **„Passwort ändern“** drücken. Es gilt sofort, ohne Neustart. Von einem anderen Rechner
+fragt der Browser beim nächsten Aufruf nach dem neuen Passwort. Solange noch das Standardpasswort gilt, zeigt der Block eine Warnung.
+
+- Das neue Passwort steht nicht im Klartext auf dem Pi, sondern nur als Hash in der Datei `web_password.json` im Projektordner. Sie geht dem Passwort aus
+  `/etc/mobaledlib-web.env` vor.
+- **Passwort vergessen:** Entweder auf dem Pi in der Oberfläche **„Eigenes Passwort entfernen“** drücken (auf dem Pi selbst braucht man kein Passwort), oder die Datei
+  `web_password.json` im Projektordner löschen. Dann gilt wieder das Passwort aus `/etc/mobaledlib-web.env` (Voreinstellung `mobaledlib`).
+- Das Anfangspasswort lässt sich bei der Installation mit `--password` festlegen, oder später in `/etc/mobaledlib-web.env` (`MLL_PASSWORD=...`).
+
+**Auf anderen Systemen** (Windows, macOS, Linux-Desktop) gibt es standardmäßig keinen Zugriff aus dem Netz und kein Passwort. Für den Zugriff aus dem Netz vor dem Start die
+Umgebungsvariablen `MLL_HOST=0.0.0.0` und ein Passwort `MLL_PASSWORD=...` setzen (Benutzername `MLL_USER`, Voreinstellung `mobaledlib`). Wo:
+
+| System | Wo |
+|---|---|
+| Windows | `set MLL_HOST=0.0.0.0` und `set MLL_PASSWORD=...` in `install\start_windows.bat` |
+| macOS | `export ...` in der Datei `pyMobaLedLib.app/Contents/MacOS/pyMobaLedLib` |
+| Linux-Desktop | `export ...` in `install/start_linux.sh` |
+| Raspberry Pi | in `/etc/mobaledlib-web.env` (`sudo nano /etc/mobaledlib-web.env`), danach `sudo systemctl restart mobaledlib-web` |
+
+Die Datei auf dem Pi sieht so aus:
+
+```
+MLL_HOST=0.0.0.0        # 127.0.0.1 = nur auf dem Pi selbst
+MLL_PORT=8080
+MLL_USER=mobaledlib
+MLL_PASSWORD=mobaledlib # Anfangspasswort; ohne diese Zeile ist die Oberfläche im Netz für jeden offen
+# MLL_LOCAL_NO_PASSWORD=0   # mit 0 gilt das Passwort auch auf dem Pi selbst
+```
+
+Nach einer Änderung des Ports einmal `sudo bash ~/mobaledlib/python/pi/install_pi.sh --no-check` aufrufen, damit das Symbol den neuen Port kennt.
+
+**Sicherheit:** Wer die Oberfläche erreicht, kann Programme auf den angeschlossenen Arduino laden (und auf dem Pi den Rechner herunterfahren). Das Passwort wird
+ohne Verschlüsselung (kein https) übertragen, und das Standardpasswort ist allgemein bekannt. Nutze den Zugriff nur im eigenen Heimnetz, ändere das Passwort und mach den
+Rechner nicht aus dem Internet erreichbar. Sicherer ist `MLL_HOST=127.0.0.1` und der Zugriff über einen SSH-Tunnel: `ssh -L 8080:localhost:8080 pi@raspberrypi.local`,
+danach im Browser `http://localhost:8080`.
+
+## 9. Fehlersuche
+
+### 9.1 Alle Systeme
+
+| Beobachtung | Ursache und Abhilfe |
+|---|---|
+| „Port 8080 ist belegt“ | Läuft die Oberfläche schon? Dann öffnet das Symbol nur den Browser. Sonst anderer Port (`--port 8081` beim Start, auf dem Pi in der env-Datei) |
+| Browser öffnet sich nicht | Adresse von Hand eingeben: `http://localhost:8080` |
+| „Die Arduino Entwicklungsumgebung ist nicht … installiert“ | IDE **1.8.19** installieren (2.2), ggf. den Pfad in „ARDUINO Einstellungen“ eintragen |
+| Kompilieren: „MobaLedLib.h: No such file“ oder Bibliothek/Board fehlt | Bibliotheken installieren (2.3), im Reiter „Libraries“ prüfen |
+| „Fehler beim Lesen der Datei …/preferences.txt“ (zum Beispiel bei „Check actual versions“) | Die Einstellungsdatei der IDE fehlt auf einem frischen System (Linux, macOS, Pi). Das Programm legt sie beim Start an. Von Hand (Linux/Pi): `mkdir -p ~/.arduino15 ~/Arduino/libraries; printf 'sketchbook.path=%s/Arduino\ntarget_package=arduino\ntarget_platform=avr\nboard=uno\n' "$HOME" > ~/.arduino15/preferences.txt` |
+| Board installieren: `NullPointerException at … BaseNoGui.onBoardOrPortChange` | Die IDE hat ein nicht installiertes Board ausgewählt. Das Programm und die Skripte setzen die Auswahl auf `arduino:avr:uno` zurück. Von Hand (Linux/Pi): `sed -i -E '/^(target_package\|target_platform\|board\|custom_[A-Za-z0-9_.]+)=/d' ~/.arduino15/preferences.txt; printf 'target_package=arduino\ntarget_platform=avr\nboard=uno\n' >> ~/.arduino15/preferences.txt`, dann wiederholen |
+| Board `esp32:esp32` installieren: `Tool esptool_py is not available for your operating system` | Für diese Version des ESP32-Pakets fehlen Werkzeuge für die Prozessorart (64-Bit-ARM), siehe Kapitel 10 |
+| Pakete lassen sich nicht installieren | Internetverbindung, Firmenproxy; im Fenster steht die Fehlermeldung von `pip` |
+| `ModuleNotFoundError: No module named 'xyz'` | `venv_web/bin/pip install xyz` (Windows `venv_web\Scripts\pip`, Pi `venv/bin/pip`) |
+| Konfiguration wird nicht gespeichert | Ist der Projektordner beschreibbar? (Pi: `sudo chown -R pi: ~/mobaledlib/python`) |
+
+### 9.2 Windows
+
+| Beobachtung | Ursache und Abhilfe |
+|---|---|
+| „Python wurde nicht gefunden“ oder „Python wurde installiert, ist aber in diesem Fenster noch nicht bekannt“ | **PC neu starten** (oder ab- und wieder anmelden) und das Skript noch einmal starten. Python von Hand: python.org, dabei „Add python.exe to PATH“ ankreuzen |
+| „Der Computer wurde durch Windows geschützt“ | *Weitere Informationen → Trotzdem ausführen* |
+| Fenster geht sofort wieder zu | `install\start_windows.bat` in einer Eingabeaufforderung starten und die Meldung lesen; außerdem `headless.log` |
+| Verknüpfung fehlt auf dem Desktop | Pfad des Projektordners ohne `'` und `&`? Sonst `install\start_windows.bat` per Rechtsklick → *Senden an → Desktop* |
+| IDE-Installation (`/ide`) bricht ab | Download von arduino.cc von Hand (2.2), danach `install_windows.bat /libs` |
+
+### 9.3 macOS
+
+| Beobachtung | Ursache und Abhilfe |
+|---|---|
+| „… kann nicht geöffnet werden, da es von einem nicht verifizierten Entwickler stammt“ | Rechtsklick auf `pyMobaLedLib` → *Öffnen* → *Öffnen* (nur beim ersten Mal) |
+| `install_mac.command` lässt sich nicht öffnen | `chmod +x install/install_mac.command`, oder im Terminal `bash install/install_mac.command` |
+| IDE startet nicht (Apple-Chip) | Rosetta installieren: `softwareupdate --install-rosetta` |
+| Programm startet nichts | `install/start_mac.command` im Terminal ausführen und die Meldung lesen; `headless-console.log` |
+
+### 9.4 Linux-Desktop
+
+| Beobachtung | Ursache und Abhilfe |
+|---|---|
+| „Python 3.10 oder neuer wurde nicht gefunden“ | System zu alt (Mint 20, Debian 11): neueres Python über pyenv oder deadsnakes installieren, das Skript noch einmal starten |
+| `venv fehlgeschlagen` / `ensurepip is not available` | `sudo apt install python3-venv python3-pip` |
+| Symbol startet nichts | `install/start_linux.sh` im Terminal ausführen und die Meldung lesen; Symbol ausführbar? (`ls -l ~/Desktop/pyMobaLedLib.desktop`) |
+| Kein serieller Anschluss / „permission denied“ auf `/dev/ttyACM0` | Gruppe `dialout`: `groups` muss `dialout` enthalten, sonst ab- und wieder anmelden (oder `sudo usermod -aG dialout $USER`) |
+
+### 9.5 Raspberry Pi
+
+| Beobachtung | Ursache und Abhilfe |
+|---|---|
+| Symbol: „Der Dienst konnte nicht gestartet werden“ | sudo-Regel fehlt: `sudo bash install_pi.sh --no-check` noch einmal, oder `sudo systemctl start mobaledlib-web` |
+| Symbol: keine Reaktion | im Terminal `~/mobaledlib/python/pi/start_mobaledlib.sh` ausführen und die Meldung lesen; Symbol ist ausführbar? (`ls -l ~/Desktop`) |
+| Seite lädt nicht | `systemctl status mobaledlib-web`, Adresse und Port prüfen, beim ersten Start 1 Minute warten |
+| Anmeldefenster, Passwort wird nicht akzeptiert | Benutzer `mobaledlib`; Passwort: das Standardpasswort `mobaledlib` oder das im Programm gesetzte. Vergessen: Datei `web_password.json` im Projektordner löschen (Kapitel 8) |
+| Kein Port in der Auswahl / „permission denied“ auf `/dev/ttyACM0` | Gruppe `dialout` (der Dienst hat sie), bei Tests von Hand einmal ab- und anmelden |
+| Kompilieren: „no X11 DISPLAY“ oder Java-Fehler | Läuft der Dienst über `xvfb-run`? (`/etc/systemd/system/mobaledlib-web.service`, `sudo apt install xvfb`) |
+| Der Dienst startet nicht | `journalctl -u mobaledlib-web -e`; `pi_check.py` zeigt fehlende Pakete |
+| Anmeldung am Pi per Netz geht nicht | `MLL_HOST=0.0.0.0` und Passwort in `/etc/mobaledlib-web.env` (Kapitel 8) |
+
+## 10. Was nicht oder noch nicht geht
+
+- **ESP32 auf 64-Bit-ARM (Raspberry Pi, vermutlich auch Macs mit Apple-Chip):** Das Programm verlangt das ESP32-Boardpaket in der Version 1.0.4. Für diese Version
+  bietet Espressif keine Werkzeuge für diese Prozessorart an, die Installation über die Boardverwaltung der IDE 1.8.19 scheitert mit „Tool esptool_py is not
+  available for your operating system“. ESP32-Programme werden deshalb auf einem Windows- oder Intel-Rechner erzeugt und hochgeladen. Pico und Arduino laufen auch
+  auf dem Pi. `python3 pi/esp32_index_check.py <Version>` zeigt, für welche Versionen alle Werkzeuge für den Rechner vorhanden sind. Eine neuere Version müsste das
+  Projekt festlegen und testen.
+- **Nur in Tk vorhandene Formulare** (ServoAnim, LEDAnim, LEDColorAnim, Multiple_LEDColorAnim, Mustereditor) zeigen im Web nichts an.
+- **Weitere Reiter** (ARDUINO Monitor, Sound Test, DCC Keyboard, Servo Test) gibt es im Web noch nicht.
+- **Stand der Prüfung:** Auf dem Raspberry Pi (Trixie) sind Dienst, Desktop-Symbol, IDE, Bibliotheken, Boards (ohne ESP32) und das Herunterfahren ausprobiert. Unter
+  **Windows 10** (ohne Python und IDE) läuft `install_windows.bat /ide` nach dem Neustart des PCs durch. Auf einem Mac mit macOS 10.11.6 scheitert die Installation der
+  Python-Pakete (`orjson`); neuere macOS-Versionen sind nicht ausprobiert. Die Skripte für **macOS** und den **Linux-Desktop** sind noch nicht auf einem echten System
+  ausprobiert: Das Mac-Skript lief unter Linux mit einer
+  lokalen ZIP-Datei als Ersatz für den Download der IDE, das Linux-Skript in einem leeren Benutzerverzeichnis (Umgebung, Starter, Aufruf der Bibliotheksinstallation
+  mit einer Attrappe der IDE), die Windows-Datei wurde nur durchgelesen und statisch geprüft (Sprungmarken, Klammern, ASCII, Zeilenenden). Der Download und die stille
+  Installation der IDE unter Windows und macOS sind ungeprüft. Bei einer Fehlermeldung bitte den Text aus dem Installationsfenster und die Datei `headless.log`
+  schicken.

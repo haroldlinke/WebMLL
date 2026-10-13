@@ -1,0 +1,7 @@
+# Python-Pakete fuer die Web-Oberflaeche auf dem Raspberry Pi (ohne Tk)
+nicegui>=2.0
+pyserial
+openpyxl
+Pillow
+# Absichtlich nicht dabei: tksheet, tkcolorpicker u. a. (brauchen Tk; die Web-Oberflaeche braucht sie nicht).
+# Fehlt dem Programm ein weiteres Paket, meldet pi_check.py bzw. das Protokoll den Namen: venv/bin/pip install <Name>

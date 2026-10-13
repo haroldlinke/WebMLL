@@ -1,0 +1,10 @@
+WebpyMLL
+openpoints:
+
+- Help funktioniert nicht - crash
+- verhindere 2 Webseiten gleichzeitig
+- mache seitenrahmen besser sichtbar
+- zeige Version im Header
+- tabs besser abgrenzen
+- menu zeile besser abgrenzen
+

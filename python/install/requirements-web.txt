@@ -1,0 +1,6 @@
+# Datei-Version: 1.00 (2026-10-12) - requirements-web.txt
+# Python-Pakete der Web-Oberflaeche (Windows, macOS, Linux)
+nicegui>=2.0
+pyserial
+openpyxl
+Pillow
