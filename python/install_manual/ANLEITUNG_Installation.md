@@ -1,17 +1,18 @@
 # pyMobaLedLib Web-Oberfläche – Installation und Betrieb
-*Datei-Version: 2.08 (2026-10-14)*
+*Datei-Version: 2.13 (2026-10-14)*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
 Der Programmgenerator läuft als Web-Oberfläche: Das Programm startet auf dem Rechner, an dem der Arduino per USB hängt, und
 du bedienst es im Browser (Edge, Chrome, Firefox, Safari). Es benutzt dieselben Programmdateien wie die Tk-Version.
-Diese Anleitung gilt für alle vier Systeme. **Eilige lesen nur den Schnellstart.** Wer es genauer wissen will, liest Kapitel 1 und 2 und danach das Kapitel für sein System.
+Diese Anleitung gilt für alle vier Systeme. **Eilige lesen nur den Schnellstart.** Wer es genauer wissen will, liest Kapitel 1 und 2 und danach das Kapitel für sein System. Betatester finden eine Checkliste in `install/BETATEST_Checkliste.md`.
 
 ## Schnellstart für Eilige
 
 **Vorbereitung (für alle Systeme)**
 
-1. Die Datei **`webmobaledlib.zip`** von GitHub herunterladen: **HIER DEN LINK EINTRAGEN**.
+1. Die Datei **`webmobaledlib.zip`** aus dem **neuesten Release** herunterladen: <https://github.com/haroldlinke/WebMLL/releases> (dort beim obersten Eintrag unter „Assets“ auf `webmobaledlib.zip` klicken).
+   Direkter Download der neuesten Version: <https://github.com/haroldlinke/WebMLL/releases/latest/download/webmobaledlib.zip>
 2. Einen **neuen Ordner `mobaledlib`** anlegen (zum Beispiel im eigenen Benutzerordner), die ZIP-Datei dort hineinkopieren und **entpacken**: Windows Rechtsklick →
    *Alle extrahieren* (im vorgeschlagenen Zielpfad ein angehängtes `\webmobaledlib` löschen), Linux und Mac „Hier entpacken“. Danach liegt der Ordner `python` direkt in `mobaledlib`.
 3. Die **Komplettinstallation** mit einem Befehl starten (Tabelle unten). Sie richtet alles ein: die Python-Umgebung, die richtige **ARDUINO IDE 1.8.19** (nicht 2.x), die
@@ -31,7 +32,7 @@ Der Pi läuft als **Dienst im Dauerbetrieb**: Das Programm startet beim Hochfahr
 
 1. Mit dem *Raspberry Pi Imager* das neue Betriebssystem **Raspberry Pi OS „Trixie“, 64-Bit, mit Desktop** auf die SD-Karte schreiben. Im Imager Benutzername, Passwort,
    WLAN und „SSH aktivieren“ einstellen. Pi starten.
-2. Auf dem Pi die Datei `webmobaledlib.zip` herunterladen, im Dateimanager einen **neuen Ordner `mobaledlib`** anlegen, die ZIP-Datei hineinkopieren und **„Hier entpacken“**.
+2. Auf dem Pi im Browser die Datei `webmobaledlib.zip` herunterladen (derselbe Link wie oben), im Dateimanager einen **neuen Ordner `mobaledlib`** anlegen, die ZIP-Datei hineinkopieren und **„Hier entpacken“**.
 3. Terminal öffnen und die Komplettinstallation starten:
    ```bash
    cd ~/mobaledlib/python/pi
@@ -127,7 +128,7 @@ prüft die Bibliotheken und Boards beim Start („Überprüfe Bibliotheken und B
 - **Tk-Version und Web-Version nicht gleichzeitig benutzen:** Beide arbeiten mit denselben Konfigurations- und Tabellendateien.
 - **Speichern:** Das Programm speichert beim Beenden („Speichern und beenden“) und zwischendurch automatisch in die Datei `.autosave.json` im Datenordner (2.6).
   Dateien aus dem Menü „Datei“ werden im Browser heruntergeladen bzw. hochgeladen. Eine PGF-Datei kannst du auch einfach auf die Tabelle ziehen.
-- **Meldungen** stehen in der Datei `headless.log` im Datenordner (2.6), außerdem `headless-console.log` bei macOS und Linux und `journalctl` auf dem Pi. Welche
+- **Meldungen** stehen in der Datei `webmobaledlib.log` im Datenordner (2.6, Einstellungen siehe 2.7), außerdem `webmobaledlib-console.log` bei macOS und Linux und `journalctl` auf dem Pi. Welche
   Programmversion läuft, steht unter dem Titel der Oberfläche (zum Beispiel „webmobaledlib 1.16“) und in den Köpfen der Dateien („Datei-Version“).
 
 ### 2.5 Das Programmsymbol
@@ -153,7 +154,7 @@ Einen anderen Ort legt die Umgebungsvariable **`MLL_DATA_DIR`** fest (zum Beispi
 das Protokoll, der Menüpunkt **Hilfe → Über …** und der Befehl `python userdata.py` im Projektordner.
 
 **Was dort liegt:** die Konfigurationsdateien (Einstellungen, Farbtest, Palette), die Sicherung der Tabellen (wird beim Beenden mit „Speichern“ geschrieben und beim
-Start geladen), die Zwischensicherung `.autosave.json`, die Passwort-Datei `web_password.json` (nur als Hash) und die Protokolle `headless.log` und `headless-console.log` sowie der Unterordner `nicegui` (interner Speicher der Oberfläche).
+Start geladen), die Zwischensicherung `.autosave.json`, die Passwort-Datei `web_password.json` (nur als Hash) und die Protokolle `webmobaledlib.log` und `webmobaledlib-console.log` sowie der Unterordner `nicegui` (interner Speicher der Oberfläche).
 
 **Übernahme alter Dateien:** Lagen Konfiguration, Tabellensicherung oder Passwort-Datei eines früheren Stands noch im Projektordner, kopiert das Programm sie beim ersten Start
 einmalig in den Datenordner. Die alten Dateien im Projektordner bleiben liegen und dürfen gelöscht werden.
@@ -163,6 +164,22 @@ neu entpackt, ist auch die Python-Umgebung weg: dann das Installationsskript noc
 
 **Sichern und Umziehen:** den Datenordner kopieren. **Prüfen, dass nichts im Projektordner landet:** `python install/check_project_writes.py snapshot` vor dem Start,
 nach einer Sitzung `python install/check_project_writes.py compare` (zeigt neue, geänderte und gelöschte Dateien im Projektordner, mit `--parent` auch eine Ebene darüber).
+
+### 2.7 Protokoll (Log)
+
+Das Programm schreibt wie die Tk-Version ein Protokoll mit dem Standard-Logger von Python. Es enthält auch die Meldungen der Programmmodule. Die Datei **`webmobaledlib.log`** liegt im
+Datenordner (2.6). Ohne Angabe wird auf der Stufe **DEBUG** protokolliert, wie im Original. Die Datei dreht sich bei 2 MB (die älteren heißen `webmobaledlib.log.1` bis `.5`), und auf der Konsole
+(beim Pi im Journal des Dienstes) erscheinen die Meldungen ab INFO. Jede Sitzung beginnt mit einem Kopf aus Python-Version, System, Parametern, Ordnern, Stufe und Dateiname.
+In der Oberfläche zeigt **Hilfe → Logfile anzeigen** die letzten Zeilen (am Ende steht das Neueste) mit Pfad, Größe und Stufe der Datei. Mit **Aktualisieren** liest es neu, mit **Ganze Datei herunterladen** bekommst du die komplette Datei, zum Beispiel für eine Fehlermeldung.
+
+| Kommandozeile | Umgebungsvariable | Wirkung |
+|---|---|---|
+| `--loglevel DEBUG`, `INFO`, `WARNING`, `ERROR` oder `CRITICAL` | `MLL_LOGLEVEL` | Stufe der Protokolldatei (Standard `DEBUG`) |
+| `--logfile NAME` | `MLL_LOGFILE` | Dateiname. Ohne Pfad liegt die Datei im Datenordner, mit absolutem Pfad dort, `stdout` schreibt keine Datei |
+
+Beispiele: Windows `install\start_windows.bat --loglevel INFO`, Linux und macOS `install/start_linux.sh --loglevel INFO`, Raspberry Pi die Zeile `MLL_LOGLEVEL=INFO` in
+`/etc/mobaledlib-web.env` und danach `sudo systemctl restart mobaledlib-web`. Die sehr gesprächigen Bibliotheken (Webserver, Websocket) bleiben auch bei DEBUG gedämpft. Wer sie sehen will,
+setzt `MLL_LOG_LIBS=1`. Bei einer Fehlermeldung bitte die Datei `webmobaledlib.log` schicken (und `webmobaledlib.log.1`, falls vorhanden).
 
 ## 3. Windows
 
@@ -217,7 +234,7 @@ nicht:** Für diese Systeme gibt es keine fertigen Pakete (zum Beispiel `orjson`
 | `--nocheck` | ohne den Test der Installation am Ende |
 
 **Starten:** `pyMobaLedLib` auf dem Schreibtisch doppelklicken. Beim ersten Mal fragt macOS eventuell: Rechtsklick → *Öffnen* → *Öffnen*. Die Oberfläche
-startet ohne Terminalfenster und öffnet den Browser. Meldungen: `headless-console.log` und `headless.log` im Datenordner (2.6). Zum Beobachten im Terminal:
+startet ohne Terminalfenster und öffnet den Browser. Meldungen: `webmobaledlib-console.log` und `webmobaledlib.log` im Datenordner (2.6). Zum Beobachten im Terminal:
 `install/start_mac.command`. **Beenden:** Knopf „Beenden“ in der Oberfläche.
 
 ## 5. Linux-Desktop (Debian, Linux Mint, Ubuntu, Fedora, Arch …)
@@ -363,7 +380,7 @@ Die allgemeinen Hinweise stehen in 2.2 und 2.3. Besonderheiten des Pi:
 |---|---|
 | Starten | Desktop-Symbol (oder `sudo systemctl start mobaledlib-web`) |
 | Läuft der Dienst? | `systemctl status mobaledlib-web` |
-| Meldungen ansehen | `journalctl -u mobaledlib-web -f` (und die Datei `headless.log` im Datenordner, 2.6) |
+| Meldungen ansehen | `journalctl -u mobaledlib-web -f` (und die Datei `webmobaledlib.log` im Datenordner, 2.6) |
 | Neu starten / anhalten | `sudo systemctl restart mobaledlib-web` / `sudo systemctl stop mobaledlib-web` |
 | Nicht mehr beim Hochfahren starten | `sudo systemctl disable mobaledlib-web` |
 | Installation prüfen | `cd ~/mobaledlib/python && MLL_TK_ROOT=0 venv/bin/python pi_check.py` |
@@ -498,7 +515,7 @@ danach im Browser `http://localhost:8080`.
 |---|---|
 | „Python wurde nicht gefunden“ oder „Python wurde installiert, ist aber in diesem Fenster noch nicht bekannt“ | **PC neu starten** (oder ab- und wieder anmelden) und das Skript noch einmal starten. Python von Hand: python.org, dabei „Add python.exe to PATH“ ankreuzen |
 | „Der Computer wurde durch Windows geschützt“ | *Weitere Informationen → Trotzdem ausführen* |
-| Fenster geht sofort wieder zu | `install\start_windows.bat` in einer Eingabeaufforderung starten und die Meldung lesen; außerdem `headless.log` im Datenordner (2.6) |
+| Fenster geht sofort wieder zu | `install\start_windows.bat` in einer Eingabeaufforderung starten und die Meldung lesen; außerdem `webmobaledlib.log` im Datenordner (2.6) |
 | Verknüpfung fehlt auf dem Desktop | Pfad des Projektordners ohne `'` und `&`? Sonst `install\start_windows.bat` per Rechtsklick → *Senden an → Desktop* |
 | IDE-Installation (`/ide`) bricht ab | Download von arduino.cc von Hand (2.2), danach `install_windows.bat /libs` |
 
@@ -509,7 +526,7 @@ danach im Browser `http://localhost:8080`.
 | „… kann nicht geöffnet werden, da es von einem nicht verifizierten Entwickler stammt“ | Rechtsklick auf `pyMobaLedLib` → *Öffnen* → *Öffnen* (nur beim ersten Mal) |
 | `install_mac.command` lässt sich nicht öffnen | `chmod +x install/install_mac.command`, oder im Terminal `bash install/install_mac.command` |
 | IDE startet nicht (Apple-Chip) | Rosetta installieren: `softwareupdate --install-rosetta` |
-| Programm startet nichts | `install/start_mac.command` im Terminal ausführen und die Meldung lesen; `headless-console.log` im Datenordner (2.6) |
+| Programm startet nichts | `install/start_mac.command` im Terminal ausführen und die Meldung lesen; `webmobaledlib-console.log` im Datenordner (2.6) |
 
 ### 9.4 Linux-Desktop
 
@@ -549,5 +566,5 @@ danach im Browser `http://localhost:8080`.
   ausprobiert: Das Mac-Skript lief unter Linux mit einer
   lokalen ZIP-Datei als Ersatz für den Download der IDE, das Linux-Skript in einem leeren Benutzerverzeichnis (Umgebung, Starter, Aufruf der Bibliotheksinstallation
   mit einer Attrappe der IDE), die Windows-Datei wurde nur durchgelesen und statisch geprüft (Sprungmarken, Klammern, ASCII, Zeilenenden). Der Download und die stille
-  Installation der IDE unter Windows und macOS sind ungeprüft. Bei einer Fehlermeldung bitte den Text aus dem Installationsfenster und die Datei `headless.log` aus dem Datenordner (2.6)
+  Installation der IDE unter Windows und macOS sind ungeprüft. Bei einer Fehlermeldung bitte den Text aus dem Installationsfenster und die Datei `webmobaledlib.log` aus dem Datenordner (2.6)
   schicken.

@@ -4,10 +4,10 @@ CHCP 65001 >NUL
 
 if not exist MyPrivateBuildScript.cmd (
   REM embedded Fast Build and Upload
-  call :build "C:\Program Files (x86)\Arduino\" "LEDs_AutoProg.ino" COM4 "arduino:avr:uno" 57600  "C:\Users\harol\Documents\Arduino/libraries" atmega328p %*
+  call :build "C:\Program Files (x86)\Arduino\" "LEDs_AutoProg.ino" COM4 "arduino:avr:nano:cpu=atmega328" 115200  "C:\Users\harol\Documents\Arduino/libraries" atmega328p %*
 ) else (
   REM user defined Build and Upload
-  call MyPrivateBuildScript.cmd "C:\Program Files (x86)\Arduino\" "LEDs_AutoProg.ino" COM4 "arduino:avr:uno" 57600  "C:\Users\harol\Documents\Arduino/libraries" atmega328p %*
+  call MyPrivateBuildScript.cmd "C:\Program Files (x86)\Arduino\" "LEDs_AutoProg.ino" COM4 "arduino:avr:nano:cpu=atmega328" 115200  "C:\Users\harol\Documents\Arduino/libraries" atmega328p %*
 )
 IF ERRORLEVEL 1 ECHO Start_Arduino_Result: %ERRORLEVEL% > "Start_Arduino_Result.txt"
 goto :eof
@@ -56,7 +56,7 @@ if exist "%aTemp%\buildFailed.txt" (
    md "%aCache%"
 )
 
-xcopy D:\Development\github\pyMobaLedLib\python\LEDs_AutoProg\boards.local.txt "C:\Users\harol\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.6\" /d /y >nul
+xcopy D:\Development\github\WebMLL\WebMLL\python\LEDs_AutoProg\boards.local.txt "C:\Users\harol\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.6\" /d /y >nul
 
 REM *** Call the arduino builder ***
 "%aHome%\arduino-builder" -compile -logger=human ^

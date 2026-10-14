@@ -1,17 +1,18 @@
 # pyMobaLedLib Web-Oberfläche – Installation und Betrieb
-*Datei-Version: 2.10 (2026-10-14)*
+*Datei-Version: 2.13 (2026-10-14)*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
 Der Programmgenerator läuft als Web-Oberfläche: Das Programm startet auf dem Rechner, an dem der Arduino per USB hängt, und
 du bedienst es im Browser (Edge, Chrome, Firefox, Safari). Es benutzt dieselben Programmdateien wie die Tk-Version.
-Diese Anleitung gilt für alle vier Systeme. **Eilige lesen nur den Schnellstart.** Wer es genauer wissen will, liest Kapitel 1 und 2 und danach das Kapitel für sein System.
+Diese Anleitung gilt für alle vier Systeme. **Eilige lesen nur den Schnellstart.** Wer es genauer wissen will, liest Kapitel 1 und 2 und danach das Kapitel für sein System. Betatester finden eine Checkliste in `install/BETATEST_Checkliste.md`.
 
 ## Schnellstart für Eilige
 
 **Vorbereitung (für alle Systeme)**
 
-1. Die Datei **`webmobaledlib.zip`** von GitHub herunterladen: **HIER DEN LINK EINTRAGEN**.
+1. Die Datei **`webmobaledlib.zip`** aus dem **neuesten Release** herunterladen: <https://github.com/haroldlinke/WebMLL/releases> (dort beim obersten Eintrag unter „Assets“ auf `webmobaledlib.zip` klicken).
+   Direkter Download der neuesten Version: <https://github.com/haroldlinke/WebMLL/releases/latest/download/webmobaledlib.zip>
 2. Einen **neuen Ordner `mobaledlib`** anlegen (zum Beispiel im eigenen Benutzerordner), die ZIP-Datei dort hineinkopieren und **entpacken**: Windows Rechtsklick →
    *Alle extrahieren* (im vorgeschlagenen Zielpfad ein angehängtes `\webmobaledlib` löschen), Linux und Mac „Hier entpacken“. Danach liegt der Ordner `python` direkt in `mobaledlib`.
 3. Die **Komplettinstallation** mit einem Befehl starten (Tabelle unten). Sie richtet alles ein: die Python-Umgebung, die richtige **ARDUINO IDE 1.8.19** (nicht 2.x), die
@@ -31,7 +32,7 @@ Der Pi läuft als **Dienst im Dauerbetrieb**: Das Programm startet beim Hochfahr
 
 1. Mit dem *Raspberry Pi Imager* das neue Betriebssystem **Raspberry Pi OS „Trixie“, 64-Bit, mit Desktop** auf die SD-Karte schreiben. Im Imager Benutzername, Passwort,
    WLAN und „SSH aktivieren“ einstellen. Pi starten.
-2. Auf dem Pi die Datei `webmobaledlib.zip` herunterladen, im Dateimanager einen **neuen Ordner `mobaledlib`** anlegen, die ZIP-Datei hineinkopieren und **„Hier entpacken“**.
+2. Auf dem Pi im Browser die Datei `webmobaledlib.zip` herunterladen (derselbe Link wie oben), im Dateimanager einen **neuen Ordner `mobaledlib`** anlegen, die ZIP-Datei hineinkopieren und **„Hier entpacken“**.
 3. Terminal öffnen und die Komplettinstallation starten:
    ```bash
    cd ~/mobaledlib/python/pi
@@ -169,7 +170,7 @@ nach einer Sitzung `python install/check_project_writes.py compare` (zeigt neue,
 Das Programm schreibt wie die Tk-Version ein Protokoll mit dem Standard-Logger von Python. Es enthält auch die Meldungen der Programmmodule. Die Datei **`webmobaledlib.log`** liegt im
 Datenordner (2.6). Ohne Angabe wird auf der Stufe **DEBUG** protokolliert, wie im Original. Die Datei dreht sich bei 2 MB (die älteren heißen `webmobaledlib.log.1` bis `.5`), und auf der Konsole
 (beim Pi im Journal des Dienstes) erscheinen die Meldungen ab INFO. Jede Sitzung beginnt mit einem Kopf aus Python-Version, System, Parametern, Ordnern, Stufe und Dateiname.
-In der Oberfläche zeigt **Hilfe → Logfile anzeigen** die letzten Zeilen.
+In der Oberfläche zeigt **Hilfe → Logfile anzeigen** die letzten Zeilen (am Ende steht das Neueste) mit Pfad, Größe und Stufe der Datei. Mit **Aktualisieren** liest es neu, mit **Ganze Datei herunterladen** bekommst du die komplette Datei, zum Beispiel für eine Fehlermeldung.
 
 | Kommandozeile | Umgebungsvariable | Wirkung |
 |---|---|---|
