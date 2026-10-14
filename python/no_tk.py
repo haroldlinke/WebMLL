@@ -1,3 +1,4 @@
+# Datei-Version: 1.00 (2026-10-12) - no_tk.py
 """Ersatz fuer tkinter, wenn es kein Tk oder kein Display gibt (Raspberry Pi als Dienst ohne Bildschirm).
 
 Die Originalmodule (Prog_Generator.py, F00_mainbuttons.py, Userform_*.py ...) beginnen mit `import tkinter as tk` und

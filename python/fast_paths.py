@@ -1,3 +1,4 @@
+# Datei-Version: 1.00 (2026-10-12) - fast_paths.py
 """Beschleunigung einzelner, oft aufgerufener Funktionen des uebersetzten VBA-Codes (nur Python-Seite).
 
 Der uebersetzte Code bleibt unveraendert (er wird mit dem VBA-Master verglichen); hier werden zur Laufzeit

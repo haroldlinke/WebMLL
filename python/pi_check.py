@@ -1,7 +1,7 @@
-# Datei-Version: 1.01 (2026-10-12) - pi_check.py
+# Datei-Version: 1.03 (2026-10-14) - pi_check.py
 """Prueft die Installation der Web-Oberflaeche (Raspberry Pi, aber auch jeder andere Rechner).
 
-Aufruf im Projektordner (neben headless_web.py):
+Aufruf im Projektordner (neben webmobaledlib.py):
     MLL_HEADLESS=1 MLL_TK_ROOT=0 venv/bin/python pi_check.py
 
 Es wird nichts veraendert. Das Programm meldet fuer jeden Punkt OK, HINWEIS oder FEHLT und startet am Ende die
@@ -32,6 +32,8 @@ def report(status: str, text: str):
 
 
 print(f"Projektordner: {here}")
+import userdata                                        # noqa: E402
+print(f"Datenordner:    {userdata.data_dir()}   (Konfiguration, Sicherungen, Protokolle, Passwort: ausserhalb des Projektordners)")
 print(f"System:        {platform.platform()}  /  Python {platform.python_version()}")
 
 print("\nPython und Pakete")
@@ -75,14 +77,14 @@ if problems:
     print(f"\n{len(problems)} Problem(e) gefunden. Bitte die Zeilen mit FEHLT beheben und den Test wiederholen.")
     sys.exit(1)
 try:
-    import headless_web                                # richtet auch den Ersatz fuer tkinter ein
+    import webmobaledlib                                # richtet auch den Ersatz fuer tkinter ein
     import tkinter
     report("OK" if getattr(tkinter, "__file__", "") == "<no_tk>" else "HINWEIS",
            "tkinter-Ersatz (no_tk) aktiv" if getattr(tkinter, "__file__", "") == "<no_tk>" else
            "echtes tkinter geladen (MLL_TK_ROOT=0 wirkt nicht?)")
-    headless_web.start_backend()
-    ctrl = headless_web.ctrl
-    wb = headless_web.page.workbook
+    webmobaledlib.start_backend()
+    ctrl = webmobaledlib.ctrl
+    wb = webmobaledlib.page.workbook
     names = [ws.Name for ws in wb.sheets]
     report("OK", f"{len(names)} Blaetter geladen: {', '.join(names[:6])} ...")
     prefs = os.path.expanduser("~/.arduino15/preferences.txt")

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.03 (2026-10-12) - install_arduino_libs.sh
+# Datei-Version: 1.04 (2026-10-13) - install_arduino_libs.sh
 # Installiert die ARDUINO-Bibliothek MobaLedLib (FastLED vorab in der geforderten Version) in den Sketchbook-Ordner des
 # aktuellen Benutzers (normalerweise ~/Arduino/libraries) und auf Wunsch die Boards fuer Pico und ESP32.
 # Ohne sudo als der Benutzer starten, unter dem der Dienst laeuft (also NICHT mit sudo):
@@ -8,7 +8,7 @@
 #
 # Danach den Dienst neu starten:  sudo systemctl restart mobaledlib-web
 # Beim Start prueft das Programm die weiteren Bibliotheken und Boards und installiert fehlende selbst. Kontrolle und Korrektur
-# falscher Versionen: in der Oberflaeche den Reiter "Libraries" oeffnen (Einstellung "versteckte Tabellen anzeigen").
+# falscher Versionen: in der Oberflaeche die Tabelle "Libraries" oeffnen (Optionen, Reiter Update, Status der Bibliotheken).
 set -uo pipefail
 
 PICO=""
@@ -73,10 +73,10 @@ if [ -f "$PREFS" ]; then
 fi
 
 # 2. Bibliothek MobaLedLib. Wichtig: Die IDE installiert fehlende Abhaengigkeiten (FastLED, ...) immer in der NEUESTEN Version,
-# die Programmerzeugung verlangt aber bestimmte Versionen (Reiter "Libraries": Spalten installierte und geforderte Version).
+# die Programmerzeugung verlangt aber bestimmte Versionen (Tabelle "Libraries": Spalten installierte und geforderte Version).
 # Deshalb zuerst FastLED in der geforderten Version, dann MobaLedLib (vorhandene Bibliotheken fasst die IDE nicht an).
 # Alle weiteren Bibliotheken installiert das Programm beim Start in der geforderten Version selbst.
-FASTLED_VERSION="${MLL_FASTLED_VERSION:-3.9.12}"          # bei Bedarf anpassen: Reiter "Libraries" nennt die geforderte Version
+FASTLED_VERSION="${MLL_FASTLED_VERSION:-3.9.12}"          # bei Bedarf anpassen: die Tabelle "Libraries" nennt die geforderte Version
 echo; echo "Installiere FastLED $FASTLED_VERSION und danach MobaLedLib"
 echo "(Download der Bibliotheksliste und der Pakete, das dauert einige Minuten)"
 timeout 1800 "${RUN[@]}" --install-library "FastLED:$FASTLED_VERSION"

@@ -1,3 +1,4 @@
+# Datei-Version: 1.00 (2026-10-12) - requirements-pi.txt
 # Python-Pakete fuer die Web-Oberflaeche auf dem Raspberry Pi (ohne Tk)
 nicegui>=2.0
 pyserial

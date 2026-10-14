@@ -1,5 +1,5 @@
 @echo off
-REM Datei-Version: 1.04 (2026-10-13) - install_windows.bat
+REM Datei-Version: 1.05 (2026-10-13) - install_windows.bat
 REM Installiert die Web-Oberflaeche von pyMobaLedLib unter Windows: Python-Umgebung, Pakete, Programmsymbol und
 REM eine Verknuepfung "pyMobaLedLib (Web)" auf dem Desktop.
 REM Aufruf: Doppelklick, oder mit Optionen:
@@ -29,13 +29,13 @@ echo ============================================================
 echo  Projektordner: %APPDIR%
 echo.
 
-if not exist "%APPDIR%\headless_web.py" goto :kein_projekt
+if not exist "%APPDIR%\webmobaledlib.py" goto :kein_projekt
 
 goto :suche_python
 
 :kein_projekt
-echo FEHLER: headless_web.py nicht gefunden in %APPDIR%
-echo Der Ordner "install" muss im Projektordner neben headless_web.py liegen.
+echo FEHLER: webmobaledlib.py nicht gefunden in %APPDIR%
+echo Der Ordner "install" muss im Projektordner neben webmobaledlib.py liegen.
 goto :fehler
 
 :suche_python

@@ -1,3 +1,4 @@
+# Datei-Version: 1.01 (2026-10-13) - mobaledlib-web.service
 [Unit]
 Description=pyMobaLedLib Programmgenerator (Web-Oberflaeche)
 After=network-online.target
@@ -18,7 +19,7 @@ Environment=MLL_NO_BROWSER=1
 Environment=PYTHONUNBUFFERED=1
 # Die ARDUINO IDE 1.8 (Java) braucht zum Kompilieren und Hochladen ein Display. xvfb-run stellt ein virtuelles bereit,
 # das auch die von hier gestarteten Programme erben.
-ExecStart=/usr/bin/xvfb-run -a -s "-screen 0 1280x1024x24" __APPDIR__/venv/bin/python __APPDIR__/headless_web.py
+ExecStart=/usr/bin/xvfb-run -a -s "-screen 0 1280x1024x24" __APPDIR__/venv/bin/python __APPDIR__/webmobaledlib.py
 # "Beenden" im Browser beendet das Programm. Der Dienst startet danach neu und ist fuer die naechste Sitzung bereit.
 Restart=always
 RestartSec=3

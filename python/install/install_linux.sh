@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.00 (2026-10-12) - install_linux.sh
+# Datei-Version: 1.02 (2026-10-13) - install_linux.sh
 # Installiert die Web-Oberflaeche von pyMobaLedLib auf einem Linux-Desktop (Debian, Ubuntu, Linux Mint, Fedora, Arch ...):
 # im eigenen Benutzerkonto, ohne Systemdienst. Es entsteht eine Python-Umgebung im Projektordner (venv_web), ein Starter im
 # Anwendungsmenue und ein Symbol auf dem Schreibtisch. (Raspberry Pi als Dienst: pi/install_pi.sh)
@@ -34,7 +34,7 @@ VENV="$APPDIR/venv_web"
 if [ "$(id -u)" -eq 0 ] && [ "${MLL_ALLOW_ROOT:-0}" != "1" ]; then
   echo "Bitte als normaler Benutzer starten (ohne sudo): die Dateien gehoeren sonst root."; exit 1
 fi
-[ -f "$APPDIR/headless_web.py" ] || { echo "FEHLER: headless_web.py nicht gefunden in $APPDIR (der Ordner install gehoert neben headless_web.py)."; exit 1; }
+[ -f "$APPDIR/webmobaledlib.py" ] || { echo "FEHLER: webmobaledlib.py nicht gefunden in $APPDIR (der Ordner install gehoert neben webmobaledlib.py)."; exit 1; }
 fail() { echo; echo "Die Installation wurde nicht abgeschlossen."; exit 1; }
 
 echo
@@ -131,7 +131,7 @@ if [ -n "$IDE_EXE" ]; then
   echo "ARDUINO IDE gefunden: $IDE_EXE"
   if [ "$WITH_LIBS" = "1" ] && [ -f "$APPDIR/pi/install_arduino_libs.sh" ]; then
     echo "Bibliothek MobaLedLib installieren (dauert einige Minuten) ..."
-    MLL_ARDUINO_EXE="$IDE_EXE" bash "$APPDIR/pi/install_arduino_libs.sh" || echo "(Bibliotheken: siehe Meldungen oben; Nachholen im Reiter Libraries)"
+    MLL_ARDUINO_EXE="$IDE_EXE" bash "$APPDIR/pi/install_arduino_libs.sh" || echo "(Bibliotheken: siehe Meldungen oben; Nachholen: Optionen, Update, Status der Bibliotheken; siehe Anleitung 2.3)"
   fi
 else
   echo "Keine ARDUINO IDE gefunden. Installieren mit:  bash install_linux.sh --with-arduino-ide"

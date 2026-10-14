@@ -1,3 +1,4 @@
+# Datei-Version: 1.00 (2026-10-12) - Prog_Generator.py
 # -*- coding: utf-8 -*-
 #
 #         Prog_Generator

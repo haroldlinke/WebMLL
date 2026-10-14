@@ -1,3 +1,4 @@
+# Datei-Version: 1.00 (2026-10-12) - headless_sheet.py
 """HeadlessSheet: GUI-freier Ersatz für die von XLA_Application.py benutzte Teilmenge
 der tksheet-7-Schnittstelle (Datenhaltung, Spans, Highlights, versteckte Zeilen, Höhen).
 

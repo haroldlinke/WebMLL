@@ -1,10 +1,11 @@
+# Datei-Version: 1.01 (2026-10-12) - mobaledlib.desktop.in
 [Desktop Entry]
 Type=Application
 Name=pyMobaLedLib
 GenericName=Programmgenerator Modellbahnbeleuchtung
 Comment=pyMobaLedLib Programmgenerator starten (Web-Oberfläche)
 Exec="__APPDIR__/pi/start_mobaledlib.sh"
-Icon=__APPDIR__/pi/mobaledlib.svg
+Icon=__APPDIR__/install/mobaledlib.png
 Terminal=false
 Categories=Development;Electronics;
 StartupNotify=false

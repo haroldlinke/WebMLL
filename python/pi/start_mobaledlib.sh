@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Datei-Version: 1.00 (2026-10-12) - start_mobaledlib.sh
 # Startet pyMobaLedLib auf dem Raspberry Pi mit einem Klick (Desktop-Symbol):
 #   1. den Dienst mobaledlib-web starten, falls er nicht laeuft
 #   2. warten, bis die Oberflaeche antwortet (das Laden der Blaetter dauert 20 bis 60 Sekunden)

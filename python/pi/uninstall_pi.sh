@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Datei-Version: 1.00 (2026-10-12) - uninstall_pi.sh
 # Entfernt Dienst, Einstellungen, sudo-Regel und Desktop-Symbol. Projektordner, venv und ARDUINO IDE bleiben erhalten.
 set -euo pipefail
 if [ "$(id -u)" -ne 0 ]; then exec sudo -E bash "$0" "$@"; fi

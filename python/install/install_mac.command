@@ -1,5 +1,5 @@
 #!/bin/bash
-# Datei-Version: 1.03 (2026-10-13) - install_mac.command
+# Datei-Version: 1.07 (2026-10-14) - install_mac.command
 # Installiert die Web-Oberflaeche von pyMobaLedLib unter macOS: Python-Umgebung, Pakete, Programmsymbol und ein Programm
 # "pyMobaLedLib" auf dem Schreibtisch (Doppelklick startet die Oberflaeche und oeffnet den Browser).
 #
@@ -35,9 +35,19 @@ echo
 if [ "$(uname)" != "Darwin" ] && [ "${MLL_FORCE:-0}" != "1" ]; then
   echo "Dieses Skript ist fuer macOS. Unter Linux/Raspberry Pi: pi/install_pi.sh"; exit 1
 fi
-if [ ! -f "$APPDIR/headless_web.py" ]; then
-  echo "FEHLER: headless_web.py nicht gefunden in $APPDIR"
-  echo "Der Ordner install muss im Projektordner neben headless_web.py liegen."; exit 1
+if [ "$(uname)" = "Darwin" ]; then
+  OSV="$(sw_vers -productVersion 2>/dev/null || echo 0)"
+  OSMAJOR="${OSV%%.*}"; OSMINOR="$(echo "$OSV" | cut -d. -f2)"
+  if [ "$OSMAJOR" = "10" ] && [ "${OSMINOR:-0}" -lt 13 ] 2>/dev/null; then
+    echo "ACHTUNG: macOS $OSV ist sehr alt. Fuer dieses System gibt es kaum noch fertige Python-Pakete (zum Beispiel orjson,"
+    echo "pydantic-core fuer NiceGUI), und moderne Browser fehlen. Die Installation kann beim Installieren der Pakete scheitern."
+    echo "Empfohlen: macOS 10.13 oder neuer. Die Installation wird trotzdem versucht."
+    echo
+  fi
+fi
+if [ ! -f "$APPDIR/webmobaledlib.py" ]; then
+  echo "FEHLER: webmobaledlib.py nicht gefunden in $APPDIR"
+  echo "Der Ordner install muss im Projektordner neben webmobaledlib.py liegen."; exit 1
 fi
 fail() { echo; echo "Die Installation wurde nicht abgeschlossen."; read -r -p "Zum Beenden Enter druecken ..." _; exit 1; }
 
@@ -75,8 +85,24 @@ echo
 # --- 2. Python-Umgebung und Pakete
 echo "[1/4] Python-Umgebung anlegen: $VENV"
 if [ ! -x "$VENV/bin/python" ]; then
-  "$PY" -m venv "$VENV" || fail
+  rm -rf "$VENV"                                         # eine unvollstaendige Umgebung eines frueheren Versuchs entfernen
+  "$PY" -m venv "$VENV" || { echo "venv fehlgeschlagen (Meldung siehe oben)."; fail; }
 fi
+# Pruefen, ob die Umgebung ein ausfuehrbares Python enthaelt (python3 genuegt, dann wird "python" daraus verlinkt)
+if [ ! -x "$VENV/bin/python" ]; then
+  for c in python3 python3.13 python3.12 python3.11 python3.10; do
+    if [ -x "$VENV/bin/$c" ]; then ln -sf "$c" "$VENV/bin/python"; break; fi
+  done
+fi
+if [ ! -x "$VENV/bin/python" ]; then
+  echo
+  echo "FEHLER: In der angelegten Python-Umgebung fehlt das Programm python."
+  echo "Verwendetes Python: $PY ($("$PY" --version 2>&1))"
+  echo "Inhalt von $VENV/bin:"; ls -la "$VENV/bin" 2>&1 | head -20
+  echo "Bitte diese Ausgabe schicken. Zum Wiederholen: rm -rf \"$VENV\"  und das Skript noch einmal starten."
+  fail
+fi
+echo "Python der Umgebung: $("$VENV/bin/python" --version 2>&1)"
 echo "[2/4] Pakete installieren (das dauert einige Minuten) ..."
 if [ "${MLL_SKIP_PIP:-0}" != "1" ]; then
   "$VENV/bin/python" -m pip install --upgrade pip || fail
@@ -114,7 +140,8 @@ PLIST
   echo "APPDIR=\"$APPDIR\""
   echo 'cd "$APPDIR" || exit 1'
   echo 'export MLL_HEADLESS=1'
-  echo 'exec "$APPDIR/venv_web/bin/python" "$APPDIR/headless_web.py" --open-if-running >> "$APPDIR/headless-console.log" 2>&1'
+  echo 'DATA="$("$APPDIR/venv_web/bin/python" "$APPDIR/userdata.py" 2>/dev/null || echo "$HOME")"      # Datenordner ausserhalb des Projektordners'
+  echo 'exec "$APPDIR/venv_web/bin/python" "$APPDIR/webmobaledlib.py" --open-if-running >> "$DATA/webmobaledlib-console.log" 2>&1'
 } > "$APP/Contents/MacOS/pyMobaLedLib"
 chmod +x "$APP/Contents/MacOS/pyMobaLedLib"
 [ -f "$HERE/mobaledlib.icns" ] && cp "$HERE/mobaledlib.icns" "$APP/Contents/Resources/mobaledlib.icns"

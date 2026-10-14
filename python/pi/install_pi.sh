@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.04 (2026-10-13) - install_pi.sh
+# Datei-Version: 1.07 (2026-10-13) - install_pi.sh
 # Installiert die Web-Oberflaeche von pyMobaLedLib als Dienst (systemd) auf einem Raspberry Pi (Raspberry Pi OS Bookworm/Trixie)
 # oder einem anderen Debian/Ubuntu und legt ein Desktop-Symbol zum Starten an.
 #
 # Aufruf im Ordner "pi" des Projekts:   sudo bash install_pi.sh [Optionen]
 #   --port N            Port der Oberflaeche (Standard 8080)
+#   --hostname NAME     Rechnername des Pi aendern (zum Beispiel webMLLraspi): erreichbar als http://NAME.local:8080
+#                       (spaeter auch im Programm aenderbar: Programm Einstellungen, Name des Raspberry Pi im Netz)
 #   --local-only        nur auf dem Pi selbst erreichbar (127.0.0.1), kein Passwort noetig
 #   --password PW       Passwort fuer den Zugriff aus dem Netz (Voreinstellung: mobaledlib; spaeter im Programm aenderbar:
 #                       Programm Einstellungen, Zugriff ueber das Netz)
@@ -19,6 +21,7 @@ set -euo pipefail
 PORT=8080
 LOCAL_ONLY=0
 PASSWORD=""
+NEWHOST=""
 RUN_CHECK=1
 WITH_IDE=0
 WITH_LIBS=0
@@ -28,12 +31,13 @@ while [ $# -gt 0 ]; do
     --port) PORT="$2"; shift 2 ;;
     --local-only) LOCAL_ONLY=1; shift ;;
     --password) PASSWORD="$2"; shift 2 ;;
+    --hostname) NEWHOST="$2"; shift 2 ;;
     --with-arduino-ide) WITH_IDE=1; WITH_LIBS=1; shift ;;
     --with-arduino-libs) WITH_LIBS=1; shift ;;
     --desktop-icon) DESKTOP_ICON=1; shift ;;
     --no-desktop-icon) DESKTOP_ICON=0; shift ;;
     --no-check) RUN_CHECK=0; shift ;;
-    -h|--help) sed -n '3,17p' "$0"; exit 0 ;;
+    -h|--help) sed -n '3,19p' "$0"; exit 0 ;;
     *) echo "Unbekannte Option: $1"; exit 1 ;;
   esac
 done
@@ -45,11 +49,11 @@ if [ -z "$SERVICE_USER" ] || [ "$SERVICE_USER" = "root" ]; then
 fi
 USER_HOME="$(getent passwd "$SERVICE_USER" | cut -d: -f6)"
 APPDIR="$(cd "$(dirname "$(realpath "$0")")/.." && pwd)"
-if [ ! -f "$APPDIR/headless_web.py" ]; then
-  echo "headless_web.py nicht gefunden in $APPDIR - liegt der Ordner pi im Projektordner (neben headless_web.py)?"; exit 1
+if [ ! -f "$APPDIR/webmobaledlib.py" ]; then
+  echo "webmobaledlib.py nicht gefunden in $APPDIR - liegt der Ordner pi im Projektordner (neben webmobaledlib.py)?"; exit 1
 fi
 # Windows-Zeilenenden (CRLF) in den Skripten und Vorlagen entfernen (kommen vom Kopieren/Git unter Windows)
-sed -i 's/\r$//' "$APPDIR"/pi/*.sh "$APPDIR"/pi/*.service "$APPDIR"/pi/*.example "$APPDIR"/pi/*.in "$APPDIR"/pi/*.txt 2>/dev/null || true
+sed -i 's/\r$//' "$APPDIR"/pi/*.sh "$APPDIR"/pi/*.service "$APPDIR"/pi/*.example "$APPDIR"/pi/*.in "$APPDIR"/pi/*.txt "$APPDIR"/pi/mobaledlib-set-hostname 2>/dev/null || true
 
 . /etc/os-release 2>/dev/null || true
 echo "System:        ${PRETTY_NAME:-unbekannt} ($(uname -m))"
@@ -58,7 +62,17 @@ echo "Benutzer:      $SERVICE_USER      Port: $PORT"
 
 echo; echo "== 1/8  Systempakete"
 apt-get update
-apt-get install -y python3 python3-venv python3-pip xvfb curl xz-utils
+apt-get install -y python3 python3-venv python3-pip xvfb curl xz-utils avahi-daemon
+systemctl enable --now avahi-daemon >/dev/null 2>&1 || true          # macht den Pi im Netz unter <Rechnername>.local erreichbar (mDNS)
+# Hilfsprogramm zum Aendern des Rechnernamens: gehoert root und liegt ausserhalb des Projektordners, damit der Dienstbenutzer es
+# nicht veraendern kann. Die Oberflaeche ruft es ueber sudo auf (Programm Einstellungen: Name des Raspberry Pi im Netz).
+HOSTNAME_HELPER=/usr/local/sbin/mobaledlib-set-hostname
+install -m 755 -o root -g root "$APPDIR/pi/mobaledlib-set-hostname" "$HOSTNAME_HELPER"
+if [ -n "$NEWHOST" ]; then
+  OLDHOST="$(hostname)"
+  "$HOSTNAME_HELPER" "$NEWHOST" || { echo "Der Rechnername wurde nicht geaendert."; exit 1; }
+  echo "Rechnername: $OLDHOST -> $NEWHOST"
+fi
 # Bibliotheken, die die Java-IDE braucht (einzeln, damit ein anderer Paketname die Installation nicht abbricht)
 for pkg in libxtst6 libxrender1 libxi6 libfontconfig1; do
   apt-get install -y "$pkg" || echo "  (Paket $pkg nicht installiert: nur wichtig, falls die ARDUINO IDE fehlende Bibliotheken meldet)"
@@ -101,7 +115,7 @@ chown "$SERVICE_USER": "$APPDIR/pi/launcher.conf"
 # Der Benutzer darf den Dienst ohne Passwort starten, anhalten und neu starten (sonst nichts)
 SYSTEMCTL="$(command -v systemctl)"
 SUDOERS_TMP="$(mktemp)"
-echo "$SERVICE_USER ALL=(root) NOPASSWD: $SYSTEMCTL start mobaledlib-web, $SYSTEMCTL stop mobaledlib-web, $SYSTEMCTL restart mobaledlib-web, $SYSTEMCTL poweroff, $SYSTEMCTL reboot" > "$SUDOERS_TMP"
+echo "$SERVICE_USER ALL=(root) NOPASSWD: $SYSTEMCTL start mobaledlib-web, $SYSTEMCTL stop mobaledlib-web, $SYSTEMCTL restart mobaledlib-web, $SYSTEMCTL poweroff, $SYSTEMCTL reboot, $HOSTNAME_HELPER *" > "$SUDOERS_TMP"
 if visudo -cf "$SUDOERS_TMP" >/dev/null 2>&1; then
   install -m 440 -o root -g root "$SUDOERS_TMP" /etc/sudoers.d/mobaledlib-web
   echo "sudo-Regel angelegt: Dienst starten/anhalten/neu starten sowie den Raspberry Pi herunterfahren/neu starten"
@@ -205,6 +219,7 @@ if [ "$LOCAL_ONLY" = "1" ]; then
   echo "  Oberflaeche:  http://localhost:$PORT   (nur auf diesem Pi)"
 else
   echo "  Oberflaeche:  http://${IP:-<IP-des-Pi>}:$PORT      Benutzer: mobaledlib   (auf dem Pi selbst ohne Passwort)"
+  echo "  oder mit dem Namen:  http://$(hostname).local:$PORT     (Windows 10/11, macOS, iPhone, Linux mit avahi)"
   echo "  Passwort:     ${PASSWORD_INFO:-wie bisher (steht in $ENVFILE, oder im Programm geaendert: Programm Einstellungen - Zugriff ueber das Netz)}"
 fi
 echo "Hinweis: Damit die Gruppe dialout im Terminal wirkt, einmal ab- und wieder anmelden (der Dienst hat sie schon)."

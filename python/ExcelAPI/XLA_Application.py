@@ -1,3 +1,4 @@
+# Datei-Version: 1.00 (2026-10-12) - XLA_Application_headless.py
 # -*- coding: utf-8 -*-
 #
 #         Workbook
@@ -2163,7 +2164,6 @@ class CWorksheet(object):
     def copyShape(self,shape,newY=None):
         newshape = copy.copy(shape)
         newshape.Top = newY
-        newshape.__dict__.pop("mll_row_id", None)   # HEADLESS: Kopie wird neu an ihre Zeile gebunden
         self.shapelist.append(newshape)
         #test self.setDataChanged()
             
@@ -4046,7 +4046,7 @@ class CSelection(object):
     Cells = property(get_Cells, set_Cells, doc='Selection-Cells')    
     
     def _selectedRow(self):
-        return [self.ws.getSelectedRow()+1]
+        return [self.ws.getSelectedRow()]
     
     def get_entirerow(self):
         selectedrows = self._selectedRow()
