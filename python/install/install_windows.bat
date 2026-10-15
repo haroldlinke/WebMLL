@@ -1,5 +1,5 @@
 @echo off
-REM Datei-Version: 1.05 (2026-10-13) - install_windows.bat
+REM Datei-Version: 1.06 (2026-10-15) - install_windows.bat
 REM Installiert die Web-Oberflaeche von pyMobaLedLib unter Windows: Python-Umgebung, Pakete, Programmsymbol und
 REM eine Verknuepfung "pyMobaLedLib (Web)" auf dem Desktop.
 REM Aufruf: Doppelklick, oder mit Optionen:
@@ -97,12 +97,12 @@ if not exist "%VENV%\Scripts\python.exe" (
 )
 echo [2/4] Pakete installieren (das dauert einige Minuten) ...
 "%VENV%\Scripts\python.exe" -m pip install --upgrade pip
-"%VENV%\Scripts\python.exe" -m pip install -r "%~dp0requirements-web.txt"
+"%VENV%\Scripts\python.exe" -m pip install --prefer-binary -r "%~dp0requirements-web.txt"
 if errorlevel 1 goto :fehler
 
 REM --- 3. Programmsymbol
 echo [3/4] Programmsymbol erzeugen
-"%VENV%\Scripts\python.exe" "%~dp0make_icons.py" "%~dp0"
+if not exist "%~dp0mobaledlib.ico" "%VENV%\Scripts\python.exe" "%~dp0make_icons.py" "%~dp0"
 
 REM --- 4. Verknuepfung auf dem Desktop
 echo [4/4] Verknuepfung auf dem Desktop anlegen

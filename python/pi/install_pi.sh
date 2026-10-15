@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.07 (2026-10-13) - install_pi.sh
+# Datei-Version: 1.08 (2026-10-15) - install_pi.sh
 # Installiert die Web-Oberflaeche von pyMobaLedLib als Dienst (systemd) auf einem Raspberry Pi (Raspberry Pi OS Bookworm/Trixie)
 # oder einem anderen Debian/Ubuntu und legt ein Desktop-Symbol zum Starten an.
 #
@@ -83,7 +83,7 @@ echo "Python:        $(python3 --version)"
 echo; echo "== 2/8  Python-Umgebung $APPDIR/venv"
 sudo -u "$SERVICE_USER" python3 -m venv "$APPDIR/venv"
 sudo -u "$SERVICE_USER" "$APPDIR/venv/bin/pip" install --upgrade pip
-sudo -u "$SERVICE_USER" "$APPDIR/venv/bin/pip" install -r "$APPDIR/pi/requirements-pi.txt"
+sudo -u "$SERVICE_USER" "$APPDIR/venv/bin/pip" install --prefer-binary -r "$APPDIR/pi/requirements-pi.txt"
 
 echo; echo "== 3/8  Zugriff auf die seriellen Anschluesse (Gruppe dialout)"
 usermod -aG dialout "$SERVICE_USER"

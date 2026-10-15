@@ -1,5 +1,5 @@
 #!/bin/bash
-# Datei-Version: 1.07 (2026-10-14) - install_mac.command
+# Datei-Version: 1.08 (2026-10-15) - install_mac.command
 # Installiert die Web-Oberflaeche von pyMobaLedLib unter macOS: Python-Umgebung, Pakete, Programmsymbol und ein Programm
 # "pyMobaLedLib" auf dem Schreibtisch (Doppelklick startet die Oberflaeche und oeffnet den Browser).
 #
@@ -106,12 +106,12 @@ echo "Python der Umgebung: $("$VENV/bin/python" --version 2>&1)"
 echo "[2/4] Pakete installieren (das dauert einige Minuten) ..."
 if [ "${MLL_SKIP_PIP:-0}" != "1" ]; then
   "$VENV/bin/python" -m pip install --upgrade pip || fail
-  "$VENV/bin/python" -m pip install -r "$HERE/requirements-web.txt" || fail
+  "$VENV/bin/python" -m pip install --prefer-binary -r "$HERE/requirements-web.txt" || fail
 fi
 
 # --- 3. Programmsymbol
 echo "[3/4] Programmsymbol erzeugen"
-"$VENV/bin/python" "$HERE/make_icons.py" "$HERE" || echo "Symbol nicht erzeugt (das Programm funktioniert trotzdem)."
+[ -f "$HERE/mobaledlib.icns" ] || "$VENV/bin/python" "$HERE/make_icons.py" "$HERE" || echo "Symbol nicht erzeugt (das Programm funktioniert trotzdem)."
 
 # --- 4. Programm auf dem Schreibtisch: pyMobaLedLib.app (startet die Oberflaeche ohne Terminalfenster)
 echo "[4/4] Programm anlegen: $APP"

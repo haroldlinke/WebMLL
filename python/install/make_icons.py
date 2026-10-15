@@ -1,4 +1,4 @@
-# Datei-Version: 1.01 (2026-10-12) - make_icons.py
+# Datei-Version: 1.02 (2026-10-15) - make_icons.py
 """Erzeugt die Programmsymbole der Web-Oberflaeche als PNG, Windows-ICO und macOS-ICNS.
 
 Vorlage ist das Symbol des originalen ProgrammGenerators (mobaledlib_source.png: Ring aus bunten LEDs, Tabelle, Stift). Es wird
@@ -14,7 +14,7 @@ Ausgabe in den Zielordner (Standard: Ordner dieser Datei):
     mobaledlib.icns         macOS
 
 Aufruf:  python make_icons.py [Zielordner] [--plain]      (--plain: auch die ICO/ICNS ohne Hinweis)
-Braucht Pillow (steht in requirements-web.txt). Liegt die Vorlage hoeher aufgeloest vor (oder als Vektorgrafik), ersetze
+Braucht Pillow (steht NICHT in requirements-web.txt, denn die fertigen Symbole liegen bei): pip install Pillow Liegt die Vorlage hoeher aufgeloest vor (oder als Vektorgrafik), ersetze
 mobaledlib_source.png durch die bessere Datei: Die kleine Vorlage (128 x 128) wird sonst vergroessert und wirkt weicher.
 """
 import os

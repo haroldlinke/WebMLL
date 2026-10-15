@@ -1,8 +1,8 @@
-# Datei-Version: 1.00 (2026-10-12) - requirements-pi.txt
+# Datei-Version: 1.01 (2026-10-15) - requirements-pi.txt
 # Python-Pakete fuer die Web-Oberflaeche auf dem Raspberry Pi (ohne Tk)
 nicegui>=2.0
 pyserial
 openpyxl
-Pillow
+# Pillow wird nicht gebraucht (siehe install/requirements-web.txt)
 # Absichtlich nicht dabei: tksheet, tkcolorpicker u. a. (brauchen Tk; die Web-Oberflaeche braucht sie nicht).
 # Fehlt dem Programm ein weiteres Paket, meldet pi_check.py bzw. das Protokoll den Namen: venv/bin/pip install <Name>

@@ -1,6 +1,7 @@
-# Datei-Version: 1.00 (2026-10-12) - requirements-web.txt
+# Datei-Version: 1.01 (2026-10-15) - requirements-web.txt
 # Python-Pakete der Web-Oberflaeche (Windows, macOS, Linux)
 nicegui>=2.0
 pyserial
 openpyxl
-Pillow
+# Pillow wird NICHT gebraucht (das Originalprogramm benutzt es nur optional fuer die Symbole der Tk-Oberflaeche). Es braucht auf manchen
+# Systemen eine Uebersetzung aus dem Quelltext, die fehlschlaegt ("Failed to build Pillow"). Nur install/make_icons.py benutzt es: pip install Pillow

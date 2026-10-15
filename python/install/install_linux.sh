@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.02 (2026-10-13) - install_linux.sh
+# Datei-Version: 1.03 (2026-10-15) - install_linux.sh
 # Installiert die Web-Oberflaeche von pyMobaLedLib auf einem Linux-Desktop (Debian, Ubuntu, Linux Mint, Fedora, Arch ...):
 # im eigenen Benutzerkonto, ohne Systemdienst. Es entsteht eine Python-Umgebung im Projektordner (venv_web), ein Starter im
 # Anwendungsmenue und ein Symbol auf dem Schreibtisch. (Raspberry Pi als Dienst: pi/install_pi.sh)
@@ -43,6 +43,10 @@ echo " pyMobaLedLib - Installation der Web-Oberflaeche (Linux)"
 echo "============================================================"
 . /etc/os-release 2>/dev/null || true
 echo " System:        ${PRETTY_NAME:-unbekannt} ($(uname -m))"
+case "$(uname -m)" in
+  x86_64|aarch64|arm64) ;;
+  *) echo " ACHTUNG: Auf 32-Bit-Systemen und anderen Prozessorarten gibt es fuer einige Python-Pakete keine fertigen Dateien; die Installation kann scheitern." ;;
+esac
 echo " Projektordner: $APPDIR"
 echo
 
@@ -89,7 +93,13 @@ fi
 echo "[2/5] Pakete installieren (das dauert einige Minuten) ..."
 if [ "${MLL_SKIP_PIP:-0}" != "1" ]; then
   "$VENV/bin/python" -m pip install --upgrade pip || fail
-  "$VENV/bin/python" -m pip install -r "$HERE/requirements-web.txt" || fail
+  if ! "$VENV/bin/python" -m pip install --prefer-binary -r "$HERE/requirements-web.txt"; then
+    echo
+    echo "FEHLER beim Installieren der Python-Pakete (siehe oben, zum Beispiel \"Failed to build <Paket>\")."
+    echo "Diagnose, bitte mitschicken: Prozessor $(uname -m), $("$VENV/bin/python" --version 2>&1) ($(getconf LONG_BIT 2>/dev/null) Bit), pip $("$VENV/bin/python" -m pip --version 2>&1 | cut -d' ' -f2), $(ldd --version 2>&1 | head -1)"
+    echo "Ursachen: kein Internet, 32-Bit-System, Python zu alt oder zu neu fuer ein Paket (dann fehlen fertige Dateien und pip versucht, es zu uebersetzen)."
+    fail
+  fi
 fi
 
 # --- 4. USB-Anschluss: Gruppe dialout
