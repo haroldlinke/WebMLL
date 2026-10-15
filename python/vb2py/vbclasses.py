@@ -1,4 +1,5 @@
 # -*- coding: utf -*-
+# Datei-Version: 1.01 (2026-10-15) - vbclasses.py (Collection.__delitem__: der echte Schluessel wird geloescht, nicht die Position)
 
 """
 Classes which mimic the behaviour of VB classes
@@ -55,14 +56,20 @@ class Collection(dict):
             return dict.__getitem__(self, Key)[0]
 
     def __delitem__(self, Key):
+        # Remove(n) entfernt wie in VB die n-te Position (ab 1). Geloescht werden muss der ECHTE Schluessel dieses Eintrags: Bei Eintraegen
+        # ohne eigenen Schluessel ist das insertOrder, und der laeuft weiter hoch (auch nach dem Entfernen), ist also nur beim ersten Eintrag
+        # gleich der Position. Frueher wurde die Position selbst als Schluessel geloescht: KeyError beim zweiten Include in einem Lauf.
         try:
-            Key = int(Key)
-            lst = list(self.values())
-            lst.sort(key=itemgetter(1))
-            _, _, key = lst[Key - 1]
-        except ValueError:
-            pass
-        dict.__delitem__(self, Key)
+            position = int(Key)
+        except (ValueError, TypeError):
+            dict.__delitem__(self, Key)              # Schluessel (Text)
+            return
+        if position < 1:
+            raise IndexError(position)
+        lst = list(self.values())
+        lst.sort(key=itemgetter(1))
+        _, _, key = lst[position - 1]
+        dict.__delitem__(self, key)
 
     def __call__(self, Key):
         return self.Item(Key)

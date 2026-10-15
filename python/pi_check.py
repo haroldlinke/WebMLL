@@ -1,4 +1,4 @@
-# Datei-Version: 1.03 (2026-10-14) - pi_check.py
+# Datei-Version: 1.04 (2026-10-15) - pi_check.py
 """Prueft die Installation der Web-Oberflaeche (Raspberry Pi, aber auch jeder andere Rechner).
 
 Aufruf im Projektordner (neben webmobaledlib.py):
@@ -95,8 +95,9 @@ try:
     if os.path.isfile(startcmd):
         report("OK", f"ARDUINO IDE gefunden: {startcmd}")
     else:
-        report("HINWEIS", "Pfad der ARDUINO IDE nicht gesetzt oder falsch (" + (startcmd or "leer") + "). Unter Linux muss er in "
-                          "'ARDUINO Einstellungen' eingetragen werden (Startdatei 'arduino' der IDE 1.8.19).")
+        report("HINWEIS", "ARDUINO IDE nicht gefunden (Pfad: " + (startcmd or "leer") + "). Die IDE 1.8.19 nach ~/arduino-1.8.19 legen, oder in "
+                          "'ARDUINO Einstellungen' die Schaltflaeche 'IDE suchen' benutzen bzw. den Pfad der Startdatei 'arduino' eintragen "
+                          "(oder die Umgebungsvariable MLL_ARDUINO_EXE setzen). Siehe Anleitung, Abschnitt 2.2.")
 except Exception:                                      # noqa: BLE001
     report("FEHLT", "Programm konnte nicht gestartet werden:")
     traceback.print_exc()
