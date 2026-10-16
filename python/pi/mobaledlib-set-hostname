@@ -1,0 +1,21 @@
+#!/bin/bash
+# Datei-Version: 1.00 (2026-10-13) - mobaledlib-set-hostname
+# Aendert den Rechnernamen des Raspberry Pi. Wird von install_pi.sh nach /usr/local/sbin kopiert (Besitzer root, nicht
+# beschreibbar fuer den Dienstbenutzer) und von der Oberflaeche ueber "sudo" aufgerufen (Programm Einstellungen: Name des
+# Raspberry Pi im Netz). Deshalb prueft es den Namen selbst streng: genau ein Argument, nur Buchstaben, Ziffern und -.
+set -euo pipefail
+NEW="${1:-}"
+if [ "$#" -ne 1 ] || ! [[ "$NEW" =~ ^[A-Za-z0-9][A-Za-z0-9-]{0,30}$ ]] || [[ "$NEW" == *- ]]; then
+  echo "Ungueltiger Rechnername (erlaubt: Buchstaben, Ziffern und -, hoechstens 31 Zeichen, nicht mit - enden)" >&2
+  exit 2
+fi
+OLD="$(hostname)"
+if [ "$OLD" = "$NEW" ]; then echo "OK $NEW"; exit 0; fi
+if command -v raspi-config >/dev/null 2>&1; then
+  raspi-config nonint do_hostname "$NEW"                # setzt /etc/hostname, /etc/hosts und den laufenden Namen
+else
+  hostnamectl set-hostname "$NEW"
+  sed -i "s/\b${OLD//./\\.}\b/$NEW/g" /etc/hosts
+fi
+systemctl restart avahi-daemon >/dev/null 2>&1 || true   # Name im Netz (mDNS) neu melden
+echo "OK $NEW"

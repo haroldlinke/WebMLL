@@ -1027,7 +1027,7 @@ def Make_sure_that_Channel_is_divisible_by_4(Channel):
 def Print_MacroLine(fp, MinLen, Txt):
     # 05.01.23: Hardi
     #------------------------------------------------------------------------
-    VBFiles.writeText(fp, M30.AddSpaceToLen(Txt, MinLen) + ' /', '\n')
+    VBFiles.writeText(fp, M30.AddSpaceToLen(Txt, MinLen) + ' \\', '\n')
 
 def Add_Set_Input_Loop_for_Keys(fp, Keys_Array_Nr):
     MinLen = 70

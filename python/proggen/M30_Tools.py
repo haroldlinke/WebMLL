@@ -999,7 +999,7 @@ def SplitEx(InString, IgnoreDoubleDelmiters, KeepDelimiters, *Delims):
         
         #ReDim Preserve arr(n - 1)
       
-    fn_return_value = Arr
+    fn_return_value = arr
     return fn_return_value
 
 def ReplaceExact(text: str, find_token: str, replace_token: str) -> str:

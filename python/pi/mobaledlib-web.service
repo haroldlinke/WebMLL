@@ -1,6 +1,6 @@
-# Datei-Version: 1.01 (2026-10-13) - mobaledlib-web.service
+# Datei-Version: 1.02 (2026-10-15) - mobaledlib-web.service
 [Unit]
-Description=pyMobaLedLib Programmgenerator (Web-Oberflaeche)
+Description=webMobaLedLib Programmgenerator (Web-Oberflaeche)
 After=network-online.target
 Wants=network-online.target
 

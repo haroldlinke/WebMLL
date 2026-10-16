@@ -1,7 +1,7 @@
 @echo off
-REM Datei-Version: 1.06 (2026-10-15) - install_windows.bat
-REM Installiert die Web-Oberflaeche von pyMobaLedLib unter Windows: Python-Umgebung, Pakete, Programmsymbol und
-REM eine Verknuepfung "pyMobaLedLib (Web)" auf dem Desktop.
+REM Datei-Version: 1.07 (2026-10-15) - install_windows.bat
+REM Installiert die Web-Oberflaeche von webMobaLedLib unter Windows: Python-Umgebung, Pakete, Programmsymbol und
+REM eine Verknuepfung "webMobaLedLib" auf dem Desktop.
 REM Aufruf: Doppelklick, oder mit Optionen:
 REM   /ide       ARDUINO IDE 1.8.19 von arduino.cc laden und installieren (die IDE 2.x wird NICHT unterstuetzt), dazu /libs
 REM   /libs      Bibliothek MobaLedLib (und FastLED in der geforderten Version) mit der ARDUINO IDE installieren
@@ -17,14 +17,14 @@ for %%A in (%*) do (
   if /i "%%A"=="/ide" set "WITHIDE=1"
   if /i "%%A"=="/ide" set "WITHLIBS=1"
 )
-title pyMobaLedLib Web-Oberflaeche - Installation
+title webMobaLedLib - Installation
 cd /d "%~dp0"
 for %%I in ("%~dp0..") do set "APPDIR=%%~fI"
 set "VENV=%APPDIR%\venv_web"
 
 echo.
 echo ============================================================
-echo  pyMobaLedLib - Installation der Web-Oberflaeche (Windows)
+echo  webMobaLedLib - Installation der Web-Oberflaeche (Windows)
 echo ============================================================
 echo  Projektordner: %APPDIR%
 echo.
@@ -106,7 +106,7 @@ if not exist "%~dp0mobaledlib.ico" "%VENV%\Scripts\python.exe" "%~dp0make_icons.
 
 REM --- 4. Verknuepfung auf dem Desktop
 echo [4/4] Verknuepfung auf dem Desktop anlegen
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$d=[Environment]::GetFolderPath('Desktop'); $s=(New-Object -ComObject WScript.Shell).CreateShortcut($d+'\pyMobaLedLib - Web.lnk'); $s.TargetPath='%~dp0start_windows.bat'; $s.WorkingDirectory='%APPDIR%'; $s.IconLocation='%~dp0mobaledlib.ico'; $s.WindowStyle=7; $s.Description='pyMobaLedLib Programmgenerator (Web-Oberflaeche)'; $s.Save()"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$d=[Environment]::GetFolderPath('Desktop'); Remove-Item ($d+'\pyMobaLedLib - Web.lnk') -ErrorAction SilentlyContinue; $s=(New-Object -ComObject WScript.Shell).CreateShortcut($d+'\webMobaLedLib.lnk'); $s.TargetPath='%~dp0start_windows.bat'; $s.WorkingDirectory='%APPDIR%'; $s.IconLocation='%~dp0mobaledlib.ico'; $s.WindowStyle=7; $s.Description='webMobaLedLib Programmgenerator (Web-Oberflaeche)'; $s.Save()"
 if errorlevel 1 echo Die Verknuepfung konnte nicht angelegt werden. Starten Sie das Programm mit start_windows.bat.
 
 REM --- ARDUINO IDE 1.8.19 (nur mit /ide)
@@ -167,7 +167,7 @@ if errorlevel 1 echo Der Test meldet Probleme, siehe die Meldungen oben.
 :fertig
 echo.
 echo ============================================================
-echo  Fertig. Starten: Desktop-Symbol "pyMobaLedLib - Web"
+echo  Fertig. Starten: Desktop-Symbol "webMobaLedLib"
 echo  oder  %~dp0start_windows.bat
 echo.
 echo  Hinweis: Fuer das Kompilieren und Hochladen werden die ARDUINO IDE 1.8.19

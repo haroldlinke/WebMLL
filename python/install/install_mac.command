@@ -1,7 +1,7 @@
 #!/bin/bash
-# Datei-Version: 1.08 (2026-10-15) - install_mac.command
-# Installiert die Web-Oberflaeche von pyMobaLedLib unter macOS: Python-Umgebung, Pakete, Programmsymbol und ein Programm
-# "pyMobaLedLib" auf dem Schreibtisch (Doppelklick startet die Oberflaeche und oeffnet den Browser).
+# Datei-Version: 1.09 (2026-10-15) - install_mac.command
+# Installiert die Web-Oberflaeche von webMobaLedLib unter macOS: Python-Umgebung, Pakete, Programmsymbol und ein Programm
+# "webMobaLedLib" auf dem Schreibtisch (Doppelklick startet die Oberflaeche und oeffnet den Browser).
 #
 # Aufruf: im Finder doppelklicken, oder im Terminal:   bash install_mac.command [--nocheck] [--with-arduino-libs]
 #   --with-arduino-ide    ARDUINO IDE 1.8.19 von arduino.cc laden und in Programme kopieren (die IDE 2.x wird NICHT unterstuetzt), dazu --with-arduino-libs
@@ -13,7 +13,7 @@ cd "$(dirname "$0")" || exit 1
 HERE="$(pwd)"
 APPDIR="$(cd .. && pwd)"
 VENV="$APPDIR/venv_web"
-APP="${MLL_APP_DIR:-$HOME/Desktop}/pyMobaLedLib.app"
+APP="${MLL_APP_DIR:-$HOME/Desktop}/webMobaLedLib.app"
 CHECK=1
 WITH_LIBS=0
 WITH_IDE=0
@@ -27,7 +27,7 @@ done
 
 echo
 echo "============================================================"
-echo " pyMobaLedLib - Installation der Web-Oberflaeche (macOS)"
+echo " webMobaLedLib - Installation der Web-Oberflaeche (macOS)"
 echo "============================================================"
 echo " Projektordner: $APPDIR"
 echo
@@ -113,8 +113,10 @@ fi
 echo "[3/4] Programmsymbol erzeugen"
 [ -f "$HERE/mobaledlib.icns" ] || "$VENV/bin/python" "$HERE/make_icons.py" "$HERE" || echo "Symbol nicht erzeugt (das Programm funktioniert trotzdem)."
 
-# --- 4. Programm auf dem Schreibtisch: pyMobaLedLib.app (startet die Oberflaeche ohne Terminalfenster)
+# --- 4. Programm auf dem Schreibtisch: webMobaLedLib.app (startet die Oberflaeche ohne Terminalfenster)
 echo "[4/4] Programm anlegen: $APP"
+OLD_APP="${APP%/*}/pyMobaLedLib.app"                  # Programm unter dem frueheren Namen entfernen (nur wenn es von diesem Skript stammt)
+if [ -f "$OLD_APP/Contents/MacOS/pyMobaLedLib" ] && grep -q webmobaledlib.py "$OLD_APP/Contents/MacOS/pyMobaLedLib" 2>/dev/null; then rm -rf "$OLD_APP"; fi
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" || fail
 cat > "$APP/Contents/Info.plist" << 'PLIST'
@@ -122,12 +124,12 @@ cat > "$APP/Contents/Info.plist" << 'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleName</key><string>pyMobaLedLib</string>
-  <key>CFBundleDisplayName</key><string>pyMobaLedLib</string>
+  <key>CFBundleName</key><string>webMobaLedLib</string>
+  <key>CFBundleDisplayName</key><string>webMobaLedLib</string>
   <key>CFBundleIdentifier</key><string>de.mobaledlib.web</string>
   <key>CFBundleVersion</key><string>1.0</string>
   <key>CFBundleShortVersionString</key><string>1.0</string>
-  <key>CFBundleExecutable</key><string>pyMobaLedLib</string>
+  <key>CFBundleExecutable</key><string>webMobaLedLib</string>
   <key>CFBundleIconFile</key><string>mobaledlib</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>LSMinimumSystemVersion</key><string>10.13</string>
@@ -142,8 +144,8 @@ PLIST
   echo 'export MLL_HEADLESS=1'
   echo 'DATA="$("$APPDIR/venv_web/bin/python" "$APPDIR/userdata.py" 2>/dev/null || echo "$HOME")"      # Datenordner ausserhalb des Projektordners'
   echo 'exec "$APPDIR/venv_web/bin/python" "$APPDIR/webmobaledlib.py" --open-if-running >> "$DATA/webmobaledlib-console.log" 2>&1'
-} > "$APP/Contents/MacOS/pyMobaLedLib"
-chmod +x "$APP/Contents/MacOS/pyMobaLedLib"
+} > "$APP/Contents/MacOS/webMobaLedLib"
+chmod +x "$APP/Contents/MacOS/webMobaLedLib"
 [ -f "$HERE/mobaledlib.icns" ] && cp "$HERE/mobaledlib.icns" "$APP/Contents/Resources/mobaledlib.icns"
 touch "$APP"
 
@@ -209,7 +211,7 @@ fi
 
 echo
 echo "============================================================"
-echo " Fertig. Starten: Programm \"pyMobaLedLib\" auf dem Schreibtisch doppelklicken"
+echo " Fertig. Starten: Programm \"webMobaLedLib\" auf dem Schreibtisch doppelklicken"
 echo " (beim ersten Mal ggf. Rechtsklick > Oeffnen)  oder  $HERE/start_mac.command"
 echo
 if find_ide >/dev/null; then

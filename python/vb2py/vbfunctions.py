@@ -113,13 +113,13 @@ def Dir(path=None,pathtype=vbDirectory):
     global _last_files
     
     if path:
-        Debug.Print("Dir:"+path)
+        #Debug.Print("Dir:"+path)
         _last_files = glob.glob(path)
     if _last_files:
-        Debug.Print("_last_files:"+repr(_last_files))
+        #Debug.Print("_last_files:"+repr(_last_files))
         return os.path.split(_last_files.pop(0))[1]  # VB just returns the filename, not full path
     else:
-        Debug.Print("_last_files: None")
+        #Debug.Print("_last_files: None")
         return ""
 
 
