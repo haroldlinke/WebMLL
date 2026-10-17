@@ -1,4 +1,14 @@
-# Datei-Version: 1.00 (2026-10-12) - headless_gridmodel.py
+# Datei-Version: 1.01 (2026-10-17) - headless_gridmodel.py
+# ----------------------------------------------------------------------------------------------
+# Name:           headless_gridmodel.py
+# Path:           headless/headless_gridmodel.py
+# Version:        1.01
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-17  build_grid: data_header (Kopfzeilenlogik abschaltbar) und tooltips_in_cells (Beschriftung§Tooltip in jeder Zelle) fuer den Patterngenerator; davor 1.00 (2026-10-12), nicht erfasst
+# ----------------------------------------------------------------------------------------------
 """Uebersetzt ein HeadlessSheet in Spalten- und Zeilendaten fuer AG Grid (ohne NiceGUI-Import,
 daher einzeln testbar)."""
 from __future__ import annotations
@@ -31,7 +41,8 @@ def _json_value(v: Any):
 
 def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None,
                check_cols: set | None = None, max_col: int | None = None,
-               tooltip_cols: set | None = None, test_buttons: dict | None = None
+               tooltip_cols: set | None = None, test_buttons: dict | None = None,  # v1.01
+               data_header: bool = True, tooltips_in_cells: bool = False  # v1.01
                ) -> tuple[list[dict], list[dict], list[dict], dict]:
     """Liefert (columnDefs, rowData, pinnedTopRowData, info).
 
@@ -85,7 +96,8 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
 
     # Datenblaetter: Zeile 2 (Index 1) enthaelt Ueberschriften mit Tooltip, getrennt durch "§".
     header_rows: set[int] = set()
-    if len(data) > 1 and any(isinstance(v, str) and "§" in v for v in data[1]):
+    if data_header and len(data) > 1 and any(isinstance(v, str) and "§" in v for v in data[1]):  # v1.01
+    # if len(data) > 1 and any(isinstance(v, str) and "§" in v for v in data[1]):  # v1.01 (ersetzt)
         header_rows = {0, 1}
 
     # Excel: Zeile 1 (Konfiguration) klein und unauffaellig, Zeile 2 blau mit weisser fetter Schrift, nur ueber die
@@ -106,6 +118,9 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
             if r == 1 and header_rows and isinstance(v, str) and "§" in v:
                 v, tip = v.split("§", 1)
                 tt[f"c{c}"] = tip
+            elif tooltips_in_cells and isinstance(v, str) and "§" in v:  # v1.01  Patterngenerator: Beschriftung§Tooltip in jeder Zelle
+                v, tip = v.split("§", 1)  # v1.01
+                tt[f"c{c}"] = tip  # v1.01
             d[f"c{c}"] = v
             hl = cell_hl.get((r, c)) or rh
             if r in header_rows:
@@ -128,7 +143,8 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
             d["_tb"] = tb
         if tt:
             d["_tt"] = tt
-            d["_ro"] = True          # Kopfzeile mit Tooltips nicht editierbar (sonst gehen sie verloren)
+            if header_rows:  # v1.01  nur die Kopfzeilen eines Datenblatts sperren, nicht jede Zeile mit einem Tooltip
+                d["_ro"] = True  # v1.01 (eingerueckt)  Kopfzeile mit Tooltips nicht editierbar (sonst gehen sie verloren)
         return d
 
     rows = []

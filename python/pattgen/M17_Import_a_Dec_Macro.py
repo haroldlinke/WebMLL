@@ -1,3 +1,15 @@
+# Datei-Version: 1.02 (2026-10-17) - M17_Import_a_Dec_Macro.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M17_Import_a_Dec_Macro.py
+# Path:           pattgen/M17_Import_a_Dec_Macro.py
+# Version:        1.02
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-17  Import aus dem Programm Generator: ',#InCh,' wird wie ',InCh,' zu SI_1 (Decoder und Vergleich); davor Original-Port, nicht erfasst
+#   1.02  2026-10-17  Aenderung von 1.01 zurueckgenommen: Die Excel-Version behaelt #InCh im Feld Schalter Nummer; Code wie im Original
+# ----------------------------------------------------------------------------------------------
 from vb2py.vbfunctions import *
 from vb2py.vbdebug import *
 import pattgen.M09_Language
@@ -135,7 +147,8 @@ def Decode_Pattern_String_to_Struct(p_str, Pattern_Res):
     FreeBits = int(int(Par(1)) / 32) #*HL
     # Par(2): Input channel
     _select35 = Par(2)
-    if (_select35 == 'InCh'):
+    # if (_select35 == 'InCh' or _select35 == '#InCh'):  # v1.01 (zurueckgenommen in v1.02)
+    if (_select35 == 'InCh'):  # v1.02
         _with46.SwitchNumber = 'SI_1'
         # Str is read from "Macro" line => We don't know the "SchalterNr" value
     elif (_select35 == 'SI_LocalVar'):
@@ -310,6 +323,7 @@ def Decode_Pattern_String_and_Compare(p_str, Gen_Message=VBMissingArgument):
     Org = Replace(Org, '(LED,', '(0,')
     Org = Replace(Org, '(#LED,', '(0,')
     Org = Replace(Org, ',InCh,', ',SI_1,')
+    # Org = Replace(Org, ',#InCh,', ',SI_1,')  # v1.01 (zurueckgenommen in v1.02)
     Decode_Pattern_String(p_str)
     Res = Split(str(X02.Range(M01.ErgebnisRng)), ')')(0) + ')'
     if Org != Res:

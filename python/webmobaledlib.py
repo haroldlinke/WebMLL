@@ -1,4 +1,27 @@
-# Datei-Version: 1.38 (2026-10-15) - webmobaledlib.py
+# Datei-Version: 1.52 (2026-10-17) - webmobaledlib.py
+# ----------------------------------------------------------------------------------------------
+# Name:           webmobaledlib.py
+# Path:           webmobaledlib.py
+# Version:        1.52
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.39  2026-10-17  Reiter Patterngenerator (Runde 1): Anzeige der Tabelle, Aufbau erst beim ersten Oeffnen (build_patt, _PATT); Kopf eingefuegt; davor bis 1.38 nicht erfasst
+#   1.40  2026-10-17  Patterngenerator Runde 2: Bearbeiten, Werkzeugleiste, Beschreibung, Balken (Module web_pattgen, headless_pattgen)
+#   1.41  2026-10-17  Patterngenerator: lesbare Spalten, Textueberlauf, Balken bei jedem Start (web_pattgen 1.02, headless_pattgen 1.02)
+#   1.42  2026-10-17  Patterngenerator: Auswahl bei ausgeblendeten Zeilen, alte Balken, Spalten einfuegen (XLA_Application 1.03, headless_pattgen 1.03)
+#   1.43  2026-10-17  Patterngenerator Runde 3: gleich breite Spalten, Entf und Zwischenablage, Kontextmenue (web_pattgen 1.03, headless_pattgen 1.04)
+#   1.44  2026-10-17  Patterngenerator: Tabelle springt bei einer Aenderung nicht mehr an den Anfang (web_pattgen 1.04)
+#   1.45  2026-10-17  Patterngenerator: Bildlauf und Markierung bleiben bei einer Aenderung erhalten (web_pattgen 1.05)
+#   1.46  2026-10-17  Patterngenerator Stufe 2: Export zu ProgGen und Import von ProgGen (Hinweisband im Reiter Programm Generator, web_form_exchange 1.00)
+#   1.47  2026-10-17  Import von ProgGen: #InCh wird zu SI_1 (M17_Import_a_Dec_Macro 1.01)
+#   1.48  2026-10-17  Import von ProgGen in ein neues Blatt: Berechnung bis zum stabilen Ergebnis (XLA_Application 1.04), Aenderung an #InCh zurueckgenommen (M17 1.02)
+#   1.49  2026-10-17  Programmgenerator: Tabelle nach einer Aenderung ohne Neuaufbau im Browser (Optionen still nachfuehren), animateRows aus, Zeitmessung MLL_DEBUG_TIMING
+#   1.50  2026-10-17  Programmgenerator: Testknoepfe und Symbole nach einer gezielten Aktualisierung neu zeichnen (refreshCells fuer Spalten mit _tb/_img); Fehler aus 1.49
+#   1.51  2026-10-17  Diagnose MLL_DEBUG_SHAPES (Symbole und Testtasten im Protokoll)
+#   1.52  2026-10-17  Programmgenerator: neue Symbole und Testtasten wieder sichtbar (volle Aktualisierung, wenn sie dazukommen oder wegfallen), Neuaufbau der Testtasten legt Knoepfe an (Update_TestButtons redraw)
+# ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
 Version 2: Toolbar (Zeile einfuegen/loeschen/verschieben/kopieren, Aus-/Einblenden, Tabelle
@@ -61,6 +84,7 @@ from ExcelAPI.headless_sheet import Selected                    # noqa: E402  (l
 
 ctrl = None
 page = None
+_PATT = {"page": None}                                   # v1.39  Seite des Patterngenerators (wird beim ersten Oeffnen des Reiters angelegt)
 
 
 def start_backend():
@@ -349,6 +373,41 @@ JS_CELL_STYLE = ("params => (params.data && params.data._st && params.data._st[p
 # Zellen mit Symbol (Shape vom Typ Bild) und Testtasten: Bild/Tasten plus Text; Text nur als textContent
 # (kein HTML aus Zelleninhalten). Die Testtasten melden Maus runter/hoch mit dem Ereignis mll_tb an den Server
 # (bridge_id = Element, das das Ereignis annimmt).
+def shapes_report(ws) -> str:  # v1.51
+    """Fuer MLL_DEBUG_SHAPES: Zahl der Shapes des Blatts (Symbole, Testtasten, nicht zuzuordnende) und aktives Arbeitsbuch und Blatt der Excel-Schicht."""  # v1.51
+    import ExcelAPI.XLA_Application as X02  # v1.51
+    shapes = list(getattr(ws, "shapelist", []) or [])  # v1.51
+    pics = btns = unbound = 0  # v1.51
+    pos = ws.tksheet.get_row_heights(canvas_positions=True)  # v1.51
+    for s in shapes:  # v1.51
+        name = str(getattr(s, "Name_val", "") or "")  # v1.51
+        is_btn = getattr(s, "OnAction", "") == "DCCSend"  # v1.51
+        is_pic = getattr(s, "Type", None) == getattr(X02, "msoPicture", object()) or name.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".svg"))  # v1.51
+        pics += bool(is_pic and not is_btn)  # v1.51
+        btns += bool(is_btn)  # v1.51
+        if (is_pic or is_btn) and bind_shape(ws, s, pos) is None:  # v1.51
+            unbound += 1  # v1.51
+    aw, asheet = getattr(X02, "ActiveWorkbook", None), getattr(X02, "ActiveSheet", None)  # v1.51
+    return (f"aktives Arbeitsbuch={getattr(aw, 'Name', None)}, aktives Blatt={getattr(asheet, 'Name', None)} (angezeigt: {ws.Name}) | "  # v1.51
+            f"Shapes {len(shapes)}: Symbole {pics}, Testtasten {btns}, nicht zuzuordnen {unbound}")  # v1.51
+
+
+def decor_signature(rows) -> frozenset:  # v1.52
+    """Zellen mit Symbol oder Testtaste: {(Zeile, Feld)}. Aendert sich diese Menge (Symbol oder Knopf kommt dazu oder faellt weg), wird die ganze
+    Tabelle gesendet; die gezielte Aktualisierung zeigte neue Symbole und Knoepfe einer neuen Zeile nicht (Pruefung mit MLL_GRID_UPDATE=full)."""
+    return frozenset((r["_r"], k) for r in rows for key in ("_img", "_tb") for k in (r.get(key) or {}))  # v1.52
+
+
+def renderer_columns(rows) -> set:  # v1.50
+    """Spalten, deren Zellen der Renderer aus Zusatzfeldern der Zeile zeichnet (Testknoepfe _tb, Symbole _img). AG Grid zeichnet solche
+    Zellen bei einer Aktualisierung nur neu, wenn sich der Zellwert aendert: nach applyTransaction muessen sie mit refreshCells(force) neu gezeichnet werden."""
+    cols = set()  # v1.50
+    for r in rows:  # v1.50
+        cols.update((r.get("_tb") or {}).keys())  # v1.50
+        cols.update((r.get("_img") or {}).keys())  # v1.50
+    return cols  # v1.50
+
+
 def cell_renderer_js(bridge_id: int) -> str:
     return ("params => { const box = document.createElement('span'); "
             "const u = params.data && params.data._img && params.data._img[params.colDef.field]; "
@@ -472,7 +531,21 @@ def font_scales(ctrl) -> dict:
             "grid": factor("FontNormal"), "small": factor("FontSmall"), "name": name or "Arial"}
 
 
-VERSION = "1.38 (2026-10-15)"                                      # gleich dem Versionskopf am Dateianfang
+VERSION = "1.52 (2026-10-17)"  # v1.52
+# VERSION = "1.51 (2026-10-17)"  # v1.52 (ersetzt)
+# VERSION = "1.50 (2026-10-17)"  # v1.51 (ersetzt)
+# VERSION = "1.49 (2026-10-17)"  # v1.50 (ersetzt)
+# VERSION = "1.48 (2026-10-17)"  # v1.49 (ersetzt)
+# VERSION = "1.47 (2026-10-17)"  # v1.48 (ersetzt)
+# VERSION = "1.46 (2026-10-17)"  # v1.47 (ersetzt)
+# VERSION = "1.45 (2026-10-17)"  # v1.46 (ersetzt)
+# VERSION = "1.44 (2026-10-17)"  # v1.45 (ersetzt)
+# VERSION = "1.43 (2026-10-17)"  # v1.44 (ersetzt)
+# VERSION = "1.42 (2026-10-17)"  # v1.43 (ersetzt)
+# VERSION = "1.41 (2026-10-17)"  # v1.42 (ersetzt)
+# VERSION = "1.40 (2026-10-17)"  # v1.41 (ersetzt)
+# VERSION = "1.39 (2026-10-17)"  # v1.40 (ersetzt)
+# VERSION = "1.38 (2026-10-15)"  # v1.39 (ersetzt)                                      # gleich dem Versionskopf am Dateianfang
 
 # Schalter zur Eingrenzung von Darstellungsproblemen der Tabelle (ohne neue Datei umschaltbar):
 #   MLL_GRID_UPDATE=full   Tabelle bei jeder Aenderung komplett neu senden (wie Version 1.00, springt an den Anfang)
@@ -509,6 +582,8 @@ LAZY_TABS = os.environ.get("MLL_LAZY_TABS", "1") != "0"
 GRID_UPDATE = os.environ.get("MLL_GRID_UPDATE", "delta")           # "delta" (nur geaenderte Zeilen) oder "full"
 ROW_HEIGHT_FIXED = os.environ.get("MLL_ROWHEIGHT", "1") != "0"
 
+TIMING_DEBUG = os.environ.get("MLL_DEBUG_TIMING", "0") == "1"        # Zeitmessung von show() und der Testtasten im Protokoll (MLL_DEBUG_TIMING=1)  # v1.49
+SHAPES_DEBUG = os.environ.get("MLL_DEBUG_SHAPES", "0") == "1"        # Symbole und Testtasten im Protokoll (MLL_DEBUG_SHAPES=1): Zeilen SHAPES:  # v1.51
 SCROLL_DEBUG = os.environ.get("MLL_DEBUG_SCROLL", "0") == "1"      # Meldungen zur Bildlaufposition (ein mit MLL_DEBUG_SCROLL=1)
 
 # Bildlaufposition der Tabelle: wird das Grid neu befuellt (Haken gesetzt, Zelle geaendert ...), springt AG Grid sonst an den
@@ -888,6 +963,7 @@ def index():
     # ------------------------------------------------------------------ Registerkarten (wie im Tk-Hauptfenster)
     with ui.tabs(value="pg").props("dense align=left no-caps active-color=primary").classes("w-full main-tabs") as tabs:
         ui.tab("pg", label="Programm Generator")
+        ui.tab("patt", label="Patterngenerator")   # v1.39
         ui.tab("progcfg", label="ProgGenerator Einstellungen")
         ui.tab("farb", label="Farb Test")
         ui.tab("mon", label="Serial Monitor")
@@ -927,7 +1003,15 @@ def index():
                     cfg = X02.Cells(row, M25.Config__Col)
                     if cfg != "":
                         M27.FindMacro_and_Add_Icon_and_Name(cfg, row, sheet)
-                M20.ResetTestButtons(False)
+                # M20.ResetTestButtons(False)  # v1.52 (ersetzt)
+                # ResetTestButtons aktualisiert nur vorhandene Testtasten (ohne sie legt es keine an, ausser fuer die erste Zeile).
+                # Neu anlegen kann Update_TestButtons(redraw=True), wie das Neuzeichnen des Blatts in Excel.
+                for row in range(int(M02.FirstDat_Row), int(M30.LastUsedRow()) + 1):  # v1.52
+                    start = X02.Cells(row, M25.Start_V_Col)  # v1.52
+                    if start != "":  # v1.52
+                        M20.Update_TestButtons(row, X02.val(start), redraw=True)  # v1.52
+                    else:  # v1.52
+                        M20.Update_TestButtons(row, redraw=True)  # v1.52
                 sync_shapes(sheet)
             except Exception:                      # noqa: BLE001
                 logger.exception("Symbole/Testtasten fuer Blatt %s nicht aufgebaut", getattr(sheet, "Name", "?"))
@@ -1052,6 +1136,11 @@ def index():
     controls_row.set_visibility(False)
     controls_cache = {"key": None}
 
+    # Zeilenauswahl fuer Export zu ProgGen und Import von ProgGen des Patterngenerators: Hinweisband ueber der Tabelle statt der Tk-Fenster
+    from _web import web_form_exchange  # v1.46
+    web_form_exchange.build_banner(ctrl, show_tab=lambda name: tabs.set_value(name), run_in_worker=lambda fn: run_in_worker(fn),  # v1.46
+                                   refresh_pg=lambda: show(state["ws"]), get_workbook=lambda: wb)  # v1.46
+
     grid_wrap = ui.element("div").classes("w-full mll-grid-wrap").style("flex: 1 1 0; min-height: 160px; position: relative")
     grid_options = {
         "columnDefs": [],
@@ -1069,6 +1158,7 @@ def index():
         "preventDefaultOnContextMenu": True,
         "stopEditingWhenCellsLoseFocus": True,
         "suppressMovableColumns": True,
+        "animateRows": False,                              # keine Animation beim Aktualisieren (spart auf langsamen Rechnern Arbeit)  # v1.49
     }
     if ROW_HEIGHT_FIXED:
         grid_options["rowHeight"] = 22                             # Grundhoehe der Zeilen (sonst schaetzt AG Grid 42 px je Zeile)
@@ -1268,6 +1358,7 @@ def index():
     ui.on("mll_anchor", on_anchor)
 
     def show(ws):
+        t_start = time.perf_counter()  # v1.49
         try:
             refresh_controls(ws)
         except Exception:                                  # noqa: BLE001
@@ -1282,16 +1373,23 @@ def index():
                                                      check_cols={ec} if ec is not None else None,
                                                      max_col=last_column(ws), tooltip_cols=tooltip_columns(ws),
                                                      test_buttons=test_button_data(ws))
+        t_build = time.perf_counter()  # v1.49
+        if SHAPES_DEBUG:  # v1.51
+            logger.info("SHAPES: show(%s): %s | Zeilen mit Testtasten %s | Zeilen mit Symbol %s", ws.Name, shapes_report(ws),  # v1.51
+                        sorted(r["_r"] for r in rows if r.get("_tb"))[:40], sorted(r["_r"] for r in rows if r.get("_img"))[:40])  # v1.51
         header_height = int(round(24 * font_scales(ctrl)["grid"]))
         row_height = int(round(22 * font_scales(ctrl)["grid"]))
         # Aufbau der Spalten ohne die Breiten: Zieht der Benutzer eine Spalte breiter, kennt AG Grid die Breite schon; ein
         # Neuaufbau des ganzen Grids (der die Bildlaufposition kostet) ist dafuer nicht noetig.
         layout = (ws.Name, (header_height, row_height if ROW_HEIGHT_FIXED else None),
                   tuple((c.get("colId") or c.get("field"), c.get("hide"), c.get("editable"),
-                         ":tooltipValueGetter" in c, c.get("cellClass")) for c in column_defs))
+                         ":tooltipValueGetter" in c, c.get("cellClass"), c.get("headerName"), c.get("pinned")) for c in column_defs))  # v1.49
         full_update = layout != shown.get("layout") or GRID_UPDATE == "full"
+        widths = {(c.get("colId") or c.get("field")): c.get("width") for c in column_defs}      # Breiten, die der Browser kennt (Stand der letzten Anzeige)  # v1.49
         old_rows = grid.options.get("rowData") or []              # Stand, den der Browser gerade hat
         old_pinned = grid.options.get("pinnedTopRowData") or []
+        if not full_update and decor_signature(rows) != decor_signature(old_rows):  # v1.52
+            full_update = True                             # Symbole oder Testtasten kommen dazu oder fallen weg: alles senden (wie bis 1.48)  # v1.52
         # Bleibt der Aufbau der Spalten gleich und kennt der Server die Ankerzeile des letzten Klicks (juenger als 6 s, gleiches
         # Blatt), wird danach genau diese Zeile wieder an den oberen Rand gestellt. Sonst die Pixelposition wie bisher merken.
         anchor = state.get("anchor")
@@ -1307,15 +1405,23 @@ def index():
             logger.info("SCROLL: Spaltenaufbau geaendert: Blatt %r -> %r, Kopfhoehe %s -> %s, Spalten %d -> %d, Unterschiede %s",
                         old_l[0], new_l[0], old_l[1], new_l[1], len(old_l[2]), len(new_l[2]), diff)
         shown["layout"] = layout
-        grid.options["headerHeight"] = header_height
+        # Jede Zuweisung an grid.options laesst NiceGUI die ganze Tabelle an den Browser schicken, AG Grid baut dann Spalten und Zeilen neu auf
+        # (auf langsamen Rechnern eine lange weisse Flaeche, auch wenn sich nur eine Zeile geaendert hat). Im unveraenderten Fall werden die
+        # Optionen deshalb still nachgefuehrt (dict.__setitem__ umgeht die Beobachtung) und nur die Unterschiede mit run_grid_method gesendet.
+        opts = grid.options  # v1.49
+        put = (lambda k, v: opts.__setitem__(k, v)) if full_update else (lambda k, v: dict.__setitem__(opts, k, v))  # v1.49
+        put("headerHeight", header_height)  # v1.49
         if ROW_HEIGHT_FIXED:
-            grid.options["rowHeight"] = row_height
-        grid.options["columnDefs"] = column_defs
-        grid.options["rowData"] = rows
-        grid.options["pinnedTopRowData"] = pinned
+            put("rowHeight", row_height)  # v1.49
+        put("columnDefs", column_defs)  # v1.49
+        put("rowData", rows)  # v1.49
+        put("pinnedTopRowData", pinned)  # v1.49
         changed_rows: list = []
+        refresh_cols: set = set()  # v1.50
         mode = "komplett"
         if not full_update:
+            if widths != shown.get("widths"):              # Breiten wurden von einem Makro geaendert (Ziehen meldet on_column_resized): Spalten neu senden  # v1.49
+                grid.run_grid_method("setGridOption", "columnDefs", column_defs)  # v1.49
             same_rows = [r["_r"] for r in old_rows] == [r["_r"] for r in rows]
             if same_rows:
                 # Gleiche Zeilen wie im Browser: nur die geaenderten schicken (applyTransaction). AG Grid fasst die anderen Zeilen
@@ -1327,12 +1433,27 @@ def index():
                     grid.run_grid_method("setGridOption", "pinnedTopRowData", pinned)
                 if changed_rows:
                     grid.run_grid_method("applyTransaction", {"update": changed_rows})
+                    refresh_cols = renderer_columns(changed_rows) | renderer_columns([old_by_id[r["_r"]] for r in changed_rows])  # v1.50
             else:                                          # Zeilen eingefuegt/geloescht/ausgeblendet: alle Zeilen austauschen
                 mode = "alle Zeilen"
                 grid.run_grid_method("setGridOption", "pinnedTopRowData", pinned)
                 grid.run_grid_method("setGridOption", "rowData", rows)
+                refresh_cols = renderer_columns(rows) | renderer_columns(old_rows)  # v1.50
         else:
             grid.update()                                  # neue Spalten (anderes Blatt, Schrift geaendert): alles neu senden
+        if refresh_cols:                                   # Testknoepfe und Symbole stehen in Zusatzfeldern der Zeile: die Zellen neu zeichnen lassen  # v1.50
+            grid.run_grid_method("refreshCells", {"columns": sorted(refresh_cols), "force": True})  # v1.50
+        if SHAPES_DEBUG:  # v1.51
+            logger.info("SHAPES: gesendet (%s), refreshCells fuer Spalten %s", mode, sorted(refresh_cols))  # v1.51
+        shown["widths"] = widths  # v1.49
+        if TIMING_DEBUG:  # v1.49
+            try:  # v1.49
+                sent = len(json.dumps(changed_rows if mode.endswith("geaenderte Zeilen") else rows)) // 1024  # v1.49
+            except (TypeError, ValueError):  # v1.49
+                sent = -1  # v1.49
+            t_sent = time.perf_counter()  # v1.49
+            logger.info("TIMING: show(%s) %s: Aufbau der Zeilen %d ms, Vergleich und Senden %d ms, gesamt %d ms, %d Zeilen, ca. %d KB gesendet",  # v1.49
+                        ws.Name, mode, (t_build - t_start) * 1000, (t_sent - t_build) * 1000, (t_sent - t_start) * 1000, len(rows), sent)  # v1.49
         if SCROLL_DEBUG:
             logger.info("SCROLL: show(%s) %s, %d Zeilen", ws.Name, mode, len(rows))
         try:
@@ -1573,6 +1694,7 @@ def index():
                 old_width = sh.column_width(idx)
                 if old_width != width:
                     sh.column_width(idx, width)
+                    shown.setdefault("widths", {})[f"c{idx}"] = width        # der Browser kennt die Breite schon: show() sendet die Spalten nicht neu  # v1.49
                     try:                              # wie tkEvent_column_width_resize: Shapes rechts davon mitnehmen
                         state["ws"].moveShapesHorizontal(top_left_cell_column=idx + 1, deltaX=width - old_width)
                     except Exception:                 # noqa: BLE001
@@ -1652,7 +1774,11 @@ def index():
 
         def write():
             try:
+                if SHAPES_DEBUG:  # v1.51
+                    logger.info("SHAPES: vor dem Schreiben von %s!%s,%s: %s", ws.Name, row, col, shapes_report(ws))  # v1.51
                 X02.CRange(row, col, ws=ws).Value = new_value     # loest wie in Excel Worksheet_Change aus
+                if SHAPES_DEBUG:  # v1.51
+                    logger.info("SHAPES: nach dem Schreiben: %s", shapes_report(ws))  # v1.51
             except SystemExit:
                 raise RuntimeError("Das Makro wurde mit EndProg beendet") from None
         try:
@@ -1976,8 +2102,12 @@ def index():
                     if shape is None:
                         return
                     tb_state["name"] = str(shape.Name)
+                    t_tb = time.perf_counter()  # v1.49
                     await run_in_worker(lambda: tb_press(ws_, shape))
+                    t_tb2 = time.perf_counter()  # v1.49
                     show(ws_)                       # Umschalter aendern Name, Farbe und Text
+                    if TIMING_DEBUG:  # v1.49
+                        logger.info("TIMING: Testtaste: Arduino-Befehl %d ms, Aktualisierung der Tabelle %d ms", (t_tb2 - t_tb) * 1000, (time.perf_counter() - t_tb2) * 1000)  # v1.49
                 elif phase == "up":
                     name = tb_state.pop("name", None)
                     if name:
@@ -2507,6 +2637,24 @@ def index():
     mon_container.set_visibility(False)
     mark("Serial Monitor")
 
+    # ---- Karte Patterngenerator (Version 1.39): wird erst beim ersten Oeffnen aufgebaut, die Arbeitsmappe gibt es nur einmal
+    patt_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: hidden; flex-wrap: nowrap")  # v1.39
+    patt_container.set_visibility(False)  # v1.39
+    patt_state = {"view": None}  # v1.39
+
+    def build_patt():  # v1.39
+        """Arbeitsmappe des Patterngenerators oeffnen (einmal je Programmlauf, dauert einige Sekunden) und die Tabelle anzeigen"""
+        with patt_container:  # v1.39
+            try:  # v1.39
+                from headless.headless_pattgen import HeadlessPatternGeneratorPage  # v1.39  erst hier: nach dem Laden der Excel-Schicht
+                from _web import web_pattgen  # v1.39
+                if _PATT["page"] is None:  # v1.39
+                    _PATT["page"] = HeadlessPatternGeneratorPage(ctrl)  # v1.39
+                patt_state["view"] = web_pattgen.build(ctrl, _PATT["page"], lambda: font_scales(ctrl)["grid"])  # v1.39
+            except Exception:  # noqa: BLE001  # v1.39
+                logger.exception("Der Patterngenerator konnte nicht aufgebaut werden")  # v1.39
+                ui.label("Der Patterngenerator konnte nicht aufgebaut werden. Einzelheiten stehen im Protokoll (Hilfe \u2192 Logfile anzeigen).").classes("text-negative")  # v1.39
+
     # ---- Einstellungsseiten (aus MacroDef/MacroParamDef erzeugt): Programm, ProgGenerator, ARDUINO
     from _web import web_params
     from _web import web_access                                  # Passwort fuer den Zugriff aus dem Netz (auf der Seite Programm Einstellungen)
@@ -2570,12 +2718,15 @@ def index():
 
     def ensure_built(tab_name):
         """Seite beim ersten Oeffnen aufbauen (Einstellungsseiten, Farb Test); die Behaelter sind schon da"""
-        if tab_name in built or not (tab_name == "farb" or tab_name in settings_defs):
+        if tab_name in built or not (tab_name in ("farb", "patt") or tab_name in settings_defs):  # v1.39
+        # if tab_name in built or not (tab_name == "farb" or tab_name in settings_defs):  # v1.39 (ersetzt)
             return
         built.add(tab_name)
         t_tab = time.monotonic()
         if tab_name == "farb":
             build_farb()
+        elif tab_name == "patt":  # v1.39
+            build_patt()  # v1.39
         else:
             build_settings(tab_name)
         logger.info("Seite '%s' aufgebaut in %.1f s", tab_name, time.monotonic() - t_tab)
@@ -2607,13 +2758,17 @@ def index():
                 return
             if answer:
                 cfg_page.save()
-        if new_tab not in built and (new_tab == "farb" or new_tab in settings_defs):
+        if new_tab not in built and (new_tab in ("farb", "patt") or new_tab in settings_defs):  # v1.39
+        # if new_tab not in built and (new_tab == "farb" or new_tab in settings_defs):  # v1.39 (ersetzt)
             ui.notify("Die Seite wird aufgebaut ...", timeout=4000)
             await asyncio.sleep(0.15)                          # die Meldung noch senden, bevor der Aufbau den Server blockiert
         ensure_built(new_tab)
         tab_state["cur"] = new_tab
         pg_container.set_visibility(new_tab == "pg")
         farb_container.set_visibility(new_tab == "farb")
+        patt_container.set_visibility(new_tab == "patt")  # v1.39
+        if new_tab == "patt" and old_tab != "patt" and patt_state["view"] is not None:  # v1.39
+            patt_state["view"].refresh()  # v1.39  Tabelle und Blattreiter auffrischen
         mon_container.set_visibility(new_tab == "mon")
         for tab_name, container in settings_containers.items():
             container.set_visibility(new_tab == tab_name)

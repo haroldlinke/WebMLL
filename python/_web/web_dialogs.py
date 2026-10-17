@@ -1,4 +1,14 @@
-# Datei-Version: 1.04 (2026-10-15) - web_dialogs.py
+# Datei-Version: 1.05 (2026-10-17) - web_dialogs.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_dialogs.py
+# Path:           _web/web_dialogs.py
+# Version:        1.05
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.05  2026-10-17  redirect_messagebox(): tkinter.messagebox im Browser anzeigen (Patterngenerator); davor bis 1.04 nicht erfasst
+# ----------------------------------------------------------------------------------------------
 """Web-Dialoge fuer MsgBox und InputBox (NiceGUI) mit Bruecke aus dem Worker-Thread.
 
 Prinzip: Die Makros (uebersetzter VBA-Code) laufen in einem Worker-Thread. Ruft dort Code
@@ -583,3 +593,41 @@ def install_forms(F00):
     from _web import web_form_comport
     web_form_comport.install_instance(F00)
     logger.info("Web-Formulare installiert (DialogGuide1, Description, Connector, Select_Typ_DCC, Select_Typ_SX, Options, Select_COM_Port)")
+
+
+# tkinter.messagebox.* wird im Betrieb ohne Tk nur ins Protokoll geschrieben (siehe no_tk.py). Der Patterngenerator meldet damit Fehler
+# an den Anwender (zum Beispiel "Cursor outside the table"). Fuer die Dauer einer Aktion im Worker-Thread werden die Funktionen auf MsgBox
+# umgeleitet (Browser-Dialog); danach stellt redirect_messagebox(False) die urspruenglichen Funktionen wieder her.
+_mb_original: dict = {}  # v1.05
+MB_NAMES = ("showinfo", "showwarning", "showerror", "askyesno", "askokcancel", "askretrycancel", "askquestion", "askyesnocancel")  # v1.05
+
+
+def redirect_messagebox(enabled: bool) -> None:  # v1.05
+    import tkinter.messagebox as mb  # v1.05
+    import ExcelAPI.XLA_Application as X02  # v1.05
+    if not _mb_original:  # v1.05
+        for name in MB_NAMES:  # v1.05
+            _mb_original[name] = getattr(mb, name)  # v1.05
+    if not enabled:  # v1.05
+        for name, fn in _mb_original.items():  # v1.05
+            setattr(mb, name, fn)  # v1.05
+        return  # v1.05
+
+    def show(icon):  # v1.05
+        def box(title=None, message=None, **kwargs):  # v1.05
+            X02.MsgBox(str(message), vbOKOnly + icon, str(title or ""))  # v1.05
+            return "ok"  # v1.05
+        return box  # v1.05
+
+    def ask(buttons, convert):  # v1.05
+        def box(title=None, message=None, **kwargs):  # v1.05
+            return convert(X02.MsgBox(str(message), buttons + 32, str(title or "")))  # v1.05
+        return box  # v1.05
+    setattr(mb, "showinfo", show(64))  # v1.05
+    setattr(mb, "showwarning", show(48))  # v1.05
+    setattr(mb, "showerror", show(16))  # v1.05
+    setattr(mb, "askyesno", ask(vbYesNo, lambda r: r == vbYes))  # v1.05
+    setattr(mb, "askokcancel", ask(vbOKCancel, lambda r: r == vbOK))  # v1.05
+    setattr(mb, "askretrycancel", ask(vbRetryCancel, lambda r: r == vbRetry))  # v1.05
+    setattr(mb, "askquestion", ask(vbYesNo, lambda r: "yes" if r == vbYes else "no"))  # v1.05
+    setattr(mb, "askyesnocancel", ask(vbYesNoCancel, lambda r: True if r == vbYes else (False if r == vbNo else None)))  # v1.05

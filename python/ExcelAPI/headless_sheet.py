@@ -1,4 +1,14 @@
-# Datei-Version: 1.00 (2026-10-12) - headless_sheet.py
+# Datei-Version: 1.01 (2026-10-17) - headless_sheet.py
+# ----------------------------------------------------------------------------------------------
+# Name:           headless_sheet.py
+# Path:           ExcelAPI/headless_sheet.py
+# Version:        1.01
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-17  getColorAt/setColorAt: Zellfarben fuer den Patterngenerator (bisher No-Op); davor 1.00 (2026-10-12), nicht erfasst
+# ----------------------------------------------------------------------------------------------
 """HeadlessSheet: GUI-freier Ersatz für die von XLA_Application.py benutzte Teilmenge
 der tksheet-7-Schnittstelle (Datenhaltung, Spans, Highlights, versteckte Zeilen, Höhen).
 
@@ -533,6 +543,17 @@ class HeadlessSheet:
 
     def get_highlighted_cells(self, **kw):
         return dict(self._cell_hl)
+
+    # Zellfarben wie die Erweiterung des Tk-Originals (tksheet.getColorAt / setColorAt, 0-basiert): Hintergrundfarbe "#rrggbb" oder None.
+    # Der Patterngenerator bestimmt LED-Werte teilweise aus der Farbe einer Zelle (Interior.Color).
+    def getColorAt(self, row, col):  # v1.01
+        hl = self._cell_hl.get((row, col)) or self._row_hl.get(row)  # v1.01
+        return hl.bg if hl is not None and hl.bg else None  # v1.01
+
+    def setColorAt(self, row, col, color):  # v1.01
+        self._touch()  # v1.01
+        old = self._cell_hl.get((row, col))  # v1.01
+        self._cell_hl[(row, col)] = Highlight(color or None, old.fg if old else None, old.font if old else None)  # v1.01
 
     def get_highlighted_rows(self, **kw):
         return dict(self._row_hl)

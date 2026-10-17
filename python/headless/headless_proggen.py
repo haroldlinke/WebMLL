@@ -1,4 +1,14 @@
-# Datei-Version: 1.07 (2026-10-15) - headless_proggen.py
+# Datei-Version: 1.08 (2026-10-17) - headless_proggen.py
+# ----------------------------------------------------------------------------------------------
+# Name:           headless_proggen.py
+# Path:           headless/headless_proggen.py
+# Version:        1.08
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.08  2026-10-17  Web-Formulare Select_ProgGen_Dest_Form und Select_ProgGen_Src_Form (Export/Import des Patterngenerators) installieren; davor bis 1.07 (2026-10-15), nicht erfasst
+# ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Prog_GeneratorPage: baut die Arbeitsmappe "ProgGenerator".
 
 Entspricht dem Teil von Prog_GeneratorPage.__init__, der das Workbook anlegt (ohne Frames,
@@ -111,6 +121,8 @@ class HeadlessProgGeneratorPage:
             try:
                 from _web import web_dialogs
                 web_dialogs.install_forms(F00)     # Web-Versionen der Formulare des gefuehrten Dialogs
+                from _web import web_form_exchange  # v1.08  # v1.08
+                web_form_exchange.install_forms(F00, controller)  # v1.08  Zeilenauswahl fuer Export/Import des Patterngenerators  # v1.08
             except Exception:                       # noqa: BLE001
                 logger.exception("Web-Formulare konnten nicht installiert werden")
         F00.init_UserForms = _init_userforms_headless

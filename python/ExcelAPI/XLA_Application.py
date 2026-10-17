@@ -1,4 +1,17 @@
-# Datei-Version: 1.00 (2026-10-12) - XLA_Application_headless.py
+# Datei-Version: 1.04 (2026-10-17) - XLA_Application.py
+# ----------------------------------------------------------------------------------------------
+# Name:           XLA_Application.py
+# Path:           ExcelAPI/XLA_Application.py
+# Version:        1.04
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-17  getSelectedRow/getSelectedColumn liefern Datenindizes (Selection.Row und Selection.Column waren bei ausgeblendeten Zeilen/Spalten verschoben); davor 1.00 (2026-10-12), nicht erfasst
+#   1.02  2026-10-17  setSelectedCells rechnet Datenindizes in angezeigte um (CRange.Select() setzte die Auswahl bei ausgeblendeten Zeilen zu tief)
+#   1.03  2026-10-17  Shapes: Iteration ueber eine Momentaufnahme (Delete() in der Schleife liess jede zweite Form stehen: alte Balken blieben sichtbar)
+#   1.04  2026-10-17  Calculate(): Calc_Worksheet auch bei EnableEvents = False (Excel rechnet immer); davor blieben die berechneten Zellen des Patterngenerators nach Makros mit abgeschalteten Ereignissen veraltet, z. B. beim Import in ein neues Blatt
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Workbook
@@ -1721,6 +1734,23 @@ class CWorksheet(object):
         self.moveShapesHorizontal(top_left_cell_column=col+1, deltaX=col_data["new_size"]-col_data["old_size"])
         
     def Calculate(self):
+        # Excel berechnet die Formeln vollstaendig und loest die Abhaengigkeiten selbst auf, auch bei EnableEvents = False (dann entfaellt nur
+        # das Ereignis Worksheet_Calculate). Calc_Worksheet wertet die Formeln des Patterngenerators in fester Reihenfolge in EINEM Durchgang
+        # aus; nach vielen gleichzeitigen Aenderungen (Import eines Makros, Laden) ist das Ergebnis dann noch nicht stabil. Deshalb wird
+        # wiederholt, bis sich in den Zellen nichts mehr aendert (hoechstens 6 Durchgaenge).
+        if self.Workbook is None or self.Workbook.Name != "PatternWorkbook":        # Programm Generator: unveraendert (grosse Tabellen, keine Formeln)  # v1.04
+            self.EventWScalculate()  # v1.04
+            return  # v1.04
+        events = Application.EnableEvents  # v1.04
+        Application.EnableEvents = False  # v1.04
+        try:  # v1.04
+            for _ in range(6):  # v1.04
+                before = repr(self.tksheet.data)  # v1.04
+                Calc_Worksheet(self)  # v1.04
+                if repr(self.tksheet.data) == before:  # v1.04
+                    break  # v1.04
+        finally:  # v1.04
+            Application.EnableEvents = events  # v1.04
         self.EventWScalculate()
         
     def Delete(self):
@@ -1952,7 +1982,8 @@ class CWorksheet(object):
         if len(currently_selected) == 0:
             return 0
         else:
-            return currently_selected[0]
+            # return currently_selected[0]  # v1.01 (ersetzt: angezeigter Index, bei ausgeblendeten Zeilen falsch)
+            return self.displayed_row_to_data(currently_selected[0])  # v1.01
         
     def getSelectedCell(self):
         currently_selected = list(self.tksheet.get_selected_cells())
@@ -1981,7 +2012,8 @@ class CWorksheet(object):
             column = currently_selected.column
             type_ = currently_selected.type_               
             if type_ in ["row", "column", "cell"]:
-                return column
+                # return column  # v1.01 (ersetzt: angezeigter Index, bei ausgeblendeten Spalten falsch)
+                return self.displayed_column_to_data(column)  # v1.01
             else:
                 return None
         else:
@@ -1989,8 +2021,16 @@ class CWorksheet(object):
         
     def setSelectedCells(self, r1, r2, c1, c2):
         try:
-            self.tksheet.set_currently_selected(r1, c1)
-            self.tksheet.create_selection_box(r1, c1, r2, c2)
+            # self.tksheet.set_currently_selected(r1, c1)  # v1.02 (ersetzt: Datenindizes wurden als angezeigte Indizes benutzt)
+            # self.tksheet.create_selection_box(r1, c1, r2, c2)  # v1.02 (ersetzt)
+            d1, d2 = self.data_row_to_displayed(r1), self.data_row_to_displayed(r2)  # v1.02
+            d1, d2 = (r1 if d1 is None else d1), (r2 if d2 is None else d2)           # nichts ausgeblendet: Index bleibt  # v1.02
+            try:  # v1.02
+                e1, e2 = self.data_column_to_displayed(c1), self.data_column_to_displayed(c2)  # v1.02
+            except ValueError:  # v1.02
+                e1, e2 = c1, c2  # v1.02
+            self.tksheet.set_currently_selected(d1, e1)  # v1.02
+            self.tksheet.create_selection_box(d1, e1, d2, e2)  # v1.02
         except BaseException as e:
             logger.debug(e, exc_info=True) 
             logger.debug("setSelectedCells %s,%s,%s,%s", r1, r2, c1, c2)            
@@ -3257,20 +3297,23 @@ class CShapeList(object):
         return None
     
     def __iter__(self):
-    #returning __iter__ object
-        self.currentidx = 1
-        self.currentshape = self.getShape(self.currentidx)
-        self.stopiteration=False
-        return self
-    
-    def __next__(self):
-        self.currentshape = self.getShape(self.currentidx)
-        if self.stopiteration or self.currentshape==None:
-            raise StopIteration 
-        self.currentidx += 1
-        if self.currentidx > len(self.ws.shapelist):
-            self.stopiteration=True       
-        return self.currentshape
+        # Momentaufnahme der Formen: Delete() innerhalb der Schleife (M03.Del_Analog_Trend_Objects) darf keine Form uebergehen
+        return iter(list(self.ws.shapelist))  # v1.03
+    # def __iter__(self):  # v1.03 (ersetzt)
+    # #returning __iter__ object  # v1.03 (ersetzt)
+    #     self.currentidx = 1  # v1.03 (ersetzt)
+    #     self.currentshape = self.getShape(self.currentidx)  # v1.03 (ersetzt)
+    #     self.stopiteration=False  # v1.03 (ersetzt)
+    #     return self  # v1.03 (ersetzt)
+    #
+    # def __next__(self):  # v1.03 (ersetzt)
+    #     self.currentshape = self.getShape(self.currentidx)  # v1.03 (ersetzt)
+    #     if self.stopiteration or self.currentshape==None:  # v1.03 (ersetzt)
+    #         raise StopIteration  # v1.03 (ersetzt)
+    #     self.currentidx += 1  # v1.03 (ersetzt)
+    #     if self.currentidx > len(self.ws.shapelist):  # v1.03 (ersetzt)
+    #         self.stopiteration=True  # v1.03 (ersetzt)
+    #     return self.currentshape  # v1.03 (ersetzt)
 
 class CRangeList(list):
     def __init__(self, *args):

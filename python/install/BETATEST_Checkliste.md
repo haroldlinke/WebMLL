@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 1.07 (2026-10-15)*
+*Datei-Version: 1.10 (2026-10-17)*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -65,6 +65,21 @@ Trage das Ergebnis in die Tabelle am Ende ein.
 19. Zugriff von einem anderen Rechner: `http://raspberrypi.local:8080` (oder der Name/die IP deines Pi), Benutzer `mobaledlib`, Passwort `mobaledlib`
 20. Passwort ändern („Programm Einstellungen“ → „Zugriff über das Netz“) und neu anmelden; Namen des Pi ändern
 21. Menü Datei → „Raspberry Pi herunterfahren“ und „neu starten“; nach dem Neustart: Läuft das Programm von selbst?
+
+**H. Patterngenerator**
+
+22. **Patterngenerator** (Reiter hinter „Programm Generator“): Öffnet er sich (einige Sekunden), und sind die Spalten lesbar? Liegen die Balken auf den „x“-Zellen, auch nach einem Neustart?
+23. Patterngenerator: Zahl in **E5** ändern (zum Beispiel 3 auf 8): Wächst die LED-Tabelle, aktualisieren sich Ergebnis und Balken? Ein „x“ setzen, mit **Entf** löschen, mit **Strg+C** und **Strg+V** kopieren und einfügen.
+24. Patterngenerator: Markierte Zelle in der LED-Tabelle (auch in der 3. bis 8. LED-Zeile), **+** und **−**: Wird eine Spalte eingefügt bzw. gelöscht, und bleiben keine alten Balken stehen? Zelle außerhalb der Tabelle markieren: Kommt die Meldung?
+25. Patterngenerator: **Neues Blatt** (Name eingeben, neuer Reiter), Haken **RGB LED**, **Aktualisieren**, **Neu berechnen**, Rechtsklick-Menü. Danach **Beenden → Speichern**, neu starten: Sind die Blätter noch da?
+
+26. Patterngenerator → **Export zu ProgGen**: Springt der Browser zum Programm Generator, und erscheint das gelbe Band? In eine Zeile klicken, **OK**: Steht das Makro (`PatternT…`) in der Zeile, mit Symbol und Name? Mit „Anschließend zurück“: Geht es zum Patterngenerator zurück? Ohne Makroname, mit leerer LED-Tabelle oder mit Fehler in der Dauer-Zeile: Kommt die Meldung, ohne dass das Band erscheint? Mit „gleich zum Arduino schicken“ (Arduino verbunden): Läuft das Fenster „Kompilieren und Hochladen“?
+27. Patterngenerator → **Import von ProgGen**: Zeile mit einem Pattern-Makro anklicken, **OK**, die Frage nach dem Blatt beantworten: Stimmt die Tabelle im Patterngenerator mit dem Muster überein? Zeile ohne Pattern-Makro anklicken: Kommt eine Meldung? **Abbrechen**: Geht es zum Patterngenerator zurück? Danach im Programm Generator wie gewohnt weiterarbeiten (Zeile bearbeiten, Programm erzeugen): Alles wie vorher?
+
+**I. Symbole und Testtasten** (Programm Generator, Blatt DCC)
+
+28. Neue Zeile anlegen (Adresse, Typ „AnAus“, Makro mit Symbol, zum Beispiel per Doppelklick auf „Name“): Erscheinen **Symbol und Testknopf**? Testknopf anklicken: Schaltet er um (Farbe und Ziffer wechseln), und wird der Befehl ausgeführt? Zeilen einfügen, löschen und verschieben: Bleiben Symbole und Knöpfe bei ihrer Zeile?
+29. Menü Tabelle → **Symbole und Testtasten neu aufbauen (Reparatur)**: Sind danach alle Symbole und Testknöpfe wieder da, an der richtigen Zeile und nicht doppelt? Auf einem **langsamen Rechner**: Bleibt die Tabelle nach einer Änderung lange weiß? Dann bitte das Protokoll mit `MLL_DEBUG_TIMING=1` schicken (Anleitung, Fehlersuche 9.1).
 
 ## 4. Ergebnis
 
