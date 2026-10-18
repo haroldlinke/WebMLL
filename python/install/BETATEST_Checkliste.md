@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 1.10 (2026-10-17)*
+*Datei-Version: 1.11 (2026-10-18), gilt für webMobaLedLib 1.57*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -80,6 +80,11 @@ Trage das Ergebnis in die Tabelle am Ende ein.
 
 28. Neue Zeile anlegen (Adresse, Typ „AnAus“, Makro mit Symbol, zum Beispiel per Doppelklick auf „Name“): Erscheinen **Symbol und Testknopf**? Testknopf anklicken: Schaltet er um (Farbe und Ziffer wechseln), und wird der Befehl ausgeführt? Zeilen einfügen, löschen und verschieben: Bleiben Symbole und Knöpfe bei ihrer Zeile?
 29. Menü Tabelle → **Symbole und Testtasten neu aufbauen (Reparatur)**: Sind danach alle Symbole und Testknöpfe wieder da, an der richtigen Zeile und nicht doppelt? Auf einem **langsamen Rechner**: Bleibt die Tabelle nach einer Änderung lange weiß? Dann bitte das Protokoll mit `MLL_DEBUG_TIMING=1` schicken (Anleitung, Fehlersuche 9.1).
+
+**J. PGF-Dateien und LED-Zahlen** (Programm Generator)
+
+30. **PGF-Datei laden**, besonders eine mit eingebundenen Blättern (Include) und mehreren LED-Kanälen: Steht kein Blatt mit der Vorlagenzeile „LED auf dem Mainboard“ in Zeile 3, außer die Datei bringt sie selbst mit? Stehen in Zeile 1 des einbindenden Blatts (Knopf „Alle Spalten“) die LED-Zahlen je Kanal einschließlich der eingebundenen Blätter, und stimmen sie mit der Excel-Version überein? Passt `LEDS_PER_CHANNEL` in der erzeugten `LEDs_AutoProg.h` dazu?
+31. Knopf **„Alle Spalten“** (Werkzeugleiste): Werden die Spalten hinter Q eingeblendet, und blendet „Spalten bis Q“ sie wieder aus?
 
 ## 4. Ergebnis
 

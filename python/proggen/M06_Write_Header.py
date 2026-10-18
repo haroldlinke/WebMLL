@@ -1,3 +1,14 @@
+# Datei-Version: 1.01 (2026-10-18) - M06_Write_Header.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M06_Write_Header.py
+# Path:           proggen/M06_Write_Header.py
+# Version:        1.01
+# Last Update:    2026-10-18
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-18  LED Kanal von Zeilen ohne Eintrag: Previous_LEDChannel als Modulvariable von M06 (global in Create_Header_Entry und ProcessSheet), Bedingung auf den Zellentext statt Trim(Val()) (nie leer); LED_to_Var in eingebundenen Blaettern bekam Kanal 0 und dessen Offset (LED2Var_Tab stimmte nicht mit Excel); davor Original-Port, nicht erfasst
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -125,6 +136,7 @@ Start_LED_Channel = vbObjectInitialize((M02.LED_CHANNELS - 1,), Long)
 LEDs_per_Channel = vbObjectInitialize((M02.LED_CHANNELS - 1,), Long)
 Max_Channels = Long()
 LEDs_per_ChannelList = String()
+Previous_LEDChannel = 0               # LED Kanal der zuletzt verarbeiteten Zeile (Zeilen ohne Eintrag in der Spalte LED Kanal benutzen ihn), 13.02.2025 Juergen  # v1.01
 
 DayAndNightTimer = String()
 
@@ -665,7 +677,7 @@ def Create_Start_Value_Entry(r):
 #--------------------------------------------------------------------------------------------
 def Create_Header_Entry(r, AddrStr, IsRM, LEDOffset, LEDsInUse, MaxLEDNrInSheet):
 #--------------------------------------------------------------------------------------------
-    global LEDNr, ConfigTxt, CurrentCounterId, Store_ValuesTxt, Store_Val_Written, InChTxt, Ext_AddrTxt, Channel,Start_Values,AddrComment, Channel
+    global LEDNr, ConfigTxt, CurrentCounterId, Store_ValuesTxt, Store_Val_Written, InChTxt, Ext_AddrTxt, Channel,Start_Values,AddrComment, Channel, Previous_LEDChannel  # v1.01
     
     _fn_return_value = False
     ADDR_BORDER = '           { '
@@ -747,7 +759,9 @@ def Create_Header_Entry(r, AddrStr, IsRM, LEDOffset, LEDsInUse, MaxLEDNrInSheet)
         else:
             Channel_or_define = Channel
             
-    if Trim(P01.val(P01.Cells(r, M25.LED_Cha_Col))) == "": # Then                                  ' 13.02.2025 Juergen  fix ToDo's #27
+    # Trim(Val(Zelle)) ist nie leer (Val('') ist 0): Zeilen ohne LED Kanal bekamen immer Kanal 0 und den Offset von Kanal 0 (z. B. LED_to_Var in einem eingebundenen Blatt)
+    # if Trim(P01.val(P01.Cells(r, M25.LED_Cha_Col))) == "": # Then                                  ' 13.02.2025 Juergen  fix ToDo's #27
+    if Trim(P01.Cells(r, M25.LED_Cha_Col)) == "": # Then                                  ' 13.02.2025 Juergen  fix ToDo's #27  # v1.01
         LEDs_Channel = Previous_LEDChannel
     else:
         LEDs_Channel = P01.val(P01.Cells(r, M25.LED_Cha_Col))
@@ -1218,6 +1232,7 @@ def CheckIncludeSheet(SheetName, row):
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: LEDsInUse - ByRef 
 def ProcessSheet(SheetName, firstSheet, addressOffset, LEDsOffset, LEDsInUse):
+    global Previous_LEDChannel  # v1.01
     _fn_return_value = None
     r = Long()
     sx = Boolean()
@@ -1225,7 +1240,8 @@ def ProcessSheet(SheetName, firstSheet, addressOffset, LEDsOffset, LEDsInUse):
     _fn_return_value = False
     # 20.10.23: Juergen fix #10763
     
-    M02a.Previous_LEDChannel = 0 # ' 13.02.2025 Juergen  fix ToDo's #27
+    # M02a.Previous_LEDChannel = 0 # ' 13.02.2025 Juergen  fix ToDo's #27  # v1.01 (ersetzt: die Variable steht jetzt in M06, M02a hatte eine eigene, die niemand las)
+    Previous_LEDChannel = 0 # ' 13.02.2025 Juergen  fix ToDo's #27  # v1.01
     for idx in vbForRange(0, M02.LED_CHANNELS - 1):
         MaxLEDNrInSheet[idx] = - 1
     if not M30.WorksheetExists(SheetName):

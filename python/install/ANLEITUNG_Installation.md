@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 2.38 (2026-10-17)*
+*Datei-Version: 2.40 (2026-10-18), gilt für webMobaLedLib 1.57*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -23,7 +23,7 @@ Diese Anleitung gilt für alle vier Systeme. **Eilige lesen nur den Schnellstart
 |---|---|
 | **Windows 10/11** | Ordner `mobaledlib\python\install` öffnen, oben in die Adressleiste des Explorers `cmd` tippen und Enter drücken. Dort eingeben: `install_windows.bat /ide`. Windows fragt nach der Erlaubnis. Wird dabei Python neu installiert, **den PC neu starten** und den Befehl noch einmal eingeben. |
 | **Linux** (Mint, Debian, Ubuntu) | Terminal: `cd ~/mobaledlib/python/install` und dann `bash install_linux.sh --with-arduino-ide`. Danach einmal ab- und wieder anmelden. |
-| **macOS** (ab 10.13, noch wenig getestet) | Terminal: `cd ~/mobaledlib/python/install` und dann `bash install_mac.command --with-arduino-ide`. |
+| **macOS** (ab 10.13, wenig getestet, siehe Kapitel 4) | Terminal: `cd ~/mobaledlib/python/install` und dann `bash install_mac.command --with-arduino-ide`. |
 | **Raspberry Pi** | siehe unten |
 
 **Die Befehle zum Kopieren** (jeweils eine Zeile, im Terminal bzw. in der Eingabeaufforderung im Ordner `install`):
@@ -283,6 +283,8 @@ Minus) Platz.
   Makroauswahl“**, dann **Speichern**. Er gilt nur in Datenzeilen der Datenblätter, die Kopfzeilen bleiben unverändert.
 - **Kontextmenü** (Rechtsklick auf eine Zelle): Zelle bearbeiten (F2), Kopieren (Strg+C), Ausschneiden (Strg+X), Einfügen (Strg+V), Als Zeilen einfügen, Löschen (Entf), Farbe setzen, Farbe
   entfernen. Sind mehrere Zeilen markiert und man klickt in eine davon, wirken Kopieren, Ausschneiden und Löschen auf die markierten Zeilen.
+- **Spalten hinter Q:** Datenblätter zeigen nur die Spalten bis Q. Der Knopf **„Alle Spalten“** (Werkzeugleiste, hinter „Zeile färben“) blendet auch die Spalten dahinter ein, zum Beispiel die
+  LED-Zahlen der Kanäle 1 bis 9 in Zeile 1. **„Spalten bis Q“** schaltet zurück. Die Einstellung gilt bis zum Beenden des Programms.
 
 ### 2.10 Der Patterngenerator
 
@@ -347,6 +349,8 @@ Beispiele laden und speichern, Spezialmodi und den Multiplexer.
 
 **Voraussetzungen:** macOS 10.13 oder neuer, Python 3.10 oder neuer (das von macOS mitgelieferte Python ist zu alt), Internet. **macOS 10.11 und 10.12 gehen
 nicht:** Für diese Systeme gibt es keine fertigen Pakete (zum Beispiel `orjson`), die Installation der Python-Pakete scheitert.
+
+**Getestet:** MacBook Air (2024) mit Apple M3, 8 GB RAM und macOS 27.0 („Golden Gate“) mit Version 1.38 des Programms: Der Tester meldet, dass es funktioniert.
 
 **Installation**
 

@@ -1,9 +1,9 @@
-# Datei-Version: 1.52 (2026-10-17) - webmobaledlib.py
+# Datei-Version: 1.58 (2026-10-18) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        1.52
-# Last Update:    2026-10-17
+# Version:        1.58
+# Last Update:    2026-10-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -21,6 +21,12 @@
 #   1.50  2026-10-17  Programmgenerator: Testknoepfe und Symbole nach einer gezielten Aktualisierung neu zeichnen (refreshCells fuer Spalten mit _tb/_img); Fehler aus 1.49
 #   1.51  2026-10-17  Diagnose MLL_DEBUG_SHAPES (Symbole und Testtasten im Protokoll)
 #   1.52  2026-10-17  Programmgenerator: neue Symbole und Testtasten wieder sichtbar (volle Aktualisierung, wenn sie dazukommen oder wegfallen), Neuaufbau der Testtasten legt Knoepfe an (Update_TestButtons redraw)
+#   1.53  2026-10-17  Laden einer PGF-Datei: LED-Zahlen und Start-LED-Nummern aller Blaetter berechnen (M20 1.01, M17_Import_old_Data 1.01)
+#   1.54  2026-10-17  Laden einer PGF-Datei: Vorlagenzeile RGB_Heartbeat im neuen Blatt loeschen (M18_Save_Load 1.01, XLA_Application 1.05)
+#   1.55  2026-10-17  LED-Zahl: Zeilen mit negativer LED-Zahl (Next_LED(-n)) merken den Hoechststand (M20 1.02)
+#   1.56  2026-10-17  Programm Generator: Knopf Alle Spalten blendet bei Datenblaettern auch die Spalten hinter Q ein und aus
+#   1.57  2026-10-18  Release-Stand: Laden einer Pico-Konfiguration loescht die Vorlagenzeile (M18a_Load_PicoConfig 1.01)
+#   1.58  2026-10-18  Header-Erzeugung: LED Kanal der vorherigen Zeile fuer Zeilen ohne LED Kanal (M06_Write_Header 1.01), LED2Var_Tab wie in Excel
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -531,7 +537,13 @@ def font_scales(ctrl) -> dict:
             "grid": factor("FontNormal"), "small": factor("FontSmall"), "name": name or "Arial"}
 
 
-VERSION = "1.52 (2026-10-17)"  # v1.52
+VERSION = "1.58 (2026-10-18)"  # v1.58
+# VERSION = "1.57 (2026-10-18)"  # v1.58 (ersetzt)
+# VERSION = "1.56 (2026-10-17)"  # v1.57 (ersetzt)
+# VERSION = "1.55 (2026-10-17)"  # v1.56 (ersetzt)
+# VERSION = "1.54 (2026-10-17)"  # v1.55 (ersetzt)
+# VERSION = "1.53 (2026-10-17)"  # v1.54 (ersetzt)
+# VERSION = "1.52 (2026-10-17)"  # v1.53 (ersetzt)
 # VERSION = "1.51 (2026-10-17)"  # v1.52 (ersetzt)
 # VERSION = "1.50 (2026-10-17)"  # v1.51 (ersetzt)
 # VERSION = "1.49 (2026-10-17)"  # v1.50 (ersetzt)
@@ -933,7 +945,7 @@ def index():
     import proggen.M27_Sheet_Icons as M27
 
     wb = page.workbook
-    state = {"ws": None, "sheets": {}, "busy": False, "move_note": None}
+    state = {"ws": None, "sheets": {}, "busy": False, "move_note": None, "all_cols": False}   # all_cols: Datenblaetter mit allen Spalten (Knopf "Alle Spalten")  # v1.56
 
     def dismiss_move_note():
         n = state.get("move_note")
@@ -1273,7 +1285,10 @@ def index():
         return None
 
     def last_column(ws):
-        """Anzahl der angezeigten Spalten eines Datenblatts (bis Spalte T); sonst alle."""
+        """Anzahl der angezeigten Spalten eines Datenblatts (bis Spalte Q, M30.LastColumnDatSheet); sonst alle.
+        Mit dem Knopf "Alle Spalten" (state["all_cols"]) werden bei Datenblaettern ebenfalls alle Spalten angezeigt."""
+        if state.get("all_cols"):  # v1.56
+            return None  # v1.56
         try:
             if M28.Is_Data_Sheet(ws):                 # erst pruefen: Make_sure_... meldet bei Nicht-Datenblaettern einen Fehler
                 M25.Make_sure_that_Col_Variables_match(ws)
@@ -2624,6 +2639,17 @@ def index():
                 else:
                     ui.label(label).classes("text-xs text-center mll-tool-text").style("white-space: pre-line")
             b.tooltip(M09.Get_Language_Str(tooltip))
+        # Datenblaetter zeigen nur die Spalten bis Q (M30.LastColumnDatSheet). Dieser Knopf blendet auch die Spalten dahinter ein
+        # (zum Beispiel die LED-Zahlen der Kanaele 1 bis 9 in Zeile 1) und wieder aus.
+        def toggle_all_cols():  # v1.56
+            state["all_cols"] = not state["all_cols"]  # v1.56
+            cols_label.set_text("Spalten\nbis Q" if state["all_cols"] else "Alle\nSpalten")  # v1.56
+            cols_tip.set_text("Nur die Spalten bis Q anzeigen" if state["all_cols"] else "Auch die Spalten hinter Q anzeigen (zum Beispiel die LED-Zahlen der Kanäle 1 bis 9 in Zeile 1)")  # v1.56
+            if state.get("ws") is not None:  # v1.56
+                show(state["ws"])                          # andere Spalten: die Tabelle wird neu aufgebaut  # v1.56
+        with ui.button(on_click=toggle_all_cols).props("flat no-caps dense").classes("items-center mll-tool") as b_cols:  # v1.56
+            cols_label = ui.label("Alle\nSpalten").classes("text-xs text-center mll-tool-text").style("white-space: pre-line")  # v1.56
+            cols_tip = ui.tooltip("Auch die Spalten hinter Q anzeigen (zum Beispiel die LED-Zahlen der Kanäle 1 bis 9 in Zeile 1)")  # v1.56
     apply_icon_size()
 
     pg_container.__exit__(None, None, None)

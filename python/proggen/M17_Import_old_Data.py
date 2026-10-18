@@ -1,3 +1,14 @@
+# Datei-Version: 1.01 (2026-10-17) - M17_Import_old_Data.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M17_Import_old_Data.py
+# Path:           proggen/M17_Import_old_Data.py
+# Version:        1.01
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-17  Remove_Selection_in_Sheet: Sh.Visible in (xlSheetVisible, True) (Visible liefert True/False); davor Original-Port, nicht erfasst
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -168,7 +179,8 @@ def Import_from_Old_Version_CallBack(Do_Import, Import_FromAllSheets):
 
 def Remove_Selection_in_Sheet(Sh):
     #----------------------------------------------------
-    if M28.Is_Data_Sheet(Sh) and Sh.Visible == xlSheetVisible:
+    # if M28.Is_Data_Sheet(Sh) and Sh.Visible == xlSheetVisible:  # v1.01 (ersetzt)
+    if M28.Is_Data_Sheet(Sh) and Sh.Visible in (xlSheetVisible, True):  # v1.01
         # 25.04.20: Added: And Sh.Visible = xlSheetVisible
         Sh.Select()
         # VB2PY (UntranslatedCode) On Error Resume Next

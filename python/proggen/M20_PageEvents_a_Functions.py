@@ -1,3 +1,15 @@
+# Datei-Version: 1.02 (2026-10-17) - M20_PageEvents_a_Functions.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M20_PageEvents_a_Functions.py
+# Path:           proggen/M20_PageEvents_a_Functions.py
+# Version:        1.02
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-17  Update_All_Start_LedNr: Sh.Visible in (xlSheetVisible, True) (bisher wurde kein Blatt berechnet), Durchgang wiederholen bis Zeile 1 stabil ist (Include-Feature); davor Original-Port, nicht erfasst
+#   1.02  2026-10-17  Update_Start_LedNr: CellLinesSum(LEDs) statt CellLinesSum("") (Zeilen mit negativer LED-Zahl wie Next_LED(-1) merken den Hoechststand vor dem Abziehen: LED-Summe eines Blatts stimmte nicht mit Excel)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -217,10 +229,27 @@ def Update_All_Start_LedNr():
     # 29.12.2023: Juergen - keep active sheet on function exit
     OldScreenupdating = P01.Application.ScreenUpdating
     P01.Application.ScreenUpdating = False
-    for Sh in PG.ThisWorkbook.Sheets():
-        if M28.Is_Data_Sheet(Sh) and Sh.Visible == xlSheetVisible:  # 07.01.2025: Juergen - changes on invisible sheets are not allowed and must be ommitted
+    # Sh.Visible liefert in diesem Port True oder False, xlSheetVisible ist -1: beide Werte bedeuten sichtbar. Mit Sh.Visible == xlSheetVisible
+    # wurde kein Blatt berechnet (Update_All_Start_LedNr tat nach dem Laden einer PGF-Datei nichts).
+    Sheets = [Sh for Sh in PG.ThisWorkbook.Sheets() if M28.Is_Data_Sheet(Sh) and Sh.Visible in (xlSheetVisible, True)]  # 07.01.2025: Juergen - changes on invisible sheets are not allowed and must be ommitted  # v1.01
+    # Include feature: Ein eingebundenes Blatt liefert seine LED-Zahlen in Zeile 1 (SH_VARS_ROW). Steht es hinter dem einbindenden Blatt, ist seine
+    # Zeile 1 beim ersten Durchgang noch nicht berechnet. Deshalb wird wiederholt, bis sich in Zeile 1 aller Blaetter nichts mehr aendert.
+    for Pass in range(max(1, len(Sheets))):  # v1.01
+        Changed = False  # v1.01
+        for Sh in Sheets:  # v1.01
             Sh.Select()
+            M25.Make_sure_that_Col_Variables_match()  # v1.01
+            Before = [P01.Cells(M02.SH_VARS_ROW, Get_LED_Nr_Column(i)).Value for i in range(M02.LED_CHANNELS)]  # v1.01
             Update_Start_LedNr()
+            After = [P01.Cells(M02.SH_VARS_ROW, Get_LED_Nr_Column(i)).Value for i in range(M02.LED_CHANNELS)]  # v1.01
+            if Before != After:  # v1.01
+                Changed = True  # v1.01
+        if not Changed:  # v1.01
+            break  # v1.01
+    # for Sh in PG.ThisWorkbook.Sheets():  # v1.01 (ersetzt)
+    #     if M28.Is_Data_Sheet(Sh) and Sh.Visible == xlSheetVisible:  # v1.01 (ersetzt)
+    #         Sh.Select()  # v1.01 (ersetzt)
+    #         Update_Start_LedNr()  # v1.01 (ersetzt)
     # 29.12.2023: Juergen - keep active sheet on function exit
     P01.Application.ScreenUpdating = OldScreenupdating
 
@@ -332,7 +361,8 @@ def Update_Start_LedNr(FirstRun=True):
                         LEDNr[LEDs_Channel] = LEDNr(LEDs_Channel) + IncLEDNr
                 else:
                     # 20.04.23: Hardi: Additional Max calc
-                    CellLinesS = M30.CellLinesSum("") #proggen.clsExtensionMacro.LEDs)
+                    CellLinesS = M30.CellLinesSum(LEDs)  # Summe der LEDs der Zeile (bisher CellLinesSum(""): immer 0, der Hoechststand vor Next_LED(-n) ging verloren)  # v1.02
+                    # CellLinesS = M30.CellLinesSum("") #proggen.clsExtensionMacro.LEDs)  # v1.02 (ersetzt)
                     if CellLinesS < 0:
                         if LEDNr(LEDs_Channel) > M06.MaxLEDNr(LEDs_Channel):
                             M06.MaxLEDNr[LEDs_Channel] = LEDNr(LEDs_Channel)

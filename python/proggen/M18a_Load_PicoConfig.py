@@ -1,3 +1,14 @@
+# Datei-Version: 1.01 (2026-10-18) - M18a_Load_PicoConfig.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M18a_Load_PicoConfig.py
+# Path:           proggen/M18a_Load_PicoConfig.py
+# Version:        1.01
+# Last Update:    2026-10-18
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-18  __Copy_and_Clear_Sheet: Vorlagenzeilen des neuen Blatts ganz loeschen (EntireRow.ClearContents); die Zeile RGB_Heartbeat(#LED) blieb beim Laden einer Pico-Konfiguration im neuen Blatt stehen; davor Original-Port, nicht erfasst
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -140,7 +151,10 @@ def __Copy_and_Clear_Sheet(SheetName, Page_ID):
         First_Row = M02.FirstDat_Row
         while P01.Cells(First_Row, 1).EntireRow.Hidden:
             First_Row = First_Row + 1
-        P01.Rows(str(M02.FirstDat_Row) + ':' + str(P01.ActiveSheet.get_LastUsedRow())).ClearContents()
+        # Rows(a:b) liefert in diesem Port nur die Spalte A: ClearContents liess die Vorlagenzeile "RGB_Heartbeat(#LED)" im neu angelegten Blatt stehen.
+        # EntireRow loescht ganze Zeilen wie in Excel (siehe M18_Save_Load 1.01).
+        P01.Rows(str(M02.FirstDat_Row) + ':' + str(P01.ActiveSheet.get_LastUsedRow())).EntireRow.ClearContents()  # v1.01
+        # P01.Rows(str(M02.FirstDat_Row) + ':' + str(P01.ActiveSheet.get_LastUsedRow())).ClearContents()  # v1.01 (ersetzt)
         fn_return_value = True
     return fn_return_value
 

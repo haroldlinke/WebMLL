@@ -1,8 +1,8 @@
-# Datei-Version: 1.04 (2026-10-17) - XLA_Application.py
+# Datei-Version: 1.05 (2026-10-17) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.04
+# Version:        1.05
 # Last Update:    2026-10-17
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -11,6 +11,7 @@
 #   1.02  2026-10-17  setSelectedCells rechnet Datenindizes in angezeigte um (CRange.Select() setzte die Auswahl bei ausgeblendeten Zeilen zu tief)
 #   1.03  2026-10-17  Shapes: Iteration ueber eine Momentaufnahme (Delete() in der Schleife liess jede zweite Form stehen: alte Balken blieben sichtbar)
 #   1.04  2026-10-17  Calculate(): Calc_Worksheet auch bei EnableEvents = False (Excel rechnet immer); davor blieben die berechneten Zellen des Patterngenerators nach Makros mit abgeschalteten Ereignissen veraltet, z. B. beim Import in ein neues Blatt
+#   1.05  2026-10-17  CRange.ClearContents: Bereich 1-basiert nach tksheet.span (0-basiert) umgerechnet, die erste Zeile und Spalte des Bereichs blieben stehen (Vorlagenzeile RGB_Heartbeat in geladenen Blaettern)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -3653,7 +3654,10 @@ class CRange(str):
     def ClearContents(self):
         if self.start == self.end:
             return
-        self.ws.tksheet.span(self.start[0], self.start[1],self.end[0], self.end[1]).clear()
+        # CRange zaehlt 1-basiert mit eingeschlossenem Ende, tksheet.span 0-basiert mit ausgeschlossenem Ende: Start - 1, Ende unveraendert.
+        # Bisher begann das Loeschen eine Zeile und eine Spalte zu spaet (die erste Zeile und die erste Spalte des Bereichs blieben stehen).
+        # self.ws.tksheet.span(self.start[0], self.start[1],self.end[0], self.end[1]).clear()  # v1.05 (ersetzt)
+        self.ws.tksheet.span(self.start[0] - 1, self.start[1] - 1, self.end[0], self.end[1]).clear()  # v1.05
         # for cell in self:
         #    cell.Value=""
             

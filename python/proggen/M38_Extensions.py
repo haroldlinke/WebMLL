@@ -496,6 +496,8 @@ def Add_Extension_Entry(Cmd):
     return fn_return_value, Cmd #*HL ByRef
 
 def Write_Header_File_Extension_Before_Config(fp):
+    return True # 3.5.0K
+    
     fn_return_value = None
     #Extension = clsExtension()
 

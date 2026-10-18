@@ -1,3 +1,14 @@
+# Datei-Version: 1.01 (2026-10-17) - M18_Save_Load.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M18_Save_Load.py
+# Path:           proggen/M18_Save_Load.py
+# Version:        1.01
+# Last Update:    2026-10-17
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-17  __Copy_and_Clear_Sheet: Vorlagenzeilen des neuen Blatts ganz loeschen (EntireRow.ClearContents); die Zeile RGB_Heartbeat(#LED) blieb in jedem beim Laden einer PGF-Datei angelegten Blatt stehen; davor Original-Port, nicht erfasst
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -268,7 +279,10 @@ def __Copy_and_Clear_Sheet(SheetName, Page_ID):
         First_Row = M02.FirstDat_Row
         while P01.Cells(First_Row, 1).EntireRow.Hidden:
             First_Row = First_Row + 1
-        P01.Rows(str(M02.FirstDat_Row) + ':' + str(P01.ActiveSheet.get_LastUsedRow())).ClearContents()
+        # Rows(a:b) liefert in diesem Port nur die Spalte A: ClearContents liess die Vorlagenzeile "RGB_Heartbeat(#LED)" in jedem neu angelegten Blatt
+        # stehen (jedes eingebundene Blatt zaehlte dadurch eine LED auf Kanal 0 zu viel). EntireRow loescht ganze Zeilen wie in Excel.
+        P01.Rows(str(M02.FirstDat_Row) + ':' + str(P01.ActiveSheet.get_LastUsedRow())).EntireRow.ClearContents()  # v1.01
+        # P01.Rows(str(M02.FirstDat_Row) + ':' + str(P01.ActiveSheet.get_LastUsedRow())).ClearContents()  # v1.01 (ersetzt)
         fn_return_value = True
     return fn_return_value
 
