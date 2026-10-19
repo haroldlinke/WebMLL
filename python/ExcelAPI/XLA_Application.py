@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-10-17) - XLA_Application.py
+# Datei-Version: 1.06 (2026-10-18) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.05
-# Last Update:    2026-10-17
+# Version:        1.06
+# Last Update:    2026-10-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.03  2026-10-17  Shapes: Iteration ueber eine Momentaufnahme (Delete() in der Schleife liess jede zweite Form stehen: alte Balken blieben sichtbar)
 #   1.04  2026-10-17  Calculate(): Calc_Worksheet auch bei EnableEvents = False (Excel rechnet immer); davor blieben die berechneten Zellen des Patterngenerators nach Makros mit abgeschalteten Ereignissen veraltet, z. B. beim Import in ein neues Blatt
 #   1.05  2026-10-17  CRange.ClearContents: Bereich 1-basiert nach tksheet.span (0-basiert) umgerechnet, die erste Zeile und Spalte des Bereichs blieben stehen (Vorlagenzeile RGB_Heartbeat in geladenen Blaettern)
+#   1.06  2026-10-18  SaveWorkbook: in eine Hilfsdatei schreiben und ersetzen, nicht serialisierbare Werte (Command der Steuerelemente) weglassen; ein Formularknopf im Blatt hat die ganze JSON-Datei abgebrochen
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -829,8 +830,14 @@ class CWorkbook(object):
             saveData["Version"]=self.controller.ProgVersion
             saveData["DataVersion"] = self.controller.DataVersion
             saveData["Workbookdata"]= copy.deepcopy(workbookdata)
-            with open(filename, 'w', encoding='utf8') as outfile:
-                json.dump(saveData, outfile, ensure_ascii=False, indent=4)
+            def _json_default(obj):  # v1.06
+                # Funktionen (Command der Steuerelemente) und andere Objekte kennt JSON nicht: nicht mitsichern statt die ganze Datei abzubrechen
+                logger.debug("Workbook sichern: Wert vom Typ %s wird nicht gesichert", type(obj).__name__)  # v1.06
+                return None  # v1.06
+            tmpname = filename + ".tmp"                                  # erst in eine Hilfsdatei: ein Abbruch beschaedigt die letzte gute Sicherung nicht  # v1.06
+            with open(tmpname, 'w', encoding='utf8') as outfile:  # v1.06
+                json.dump(saveData, outfile, ensure_ascii=False, indent=4, default=_json_default)  # v1.06
+            os.replace(tmpname, filename)  # v1.06
             logger.debug("Save Workbook:" + filename)            
             #pickle.dump(saveData,fd)
             #fd.close()

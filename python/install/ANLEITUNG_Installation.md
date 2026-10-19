@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 2.40 (2026-10-18), gilt für webMobaLedLib 1.57*
+*Datei-Version: 2.51 (2026-10-18), gilt für webMobaLedLib 1.69*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -285,24 +285,44 @@ Minus) Platz.
   entfernen. Sind mehrere Zeilen markiert und man klickt in eine davon, wirken Kopieren, Ausschneiden und Löschen auf die markierten Zeilen.
 - **Spalten hinter Q:** Datenblätter zeigen nur die Spalten bis Q. Der Knopf **„Alle Spalten“** (Werkzeugleiste, hinter „Zeile färben“) blendet auch die Spalten dahinter ein, zum Beispiel die
   LED-Zahlen der Kanäle 1 bis 9 in Zeile 1. **„Spalten bis Q“** schaltet zurück. Die Einstellung gilt bis zum Beenden des Programms.
+- **Menü Tabelle → Proggenerator Tabelle neuberechnen:** rechnet **alle** Tabellenblätter neu (LED-Zahlen je Kanal und Start-LED-Nummern, auch die der eingebundenen Blätter) und
+  aktualisiert danach für das aktive Blatt die Symbole und die Testtasten. Nötig ist das zum Beispiel, wenn gespeicherte Blätter aus einer früheren Version stammen und falsche
+  LED-Zahlen in Zeile 1 stehen. Vor dem Erzeugen der Datei `LEDs_AutoProg.h` („Z. Arduino schicken“) werden ohnehin alle Blätter neu gerechnet.
 
 ### 2.10 Der Patterngenerator
 
 Der Reiter **Patterngenerator** erstellt aus einer Tabelle ein Muster für die LEDs (Wechselblinker, Lauflicht usw.). Das Ergebnis ist ein Makro, das im Programmgenerator eingetragen wird.
-**Stand:** Anzeigen, Bearbeiten, Berechnen sowie **Export zu ProgGen** und **Import von ProgGen** gehen. **Noch nicht** gibt es das Testen auf dem Arduino („Test Pattern“), das Senden an ein Modul,
-Beispiele laden und speichern, Spezialmodi und den Multiplexer.
+**Stand:** Anzeigen, Bearbeiten, Berechnen sowie **Export zu ProgGen** und **Import von ProgGen** gehen. Dazu kommen **Optionen** mit den Beispielen und die Auswahldialoge für **Spezial Mode**, **RGB Modul Nr** und **Goto Aktivierung**. **Noch nicht** gibt es das Testen auf dem Arduino („Test Pattern“),
+das Senden an ein Modul (damit auch das Blinken der LED bei RGB Modul Nr), die Wirkung der Spezial Modes auf dem Modul und den Multiplexer.
 
 - **Aufbau:** Oben stehen die gelben Eingabefelder (Erste RGB LED, Anzahl der Ausgabe Kanäle, Mode usw.) und darunter das Ergebnis (`PatternT1(…)`), der Makroname und das Makro. Unten liegt die
   Tabelle der Dauer pro Spalte und der LEDs. Ein **x** schaltet die LED in dieser Spalte ein, die **Balken** über den Zellen zeigen das Muster. Die Spalten A bis D sind gesperrt.
 - **Eingeben:** Zelle anklicken und schreiben, **F2** oder Doppelklick bearbeitet eine Zelle, **Entf** leert sie. **Strg+C**, **Strg+X** und **Strg+V** kopieren, schneiden aus und fügen ein.
   Beim Einfügen von mehreren Zellen (aus einer Tabellenkalkulation) gilt: Zeilen durch Zeilenwechsel, Spalten durch Tabulator, ab der markierten Zelle. Das Kontextmenü (Rechtsklick) bietet dasselbe.
   Beim ersten Einfügen aus der Zwischenablage fragt der Browser, ob er sie lesen darf.
+- **Doppelklick auf besondere Zellen:** Ein Doppelklick auf **Spezial Mode** öffnet eine Liste der Spezial Modes. Unter der Liste stehen die ausführliche Beschreibung des gewählten Eintrags;
+  ein Doppelklick auf einen Eintrag oder **Auswahl** trägt ihn in die Zelle ein. Ein Doppelklick auf **RGB Modul Nr** öffnet eine Zahleneingabe mit − und +. Ohne ein Modul am USB-Anschluss
+  blinkt dabei keine LED, die Nummer wird nur eingetragen. Tippen und **F2** bearbeiten die Zelle weiterhin direkt.
+- **Goto Aktivierung:** Wenn der Goto Mode benutzt wird, kann das Muster an mehreren Stellen starten (Spalten mit nummerierten Pfeilen). Die **Goto Aktivierung** legt fest, wie die Startspalte im Betrieb
+  gewählt wird (Taster, Zähler, Zufall ...). Ein Doppelklick auf die Zelle öffnet die Liste mit Kurz- und ausführlicher Beschreibung, **Löschen** leert die Zelle. Bei aktivem Goto Mode öffnet sich die Liste
+  auch schon, wenn man die **leere** Zelle anklickt. Die Einträge `Counter`, `RandButton`, `RandomTime`, `RandomCount` und `RandomPingPong` fragen danach noch ihre Parameter ab: Zeiten werden als Zahl
+  in Millisekunden oder mit Einheit angegeben (`30 Sek`, `5 Min`, `500 ms`) und auf ihren Bereich geprüft. Beim **Export zu ProgGen** fragt das Programm, wenn der Goto Mode mehrere Startspalten hat und
+  keine Aktivierung eingetragen ist, ob die Auswahl geöffnet werden soll. Dann erscheinen nur Einträge mit genug Ausgängen.
 - **Werkzeugleiste:**
   - **Neues Blatt:** legt eine Kopie des aktuellen Blatts an (der Name wird abgefragt, ein Reiter erscheint unten).
   - **Aktualisieren:** zeichnet die Balken neu. **Neu berechnen:** berechnet alle Formeln neu.
+    **Hinweis:** Die Balken werden nicht mitgespeichert. Nach einem Neustart des Programms zeigen die Blätter (außer dem ersten) zunächst keine Balken: Das Blatt anklicken und
+    **Aktualisieren** drücken, dann erscheinen sie. Die Tabelle selbst ist vollständig wieder da.
   - **+** und **−:** fügt vor der markierten Zelle eine Spalte in die Tabelle ein bzw. löscht die Spalte. Dazu muss die markierte Zelle **in der Tabelle** liegen (LED-Tabelle, Dauer oder Goto-Zeile),
     sonst erscheint die Meldung „Cursor outside the table“. Beim ersten Mal erklärt das Programm die Funktion.
   - **RGB LED:** schaltet das Blatt auf RGB-LEDs um.
+  - **Optionen:** öffnet einen Dialog mit den Beispielen und der Dateiverwaltung.
+    - **Beispiele laden:** Haken bei den gewünschten Sammlungen (zum Beispiel „Ampeln“, „Signale“, „Baustellenlichter“) oder „Alle Beispiele“, dann **Ausgewählte Beispiele laden**.
+      Jede Sammlung bringt mehrere Seiten mit, sie erscheinen als neue Reiter. Seiten, die es schon gibt, werden nicht noch einmal geladen.
+    - **Datei laden …:** lädt eine eigene Datei (`.MLL_pcf`) oder eine ZIP-Datei mit der Datei und ihren Bildern. Sie wird über den Browser hochgeladen.
+    - **Aktuelle Seite speichern**, **Alle Seiten speichern:** schreibt die Seite(n) in eine Datei im Format des Excel-Programms (`.MLL_pcf`) und bietet sie zum Speichern an
+      (Speichern unter … oder Downloads-Ordner). Gehören Bilder zu den Seiten, entsteht eine ZIP-Datei mit allen Dateien.
+    - **Aktuelle Seite löschen**, **Alle Beispiele löschen:** löscht die Seite bzw. alle Seiten außer Main nach einer Rückfrage. Das kann nicht rückgängig gemacht werden.
   - **Export zu ProgGen:** trägt das Makro des Blatts in eine Zeile des Programm Generators ein. Vorher prüft das Programm, ob ein Makroname eingetragen ist, die LED-Tabelle
     nicht leer ist und die Dauer-Zeile stimmt, und meldet sonst den Fehler. Danach springt der Browser zum Programm Generator, über der Tabelle erscheint ein **gelbes Band**:
     In die Zeile klicken, in der das Muster stehen soll, und **OK** drücken. Die Haken „gleich zum Arduino schicken“ (erzeugt die Dateien, kompiliert und lädt hoch) und „Anschließend
@@ -343,7 +363,7 @@ Beispiele laden und speichern, Spezialmodi und den Multiplexer.
 60 Sekunden der Browser. Das Konsolenfenster nicht schließen. **Beenden:** Knopf „Beenden“ in der Oberfläche.
 
 **Besonderheiten:** Der Pfad des Projektordners sollte kein `'` und kein `&` enthalten (sonst kann die Verknüpfung nicht angelegt werden; dann
-`install\start_windows.bat` per Rechtsklick → *Senden an → Desktop*). Die Windows-Firewall fragt nicht, weil die Oberfläche nur auf dem eigenen Rechner lauscht.
+`install\start_windows.bat` per Rechtsklick → *Senden an → Desktop*). Die Windows-Firewall fragt nicht, weil die Oberfläche nur auf dem eigenen Rechner lauscht (für den Zugriff aus dem Netz siehe Kapitel 8).
 
 ## 4. macOS
 
@@ -638,6 +658,63 @@ Umgebungsvariablen `MLL_HOST=0.0.0.0` und ein Passwort `MLL_PASSWORD=...` setzen
 | Linux-Desktop | `export ...` in `install/start_linux.sh` |
 | Raspberry Pi | in `/etc/mobaledlib-web.env` (`sudo nano /etc/mobaledlib-web.env`), danach `sudo systemctl restart mobaledlib-web` |
 
+**Windows im Detail:** So geht der Zugriff von einem anderen Rechner im Heimnetz.
+
+1. In `install\start_windows.bat` (oder in der Eingabeaufforderung vor dem Start) `set MLL_HOST=0.0.0.0` und `set MLL_PASSWORD=...` eintragen. **Nicht die IP-Adresse des PCs** (zum Beispiel
+   `192.168.178.79`) als `MLL_HOST` eintragen: Dann lauscht der Server nur auf dieser einen Adresse, und `http://localhost:8080` auf dem PC selbst geht nicht mehr. Ab Version 1.66 öffnet das Programm
+   den Browser mit der Adresse, auf der es lauscht, in älteren Versionen kam „Seite nicht gefunden“.
+2. **Windows-Firewall:** Beim ersten Start fragt Windows, ob Python Verbindungen aus dem Netz zulassen darf. **Privatnetzwerke** anhaken und *Zugriff zulassen*. Wurde das weggeklickt oder gilt das
+   Netzwerk als **Öffentlich**, antwortet der Server anderen Rechnern nicht, und deren Browser meldet einen Ladefehler. Abhilfe:
+   - **Einfachster Weg (ab Version 1.67):** Reiter **Programm Einstellungen**, Bereich **Firewall**, Knopf **Zugriff aus dem Netz freigeben**. Windows fragt nach Administratorrechten (*Ja*), nach
+     einigen Sekunden steht dort „Der Port 8080 ist freigegeben, Regel „webMobaLedLib 8080“ (Privatnetzwerke)“. Der Bereich prüft nach **Wirkung**: Er erkennt jede Regel, die eingehende Verbindungen
+     auf den Port zulässt, auch eine von Hand angelegte oder die von Windows für Python angelegte. Regeln, deren Name mit `webMobaLedLib` beginnt (auch eine von Hand angelegte, zum Beispiel
+     „webMobaLedLib 8080“), ersetzt oder entfernt das Programm; andere Regeln lässt es unverändert und zeigt sie an. Er warnt außerdem vor einer **Blockierregel** (gewinnt gegen jede Zulassung), wenn der
+     Server nur auf diesem Rechner lauscht (`MLL_HOST`, Schritt 1) und wenn das Netzwerk als „Öffentlich“ eingestuft ist. **Freigabe entfernen** löscht die Regeln wieder. Die folgenden Schritte sind
+     dasselbe von Hand. Das Programm liest die Firewall ohne Administratorrechte auf zwei Wegen (PowerShell-Befehle und die COM-Schnittstelle der Firewall). Steht dort „Der Zustand der Firewall
+     konnte nicht gelesen werden (…)“, hat keiner der Wege geklappt; der Grund steht in Klammern und im Protokoll (**Hilfe → Logfile anzeigen**, Zeile „Firewall-Status“). Ob der Port
+     freigegeben ist, zeigt dann nur ein Versuch vom anderen Rechner (`curl`, siehe unten).
+   - Einstellungen → Netzwerk und Internet → (WLAN oder Ethernet) → Eigenschaften → Netzwerkprofil **Privat**.
+   - Regel anlegen: Eingabeaufforderung **als Administrator** öffnen und eingeben (bei einem anderen Port die Nummer ersetzen; das Programm gibt den Befehl beim Start aus):
+
+     ```
+     netsh advfirewall firewall add rule name="webMobaLedLib 8080" dir=in action=allow protocol=TCP localport=8080 profile=private
+     ```
+
+     Entfernen: `netsh advfirewall firewall delete rule name="webMobaLedLib 8080"`. Die Regel steht in der Firewall-Oberfläche unter *Eingehende Regeln* mit der Spalte *Lokaler Port* 8080.
+   - **Blockierregeln für Python:** Wurde die Rückfrage der Firewall beim ersten Start mit *Abbrechen* oder *Zugriff verweigern* beantwortet, legt Windows für `python.exe` eine Regel
+     **Blockieren** an. Eine Blockierregel gewinnt gegen jede Zulassungsregel, auch gegen die Regel für den Port. Anzeigen (PowerShell **als Administrator**):
+
+     ```
+     Get-NetConnectionProfile
+     Get-NetFirewallApplicationFilter | Where-Object { $_.Program -like "*python*" } | Get-NetFirewallRule | Format-Table DisplayName, Direction, Action, Enabled, Profile -AutoSize
+     ```
+
+     Die erste Zeile zeigt die Einstufung des Netzes (`NetworkCategory` muss `Private` sein, sonst `Set-NetConnectionProfile -NetworkCategory Private`). Steht in der zweiten Liste eine Zeile mit
+     `Inbound`, `Block` und `Enabled True`, diese Regeln löschen (die Rückfrage erscheint beim nächsten Start wieder, dann *Privatnetzwerke* zulassen):
+
+     ```
+     Get-NetFirewallApplicationFilter | Where-Object { $_.Program -like "*python*" } | Get-NetFirewallRule | Where-Object { $_.Action -eq "Block" -and $_.Direction -eq "Inbound" } | Remove-NetFirewallRule
+     ```
+
+     Ohne PowerShell: Windows-Taste → *Windows Defender Firewall mit erweiterter Sicherheit* → *Eingehende Regeln*, nach *Name* sortieren, Einträge `python` mit Aktion *Blockieren* löschen.
+   - **Andere Sicherheitssoftware** (Virenscanner mit eigener Firewall) hat eigene Regeln und muss den Port ebenfalls zulassen.
+   - **Zum Eingrenzen** die Windows-Firewall für kurze Zeit ausschalten (`netsh advfirewall set allprofiles state off` als Administrator), den Test wiederholen und **sofort wieder einschalten**
+     (`netsh advfirewall set allprofiles state on`). Geht es ohne Firewall, ist sie die Ursache; dann die Regeln oben prüfen.
+3. **Prüfen**, in dieser Reihenfolge:
+   - Auf dem PC: `netstat -ano | findstr :8080` zeigt eine Zeile mit `LISTENING` (bei `MLL_HOST=0.0.0.0` mit `0.0.0.0:8080`). Fehlt sie, läuft der Server nicht oder auf einem anderen Port.
+   - Auf dem PC im Browser `http://192.168.178.79:8080` (die eigene Adresse, `ipconfig`). Geht das, läuft der Server richtig.
+   - Auf dem anderen Rechner die Verbindung zum Port testen:
+     - Windows, **PowerShell** (nicht die Eingabeaufforderung): `Test-NetConnection 192.168.178.79 -Port 8080`. `TcpTestSucceeded : False` heißt: keine Verbindung.
+     - Windows 10 und 11, jede Eingabeaufforderung: `curl -v --max-time 5 http://192.168.178.79:8080`.
+     - Linux und macOS: `curl -v --max-time 5 http://192.168.178.79:8080` oder `nc -vz 192.168.178.79 8080`.
+
+     Antwortet der Server (`HTTP/1.1 401 Unauthorized` bei gesetztem Passwort, sonst Seitentext, oder `succeeded`), ist die Verbindung in Ordnung. Bei **Zeitüberschreitung** (`timed out`,
+     `TcpTestSucceeded : False`), obwohl es auf dem PC selbst geht, werden die Pakete verworfen: Firewall (Schritt 2) oder die Geräte sehen sich nicht (Gastnetz der FRITZ!Box, „Geräte
+     dürfen untereinander kommunizieren“ ausgeschaltet). Bei **Connection refused** lauscht nichts auf dieser Adresse und diesem Port (anderer Port, oder `MLL_HOST` stimmt nicht).
+     `ping` taugt nicht zum Prüfen: Windows beantwortet es standardmäßig nicht.
+   - Dann im Browser des anderen Rechners `http://192.168.178.79:8080`, Benutzername `mobaledlib`, Passwort wie `MLL_PASSWORD`.
+4. Die Adresse des PCs ändert sich, wenn der Router sie neu vergibt. Im Router dem PC eine **feste IP-Adresse** geben (FRITZ!Box: Heimnetz → Netzwerk → Gerät bearbeiten).
+
 Die Datei auf dem Pi sieht so aus:
 
 ```
@@ -683,6 +760,8 @@ danach im Browser `http://localhost:8080`.
 |---|---|
 | „Python wurde nicht gefunden“ oder „Python wurde installiert, ist aber in diesem Fenster noch nicht bekannt“ | **PC neu starten** (oder ab- und wieder anmelden) und das Skript noch einmal starten. Python von Hand: python.org, dabei „Add python.exe to PATH“ ankreuzen |
 | „Der Computer wurde durch Windows geschützt“ | *Weitere Informationen → Trotzdem ausführen* |
+| Beim Start „Seite nicht gefunden“ unter `localhost:8080`, obwohl `MLL_HOST` gesetzt ist | `MLL_HOST` enthält eine IP-Adresse. Dann lauscht der Server nur dort. `MLL_HOST=0.0.0.0` verwenden oder auf Version 1.66 aktualisieren (öffnet die richtige Adresse), siehe Kapitel 8 |
+| Ein anderer Rechner im Netz erreicht die Oberfläche nicht (Ladefehler, keine Antwort) | Meist die Windows-Firewall oder das Netzwerkprofil „Öffentlich“: Programm Einstellungen → Firewall → **Zugriff aus dem Netz freigeben** (ab 1.67), sonst Kapitel 8, Abschnitt „Windows im Detail“ (Regel von Hand, mit `netstat` und `curl` prüfen) |
 | Fenster geht sofort wieder zu | `install\start_windows.bat` in einer Eingabeaufforderung starten und die Meldung lesen; außerdem `webmobaledlib.log` im Datenordner (2.6) |
 | Verknüpfung fehlt auf dem Desktop | Pfad des Projektordners ohne `'` und `&`? Sonst `install\start_windows.bat` per Rechtsklick → *Senden an → Desktop* |
 | IDE-Installation (`/ide`) bricht ab | Download von arduino.cc von Hand (2.2), danach `install_windows.bat /libs` |

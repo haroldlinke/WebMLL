@@ -1,9 +1,9 @@
-# Datei-Version: 1.06 (2026-10-17) - web_pattgen.py
+# Datei-Version: 1.11 (2026-10-18) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
-# Version:        1.06
-# Last Update:    2026-10-17
+# Version:        1.11
+# Last Update:    2026-10-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,6 +14,12 @@
 #   1.04  2026-10-17  Aktualisierung ohne Neuaufbau (applyTransaction, setGridOption): Bildlauf und Markierung bleiben bei einer Aenderung erhalten
 #   1.05  2026-10-17  Optionen im unveraenderten Fall still nachfuehren (Zuweisung an grid.options baute die Zeilen im Browser neu auf), Wiederherstellung von Bildlauf und Markierung (mllPRestore)
 #   1.06  2026-10-17  Knoepfe Export zu ProgGen und Import von ProgGen
+#   1.07  2026-10-18  Knopf Optionen: Beispiele laden, eigene Datei laden (Upload), Seiten speichern (Download), Seiten loeschen
+#   1.08  2026-10-18  Fehler beim Laden aller Beispiele: Der Dialog Optionen wurde beim Schliessen geloescht, die weiterlaufende Aktion (goto_sheet, Meldung, Download) hatte dann keinen gueltigen Kontext; Dialog erst beim naechsten Oeffnen loeschen, Client der Seite fuer die Bruecke
+#   1.09  2026-10-18  Balken verschoben bei geladenen Dateien: die Zeilenhoehen aus der Datei (LED_Attr) in die Berechnung der Formen, das Gitter hat feste Zeilenhoehe; y der Formen je Zeile auf das Gitter umrechnen (web_y)
+#   1.10  2026-10-18  Balken nach einem Neustart: beim Wechsel auf ein Blatt zeichnen, wenn es keine hat (ensure_grafik)
+#   1.10  2026-10-18  Doppelklick auf Spezial Mode und RGB Modul Nr oeffnet den Dialog (JS_DBLCLICK, on_cell_dbl, window.mllPDlg), editable als Funktion; web_form_select
+#   1.11  2026-10-18  on_cell_dbl: Doppelklick waehrend eines Vorgangs ohne Meldung (der erste Klick kann den Dialog der Goto Aktivierung schon geoeffnet haben)
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 
@@ -32,12 +38,13 @@ sind die Spalten in dieser Tabelle nicht verstellbar.
 from __future__ import annotations
 
 import asyncio  # v1.01
+import bisect  # v1.09
 import json  # v1.01
 import logging
 
 from nicegui import context, run, ui  # v1.01
 
-from _web import web_dialogs  # v1.01
+from _web import web_dialogs, web_form_select  # v1.10
 from headless.headless_gridmodel import FULL_TEXT_TOOLTIP, build_grid
 
 logger = logging.getLogger(__name__)
@@ -140,6 +147,11 @@ window.mllShapes = function (shapes, tries) {
 # Tastatur und Zwischenablage fuer eine Zelle (nicht waehrend des Bearbeitens): Entf leert, Strg+C kopiert, Strg+X schneidet aus, Strg+V fuegt ein
 # (Text aus der Zwischenablage ab der Zelle: Zeilen durch Zeilenwechsel, Spalten durch Tabulator, wie in Excel). Der Server fuehrt das Leeren und
 # Einfuegen aus (mll_pcell_op); Kopieren geschieht im Browser.
+# Doppelklick auf eine Zelle mit Dialog (Spezial Mode, RGB Modul Nr; window.mllPDlg setzt show() je Blatt): Bearbeiten der Zelle unterdruecken (AG Grid
+# fragt "editable" nach dem Ereignis ab) und den Dialog beim Server anfordern. Tippen und F2 bearbeiten die Zelle weiter, wie in Excel.
+JS_DBLCLICK = ("e => { if (!e.data || !e.column || !window.mllPDlg) return; const col = e.column.getColId(); "  # v1.10
+               "if (!window.mllPDlg.has(e.data._r + ',' + col)) return; window.mllPNoEdit = true; "  # v1.10
+               "setTimeout(() => { window.mllPNoEdit = false; }, 400); emitEvent('mll_pcell_dbl', {r: e.data._r, col: col}); }")  # v1.10
 JS_KEYDOWN = ("e => { if (e.editing || !e.event || !e.node || !e.node.data) return; const k = e.event; "  # v1.03
               "const ctrl = k.ctrlKey || k.metaKey; const col = e.column.getColId(); const r = e.node.data._r; "  # v1.03
               "const txt = (e.value === undefined || e.value === null) ? '' : String(e.value); const key = (k.key || '').toLowerCase(); "  # v1.03
@@ -199,10 +211,13 @@ def event_col_id(a: dict) -> str:  # v1.01
 class PatternView:
     """Anzeige und Bedienung eines Blatts der Arbeitsmappe PatternWorkbook mit Werkzeugleiste und Blattreitern"""  # v1.01
 
-    def __init__(self, ctrl, page, grid_scale):
+    def __init__(self, ctrl, page, grid_scale, offer_download=None):  # v1.07
         self.ctrl = ctrl
         self.page = page
         self.grid_scale = grid_scale                    # Aufruf liefert den Faktor der eingestellten Schriftgroesse der Tabelle
+        self.offer_download = offer_download                # Funktion(Pfad, Name): Datei zum Speichern anbieten (webmobaledlib.offer_download)  # v1.07
+        self.client = context.client                        # der Client der Seite: der Kontext eines Dialogs ist nach dem Schliessen und Loeschen ungueltig  # v1.08
+        self._options_dlg = None  # v1.08
         self.ws = page.sheet("Main")
         self.busy = False  # v1.01
         self.row_scale = 1.0  # v1.01
@@ -225,6 +240,7 @@ class PatternView:
             ui.button("\u2212", on_click=self.on_del_columns).props("dense outline").tooltip("Spalte entfernen (die markierte)")  # v1.01
             ui.button("Export zu ProgGen", on_click=self.on_export).props("dense outline no-caps").tooltip("Makro in eine Zeile des Programm Generators eintragen")  # v1.06
             ui.button("Import von ProgGen", on_click=self.on_import).props("dense outline no-caps").tooltip("Makro aus einer Zeile des Programm Generators einlesen")  # v1.06
+            ui.button("Optionen", on_click=self.on_options).props("dense outline no-caps").tooltip("Beispiele laden, Seiten speichern und löschen")  # v1.07
             self.rgb = ui.checkbox("RGB LED", on_change=self.on_rgb)  # v1.01
             self.info = ui.label("").classes("text-caption text-grey-8")
 
@@ -244,10 +260,11 @@ class PatternView:
                 ":onCellFocused": "e => { if (e.rowIndex !== null && e.rowIndex !== undefined && e.column) window.mllPFocus = {rowIndex: e.rowIndex, colId: e.column.getColId()}; }",  # v1.05
                 "rowHeight": ROW_PX,  # v1.01
                 "headerHeight": 24,
-                "defaultColDef": {"resizable": False, "sortable": False, "editable": True, "cellDataType": False, "minWidth": 4,  # v1.02
+                "defaultColDef": {"resizable": False, "sortable": False, ":editable": "p => !window.mllPNoEdit", "cellDataType": False, "minWidth": 4,  # v1.10  (vorher "editable": True)
                                   ":cellStyle": JS_CELL_STYLE, ":cellClass": JS_CELL_CLASS, ":tooltipValueGetter": FULL_TEXT_TOOLTIP},  # v1.02
                 "stopEditingWhenCellsLoseFocus": True,  # v1.01
                 ":onCellKeyDown": JS_KEYDOWN,  # v1.03
+                ":onCellDoubleClicked": JS_DBLCLICK,  # v1.10
                 ":onCellContextMenu": JS_CONTEXT,  # v1.03
                 "preventDefaultOnContextMenu": True,  # v1.03
                 "suppressMovableColumns": True,
@@ -255,6 +272,7 @@ class PatternView:
         self.grid.on("cellClicked", self.on_cell_clicked)  # v1.01
         self.grid.on("cellValueChanged", self.on_cell_changed)  # v1.01
         ui.on("mll_pcell_op", self.on_cell_op)  # v1.03
+        ui.on("mll_pcell_dbl", self.on_cell_dbl)  # v1.10
         with self.grid_wrap:                              # Kontextmenue der Zellen (wie im Programmgenerator)  # v1.03
             with ui.context_menu():  # v1.03
                 with ui.menu_item().on("click", None, js_handler=JS_MENU_EDIT):  # v1.03
@@ -290,7 +308,7 @@ class PatternView:
             return False  # v1.01
         ws = self.ws  # v1.01
         self.busy = True  # v1.01
-        web_dialogs.set_bridge(asyncio.get_running_loop(), context.client)  # v1.01
+        web_dialogs.set_bridge(asyncio.get_running_loop(), self.client)  # v1.08
 
         def worker():  # v1.01
             web_dialogs.redirect_messagebox(True)           # Meldungen der Makros (tk.messagebox) im Browser zeigen  # v1.01
@@ -363,6 +381,18 @@ class PatternView:
             if text:  # v1.03
                 await self.action(lambda ws: self.page.paste_text(ws, r, c, text))  # v1.03
 
+    async def on_cell_dbl(self, e):  # v1.10
+        """Doppelklick auf eine Zelle mit Dialog (Spezial Mode, RGB Modul Nr): der Dialog erscheint im Browser, das Ergebnis wird eingetragen"""  # v1.10
+        a = e.args or {}  # v1.10
+        try:  # v1.10
+            r, c = int(a["r"]) + 1, int(str(a["col"])[1:]) + 1  # v1.10
+        except (KeyError, TypeError, ValueError):  # v1.10
+            return  # v1.10
+        if self.busy:                                    # der erste Klick des Doppelklicks kann schon den Dialog geoeffnet haben (Goto Aktivierung): keine Meldung  # v1.11
+            return  # v1.10
+        self._last_click = None  # v1.10
+        await self.action(lambda ws: self.page.run_cell_dialog(ws, r, c))  # v1.10
+
     async def on_new_sheet(self):  # v1.01
         before = {ws.Name for ws in self.page.workbook.sheets}  # v1.01
         if await self.action(self.page.new_sheet, refresh="never"):  # v1.01
@@ -381,6 +411,134 @@ class PatternView:
 
     async def on_import(self):  # v1.06
         await self.action(self.page.import_from_proggen, refresh="never")  # v1.06
+
+    # ------------------------------------------------------------------ Optionen: Beispiele, Laden, Speichern, Loeschen
+    def on_options(self):  # v1.07
+        """Dialog Optionen (Reiter Beispiele des Originals): Beispiele laden, eigene Datei laden, Seiten speichern (Download) und loeschen"""  # v1.07
+        if self._options_dlg is not None:                  # der Dialog vom letzten Mal: erst jetzt loeschen (die Aktionen laufen nach dem Schliessen weiter)  # v1.08
+            web_dialogs.safe_delete(self._options_dlg)  # v1.08
+            self._options_dlg = None  # v1.08
+        boxes = {}  # v1.07
+        with ui.dialog() as dlg, ui.card().classes("w-[520px] max-w-full gap-2"):  # v1.07
+            ui.label("Pattern Configurator: Optionen").classes("text-h6")  # v1.07
+            ui.label("Beispiele laden").classes("text-subtitle2 text-bold")  # v1.07
+            ui.label("Seiten, die es schon gibt, werden nicht noch einmal geladen.").classes("text-caption text-grey-8")  # v1.07
+
+            def all_changed(e):  # v1.07
+                for box in boxes.values():  # v1.07
+                    box.set_value(e.value)  # v1.07
+            ui.checkbox("Alle Beispiele", on_change=all_changed)  # v1.07
+            with ui.column().classes("gap-0 pl-6"):  # v1.07
+                for name, caption in self.page.example_collections():  # v1.07
+                    boxes[name] = ui.checkbox(caption)  # v1.07
+            ui.button("Ausgewählte Beispiele laden", on_click=lambda: self.load_selected([n for n, b in boxes.items() if b.value], dlg)).props("outline no-caps")  # v1.07
+            ui.separator()  # v1.07
+            ui.label("Eigene Dateien").classes("text-subtitle2 text-bold")  # v1.07
+            with ui.row().classes("gap-2"):  # v1.07
+                ui.button("Datei laden ...", on_click=lambda: self.load_own_file(dlg)).props("outline no-caps").tooltip("Datei .MLL_pcf oder .zip (mit Bildern) hochladen")  # v1.07
+                ui.button("Aktuelle Seite speichern", on_click=lambda: self.save_download(False, dlg)).props("outline no-caps")  # v1.07
+                ui.button("Alle Seiten speichern", on_click=lambda: self.save_download(True, dlg)).props("outline no-caps")  # v1.07
+            ui.separator()  # v1.07
+            ui.label("Löschen").classes("text-subtitle2 text-bold")  # v1.07
+            with ui.row().classes("gap-2"):  # v1.07
+                ui.button("Aktuelle Seite löschen", on_click=lambda: self.delete_pages(False, dlg)).props("outline no-caps color=negative")  # v1.07
+                ui.button("Alle Beispiele löschen", on_click=lambda: self.delete_pages(True, dlg)).props("outline no-caps color=negative")  # v1.07
+            with ui.row().classes("justify-between items-center w-full"):  # v1.07
+                ui.link("Hilfe", "https://wiki.mobaledlib.de/anleitungen/spezial/patterngenerator", new_tab=True)  # v1.07
+                ui.button("Schließen", on_click=dlg.close).props("flat").classes("mll-cancel")  # v1.07
+        self._options_dlg = dlg  # v1.08
+        dlg.open()  # v1.07
+
+    async def confirm(self, text, yes="Löschen"):  # v1.07
+        with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[460px] max-w-full"):  # v1.07
+            ui.label(text).style("white-space: pre-wrap")  # v1.07
+            with ui.row().classes("justify-end w-full"):  # v1.07
+                ui.button("Abbrechen", on_click=lambda: dlg.submit(False)).props("flat").classes("mll-cancel")  # v1.07
+                ui.button(yes, on_click=lambda: dlg.submit(True)).props("color=negative")  # v1.07
+        result = await dlg  # v1.07
+        web_dialogs.safe_delete(dlg)  # v1.07
+        return bool(result)  # v1.07
+
+    async def goto_sheet(self, ws):  # v1.07
+        """Blatt anzeigen (nach Laden und Loeschen): Reiter neu aufbauen, Blatt aktivieren, Tabelle senden"""  # v1.07
+        self.ws = ws  # v1.07
+        self._last_click = None  # v1.07
+        await self.action(lambda w: (w.Activate(), self.page.ensure_grafik(w)), refresh="never")  # v1.10
+        self.rebuild_tabs()  # v1.07
+        self.show()  # v1.07
+
+    async def after_load(self, ok, result):  # v1.07
+        if not ok or "r" not in result:  # v1.07
+            return  # v1.07
+        added, skipped = result["r"]  # v1.07
+        if added:  # v1.07
+            await self.goto_sheet(self.page.find_sheet(added[0]))  # v1.07
+        text = f"{len(added)} Seiten geladen" + (f", {len(skipped)} schon vorhanden (nicht noch einmal geladen)" if skipped else "")  # v1.07
+        ui.notify(text, type="positive" if added else "warning")  # v1.07
+
+    async def load_selected(self, names, dlg):  # v1.07
+        if not names:  # v1.07
+            ui.notify("Bitte mindestens ein Beispiel auswählen.", type="warning")  # v1.07
+            return  # v1.07
+        dlg.close()  # v1.07
+        result = {}  # v1.07
+        ok = await self.action(lambda ws: result.update(r=self.page.load_examples(names)), refresh="never")  # v1.07
+        await self.after_load(ok, result)  # v1.07
+
+    async def load_own_file(self, dlg):  # v1.07
+        dlg.close()  # v1.07
+        result = {}  # v1.07
+
+        def fn(ws):  # v1.07
+            path = web_dialogs.web_askopenfilename(title="Datei laden (.MLL_pcf oder .zip)", filetypes=[("Pattern configurator example", "*.MLL_pcf *.zip")])  # v1.07
+            if path:  # v1.07
+                result["r"] = self.page.load_upload(path)  # v1.07
+        ok = await self.action(fn, refresh="never")  # v1.07
+        await self.after_load(ok, result)  # v1.07
+
+    async def save_download(self, all_sheets, dlg):  # v1.07
+        if all_sheets and not self.page.data_sheets():  # v1.07
+            ui.notify("Es gibt keine Seiten zum Speichern.", type="warning")  # v1.07
+            return  # v1.07
+        if not all_sheets and not self.page.is_data_sheet(self.ws):  # v1.07
+            ui.notify(f"Die Seite {self.ws.Name} ist keine Musterseite und kann nicht gespeichert werden.", type="warning")  # v1.07
+            return  # v1.07
+        dlg.close()  # v1.07
+        result = {}  # v1.07
+
+        def fn(ws):  # v1.07
+            result["file"] = self.page.save_for_download(None if all_sheets else ws)  # v1.07
+            self.page.use(ws)                            # das Speichern schaltet nacheinander alle Seiten durch  # v1.07
+        ok = await self.action(fn, refresh="never")  # v1.07
+        if ok and "file" in result:  # v1.07
+            path, name = result["file"]  # v1.07
+            if self.offer_download is not None:  # v1.07
+                self.offer_download(path, name)  # v1.07
+            else:  # v1.07
+                with open(path, "rb") as fh:  # v1.07
+                    ui.download(fh.read(), name)  # v1.07
+
+    async def delete_pages(self, all_sheets, dlg):  # v1.07
+        if all_sheets:  # v1.07
+            count = len(self.page.data_sheets())  # v1.07
+            if not count:  # v1.07
+                ui.notify("Es gibt keine Seiten zum Löschen.", type="warning")  # v1.07
+                return  # v1.07
+            text = (f"Alle {count} Seiten (alle außer Main) löschen?\nDas kann nicht rückgängig gemacht werden. "  # v1.07
+                    "Vorher kann man sie mit „Alle Seiten speichern“ sichern.")  # v1.07
+        else:  # v1.07
+            if not self.page.is_data_sheet(self.ws):  # v1.07
+                ui.notify("Main und die Hilfsseiten können nicht gelöscht werden.", type="warning")  # v1.07
+                return  # v1.07
+            text = f"Die Seite {self.ws.Name} löschen?\nDas kann nicht rückgängig gemacht werden."  # v1.07
+        if not await self.confirm(text):  # v1.07
+            return  # v1.07
+        dlg.close()  # v1.07
+        result = {}  # v1.07
+        ok = await self.action(lambda ws: result.update(n=self.page.delete_all_data_sheets() if all_sheets else int(self.page.delete_sheet(ws))), refresh="never")  # v1.07
+        if ok:  # v1.07
+            await self.goto_sheet(self.page.first_sheet())  # v1.07
+            ui.notify(f"{result.get('n', 0)} Seite(n) gelöscht", type="positive")  # v1.07
 
     async def on_recalc(self):  # v1.01
         await self.action(lambda ws: (self.page.use(ws), self.page.recalculate()))  # v1.01
@@ -433,7 +591,7 @@ class PatternView:
         if target is not None and target is not self.ws:
             self.ws = target
             self._last_click = None  # v1.01
-            await self.action(lambda ws: ws.Activate(), refresh="never")  # v1.01
+            await self.action(lambda ws: (ws.Activate(), self.page.ensure_grafik(ws)), refresh="never")  # v1.10
             self.show()
 
     # ------------------------------------------------------------------ Tabelle und Balken
@@ -441,12 +599,28 @@ class PatternView:
         """Balken der grafischen Anzeige (Freiformen der Excel-Schicht): Eckpunkte in Pixeln der Tabelle, Zeilen mit dem Faktor der Zeilenhoehe"""  # v1.01
         shapes = []  # v1.01
         seen = set()                                    # die Excel-Schicht kann dieselbe Form mehrfach anlegen (Berechnung und Aktualisieren)  # v1.02
+        # Geladene Dateien setzen Zeilenhoehen einzelner Zeilen (LED_Attr), die Formen sind damit berechnet. Das Gitter im Browser zeichnet alle Zeilen
+        # gleich hoch (ROW_PX): y je Zeile umrechnen (Zeile k der Excel-Schicht wird Zeile k des Gitters, der Anteil in der Zeile bleibt)
+        try:  # v1.09
+            positions = [float(v) for v in ws.tksheet.MT.row_positions]  # v1.09
+        except Exception:                               # noqa: BLE001  # v1.09
+            positions = []  # v1.09
+
+        def web_y(y):  # v1.09
+            if len(positions) < 2 or y < 0:  # v1.09
+                return y  # v1.09
+            if y >= positions[-1]:  # v1.09
+                return (len(positions) - 1 + (y - positions[-1]) / ROW_PX) * ROW_PX  # v1.09
+            k = bisect.bisect_right(positions, y) - 1  # v1.09
+            height = positions[k + 1] - positions[k]  # v1.09
+            return (k + (y - positions[k]) / height) * ROW_PX if height > 0 else k * ROW_PX  # v1.09
         for s in getattr(ws, "shapelist", None) or []:  # v1.01
             nodes = list(getattr(s, "nodelist", None) or [])  # v1.01
             if str(getattr(s, "Type", "")) != "5" or len(nodes) < 3:  # v1.01
                 continue  # v1.01
             transparency = float(getattr(getattr(s, "Fill", None), "Transparency_val", 0) or 0)  # v1.01
-            points = [[round(float(x), 1), round(float(y) * self.row_scale, 1)] for x, y in nodes]  # v1.02
+            points = [[round(float(x), 1), round(web_y(float(y)) * self.row_scale, 1)] for x, y in nodes]  # v1.09
+            # points = [[round(float(x), 1), round(float(y) * self.row_scale, 1)] for x, y in nodes]  # v1.09 (ersetzt)
             color = getattr(s, "Fillcolor", None) or "#00b050"  # v1.02
             key = (tuple(map(tuple, points)), color)  # v1.02
             if key in seen:  # v1.02
@@ -518,6 +692,12 @@ class PatternView:
         self._cols_sig = cols_sig  # v1.04
         self._shown_version = ws.tksheet.version  # v1.01
         ui.run_javascript("window.mllShapes(%s)" % json.dumps(self.shapes_payload(ws)))  # v1.01
+        try:  # v1.10
+            keys = [f"{r - 1},c{c - 1}" for r, c in self.page.dialog_cells(ws)]       # Zellen mit Dialog beim Doppelklick  # v1.10
+        except Exception:                                    # noqa: BLE001  # v1.10
+            logger.debug("Zellen mit Dialog nicht ermittelt", exc_info=True)  # v1.10
+            keys = []  # v1.10
+        ui.run_javascript("window.mllPDlg = new Set(%s)" % json.dumps(keys))  # v1.10
         self.sync_rgb()  # v1.01
         text = f"Blatt {ws.Name}: {meta['rows']} Zeilen"
         if meta["shown_rows"] != meta["rows"]:
@@ -530,8 +710,9 @@ class PatternView:
         self.show()
 
 
-def build(ctrl, page, grid_scale) -> PatternView:
-    return PatternView(ctrl, page, grid_scale)
+def build(ctrl, page, grid_scale, offer_download=None) -> PatternView:  # v1.07
+    web_form_select.install()  # v1.10
+    return PatternView(ctrl, page, grid_scale, offer_download)  # v1.07
 
 
 # ----------------------------------------------------------------------------------------------

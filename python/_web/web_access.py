@@ -1,4 +1,16 @@
-# Datei-Version: 1.04 (2026-10-15) - web_access.py
+# Datei-Version: 1.07 (2026-10-18) - web_access.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_access.py
+# Path:           _web/web_access.py
+# Version:        1.07
+# Last Update:    2026-10-18
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.05  2026-10-18  Bereich Firewall (Windows): Knoepfe Zugriff aus dem Netz freigeben und Freigabe entfernen (web_firewall), Hinweis fuer macOS und Linux, SERVER (Adresse und Port des Servers); davor bis 1.04 (2026-10-15), nicht erfasst
+#   1.06  2026-10-18  Bereich Firewall: Status nach Wirkung (auch von Hand angelegte Regeln und Regeln fuer Python), Blockierregeln als Warnung, Entfernen loescht alle Regeln webMobaLedLib*
+#   1.07  2026-10-18  Firewall: Fehler beim Lesen des Zustands werden angezeigt (statt keine Regel), Warten liefert ok, timeout oder unknown
+# ----------------------------------------------------------------------------------------------
 """Zusatzfelder der Seite Programm Einstellungen: Passwort fuer den Zugriff auf die Web-Oberflaeche aus dem Netz aendern und (nur auf
 dem Raspberry Pi mit installiertem Hilfsprogramm) den Namen des Rechners im Netz aendern.
 
@@ -13,9 +25,12 @@ import socket
 import subprocess
 
 from _web import web_dialogs as wd
+from _web import web_firewall as wf  # v1.05
 from _web import web_password
 
 LOCAL_HOSTS = ("127.0.0.1", "localhost", "::1")
+# Adresse und Port, auf denen der Server lauscht (main() in webmobaledlib.py setzt sie aus --host und --port; vorher die Umgebungsvariablen)
+SERVER = {"host": os.environ.get("MLL_HOST", "127.0.0.1"), "port": int(os.environ.get("MLL_PORT", "8080") or 8080)}  # v1.05
 HOSTNAME_HELPER = "/usr/local/sbin/mobaledlib-set-hostname"        # von install_pi.sh installiert (root, nicht veraenderbar)
 HOSTNAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")
 
@@ -55,6 +70,7 @@ class WebAccess:
         self.table = None
         self.new = self.again = self.status = self.warning = self.reset_btn = None
         self.host_input = self.host_status = self.host_result = None
+        self.fw_status = self.fw_warning = self.fw_remove = None  # v1.05
 
     def collect(self) -> dict:
         values = {}                                                               # Darstellung und Bedienung der Tabelle werden mit gespeichert
@@ -84,6 +100,7 @@ class WebAccess:
                 ui.button("Passwort ändern", on_click=self.change).props("color=primary no-caps")
                 self.reset_btn = ui.button("Eigenes Passwort entfernen", on_click=self.reset).props("outline no-caps")
         self.refresh()
+        self.build_firewall()  # v1.05
         if hostname_change_possible():
             self.build_hostname()
 
@@ -101,8 +118,126 @@ class WebAccess:
             self.host_result = ui.column().classes("gap-1")
         self.refresh_host()
 
+    # ------------------------------------------------------------------ Firewall (Windows)
+    def build_firewall(self):  # v1.05
+        from nicegui import ui  # v1.05
+        with ui.card().props("flat bordered").classes("w-full gap-2"):  # v1.05
+            ui.label("Firewall").classes("text-subtitle1").style("font-weight: 600")  # v1.05
+            if not wf.supported():  # v1.05
+                hint = wf.hint_other_system()  # v1.05
+                if hint:  # v1.05
+                    ui.label(hint).classes("text-caption text-grey-8")  # v1.05
+                return  # v1.05
+            ui.label("Damit ein anderer Rechner im Heimnetz die Oberfläche erreicht, muss die Windows-Firewall den Port zulassen. Der Knopf richtet dafür die "  # v1.05
+                     "Regel „webMobaLedLib <Port>“ ein (TCP, nur für Privatnetzwerke); eine ältere Regel mit diesem Namen wird dabei ersetzt. Windows fragt dabei nach Administratorrechten: mit „Ja“ bestätigen."  # v1.06
+                     ).classes("text-caption text-grey-8")  # v1.05
+            self.fw_status = ui.label("Wird geprüft ...")  # v1.05
+            self.fw_warning = ui.label("").classes("text-negative").style("white-space: pre-wrap")  # v1.05
+            with ui.row().classes("items-center gap-3"):  # v1.05
+                ui.button("Zugriff aus dem Netz freigeben", on_click=self.add_firewall).props("color=primary no-caps")  # v1.05
+                self.fw_remove = ui.button("Freigabe entfernen", on_click=self.remove_firewall).props("outline no-caps")  # v1.05
+        ui.timer(0.2, self.update_firewall, once=True)  # v1.05
+
+    @staticmethod  # v1.06
+    def profile_text(profile: str) -> str:  # v1.06
+        names = {"Private": "Privatnetzwerke", "Public": "öffentliche Netzwerke", "Domain": "Domäne", "Any": "alle Netzwerke", "All": "alle Netzwerke"}  # v1.06
+        return ", ".join(names.get(p.strip(), p.strip()) for p in str(profile).split(",") if p.strip())  # v1.06
+
+    def firewall_text(self, status: dict, port: int) -> str:  # v1.06
+        if not status.get("known", True):  # v1.06
+            reason = "; ".join(status.get("errors") or []) or "keine Antwort"  # v1.07
+            return f"Der Zustand der Firewall konnte nicht gelesen werden ({reason}). Ob der Port {port} freigegeben ist, lässt sich hier nicht sagen: vom anderen Rechner ausprobieren."  # v1.07
+        ours = [r for r in status["rules"] if r["ours"]]  # v1.06
+        others = [r for r in status["rules"] if not r["ours"]]  # v1.06
+        describe = lambda rules: ", ".join(f"„{r['name']}“ ({self.profile_text(r['profile'])})" for r in rules)  # v1.06
+        if ours:  # v1.06
+            text = f"Der Port {port} ist freigegeben, Regel {describe(ours)}."  # v1.06
+            if others:  # v1.06
+                text += f" Weitere Regeln, die ihn zulassen und nicht verändert werden: {describe(others)}."  # v1.06
+            return text  # v1.06
+        if others:  # v1.06
+            return f"Der Port {port} ist durch Regeln freigegeben, die dieses Programm nicht angelegt hat und nicht verändert: {describe(others)}."  # v1.06
+        return f"Es gibt noch keine Regel für den Port {port}: Andere Rechner im Netz können die Oberfläche nicht erreichen."  # v1.06
+
+    async def update_firewall(self):  # v1.05
+        from nicegui import run  # v1.05
+        port = SERVER["port"]  # v1.05
+        status = await run.io_bound(wf.rule_status, port)  # v1.05
+        warnings = []  # v1.05
+        if status.get("blocked"):  # v1.06
+            names = ", ".join(f"„{r['name']}“" for r in status["blocks"])  # v1.06
+            warnings.append(f"Eine Blockierregel verhindert den Zugriff: {names}. Eine Blockierregel gewinnt gegen jede Zulassungsregel. Sie muss in der "  # v1.06
+                            "Windows-Firewall gelöscht werden (Anleitung, Kapitel 8).")  # v1.06
+        if SERVER["host"] in LOCAL_HOSTS:  # v1.05
+            warnings.append("Der Server lauscht nur auf diesem Rechner (MLL_HOST=127.0.0.1). Für den Zugriff aus dem Netz MLL_HOST=0.0.0.0 setzen "  # v1.05
+                            "und das Programm neu starten (Anleitung, Kapitel 8).")  # v1.05
+        if "Public" in status.get("networks", []):  # v1.06
+            warnings.append("Das Netzwerk ist als „Öffentlich“ eingestuft, die Regel gilt aber nur für Privatnetzwerke: Einstellungen → Netzwerk und "  # v1.05
+                            "Internet → Eigenschaften → Netzwerkprofil „Privat“.")  # v1.05
+        self.fw_status.set_text(self.firewall_text(status, port))  # v1.06
+        self.fw_warning.set_text("\n".join(warnings))  # v1.05
+        self.fw_remove.set_visibility(bool(status.get("ours")) or not status.get("known", True))     # ohne lesbaren Zustand bleibt Entfernen moeglich  # v1.07
+
+    async def wait_for_rule(self, port: int, want: bool) -> str:  # v1.07
+        """Auf das Ergebnis der Administrator-Abfrage warten (bis zu 45 s): Regel des Programms da (want) oder weg (nicht want).
+        Rueckgabe: "ok", "timeout" oder "unknown" (der Zustand der Firewall laesst sich nicht lesen)"""
+        import asyncio  # v1.05
+        from nicegui import run  # v1.05
+        for _ in range(45):  # v1.05
+            status = await run.io_bound(wf.rule_status, port)  # v1.05
+            if not status.get("known", True):  # v1.07
+                return "unknown"  # v1.07
+            if status["ours"] == want:  # v1.07
+                return "ok"  # v1.07
+            await asyncio.sleep(1.0)  # v1.05
+        return "timeout"  # v1.07
+
+    def lan_url(self) -> str:  # v1.05
+        try:  # v1.05
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:  # v1.05
+                s.connect(("10.255.255.255", 1))  # v1.05
+                return f"http://{s.getsockname()[0]}:{SERVER['port']}"  # v1.05
+        except OSError:  # v1.05
+            return ""  # v1.05
+
+    async def add_firewall(self):  # v1.05
+        from nicegui import run, ui  # v1.05
+        port = SERVER["port"]  # v1.05
+        ok, error = await run.io_bound(wf.add_rule, port)  # v1.05
+        if not ok:  # v1.05
+            ui.notify(error, type="negative", timeout=10000)  # v1.05
+            return  # v1.05
+        ui.notify("Windows fragt jetzt nach Administratorrechten (Benutzerkontensteuerung). Bitte mit „Ja“ bestätigen.", type="info", timeout=10000)  # v1.05
+        result = await self.wait_for_rule(port, True)  # v1.07
+        await self.update_firewall()  # v1.05
+        if result == "ok":  # v1.07
+            url = self.lan_url()  # v1.05
+            ui.notify("Die Freigabe ist eingerichtet." + (f" Andere Rechner erreichen die Oberfläche unter {url}" if url else ""), type="positive", timeout=15000)  # v1.05
+        elif result == "unknown":  # v1.07
+            ui.notify("Die Freigabe wurde an Windows übergeben. Ob die Regel besteht, lässt sich hier nicht lesen: bitte vom anderen Rechner ausprobieren.", type="info", timeout=15000)  # v1.07
+        else:  # v1.05
+            ui.notify("Die Regel wurde nicht angelegt (Abfrage abgebrochen?). Bitte noch einmal versuchen oder die Schritte in der Anleitung ausführen (Kapitel 8).",  # v1.05
+                      type="warning", timeout=15000)  # v1.05
+
+    async def remove_firewall(self):  # v1.05
+        from nicegui import run, ui  # v1.05
+        port = SERVER["port"]  # v1.05
+        ok, error = await run.io_bound(wf.remove_rule)  # v1.05
+        if not ok:  # v1.05
+            ui.notify(error, type="negative", timeout=10000)  # v1.05
+            return  # v1.05
+        ui.notify("Windows fragt jetzt nach Administratorrechten (Benutzerkontensteuerung). Bitte mit „Ja“ bestätigen.", type="info", timeout=10000)  # v1.05
+        result = await self.wait_for_rule(port, False)  # v1.07
+        await self.update_firewall()  # v1.05
+        if result == "ok":  # v1.07
+            ui.notify("Die Freigabe ist entfernt.", type="positive")  # v1.07
+        elif result == "unknown":  # v1.07
+            ui.notify("Das Entfernen wurde an Windows übergeben. Ob die Regeln weg sind, lässt sich hier nicht lesen.", type="info", timeout=15000)  # v1.07
+        else:  # v1.07
+            ui.notify("Die Regeln wurden nicht entfernt (Abfrage abgebrochen?).", type="warning")  # v1.07
+
     def host_url(self, name: str) -> str:
-        return f"http://{name}.local:{os.environ.get('MLL_PORT', '8080')}"
+        return f"http://{name}.local:{SERVER['port']}"  # v1.05
 
     def refresh_host(self):
         name = socket.gethostname()
@@ -151,7 +286,7 @@ class WebAccess:
         else:
             text = "Es ist kein Passwort eingerichtet: Wer das Netz erreicht, kann die Oberfläche benutzen."
         self.status.set_text(text)
-        host = os.environ.get("MLL_HOST", "127.0.0.1")
+        host = SERVER["host"]  # v1.05
         warn = web_password.uses_default_password() and host not in LOCAL_HOSTS
         self.warning.set_text("Bitte ein eigenes Passwort setzen: Das Standardpasswort ist allgemein bekannt." if warn else "")
         self.reset_btn.set_visibility(web_password.has_stored())

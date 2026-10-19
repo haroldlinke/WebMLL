@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 1.11 (2026-10-18), gilt für webMobaLedLib 1.57*
+*Datei-Version: 1.19 (2026-10-18), gilt für webMobaLedLib 1.69*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -85,6 +85,16 @@ Trage das Ergebnis in die Tabelle am Ende ein.
 
 30. **PGF-Datei laden**, besonders eine mit eingebundenen Blättern (Include) und mehreren LED-Kanälen: Steht kein Blatt mit der Vorlagenzeile „LED auf dem Mainboard“ in Zeile 3, außer die Datei bringt sie selbst mit? Stehen in Zeile 1 des einbindenden Blatts (Knopf „Alle Spalten“) die LED-Zahlen je Kanal einschließlich der eingebundenen Blätter, und stimmen sie mit der Excel-Version überein? Passt `LEDS_PER_CHANNEL` in der erzeugten `LEDs_AutoProg.h` dazu?
 31. Knopf **„Alle Spalten“** (Werkzeugleiste): Werden die Spalten hinter Q eingeblendet, und blendet „Spalten bis Q“ sie wieder aus?
+32. Menü **Tabelle → Proggenerator Tabelle neuberechnen**: Stehen danach in Zeile 1 aller Blätter die richtigen LED-Zahlen je Kanal (mit „Alle Spalten“ prüfen), auch bei einem Worktable, das aus einer früheren Version gespeichert war? Bleibt das aktive Blatt dasselbe? Stimmt `LEDS_PER_CHANNEL` in der erzeugten `LEDs_AutoProg.h` mit der Summe der Kanäle überein?
+33. Patterngenerator, Knopf **Optionen**: Lassen sich einzelne Beispielsammlungen und „Alle Beispiele“ laden, erscheinen die Seiten als Reiter, kommt beim zweiten Laden die Meldung, dass sie schon vorhanden sind, und liegen die Balken genau in den LED-Zeilen (auch bei `Viessm.4751` und `RGB_AmpelX_A`, nicht darunter)?
+34. **Aktuelle Seite speichern** und **Alle Seiten speichern**: Wird eine Datei zum Speichern angeboten (bei Seiten mit Bildern eine ZIP-Datei)? Lässt sie sich nach dem Löschen der Seiten mit **Datei laden …** wieder einlesen, und stimmen die Tabellen?
+35. **Aktuelle Seite löschen** und **Alle Beispiele löschen**: Kommt eine Rückfrage, und bleibt danach die Seite Main bestehen? Sind die Seiten nach dem Beenden und Neustart des Programms noch da?
+36. Patterngenerator, Doppelklick auf **Spezial Mode**: Erscheint die Liste (Charlieplexing V1 und V2), zeigt sie unten die Beschreibung, und trägt **Auswahl** (oder ein Doppelklick auf den Eintrag) den Namen in die Zelle ein? Lässt sich die Zelle weiter durch Tippen oder **F2** bearbeiten?
+37. Doppelklick auf **RGB Modul Nr**: Erscheint die Zahleneingabe mit − und +, begrenzt sie auf 0 bis 255, und steht die Nummer danach in der Zelle? Bleibt der Wert bei **Abbrechen** unverändert?
+38. Patterngenerator, **Goto Aktivierung** (zum Beispiel Blatt `Dep Signal4`): Öffnet der Doppelklick auf die Zelle die Liste (zwölf Einträge), trägt **Auswahl** den Namen ein und leert **Löschen** die Zelle? Öffnet sich die Liste bei aktivem Goto Mode auch beim Anklicken der leeren Zelle?
+39. Eintrag **Counter**, **RandomTime** usw.: Kommt der Parameterdialog mit den Vorgaben (Flags 0, Abschaltzeit 30 Sek), wird eine falsche Zeit (`30Sek`, `0 ms`) abgewiesen, und steht danach zum Beispiel `Counter(0, 30 Sek)` in der Zelle?
+40. **Export zu ProgGen** mit aktivem Goto Mode, mehreren Startspalten und leerer Aktivierung: Fragt das Programm nach der Auswahl, und fehlt der Eintrag `Nothing` in der Liste? Läuft der Export danach weiter?
+41. **Windows, Zugriff aus dem Netz** (`MLL_HOST=0.0.0.0`): Programm Einstellungen → Bereich **Firewall**: Zeigt er „Es gibt noch keine Regel“, fragt Windows nach Administratorrechten, wenn man **Zugriff aus dem Netz freigeben** drückt, und steht danach „Die Regel … ist eingerichtet“? Erreicht ein anderer Rechner die Oberfläche (`http://<IP>:8080`)? Entfernt **Freigabe entfernen** die Regel wieder, auch eine von Hand mit dem Namen `webMobaLedLib 8080` angelegte? Zeigt der Bereich eine von Hand angelegte Regel (auch mit anderem Namen) als „Port freigegeben“ an? Erscheint die Warnung, wenn `MLL_HOST` nicht gesetzt ist? Zeigt der Bereich nach dem Einrichten „Der Port … ist freigegeben“ und den Knopf **Freigabe entfernen** (nicht „keine Regel“), auch wenn das Programm **ohne** Administratorrechte läuft?
 
 ## 4. Ergebnis
 

@@ -1,13 +1,14 @@
-# Datei-Version: 1.01 (2026-10-18) - M06_Write_Header.py
+# Datei-Version: 1.02 (2026-10-18) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.01
+# Version:        1.02
 # Last Update:    2026-10-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-18  LED Kanal von Zeilen ohne Eintrag: Previous_LEDChannel als Modulvariable von M06 (global in Create_Header_Entry und ProcessSheet), Bedingung auf den Zellentext statt Trim(Val()) (nie leer); LED_to_Var in eingebundenen Blaettern bekam Kanal 0 und dessen Offset (LED2Var_Tab stimmte nicht mit Excel); davor Original-Port, nicht erfasst
+#   1.02  2026-10-18  Create_HeaderFile: vor dem Erzeugen alle Blaetter neu rechnen (Update_All_Start_LedNr), das aktive Blatt danach wieder auswaehlen
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -1162,6 +1163,12 @@ def Create_HeaderFile(CreateFilesOnly = False): #20.12.21: Jürgen add CreateFil
     _fn_return_value = False
      # 20.12.21: Jürgen
     M30.Check_Version()
+    # Alle Blaetter neu rechnen: Die Zeile 1 der eingebundenen Blaetter (LED-Zahlen je Kanal) muss aktuell sein. Gespeicherte oder frueher
+    # geladene Blaetter koennen veraltete Werte haben; Update_Start_LedNr unten rechnet nur das aktive Blatt.
+    ActSh = P01.ActiveSheet  # v1.02
+    M20.Update_All_Start_LedNr()  # v1.02
+    ActSh.Select()  # v1.02
+    M25.Make_sure_that_Col_Variables_match()  # v1.02
     # 21.11.21: Juergen
     M20.Update_Start_LedNr()
     # 11.10.20: To prevent problems if the calculation was not called before for some reasons

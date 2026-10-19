@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-10-17) - headless_pattgen.py
+# Datei-Version: 1.09 (2026-10-18) - headless_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_pattgen.py
 # Path:           headless/headless_pattgen.py
-# Version:        1.05
-# Last Update:    2026-10-17
+# Version:        1.09
+# Last Update:    2026-10-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,11 @@
 #   1.03  2026-10-17  Auswahlereignis mit Datenindizes (Selection.Row war bei ausgeblendeten Zeilen verschoben), Balken nach Spalte hinzufuegen/entfernen neu zeichnen
 #   1.04  2026-10-17  Muster-Spalten gleich breit (56), NormColWidth 56; clear_cell und paste_text (Entf, Ausschneiden, Einfuegen)
 #   1.05  2026-10-17  export_to_proggen (mit Pruefung vor dem Export) und import_from_proggen
+#   1.06  2026-10-18  Beispiele, Laden und Speichern, Loeschen (Optionen): load_examples, load_upload, save_for_download, delete_sheet, delete_all_data_sheets; Textfelder und Formularknoepfe der Dateien werden gemerkt und beim Speichern wieder geschrieben
+#   1.07  2026-10-18  ensure_grafik: Balken beim Anzeigen zeichnen, wenn das Blatt keine hat (nach einem Neustart fehlen sie)
+#   1.07  2026-10-18  Doppelklick-Dialoge Spezial Mode und RGB Modul Nr: HeadlessSelectFromSheetForm (Ersatz fuer Select_from_Sheet_Form), led_address_dialog, HeadlessPresenters, dialog_cells, run_cell_dialog
+#   1.08  2026-10-18  dialog_cells: auch die Seite Main (Is_Data_Sheet des Originals fragt nur nach dem Bereich RGB_Modul_Nr), nur die Hilfsblaetter ausnehmen
+#   1.09  2026-10-18  Goto Aktivierung (3c): Doppelklick, Auswahlliste mit Check_Param_Goto, HeadlessUserFormOther (Parameterdialog fuer Counter, RandomTime ...), check_param_value
 # ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Pattern_GeneratorPage: baut die Arbeitsmappe "PatternWorkbook" des Patterngenerators.
 
@@ -32,7 +37,10 @@ import contextlib
 import logging
 import os
 import re  # v1.01
+import shutil  # v1.06
+import tempfile  # v1.06
 import types  # v1.01
+import zipfile  # v1.06
 
 import userdata                                    # Datenordner ausserhalb des Projektordners
 
@@ -44,12 +52,24 @@ import pattgen.D00_Forms as D00
 import pattgen.DieseArbeitsmappe as AM
 import pattgen.M01_Public_Constants_a_Var as M01  # v1.04
 import pattgen.M03_Analog_Trend as M03  # v1.01
+import pattgen.M07_Save_Sheet_Data as M07  # v1.06
+import pattgen.M08_Load_Sheet_Data as M08  # v1.06
+import pattgen.M14_Select_GotoAct as M14  # v1.09
+import pattgen.M60_Select_LED as M60  # v1.07
 import pattgen.M11_To_Prog_Gen as M11  # v1.05
 import pattgen.Tabelle9 as T09  # v1.01
 import pgcommon.G00_common as G00  # v1.01
+from vb2py.vbfunctions import VBMissingArgument  # v1.07
 from headless.headless_proggen import HeadlessStatusForm
 
 logger = logging.getLogger(__name__)
+
+# Beispielsammlungen (Dateien im Ordner Pattern_Config_Examples) in der Reihenfolge und mit den Namen des Formulars Examples_UserForm
+EXAMPLE_COLLECTIONS = (("Basic", "Allgemein"), ("Traffic_Lights", "Ampeln"), ("ConstrWarnLight", "Baustellenlichter"), ("Signals", "Signale"),  # v1.06
+                       ("Signals_3D", "Signale 3D Druck RGB LEDs"), ("Sounds", "Sounds"), ("Status_Buttons", "Taster mit Status Anzeige"),  # v1.06
+                       ("Charlieplexing", "Charlieplexing"), ("Illuminations", "Illuminations"))  # v1.06
+# Blaetter, die keine Datenblaetter sind (M08.Is_Normal_Data_Sheet kennt PG-Temp nicht und wuerde danach fragen)
+NON_DATA_SHEETS = (M01.MAIN_SH, M01.LANGUAGES_SH, M01.GOTO_ACTIVATION_SH, M01.PAR_DESCRIPTION_SH, M01.SPECIAL_MODEDLG_SH, "Named_Ranges", "PG-Temp")  # v1.06
 
 
 class HeadlessForm:
@@ -72,12 +92,147 @@ class HeadlessForm:
 FORM_NAMES = ("Select_COM_Port_UserForm", "Select_GotoNr_Form", "MainMenu_Form", "Select_from_Sheet_Form", "Examples_UserForm",
               "UserForm_Attiny_direct_program")
 
+# Zellen, auf die ein Doppelklick einen Dialog oeffnet (M02_Main.Proc_DoubleClick): Art und Name des benannten Bereichs
+DOUBLECLICK_CELLS = (("special_mode", "Special_Mode"), ("rgb_modul_nr", "RGB_Modul_Nr"), ("goto_act", "Goto_Aktivierung"))  # v1.09
+
+
+class HeadlessPresenters:  # v1.07
+    """Hier setzt die Web-Oberflaeche die Funktionen, die Auswahldialoge im Browser zeigen (Aufruf aus dem Worker-Thread, sie warten auf die Antwort)"""  # v1.07
+    select = None          # Funktion(Anforderung: dict) -> {"action": "select" | "delete" | "abort", "rows": [Zeilen]} oder None  # v1.07
+    number = None          # Funktion(Anforderung: dict) -> int oder None  # v1.07
+    params = None          # Funktion(Anforderung: dict) -> Liste der Werte (Texte) oder None  # v1.09
+
+
+class HeadlessSelectFromSheetForm:  # v1.07
+    """Ersatz fuer Select_from_Sheet_Form: eine Liste aus einem Blatt der Arbeitsmappe zur Auswahl anbieten (Spezial Mode, Goto Aktivierung).
+    Rueckgabe wie im Original: '' (abgebrochen), 'DELETE' oder 'Name,Zeile' (mehrere durch Leerzeichen getrennt). Das Tk-Formular lieferte den ganzen
+    Listeneintrag 'Name : Kurzbeschreibung' als Namen, hier ist es wie in VBA nur der Name."""
+
+    def Show_Form(self, ListDataSh, Dialog_Titel, Head_Label_Txt, Description_Label_Txt, oCheck_Param_Func=VBMissingArgument,  # v1.07
+                  oExpert_CheckBox=VBMissingArgument, oExpert_CheckBox_Checked=VBMissingArgument, oDelete_Button=VBMissingArgument,  # v1.07
+                  oExp_Mode_COL=0, oLowerWin_COL=0, oName_Dat_COL=4, oShortDescCOL=5, oMiddleWinCOL=0, oDialog_Dat_ROW1=4):  # v1.07
+        present = HeadlessPresenters.select  # v1.07
+        if present is None:  # v1.07
+            logger.info("Patterngenerator: Auswahlliste %s: keine Anzeige verfuegbar", ListDataSh)  # v1.07
+            return ""  # v1.07
+
+        def given(value):  # v1.07
+            return value is not VBMissingArgument and value not in ("", None, False)  # v1.07
+        check = getattr(M14, str(oCheck_Param_Func), None) if given(oCheck_Param_Func) else None      # zum Beispiel Check_Param_Goto  # v1.09
+        sheet = X02.Sheets(ListDataSh)  # v1.07
+        last = sheet.get_LastUsedRow()  # v1.07
+        entries = []  # v1.07
+        for r in range(int(oDialog_Dat_ROW1), last + 1):  # v1.07
+            name = str(sheet.Cells(r, oName_Dat_COL)).strip()  # v1.07
+            if name == "" and str(sheet.Cells(r + 1, oName_Dat_COL)).strip() == "" and str(sheet.Cells(r + 2, oName_Dat_COL)).strip() == "":  # v1.07
+                break                                                                   # wie Add_Filtered: drei leere Namen beenden die Liste  # v1.07
+            if name == "":  # v1.07
+                continue  # v1.07
+            if check is not None:  # v1.09
+                try:  # v1.09
+                    if not check(r):  # v1.09
+                        continue  # v1.09
+                except TypeError:                                   # Optionales Argument (zum Beispiel ExpOutCnt) ohne Wert: alle Eintraege zeigen  # v1.09
+                    pass  # v1.09
+            entries.append({  # v1.07
+                "row": r, "name": name,  # v1.07
+                "short": str(sheet.Cells(r, oShortDescCOL)).strip(),  # v1.07
+                "middle": str(sheet.Cells(r, oMiddleWinCOL)).replace("|", "\n").strip() if oMiddleWinCOL > 0 else "",  # v1.07
+                "lower": " ".join(str(sheet.Cells(r, oLowerWin_COL)).split()) if oLowerWin_COL > 0 else "",  # v1.07
+                "expert": oExp_Mode_COL > 0 and str(sheet.Cells(r, oExp_Mode_COL)).strip() != ""})  # v1.07
+        request = {"title": str(Dialog_Titel), "head": str(Head_Label_Txt), "description": str(Description_Label_Txt), "entries": entries,  # v1.07
+                   "expert_caption": str(oExpert_CheckBox) if given(oExpert_CheckBox) else "", "expert_checked": bool(given(oExpert_CheckBox_Checked)),  # v1.07
+                   "delete_button": bool(given(oDelete_Button))}  # v1.07
+        result = present(request)  # v1.07
+        if not result or result.get("action") == "abort":  # v1.07
+            return ""  # v1.07
+        if result.get("action") == "delete":  # v1.07
+            return "DELETE"  # v1.07
+        names = {e["row"]: e["name"] for e in entries}  # v1.07
+        return " ".join(f"{names[row]},{row}" for row in result.get("rows", []) if row in names)  # v1.07
+
+
+TIME_UNITS = {"Min": 60000, "Sek": 1000, "sek": 1000, "Sec": 1000, "sec": 1000, "Ms": 1, "ms": 1}      # wie Userform_Other.Check_Time_String  # v1.09
+
+
+def _number(text):  # v1.09
+    try:  # v1.09
+        return int(float(str(text).replace(",", ".")))  # v1.09
+    except (TypeError, ValueError):  # v1.09
+        return None  # v1.09
+
+
+def check_param_value(meta, text):  # v1.09
+    """Pruefung eines Parameterwerts wie Userform_Other.Check_Time_String und Check_Limit_to_MinMax des Programmgenerators.
+    Zeit: Zahl in ms oder 'Zahl Einheit' (Min, Sek, sek, Sec, sec, Ms, ms) innerhalb Min und Max. Rueckgabe: Fehlertext oder None"""
+    text = str(text).strip()  # v1.09
+    if text == "":  # v1.09
+        return f"Der Parameter '{meta['name']}' darf nicht leer sein."  # v1.09
+    if meta["type"] != "Time":  # v1.09
+        return None  # v1.09
+    low, high = meta["min"], meta["max"]  # v1.09
+    hint = f"Der Parameter '{meta['name']}' ist ungültig.\nBitte eine Zeit zwischen {low} ms und {high} ms eingeben, zum Beispiel 30 Sek, 5 Min oder 500 ms."  # v1.09
+    parts = text.split(" ")  # v1.09
+    if len(parts) == 1 and _number(parts[0]) is not None:  # v1.09
+        value = _number(parts[0])  # v1.09
+    elif len(parts) == 2 and _number(parts[0]) is not None and parts[1] in TIME_UNITS:  # v1.09
+        value = float(parts[0].replace(",", ".")) * TIME_UNITS[parts[1]]  # v1.09
+    else:  # v1.09
+        return hint  # v1.09
+    if (low is not None and value < low) or (high is not None and value > high):  # v1.09
+        return hint  # v1.09
+    return None  # v1.09
+
+
+class HeadlessUserFormOther:  # v1.09
+    """Ersatz fuer UserForm_Other des Patterngenerators (Parameter eines Makros eingeben, M14_Select_GotoAct.Proc_General). Das Tk-Formular fehlt im
+    Python-Port (der Aufruf endete mit einem Fehler). Die Parameter stehen in der Tabelle Par_Description; das Ergebnis steht in M14.Userform_Res."""
+
+    def meta(self, name):  # v1.09
+        sheet = X02.Sheets(M01.PAR_DESCRIPTION_SH)  # v1.09
+        for r in range(2, sheet.get_LastUsedRow() + 1):  # v1.09
+            if str(sheet.Cells(r, 1)).strip() == name:  # v1.09
+                return {"name": name, "type": str(sheet.Cells(r, 3)).strip(), "min": _number(str(sheet.Cells(r, 4))), "max": _number(str(sheet.Cells(r, 5))),  # v1.09
+                        "default": str(sheet.Cells(r, 6)).strip(), "label": str(sheet.Cells(r, 7)).strip() or name, "hint": str(sheet.Cells(r, 8)).strip()}  # v1.09
+        return {"name": name, "type": "", "min": None, "max": None, "default": "", "label": name, "hint": ""}  # v1.09
+
+    def Show_UserForm_Other(self, Par, Name, Description, *args, **kwargs):  # v1.09
+        M14.Userform_Res = ""  # v1.09
+        present = HeadlessPresenters.params  # v1.09
+        if present is None:  # v1.09
+            logger.info("Patterngenerator: Parameterdialog fuer %s: keine Anzeige verfuegbar", Name)  # v1.09
+            return  # v1.09
+        metas = [self.meta(p.strip()) for p in str(Par).split(",") if p.strip()]  # v1.09
+        request = {"title": str(Name), "description": str(Description), "params": metas,  # v1.09
+                   "validate": lambda values: [check_param_value(m, v) for m, v in zip(metas, values)]}  # v1.09
+        values = present(request)  # v1.09
+        if values is None:  # v1.09
+            return  # v1.09
+        M14.Userform_Res = str(Name) + "(" + ", ".join(str(v).strip() for v in values) + ")"  # v1.09
+
+
+def led_address_dialog():  # v1.07
+    """Ersatz fuer M60.Select_LED_Address_Dialog. Das Original sucht ein Modul am USB-Anschluss und laesst zur Kontrolle die gewaehlte LED blinken.
+    Hier wird nur die Nummer eingegeben (das Blinken gibt es erst mit dem Senden an das Modul). Rueckgabe: Nummer oder -1 bei Abbruch"""
+    present = HeadlessPresenters.number  # v1.07
+    if present is None:  # v1.07
+        return -1  # v1.07
+    try:  # v1.07
+        start = int(float(str(X02.RangeDict["RGB_Modul_Nr"].Value) or 0))  # v1.07
+    except (TypeError, ValueError):  # v1.07
+        start = 0  # v1.07
+    result = present({"title": "RGB Modul Nr", "text": "Nummer der RGB LED am Modul (0 ist die erste LED).", "value": start, "minimum": 0, "maximum": 255})  # v1.07
+    return -1 if result is None else int(result)  # v1.07
+
 
 def init_userforms_headless(controller):
     """Ersatz fuer pattgen.D00_Forms.init_UserForms: keine Tk-Fenster, sondern Platzhalter (und die Statusanzeige ueber die Statuszeile)"""
     D00.StatusMsg_UserForm = HeadlessStatusForm(controller)
     for name in FORM_NAMES:
         setattr(D00, name, HeadlessForm(name))
+    D00.Select_from_Sheet_Form = HeadlessSelectFromSheetForm()                 # Auswahlliste im Browser (HeadlessPresenters.select)  # v1.07
+    M14.UserForm_Other = HeadlessUserFormOther()                               # Parameter der Goto Aktivierung (Counter, RandomTime ...)  # v1.09
+    M60.Select_LED_Address_Dialog = led_address_dialog                         # Eingabe der LED Adresse im Browser (HeadlessPresenters.number)  # v1.07
 
 
 class HeadlessControl:  # v1.01
@@ -252,6 +407,13 @@ class HeadlessPatternGeneratorPage:
         X02.Application.Caller = "Update"  # v1.01
         M03.Update_Grafik()  # v1.01
 
+    def ensure_grafik(self, ws):  # v1.07
+        """Balken zeichnen, wenn das Blatt keine hat. Die Formen werden nicht gesichert (LoadWorkbook laedt PatternWorkbook ohne Formen): nach einem
+        Neustart haben die wiederhergestellten Blaetter keine Balken, bis jemand Aktualisieren drueckt."""
+        if any(str(getattr(s, "Type", "")) == "5" for s in (getattr(ws, "shapelist", None) or [])):  # v1.07
+            return  # v1.07
+        self.update_grafik(ws)  # v1.07
+
     def add_columns(self, ws):  # v1.01
         self.use(ws)  # v1.01
         PGP.Add_Col_Button_Click()  # v1.01
@@ -339,6 +501,205 @@ class HeadlessPatternGeneratorPage:
         self.use(ws)  # v1.01
         ws.RGB_LED_CheckBox.Value = bool(value)  # v1.01
         T09.RGB_LED_CheckBox_Click()  # v1.01
+
+    # ------------------------------------------------------------------ Beispiele, Laden, Speichern, Loeschen (Optionen)
+    def example_dir(self):  # v1.06
+        return os.path.join(self.filedir2, M01.ExampleDir)  # v1.06
+
+    def example_collections(self):  # v1.06
+        """Beispielsammlungen, deren Datei vorhanden ist: Liste (Dateiname ohne .MLL_pcf, Anzeigename)"""  # v1.06
+        return [(name, caption) for name, caption in EXAMPLE_COLLECTIONS if os.path.exists(os.path.join(self.example_dir(), name + ".MLL_pcf"))]  # v1.06
+
+    def is_data_sheet(self, ws):  # v1.06
+        """Datenblatt (Muster), also weder Main noch ein Hilfsblatt, und sichtbar"""  # v1.06
+        try:  # v1.06
+            visible = ws.Visible  # v1.06
+        except Exception:                              # noqa: BLE001  # v1.06
+            visible = True  # v1.06
+        return visible is not False and ws.Name not in NON_DATA_SHEETS  # v1.06
+
+    def data_sheets(self):  # v1.06
+        return [ws for ws in self.workbook.sheets if self.is_data_sheet(ws)]  # v1.06
+
+    def first_sheet(self):  # v1.06
+        """Blatt, das nach dem Loeschen angezeigt wird: das erste Datenblatt, sonst Main"""  # v1.06
+        sheets = self.data_sheets()  # v1.06
+        return sheets[0] if sheets else self.find_sheet(M01.MAIN_SH)  # v1.06
+
+    @staticmethod  # v1.06
+    def sheet_names_in_file(path):  # v1.06
+        """Namen der Blaetter in einer Datei im Pattern-Format (Zeilen SheetName)"""  # v1.06
+        names = []  # v1.06
+        with open(path, encoding="utf-8", errors="replace") as fh:  # v1.06
+            for line in fh:  # v1.06
+                tokens = line.rstrip("\r\n").replace("\t", chr(M01.pcfSep)).split(chr(M01.pcfSep))  # v1.06
+                if tokens[0] == "SheetName" and len(tokens) > 1:  # v1.06
+                    names.append(tokens[1])  # v1.06
+        return names  # v1.06
+
+    @staticmethod  # v1.06
+    def object_lines_in_file(path):  # v1.06
+        """Zeilen der Textfelder (msoTextBox*) und Formularknoepfe (msoFormControl*) je Blatt (jeweils das erste Blatt dieses Namens in der Datei),
+        mit den Folgezeilen mehrzeiliger Texte. Die Web-Oberflaeche legt diese Objekte nicht an: Die Zeilen werden beim Laden gemerkt und beim
+        Speichern wieder geschrieben, damit die Datei fuer die Excel-Version vollstaendig bleibt."""
+        sep = chr(M01.pcfSep)  # v1.06
+        result, seen, current, sheet = {}, set(), None, None  # v1.06
+        with open(path, encoding="utf-8", errors="replace") as fh:  # v1.06
+            for line in fh:  # v1.06
+                line = line.rstrip("\r\n")  # v1.06
+                tokens = line.replace("\t", sep).split(sep)  # v1.06
+                if tokens[0] == "SheetName" and len(tokens) > 1:  # v1.06
+                    sheet = tokens[1] if tokens[1] not in seen else None  # v1.06
+                    seen.add(tokens[1])  # v1.06
+                    current = None  # v1.06
+                    if sheet is not None:  # v1.06
+                        result[sheet] = []  # v1.06
+                elif sheet is None:  # v1.06
+                    continue  # v1.06
+                elif tokens[0].startswith(("msoTextBox", "msoFormControl")):  # v1.06
+                    current = result[sheet]  # v1.06
+                    current.append(line)  # v1.06
+                elif len(tokens) == 1 and current is not None:                         # Folgezeile eines mehrzeiligen Textes  # v1.06
+                    current.append(line)  # v1.06
+                else:  # v1.06
+                    current = None  # v1.06
+        for lines in result.values():  # v1.06
+            while lines and lines[-1].strip() == "":  # v1.06
+                lines.pop()  # v1.06
+        return {name: lines for name, lines in result.items() if lines}  # v1.06
+
+    def load_files(self, paths):  # v1.06
+        """Dateien im Pattern-Format (.MLL_pcf) nacheinander laden (wie Load_AllExamples_Sheets / Load_Sheets des Originals). Ein Blatt, das es
+        schon gibt (oder das eine vorher geladene Datei mitbrachte), wird uebersprungen, damit keine Kopien mit _Copy_ im Namen entstehen.
+        Rueckgabe: (Namen der neuen Blaetter, Namen der uebersprungenen)"""
+        added, skipped = [], []  # v1.06
+        with self.activated():  # v1.06
+            loaded = "".join(ws.Name + "\t" for ws in self.workbook.sheets)          # Load_Sheets ueberspringt Namen aus Loaded_Sheets  # v1.06
+            for path in paths:  # v1.06
+                names = self.sheet_names_in_file(path)  # v1.06
+                objects = self.object_lines_in_file(path)  # v1.06
+                skipped += [n for n in names if ("\t" + loaded).find("\t" + n + "\t") >= 0]  # v1.06
+                before = {ws.Name for ws in self.workbook.sheets}  # v1.06
+                M08.Load_Sheets(path, loaded, "<<LASTSHEET>>")  # v1.06
+                new_names = [ws.Name for ws in self.workbook.sheets if ws.Name not in before]  # v1.06
+                added += new_names  # v1.06
+                for name in new_names:                                                 # Textfelder und Formularknoepfe merken (werden mit dem Blatt gesichert)  # v1.06
+                    if name in objects:  # v1.06
+                        ws = self.find_sheet(name)  # v1.06
+                        if getattr(ws, "persistent_controls_dict", None) is None:  # v1.06
+                            ws.persistent_controls_dict = {}  # v1.06
+                        ws.persistent_controls_dict["pcf_objects"] = objects[name]  # v1.06
+                        ws.tksheet.persistent_controls_dict = ws.persistent_controls_dict     # das Sichern der Arbeitsmappe liest das Woerterbuch des tksheet  # v1.06
+                loaded += "".join(n + "\t" for n in names)  # v1.06
+            self.attach_controls()  # v1.06
+            for name in added:                                                         # die Balken (Freiformen) werden nicht gesichert  # v1.06
+                ws = self.find_sheet(name)  # v1.06
+                try:  # v1.06
+                    ws.Activate()  # v1.06
+                    M03.Update_Grafik()  # v1.06
+                except Exception:                                                      # noqa: BLE001  # v1.06
+                    logger.exception("Grafik des Blatts %s nicht aufgebaut", name)  # v1.06
+        return added, skipped  # v1.06
+
+    def load_examples(self, names):  # v1.06
+        """Beispielsammlungen (Namen wie in example_collections) laden"""  # v1.06
+        return self.load_files([os.path.join(self.example_dir(), name + ".MLL_pcf") for name in names])  # v1.06
+
+    def load_upload(self, path):  # v1.06
+        """Hochgeladene Datei laden: .MLL_pcf oder .zip (mit der Datei und den Bildern dazu). Rueckgabe wie load_files"""  # v1.06
+        if not path.lower().endswith(".zip"):  # v1.06
+            return self.load_files([path])  # v1.06
+        folder = tempfile.mkdtemp(prefix="mll_pcf_up_")  # v1.06
+        with zipfile.ZipFile(path) as zf:  # v1.06
+            for info in zf.infolist():  # v1.06
+                name = os.path.basename(info.filename)                                 # nur Dateinamen: keine Pfade aus der ZIP-Datei uebernehmen  # v1.06
+                if info.is_dir() or not name:  # v1.06
+                    continue  # v1.06
+                with zf.open(info) as src, open(os.path.join(folder, name), "wb") as dst:  # v1.06
+                    shutil.copyfileobj(src, dst)  # v1.06
+        files = sorted(f for f in os.listdir(folder) if f.lower().endswith(".mll_pcf"))  # v1.06
+        if not files:  # v1.06
+            raise ValueError("Die ZIP-Datei enthaelt keine .MLL_pcf-Datei")  # v1.06
+        return self.load_files([os.path.join(folder, f) for f in files])  # v1.06
+
+    def save_for_download(self, ws=None):  # v1.06
+        """Das Blatt ws (oder alle Datenblaetter) in eine Datei im Pattern-Format schreiben (M07.Save_One_Sheet). Die Bilder der Blaetter kopiert die
+        Speicherfunktion neben die Datei; gibt es welche, wird alles in eine ZIP-Datei gepackt. Rueckgabe: (Pfad, Name zum Speichern)"""
+        folder = tempfile.mkdtemp(prefix="mll_pcf_")  # v1.06
+        base = ws.Name if ws is not None else "AllExamples"  # v1.06
+        base = re.sub(r'[\\/:*?"<>|]', "_", base)  # v1.06
+        pcf = os.path.join(folder, base + ".MLL_pcf")  # v1.06
+        sheets = [ws] if ws is not None else self.data_sheets()  # v1.06
+        if not sheets:  # v1.06
+            raise ValueError("Es gibt kein Datenblatt zum Speichern")  # v1.06
+        with self.activated():  # v1.06
+            for i, sh in enumerate(sheets):  # v1.06
+                sh.Activate()  # v1.06
+                sh.Select()  # v1.06
+                M07.Save_One_Sheet(sh, pcf, i > 0)  # v1.06
+                lines = (getattr(sh, "persistent_controls_dict", None) or {}).get("pcf_objects") or []  # v1.06
+                if lines:                                                              # die beim Laden gemerkten Textfelder und Formularknoepfe  # v1.06
+                    with open(pcf, "a", encoding="utf-8") as fh:  # v1.06
+                        fh.write("\n".join(lines) + "\n")  # v1.06
+        extras = [f for f in sorted(os.listdir(folder)) if f != base + ".MLL_pcf"]  # v1.06
+        if not extras:  # v1.06
+            return pcf, base + ".MLL_pcf"  # v1.06
+        zip_path = os.path.join(tempfile.mkdtemp(prefix="mll_pcf_zip_"), base + ".zip")  # v1.06
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:  # v1.06
+            for f in [base + ".MLL_pcf"] + extras:  # v1.06
+                zf.write(os.path.join(folder, f), f)  # v1.06
+        return zip_path, base + ".zip"  # v1.06
+
+    def delete_sheet(self, ws):  # v1.06
+        """Datenblatt loeschen; False bei Main und den Hilfsblaettern"""  # v1.06
+        if not self.is_data_sheet(ws):  # v1.06
+            return False  # v1.06
+        with self.activated():  # v1.06
+            X02.Application.DisplayAlerts = False  # v1.06
+            try:  # v1.06
+                X02.Sheets(ws.Name).Delete()  # v1.06
+            finally:  # v1.06
+                X02.Application.DisplayAlerts = True  # v1.06
+        return True  # v1.06
+
+    def delete_all_data_sheets(self):  # v1.06
+        """Alle Datenblaetter loeschen (wie Del_All_Sheets_Excep_Main, ohne Rueckfrage). Rueckgabe: Zahl der geloeschten Blaetter"""  # v1.06
+        count = 0  # v1.06
+        for ws in self.data_sheets():                  # eine Liste: waehrend des Loeschens aendert sich die Arbeitsmappe  # v1.06
+            if self.delete_sheet(ws):  # v1.06
+                count += 1  # v1.06
+        return count  # v1.06
+
+    # ------------------------------------------------------------------ Doppelklick auf Zellen mit Dialog
+    def dialog_cells(self, ws):  # v1.07
+        """Zellen des Blatts, auf die ein Doppelklick einen Dialog oeffnet (wie M02_Main.Proc_DoubleClick): {(Zeile, Spalte): Art}"""  # v1.07
+        cells = {}  # v1.07
+        if ws.Name in NON_DATA_SHEETS and ws.Name != M01.MAIN_SH:                      # Main ist in der Web-Oberflaeche ein Arbeitsblatt wie die anderen (Is_Data_Sheet des Originals fragt nur nach RGB_Modul_Nr)  # v1.08
+            return cells  # v1.07
+        with self.activated():  # v1.07
+            self.use(ws)  # v1.07
+            for kind, name in DOUBLECLICK_CELLS:  # v1.07
+                try:  # v1.07
+                    address = X02.Range(name).Address  # v1.07
+                    cells[(int(address[0]), int(address[1]))] = kind  # v1.07
+                except Exception:                                                   # noqa: BLE001  # v1.07
+                    logger.debug("Benannter Bereich %s im Blatt %s nicht gefunden", name, ws.Name)  # v1.07
+        return cells  # v1.07
+
+    def run_cell_dialog(self, ws, row, col):  # v1.07
+        """Dialog der Zelle (row, col) zeigen und das Ergebnis eintragen. Rueckgabe: Art des Dialogs oder None, wenn die Zelle keinen hat"""  # v1.07
+        kind = self.dialog_cells(ws).get((row, col))  # v1.07
+        if kind is None:  # v1.07
+            return None  # v1.07
+        with self.activated():  # v1.07
+            self.use(ws)  # v1.07
+            if kind == "special_mode":  # v1.07
+                M60.Select_Special_Mode()  # v1.07
+            elif kind == "rgb_modul_nr":  # v1.07
+                M60.Get_LED_Address_Dialog()  # v1.07
+            elif kind == "goto_act":  # v1.09
+                M14.Select_GotoAct()  # v1.09
+        return kind  # v1.07
 
     def protected_columns(self, sheetname):  # v1.01
         """Spalten, die nicht editierbar sind (Formating/ProtectedCells der Blattdefinition, zum Beispiel A:D)"""  # v1.01

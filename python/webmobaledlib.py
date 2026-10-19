@@ -1,8 +1,8 @@
-# Datei-Version: 1.58 (2026-10-18) - webmobaledlib.py
+# Datei-Version: 1.69 (2026-10-18) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        1.58
+# Version:        1.69
 # Last Update:    2026-10-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -27,6 +27,18 @@
 #   1.56  2026-10-17  Programm Generator: Knopf Alle Spalten blendet bei Datenblaettern auch die Spalten hinter Q ein und aus
 #   1.57  2026-10-18  Release-Stand: Laden einer Pico-Konfiguration loescht die Vorlagenzeile (M18a_Load_PicoConfig 1.01)
 #   1.58  2026-10-18  Header-Erzeugung: LED Kanal der vorherigen Zeile fuer Zeilen ohne LED Kanal (M06_Write_Header 1.01), LED2Var_Tab wie in Excel
+#   1.59  2026-10-18  Menue Tabelle: Proggenerator Tabelle neuberechnen (alle Blaetter, Symbole, Testtasten); M06 1.02 rechnet vor der Header-Erzeugung alle Blaetter
+#   1.60  2026-10-18  Patterngenerator: Optionen (Beispiele laden, Dateien laden und speichern, Seiten loeschen); web_pattgen 1.07, headless_pattgen 1.06, XLA_Application 1.06
+#   1.61  2026-10-18  Patterngenerator: Fehler beim Laden aller Beispiele (Dialog Optionen, web_pattgen 1.08)
+#   1.62  2026-10-18  Patterngenerator: Balken der geladenen Beispiele sassen zu tief (web_pattgen 1.09)
+#   1.63  2026-10-18  Patterngenerator: Balken nach einem Neustart (web_pattgen 1.10, headless_pattgen 1.07)
+#   1.63  2026-10-18  Patterngenerator Stufe 3b: Doppelklick auf Spezial Mode und RGB Modul Nr (web_pattgen 1.10, web_form_select 1.00, headless_pattgen 1.07)
+#   1.64  2026-10-18  Patterngenerator: Doppelklick auch auf der Seite Main (headless_pattgen 1.08)
+#   1.65  2026-10-18  Patterngenerator Stufe 3c: Goto Aktivierung (Auswahlliste, Parameterdialog), Export im Goto Mode (web_pattgen 1.11, web_form_select 1.01, headless_pattgen 1.09)
+#   1.66  2026-10-18  Zugriff aus dem Netz (Windows): Browser oeffnet die Adresse, auf der der Server lauscht (browser_host), Hinweis auf die Firewall beim Start
+#   1.67  2026-10-18  Programm Einstellungen: Firewall-Regel fuer den Zugriff aus dem Netz per Knopf (Windows), web_access 1.05, web_firewall 1.00
+#   1.68  2026-10-18  Firewall-Bereich erkennt auch von Hand angelegte Regeln fuer den Port, Entfernen loescht alle Regeln webMobaLedLib* (web_firewall 1.01, web_access 1.06)
+#   1.69  2026-10-18  Firewall-Status ohne Administratorrechte lesen (zwei Wege, Fehler anzeigen und protokollieren; web_firewall 1.02, web_access 1.07)
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -537,7 +549,19 @@ def font_scales(ctrl) -> dict:
             "grid": factor("FontNormal"), "small": factor("FontSmall"), "name": name or "Arial"}
 
 
-VERSION = "1.58 (2026-10-18)"  # v1.58
+VERSION = "1.69 (2026-10-18)"  # v1.69
+# VERSION = "1.68 (2026-10-18)"  # v1.69 (ersetzt)
+# VERSION = "1.67 (2026-10-18)"  # v1.68 (ersetzt)
+# VERSION = "1.66 (2026-10-18)"  # v1.67 (ersetzt)
+# VERSION = "1.65 (2026-10-18)"  # v1.66 (ersetzt)
+# VERSION = "1.64 (2026-10-18)"  # v1.65 (ersetzt)
+# VERSION = "1.63 (2026-10-18)"  # v1.64 (ersetzt)
+# VERSION = "1.62 (2026-10-18)"  # v1.63 (ersetzt)
+# VERSION = "1.61 (2026-10-18)"  # v1.62 (ersetzt)
+# VERSION = "1.60 (2026-10-18)"  # v1.61 (ersetzt)
+# VERSION = "1.59 (2026-10-18)"  # v1.60 (ersetzt)
+# VERSION = "1.58 (2026-10-18)"  # v1.59 (ersetzt)
+# VERSION = "1.58 (2026-10-18)"  # v1.59 (ersetzt)
 # VERSION = "1.57 (2026-10-18)"  # v1.58 (ersetzt)
 # VERSION = "1.56 (2026-10-17)"  # v1.57 (ersetzt)
 # VERSION = "1.55 (2026-10-17)"  # v1.56 (ersetzt)
@@ -995,6 +1019,16 @@ def index():
                 sync_shapes(sheet)
             except Exception:                      # noqa: BLE001
                 logger.exception("Shapes von Blatt %s nicht nachgefuehrt", getattr(sheet, "Name", "?"))
+
+    def recalc_table():  # v1.59
+        """Menue Tabelle: Proggenerator Tabelle neuberechnen. Alle Tabellenblaetter neu rechnen (LED-Zahlen je Kanal und Start-LED-Nummern, auch die
+        der eingebundenen Blaetter), danach fuer das aktive Blatt wie "Symbole aktualisieren" und "Testtasten neu aufbauen"."""
+        active = X02.ActiveSheet  # v1.59
+        M20.Update_All_Start_LedNr()  # v1.59
+        active.Select()                                  # Update_All_Start_LedNr waehlt nacheinander alle Blaetter  # v1.59
+        M25.Make_sure_that_Col_Variables_match()  # v1.59
+        active.refreshicons()                            # Symbole aktualisieren (rechnet das Blatt noch einmal und zeichnet neu)  # v1.59
+        M20.ResetTestButtons(False)                      # Testtasten auf den Stand der Tabelle bringen  # v1.59
 
     def rebuild_decorations():
         """Reparatur: Symbole und Testtasten aller Datenblaetter aus dem Tabelleninhalt neu anlegen (wie beim Laden
@@ -2554,6 +2588,7 @@ def index():
             ("Beenden ...", quit_program),
         ],
         "Tabelle": [
+            ("Proggenerator Tabelle neuberechnen", run_command(recalc_table, "Tabelle neu berechnen")),  # v1.59
             ("Symbole aktualisieren", run_command(lambda: X02.ActiveSheet.refreshicons(), "Symbole aktualisieren")),
             ("Testtasten neu aufbauen", run_command(lambda: M20.ResetTestButtons(False), "Testtasten")),
             ("Symbole und Testtasten neu aufbauen (Reparatur)", run_command(rebuild_decorations, "Symbole und Testtasten")),
@@ -2676,7 +2711,7 @@ def index():
                 from _web import web_pattgen  # v1.39
                 if _PATT["page"] is None:  # v1.39
                     _PATT["page"] = HeadlessPatternGeneratorPage(ctrl)  # v1.39
-                patt_state["view"] = web_pattgen.build(ctrl, _PATT["page"], lambda: font_scales(ctrl)["grid"])  # v1.39
+                patt_state["view"] = web_pattgen.build(ctrl, _PATT["page"], lambda: font_scales(ctrl)["grid"], offer_download=offer_download)  # v1.60
             except Exception:  # noqa: BLE001  # v1.39
                 logger.exception("Der Patterngenerator konnte nicht aufgebaut werden")  # v1.39
                 ui.label("Der Patterngenerator konnte nicht aufgebaut werden. Einzelheiten stehen im Protokoll (Hilfe \u2192 Logfile anzeigen).").classes("text-negative")  # v1.39
@@ -2909,6 +2944,14 @@ def open_browser(url: str, timeout: float = 3.0) -> str:
     return ""
 
 
+def browser_host(host: str) -> str:  # v1.66
+    """Adresse, mit der der Browser auf DIESEM Rechner den Server erreicht. Bei 0.0.0.0 (alle Adressen) localhost, sonst die Adresse, auf der der Server
+    lauscht: Mit MLL_HOST=192.168.x.x lauscht er nicht auf localhost (Browser: Seite nicht gefunden)."""
+    if host in ("", "0.0.0.0", "::", "127.0.0.1", "localhost"):                   # der Standard 127.0.0.1 bleibt bei localhost: gleiche Adresse wie bisher  # v1.66
+        return "localhost"  # v1.66
+    return f"[{host}]" if ":" in host and not host.startswith("[") else host  # v1.66
+
+
 def open_browser_when_ready(host: str, port: int) -> None:
     """Wartet im Hintergrund, bis der Server Anfragen annimmt, und oeffnet dann den Browser (wie NiceGUI mit show=True, aber mit open_browser)."""
     check_host = "127.0.0.1" if host in ("", "0.0.0.0") else host
@@ -2922,7 +2965,7 @@ def open_browser_when_ready(host: str, port: int) -> None:
                 time.sleep(0.5)
         else:
             return
-        url = f"http://localhost:{port}"
+        url = f"http://{browser_host(host)}:{port}"  # v1.66
         method = open_browser(url)
         if method:
             logger.info("Browser geoeffnet (%s): %s", method, url)
@@ -3008,8 +3051,8 @@ def main():
             logger.warning(msg)
             notify_user(msg)
         print(msg)
-        if not open_browser(f"http://localhost:{args.port}"):
-            print(f"Der Browser konnte nicht geoeffnet werden. Adresse von Hand eingeben: http://localhost:{args.port}")
+        if not open_browser(f"http://{browser_host(args.host)}:{args.port}"):  # v1.66
+            print(f"Der Browser konnte nicht geoeffnet werden. Adresse von Hand eingeben: http://{browser_host(args.host)}:{args.port}")  # v1.66
         sys.exit(0)
 
     if args.open_if_running and port_in_use(args.host, args.port):
@@ -3059,15 +3102,21 @@ def main():
     @nicegui_app.get("/mll-version")
     def mll_version():                                  # fuer den Starter: laeuft schon eine Instanz, und welche Version?
         return PlainTextResponse(f"webmobaledlib {VERSION}\n{os.getpid()}\n")
+    from _web import web_access                                    # Adresse und Port fuer die Seite Programm Einstellungen (Firewall)  # v1.67
+    web_access.SERVER.update(host=args.host, port=args.port)  # v1.67
     if not web_password.auth_required() and args.host not in ("127.0.0.1", "localhost", "::1"):
         print("\nHINWEIS: Der Server ist im Netz erreichbar, aber ohne Passwort. Jeder im Netz kann dann Programme auf den\n"
               "  angeschlossenen Arduino laden. Passwort setzen:  MLL_PASSWORD=...  oder in den Programm Einstellungen\n"
               "  (siehe Anleitung, Kapitel 8)\n")
+    if sys.platform == "win32" and args.host not in ("127.0.0.1", "localhost", "::1"):  # v1.66
+        print("\nWINDOWS: Erreicht ein anderer Rechner die Oberflaeche nicht, blockiert meist die Firewall (Netzwerk als \"Oeffentlich\" eingestuft oder die\n"  # v1.66
+              "  Rueckfrage der Firewall verneint). Als Administrator in einer Eingabeaufforderung (Anleitung, Kapitel 8):\n"  # v1.66
+              f"  netsh advfirewall firewall add rule name=\"webMobaLedLib\" dir=in action=allow protocol=TCP localport={args.port} profile=private\n")  # v1.66
     for url, folder in (("/mll_images", "images"), ("/mll_icons", "icons")):     # Symbole fuer Toolbar und Makrobaum
         if os.path.isdir(os.path.join(here, folder)):
             nicegui_app.add_static_files(url, os.path.join(here, folder))
     start_backend()
-    shown_host = "localhost" if args.host in ("", "0.0.0.0") else args.host
+    shown_host = browser_host(args.host)  # v1.66
     print(f"\nwebmobaledlib.py Version {VERSION}")
     print(f"Datenordner: {userdata.data_dir()}")
     if LOGFILE:
