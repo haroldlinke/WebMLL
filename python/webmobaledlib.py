@@ -1,9 +1,9 @@
-# Datei-Version: 1.78 (2026-10-19) - webmobaledlib.py
+# Datei-Version: 1.79 (2026-10-20) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        1.78
-# Last Update:    2026-10-19
+# Version:        1.79
+# Last Update:    2026-10-20
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -38,6 +38,7 @@
 #   1.66  2026-10-18  Zugriff aus dem Netz (Windows): Browser oeffnet die Adresse, auf der der Server lauscht (browser_host), Hinweis auf die Firewall beim Start
 #   1.67  2026-10-18  Programm Einstellungen: Firewall-Regel fuer den Zugriff aus dem Netz per Knopf (Windows), web_access 1.05, web_firewall 1.00
 #   1.68  2026-10-18  Firewall-Bereich erkennt auch von Hand angelegte Regeln fuer den Port, Entfernen loescht alle Regeln webMobaLedLib* (web_firewall 1.01, web_access 1.06)
+#   1.79  2026-10-20  Raspberry Pi, erster Start: Frage nach den ARDUINO Bibliotheken wird gestellt, wenn ein Browser verbunden ist (headless_startup 1.00, no_tk 1.01, M37_Inst_Libraries 1.01)
 #   1.78  2026-10-19  Mindestversion von web_access.py 1.09 (Einschalten legt die Firewall-Regel an)
 #   1.77  2026-10-19  Zugriff aus dem Netz als Einstellung (web_network 1.00, web_access 1.08): --host ohne Vorgabe, Rangfolge Aufruf, MLL_HOST, Einstellung; Hook fuer den Neustart
 #   1.76  2026-10-19  Mindestversion von headless_pattgen.py 1.13 (Zeile Goto Aktivierung nach dem Neustart)
@@ -89,7 +90,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 # dann stuerzt ein Teil ab oder tut nichts. Die Pruefung beim Start meldet es im Protokoll, auf der Konsole und mit einer roten Meldung oben auf der Seite.
 REQUIRED_FILES = {  # v1.75
     "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.09", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.15",  # v1.76 (headless_pattgen 1.13)
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.79
     "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.75
     "proggen/M18a_Load_PicoConfig.py": "1.01", "proggen/M17_Import_old_Data.py": "1.01",  # v1.75
 }  # v1.75
@@ -164,6 +165,9 @@ def start_backend():
     from headless.headless_proggen import HeadlessProgGeneratorPage
     from _web import web_log
     ctrl.weblog = web_log.WebLog(ctrl)           # Textfenster fuer Kompilieren/Hochladen (vor dem Anlegen der Seite)
+    from headless import headless_startup  # v1.79
+    headless_startup.begin()                     # Fragen vom Start (zum Beispiel fehlende ARDUINO Bibliotheken) erst stellen, wenn ein Browser verbunden ist  # v1.79
+    headless_startup.install()  # v1.79
     page = HeadlessProgGeneratorPage(ctrl)
     from _web import web_dialogs
     web_dialogs.install()                        # MsgBox/InputBox als Browser-Dialoge
@@ -177,6 +181,7 @@ def start_backend():
     fast_paths.install()                         # schnellere Makrosuche in Lib_Macros (Laden, Dialog)
     import ExcelAPI.XLA_Application as _X02
     _X02.GetAsyncKeyState = lambda key: 0         # Maus-/Tastenstatus des Servers sagt im Web nichts ueber den Browser
+    headless_startup.end()  # v1.79
 
 
 @nicegui_app.get("/beendet")
@@ -589,7 +594,8 @@ def font_scales(ctrl) -> dict:
             "grid": factor("FontNormal"), "small": factor("FontSmall"), "name": name or "Arial"}
 
 
-VERSION = "1.78 (2026-10-19)"  # v1.78
+VERSION = "1.79 (2026-10-20)"  # v1.79
+# VERSION = "1.78 (2026-10-19)"  # v1.79 (ersetzt)
 # VERSION = "1.77 (2026-10-19)"  # v1.78 (ersetzt)
 # VERSION = "1.76 (2026-10-19)"  # v1.77 (ersetzt)
 # VERSION = "1.75 (2026-10-19)"  # v1.76 (ersetzt)
@@ -2911,6 +2917,26 @@ def index():
     if not _RECOVERY["checked"]:
         _RECOVERY["checked"] = True
         ui.timer(0.8, offer_recovery, once=True)
+
+    async def run_startup_tasks():  # v1.79
+        """Fragen und Meldungen vom Start des Programms (es war noch kein Browser da) jetzt zeigen und die zurueckgestellte Pruefung der ARDUINO Bibliotheken ausfuehren"""  # v1.79
+        from headless import headless_startup as startup  # v1.79
+        pending, messages = startup.take_pending(), startup.take_messages()  # v1.79
+        if not pending and not messages:  # v1.79
+            return  # v1.79
+
+        def work():  # v1.79
+            import ExcelAPI.XLA_Application as xla  # v1.79
+            if messages:  # v1.79
+                xla.MsgBox(startup.message_text(messages), 64, "Meldungen beim Start des Programms")  # v1.79
+            for name, func in pending:  # v1.79
+                try:  # v1.79
+                    func()  # v1.79
+                except Exception:                                  # noqa: BLE001  # v1.79
+                    logger.exception("%s ist fehlgeschlagen", name)  # v1.79
+        await run_in_worker(work)  # v1.79
+        show(state["ws"])  # v1.79
+    ui.timer(1.5, run_startup_tasks, once=True)  # v1.79
 
     show(state["ws"])
     mark("Tabelle fuellen (show)")

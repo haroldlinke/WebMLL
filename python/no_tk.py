@@ -1,4 +1,15 @@
-# Datei-Version: 1.00 (2026-10-12) - no_tk.py
+# Datei-Version: 1.01 (2026-10-20) - no_tk.py
+# ----------------------------------------------------------------------------------------------
+# Name:           no_tk.py
+# Path:           no_tk.py
+# Version:        1.01
+# Last Update:    2026-10-20
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Ersatz fuer tkinter ohne Tk und ohne Display (Original, nicht erfasst)
+#   1.01  2026-10-20  Meldungen vom Programmstart werden vorgemerkt (headless_startup.record_message), damit der Browser sie beim ersten Verbinden zeigt
+# ----------------------------------------------------------------------------------------------
 """Ersatz fuer tkinter, wenn es kein Tk oder kein Display gibt (Raspberry Pi als Dienst ohne Bildschirm).
 
 Die Originalmodule (Prog_Generator.py, F00_mainbuttons.py, Userform_*.py ...) beginnen mit `import tkinter as tk` und
@@ -181,6 +192,11 @@ def _install_messagebox(mod):
     def make(name, result):
         def box(title=None, message=None, **kwargs):
             logger.warning("tkinter.messagebox.%s ohne Display: %s - %s", name, title, message)
+            try:                                               # Meldungen vom Programmstart merken: der Browser zeigt sie beim ersten Verbinden  # v1.01
+                from headless import headless_startup  # v1.01
+                headless_startup.record_message(name, title, message)  # v1.01
+            except ImportError:  # v1.01
+                pass  # v1.01
             return result
         box.__name__ = name
         return box

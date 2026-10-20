@@ -1,3 +1,14 @@
+# Datei-Version: 1.01 (2026-10-20) - M37_Inst_Libraries.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M37_Inst_Libraries.py
+# Path:           proggen/M37_Inst_Libraries.py
+# Version:        1.01
+# Last Update:    2026-10-20
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-20  Update der ARDUINO Bibliotheken (Linux): Antwort Nein auf die Frage ist kein Fehler mehr (UPDATE_DECLINED statt Fehler 1 beim Ausfuehren des Update Programms ''); davor Original-Port, nicht erfasst
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -159,6 +170,7 @@ Reque_Ver_Col = 7
 DetectVer_Col = 8
 Other_Src_Col = 9
 UPDATE_LIB_CMD_NAME = 'Update_Libraries.cmd'
+UPDATE_DECLINED = -2                       # der Anwender hat die Frage "Soll das Update ausgefuehrt werden?" mit Nein beantwortet (kein Fehler)  # v1.01
 RESTART_PROGGEN_CMD = 'Restart_ProgGen.cmd'
 UnzipList = String()
 Update_Time = Variant()
@@ -874,7 +886,7 @@ def Create_Do_Update_Script_Linux_part1(Pause_at_End):
 def Create_Do_Update_Script_Linux_part2(LibList, BrdList,OthersourceList,URLList):
     if P01.MsgBox(M09.Get_Language_Str(' Folgende ARDUINO Bibliotheken müssen aktualisiert werden:\nLibraries:' + repr(LibList)+"\nBoards:"+repr(BrdList)+"\nOthersource:"+repr(OthersourceList)+'\n Soll das Update ausgeführt werden?'), vbQuestion + vbYesNo, M09.Get_Language_Str('ARDUINO Bibilothem update')) != vbYes:
         # shutdown and restart
-        return M40.Failure
+        return UPDATE_DECLINED  # v1.01
     Res=M40.Failure
     # *** Libraries ***
     if LibList != '':
@@ -1244,6 +1256,9 @@ def Update_All_Selected_Libraries_Linux():
                 #Res = M40.ShellAndWait(CommandStr, 0, vbNormalFocus, M40.PromptUser)
                 if (Res == M40.Success) or (Res == M40.Timeout):
                     pass
+                elif Res == UPDATE_DECLINED:  # v1.01
+                    P01.Unload(F00.StatusMsg_UserForm)  # v1.01
+                    break  # v1.01
                 else:
                     P01.MsgBox(Replace(Replace(M09.Get_Language_Str('Fehler #1# beim Ausführen des Update Programms \'#2#\''), "#1#", str(Res)), '#2#',""), vbCritical, M09.Get_Language_Str('Fehler beim Aktualisieren der Bibliotheken'))
                     break #*HL GoTo(EndFunc)
