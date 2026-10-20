@@ -1,9 +1,9 @@
-# Datei-Version: 1.11 (2026-10-18) - web_pattgen.py
+# Datei-Version: 1.15 (2026-10-19) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
-# Version:        1.11
-# Last Update:    2026-10-18
+# Version:        1.15
+# Last Update:    2026-10-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -20,6 +20,10 @@
 #   1.10  2026-10-18  Balken nach einem Neustart: beim Wechsel auf ein Blatt zeichnen, wenn es keine hat (ensure_grafik)
 #   1.10  2026-10-18  Doppelklick auf Spezial Mode und RGB Modul Nr oeffnet den Dialog (JS_DBLCLICK, on_cell_dbl, window.mllPDlg), editable als Funktion; web_form_select
 #   1.11  2026-10-18  on_cell_dbl: Doppelklick waehrend eines Vorgangs ohne Meldung (der erste Klick kann den Dialog der Goto Aktivierung schon geoeffnet haben)
+#   1.12  2026-10-19  Bilder der Seiten und Goto-Pfeile anzeigen (pic, curve, arrow, text in JS_SHAPES und shapes_payload), Knopf Bild einfuegen, Bilder entfernen (Optionen), picture_url
+#   1.13  2026-10-19  Goto-Pfeile zu kurz (KS_Hauptsignal...): Laenge und Abstaende bleiben, nur der Anker wird auf das Zeilenraster umgerechnet; Beschriftung am Pfeilanfang
+#   1.14  2026-10-19  Zeilenhoehen je Zeile wie in Excel (_h, getRowHeight, resetRowHeights), Formen mit den echten Hoehen; Gestaltung wie Excel (apply_design: Farben, Schrift, schwarze Rahmen, zentrierte Zahlen)
+#   1.15  2026-10-19  Absturz beim Wechsel in den Patterngenerator mit veralteter headless_sheet.py: Klassenpruefung statt hasattr am Objekt, keine Hoehe wird zur Standardhoehe, Warnung im Protokoll
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 
@@ -39,10 +43,12 @@ from __future__ import annotations
 
 import asyncio  # v1.01
 import bisect  # v1.09
+import hashlib  # v1.12
 import json  # v1.01
 import logging
+import os  # v1.12
 
-from nicegui import context, run, ui  # v1.01
+from nicegui import app, context, run, ui  # v1.12
 
 from _web import web_dialogs, web_form_select  # v1.10
 from headless.headless_gridmodel import FULL_TEXT_TOOLTIP, build_grid
@@ -50,6 +56,8 @@ from headless.headless_gridmodel import FULL_TEXT_TOOLTIP, build_grid
 logger = logging.getLogger(__name__)
 
 INTERNAL_SHEETS = ("PG-Temp", "Named_Ranges")          # Hilfsblaetter: kein Reiter (ausser mit "versteckte Tabellen anzeigen")  # v1.01
+# Gestaltung wie im Excel-Patterngenerator (Zeilennummern 1-basiert, Spalte BK = Index 62), siehe apply_design
+DESIGN_DAUER_ROW, DESIGN_FLASH_ROW, DESIGN_GOTO_ROW, DESIGN_HEAD_ROW, DESIGN_FIRST_LED_ROW, DESIGN_LAST_COL = 28, 46, 47, 49, 50, 62  # v1.14
 ROW_PX = 20                                            # Zeilenhoehe der Excel-Schicht (Formating RowHeight); die Formen beziehen sich darauf  # v1.01
 # Bildlauf und Markierung der Tabelle: Die Position wird aus den Bildlaufereignissen und aus onCellFocused mitgefuehrt (der Browser setzt sie beim
 # Neuaufbau der Zeilen ohne Ereignis zurueck). mllPRestore stellt sie danach bis zu 1,2 Sekunden lang wieder her; greift der Benutzer ein
@@ -132,12 +140,33 @@ window.mllShapes = function (shapes, tries) {
   const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('class', 'mll-shapes');
   svg.style.cssText = 'position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;z-index:3';
+  const add = (tag, attrs) => { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
+  // Pfeilspitze in (x, y), Richtung (ux, uy) normiert
+  const head = (x, y, ux, uy, color) => {
+    const L = 10, W = 4.5, bx = x - ux * L, by = y - uy * L;
+    add('polygon', {points: x + ',' + y + ' ' + (bx - uy * W) + ',' + (by + ux * W) + ' ' + (bx + uy * W) + ',' + (by - ux * W), fill: color});
+  };
+  const unit = (x1, y1, x2, y2) => { const d = Math.hypot(x2 - x1, y2 - y1) || 1; return [(x2 - x1) / d, (y2 - y1) / d]; };
   for (const s of shapes) {
-    const p = document.createElementNS(ns, 'polygon');
-    p.setAttribute('points', s.points.map(q => q[0] + ',' + q[1]).join(' '));
-    p.setAttribute('fill', s.color);
-    p.setAttribute('fill-opacity', s.opacity);
-    svg.appendChild(p);
+    const kind = s.kind || 'poly';
+    if (kind === 'pic') {
+      add('image', {href: s.url, x: s.x, y: s.y, width: s.w, height: s.h, preserveAspectRatio: 'none'});
+    } else if (kind === 'curve') {
+      const q = s.points;
+      add('path', {d: 'M ' + q[0][0] + ' ' + q[0][1] + ' C ' + q[1][0] + ' ' + q[1][1] + ', ' + q[2][0] + ' ' + q[2][1] + ', ' + q[3][0] + ' ' + q[3][1],
+                   fill: 'none', stroke: s.color, 'stroke-width': 2});
+      const from = (q[2][0] !== q[3][0] || q[2][1] !== q[3][1]) ? q[2] : q[1];
+      const u = unit(from[0], from[1], q[3][0], q[3][1]); head(q[3][0], q[3][1], u[0], u[1], s.color);
+    } else if (kind === 'arrow') {
+      add('line', {x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2, stroke: s.color, 'stroke-width': 2});
+      if (s.head === 'end') { const u = unit(s.x1, s.y1, s.x2, s.y2); head(s.x2, s.y2, u[0], u[1], s.color); }
+      else if (s.head === 'begin') { const u = unit(s.x2, s.y2, s.x1, s.y1); head(s.x1, s.y1, u[0], u[1], s.color); }
+    } else if (kind === 'text') {
+      const e = add('text', {x: s.x, y: s.y + 13, fill: s.color, 'font-size': 13, 'font-weight': 600, 'font-family': 'sans-serif'});
+      e.textContent = s.text;
+    } else {
+      add('polygon', {points: s.points.map(q => q[0] + ',' + q[1]).join(' '), fill: s.color, 'fill-opacity': s.opacity});
+    }
   }
   cont.appendChild(svg);
 };
@@ -149,6 +178,8 @@ window.mllShapes = function (shapes, tries) {
 # Einfuegen aus (mll_pcell_op); Kopieren geschieht im Browser.
 # Doppelklick auf eine Zelle mit Dialog (Spezial Mode, RGB Modul Nr; window.mllPDlg setzt show() je Blatt): Bearbeiten der Zelle unterdruecken (AG Grid
 # fragt "editable" nach dem Ereignis ab) und den Dialog beim Server anfordern. Tippen und F2 bearbeiten die Zelle weiter, wie in Excel.
+# Jede Zeile hat ihre Hoehe aus der Excel-Schicht (_h): bei aktivem Goto Mode sind die Zeilen ueber und unter der Goto-Zeile viel hoeher (Platz fuer die Pfeile)
+JS_ROW_HEIGHT = "p => (p.data && p.data._h) ? p.data._h : 20"  # v1.14
 JS_DBLCLICK = ("e => { if (!e.data || !e.column || !window.mllPDlg) return; const col = e.column.getColId(); "  # v1.10
                "if (!window.mllPDlg.has(e.data._r + ',' + col)) return; window.mllPNoEdit = true; "  # v1.10
                "setTimeout(() => { window.mllPNoEdit = false; }, 400); emitEvent('mll_pcell_dbl', {r: e.data._r, col: col}); }")  # v1.10
@@ -241,6 +272,7 @@ class PatternView:
             ui.button("Export zu ProgGen", on_click=self.on_export).props("dense outline no-caps").tooltip("Makro in eine Zeile des Programm Generators eintragen")  # v1.06
             ui.button("Import von ProgGen", on_click=self.on_import).props("dense outline no-caps").tooltip("Makro aus einer Zeile des Programm Generators einlesen")  # v1.06
             ui.button("Optionen", on_click=self.on_options).props("dense outline no-caps").tooltip("Beispiele laden, Seiten speichern und löschen")  # v1.07
+            ui.button("Bild einfügen", on_click=self.on_insert_picture).props("dense outline no-caps").tooltip("PNG- oder JPG-Bild unter der Tabelle einfügen")  # v1.12
             self.rgb = ui.checkbox("RGB LED", on_change=self.on_rgb)  # v1.01
             self.info = ui.label("").classes("text-caption text-grey-8")
 
@@ -259,6 +291,7 @@ class PatternView:
                 ":onGridReady": "e => { window.mllPApi = e.api; }",  # v1.05
                 ":onCellFocused": "e => { if (e.rowIndex !== null && e.rowIndex !== undefined && e.column) window.mllPFocus = {rowIndex: e.rowIndex, colId: e.column.getColId()}; }",  # v1.05
                 "rowHeight": ROW_PX,  # v1.01
+                ":getRowHeight": JS_ROW_HEIGHT,  # v1.14
                 "headerHeight": 24,
                 "defaultColDef": {"resizable": False, "sortable": False, ":editable": "p => !window.mllPNoEdit", "cellDataType": False, "minWidth": 4,  # v1.10  (vorher "editable": True)
                                   ":cellStyle": JS_CELL_STYLE, ":cellClass": JS_CELL_CLASS, ":tooltipValueGetter": FULL_TEXT_TOOLTIP},  # v1.02
@@ -393,6 +426,31 @@ class PatternView:
         self._last_click = None  # v1.10
         await self.action(lambda ws: self.page.run_cell_dialog(ws, r, c))  # v1.10
 
+    async def on_insert_picture(self):  # v1.12
+        """Knopf Bild einfügen (wie Load_New_Picture): Bild hochladen, es erscheint unter der Tabelle (Zelle B63). Die Datei wird in den Bilderordner kopiert."""  # v1.12
+        result = {}  # v1.12
+
+        def fn(ws):  # v1.12
+            path = web_dialogs.web_askopenfilename(title="Bild einfügen (PNG oder JPG)", filetypes=[("Bilder", "*.png *.jpg *.jpeg")])  # v1.12
+            if path:  # v1.12
+                result["name"] = self.page.insert_picture(ws, path)  # v1.12
+        ok = await self.action(fn)  # v1.12
+        if ok and result.get("name"):  # v1.12
+            ui.notify(f"Das Bild {result['name']} ist unter der Tabelle eingefügt.", type="positive")  # v1.12
+
+    async def remove_pictures(self, dlg):  # v1.12
+        count = len(self.page.pictures_of(self.ws))  # v1.12
+        if not count:  # v1.12
+            ui.notify("Auf dieser Seite sind keine Bilder.", type="warning")  # v1.12
+            return  # v1.12
+        if not await self.confirm(f"Alle {count} Bilder der Seite {self.ws.Name} entfernen?\nDie Bilddateien selbst bleiben erhalten.", yes="Entfernen"):  # v1.12
+            return  # v1.12
+        dlg.close()  # v1.12
+        result = {}  # v1.12
+        ok = await self.action(lambda ws: result.update(n=self.page.remove_pictures(ws)))  # v1.12
+        if ok:  # v1.12
+            ui.notify(f"{result.get('n', 0)} Bild(er) entfernt", type="positive")  # v1.12
+
     async def on_new_sheet(self):  # v1.01
         before = {ws.Name for ws in self.page.workbook.sheets}  # v1.01
         if await self.action(self.page.new_sheet, refresh="never"):  # v1.01
@@ -443,6 +501,7 @@ class PatternView:
             with ui.row().classes("gap-2"):  # v1.07
                 ui.button("Aktuelle Seite löschen", on_click=lambda: self.delete_pages(False, dlg)).props("outline no-caps color=negative")  # v1.07
                 ui.button("Alle Beispiele löschen", on_click=lambda: self.delete_pages(True, dlg)).props("outline no-caps color=negative")  # v1.07
+                ui.button("Bilder dieser Seite entfernen", on_click=lambda: self.remove_pictures(dlg)).props("outline no-caps color=negative")  # v1.12
             with ui.row().classes("justify-between items-center w-full"):  # v1.07
                 ui.link("Hilfe", "https://wiki.mobaledlib.de/anleitungen/spezial/patterngenerator", new_tab=True)  # v1.07
                 ui.button("Schließen", on_click=dlg.close).props("flat").classes("mll-cancel")  # v1.07
@@ -599,35 +658,82 @@ class PatternView:
         """Balken der grafischen Anzeige (Freiformen der Excel-Schicht): Eckpunkte in Pixeln der Tabelle, Zeilen mit dem Faktor der Zeilenhoehe"""  # v1.01
         shapes = []  # v1.01
         seen = set()                                    # die Excel-Schicht kann dieselbe Form mehrfach anlegen (Berechnung und Aktualisieren)  # v1.02
-        # Geladene Dateien setzen Zeilenhoehen einzelner Zeilen (LED_Attr), die Formen sind damit berechnet. Das Gitter im Browser zeichnet alle Zeilen
-        # gleich hoch (ROW_PX): y je Zeile umrechnen (Zeile k der Excel-Schicht wird Zeile k des Gitters, der Anteil in der Zeile bleibt)
+        # Jede Zeile des Gitters hat die Hoehe der Excel-Schicht mal dem Faktor der Schriftgroesse (_h). Die Formen sind mit den Hoehen der Excel-Schicht berechnet:
+        # y je Zeile umrechnen (gleiche Zeile, gleicher Anteil in der Zeile); mit unveraenderten Hoehen und dem Faktor 1 ist das die Identitaet.
         try:  # v1.09
-            positions = [float(v) for v in ws.tksheet.MT.row_positions]  # v1.09
+            heights = [float(v) for v in ws.tksheet.get_row_heights()]  # v1.14
         except Exception:                               # noqa: BLE001  # v1.09
-            positions = []  # v1.09
+            heights = []  # v1.14
+        positions, web_positions = [0.0], [0.0]  # v1.14
+        for h in heights:  # v1.14
+            positions.append(positions[-1] + h)  # v1.14
+            web_positions.append(web_positions[-1] + scaled_height(h, self.row_scale))  # v1.14
 
         def web_y(y):  # v1.09
-            if len(positions) < 2 or y < 0:  # v1.09
-                return y  # v1.09
+            if not heights or y < 0:  # v1.14
+                return y * self.row_scale  # v1.14
             if y >= positions[-1]:  # v1.09
-                return (len(positions) - 1 + (y - positions[-1]) / ROW_PX) * ROW_PX  # v1.09
+                return web_positions[-1] + (y - positions[-1]) * self.row_scale  # v1.14
             k = bisect.bisect_right(positions, y) - 1  # v1.09
-            height = positions[k + 1] - positions[k]  # v1.09
-            return (k + (y - positions[k]) / height) * ROW_PX if height > 0 else k * ROW_PX  # v1.09
+            return web_positions[k] + (y - positions[k]) * (web_positions[k + 1] - web_positions[k]) / heights[k] if heights[k] > 0 else web_positions[k]  # v1.14
+        pictures, polygons, lines = [], [], []  # v1.12
+        scale = self.row_scale  # v1.12
+        arrow_begin = {}                                  # Anfang des zuletzt gezeichneten Pfeils: die Beschriftung folgt ihm (Draw_StraitArrow legt Pfeil und Beschriftung nacheinander an)  # v1.13
+
+        def mapped(y):  # v1.12
+            return round(web_y(float(y)), 1)  # v1.14
+
+        def number(value):  # v1.12
+            try:  # v1.12
+                return float(value)  # v1.12
+            except (TypeError, ValueError):  # v1.12
+                return 0.0  # v1.12
         for s in getattr(ws, "shapelist", None) or []:  # v1.01
+            stype = str(getattr(s, "Type", ""))  # v1.12
+            name = str(getattr(s, "Name", ""))  # v1.12
+            if getattr(s, "Visible", True) is False:  # v1.12
+                continue  # v1.12
             nodes = list(getattr(s, "nodelist", None) or [])  # v1.01
-            if str(getattr(s, "Type", "")) != "5" or len(nodes) < 3:  # v1.01
+            left, top, width, height = (number(getattr(s, attr, 0)) for attr in ("Left", "Top", "Width", "Height"))  # v1.12
+            if stype == "13":                                                    # Bild: bleibt, wo es ist (Pfad im Namen der Form)  # v1.12
+                if not os.path.isfile(name) or width <= 0 or height <= 0:  # v1.12
+                    continue  # v1.12
+                y1, y2 = mapped(top), mapped(top + height)  # v1.12
+                item = {"kind": "pic", "url": picture_url(name), "x": round(left, 1), "y": y1, "w": round(width, 1), "h": round(max(y2 - y1, 1), 1)}  # v1.12
+                target = pictures  # v1.12
+            elif stype == "5" and name.startswith("Goto_Graph_CurvedArrow") and len(nodes) >= 4:     # gekruemmter Goto-Pfeil: Kurve mit Pfeilspitze  # v1.12
+                # Goto-Pfeile sind Zeichnungen fester Groesse am Ankerpunkt (hier der erste Punkt): nur der Anker wird auf das Zeilenraster umgerechnet, die Abstaende
+                # der anderen Punkte bleiben (sonst wuerden sie mit der Hoehe der Zeilen gestaucht: Zeile 28 ist in Excel 93 px hoch, im Gitter 20 px)
+                anchor = float(nodes[0][1])  # v1.13
+                item = {"kind": "curve", "points": [[round(float(x), 1), round(mapped(anchor) + (float(y) - anchor) * scale, 1)] for x, y in nodes[:4]],  # v1.13
+                        "color": getattr(s, "Fillcolor", None) or "#0000ff"}  # v1.13
+                target = lines  # v1.12
+            elif stype == "5" and len(nodes) >= 3:                               # Balken  # v1.12
+                transparency = float(getattr(getattr(s, "Fill", None), "Transparency_val", 0) or 0)  # v1.12
+                item = {"points": [[round(float(x), 1), mapped(y)] for x, y in nodes], "color": getattr(s, "Fillcolor", None) or "#00b050",  # v1.12
+                        "opacity": round(1 - transparency, 2) if transparency else 0.85}  # v1.12
+                target = polygons  # v1.12
+            elif stype == "Connector" and name.startswith("Goto_Graph_Arrow"):     # gerader Start- oder Endpfeil: von (Left, Top) nach (Left+Width, Top+Height)  # v1.12
+                end = getattr(s, "EndArrowheadStyle_val", None) not in (None, 0)  # v1.12
+                begin = getattr(s, "BeginArrowheadStyle_val", None) not in (None, 0)  # v1.12
+                y2 = mapped(top + height)                                            # Anker: das Ende (Oberkante der Goto-Zeile); die Laenge bleibt (31,6 px, Endpfeil 19,7 px)  # v1.13
+                y1 = round(y2 - height * scale, 1)  # v1.13
+                arrow_begin["y"] = y1  # v1.13
+                item = {"kind": "arrow", "x1": round(left, 1), "y1": y1, "x2": round(left + width, 1), "y2": y2,  # v1.13
+                        "color": getattr(s, "Fillcolor", None) or "#000000", "head": "end" if end else ("begin" if begin else "")}  # v1.12
+                target = lines  # v1.12
+            elif stype == "17" and name.startswith("Goto_Graph_Label") and getattr(s, "Text_val", None) not in (None, ""):      # Beschriftung (Startnummer, E; auch "0")  # v1.12
+                label_y = round(arrow_begin.pop("y") - 10, 1) if "y" in arrow_begin else mapped(top)     # Beschriftung am Anfang ihres Pfeils  # v1.13
+                item = {"kind": "text", "x": round(left, 1), "y": label_y, "text": str(s.Text_val), "color": "#000000"}  # v1.13
+                target = lines  # v1.12
+            else:  # v1.12
                 continue  # v1.01
-            transparency = float(getattr(getattr(s, "Fill", None), "Transparency_val", 0) or 0)  # v1.01
-            points = [[round(float(x), 1), round(web_y(float(y)) * self.row_scale, 1)] for x, y in nodes]  # v1.09
-            # points = [[round(float(x), 1), round(float(y) * self.row_scale, 1)] for x, y in nodes]  # v1.09 (ersetzt)
-            color = getattr(s, "Fillcolor", None) or "#00b050"  # v1.02
-            key = (tuple(map(tuple, points)), color)  # v1.02
+            key = json.dumps(item, sort_keys=True)                               # die Excel-Schicht kann dieselbe Form mehrfach anlegen (Berechnung und Aktualisieren)  # v1.12
             if key in seen:  # v1.02
                 continue  # v1.02
             seen.add(key)  # v1.02
-            shapes.append({"points": points, "color": color, "opacity": round(1 - transparency, 2) if transparency else 0.85})  # v1.02
-        return shapes  # v1.01
+            target.append(item)  # v1.12
+        return pictures + polygons + lines  # v1.12
 
     def show(self, ws=None):
         """Das Blatt neu an den Browser senden (Zellwerte, Farben, Spaltenbreiten, ausgeblendete Zeilen) und die Balken zeichnen"""  # v1.01
@@ -652,6 +758,15 @@ class PatternView:
                     ov[f"c{ci}"] = True  # v1.02
             if ov:  # v1.02
                 row["_ov"] = ov  # v1.02
+        sheet = ws.tksheet  # v1.14
+        # hasattr am OBJEKT taugt hier nicht: HeadlessSheet liefert fuer jede unbekannte Methode ein No-Op (None); die Klasse zeigt, ob die Methode es wirklich gibt
+        has_heights = hasattr(type(sheet), "data_row_height")  # v1.15
+        if not has_heights and not getattr(self, "_old_sheet_warned", False):  # v1.15
+            self._old_sheet_warned = True  # v1.15
+            logger.warning("ExcelAPI/headless_sheet.py ist veraltet (ab Version 1.02 gehoeren die Zeilenhoehen zur Zeile): alle Zeilen werden gleich hoch gezeichnet. Bitte die Datei einspielen.")  # v1.15
+        for row in rows:                                   # Hoehe je Zeile aus der Excel-Schicht (nach Datenzeile gespeichert)  # v1.14
+            row["_h"] = scaled_height(sheet.data_row_height(row["_r"]), self.row_scale) if has_heights else row_px  # v1.15
+        self.apply_design(ws, rows, self.page.led_row_count(ws))  # v1.14
         if not self._widths_logged:  # v1.02
             self._widths_logged = True  # v1.02
             logger.info("Patterngenerator: Spaltenbreiten A bis N: %s", [widths.get(i) for i in range(14)])  # v1.02
@@ -686,11 +801,18 @@ class PatternView:
             else:                                       # Zeilen hinzugekommen oder weggefallen: alle Zeilen austauschen (gleiche Ids bleiben stehen)  # v1.04
                 self.grid.run_grid_method("setGridOption", "rowData", rows)  # v1.04
                 sent = True  # v1.05
+            old_heights = {r["_r"]: r.get("_h") for r in old_rows}  # v1.14
+            if sent and any(old_heights.get(r["_r"]) != r.get("_h") for r in rows):  # v1.14
+                self.grid.run_grid_method("resetRowHeights")       # AG Grid fragt die Hoehe nur beim Anlegen einer Zeile ab  # v1.14
             if sent:  # v1.05
                 ui.run_javascript("window.mllPRestore()")       # Bildlauf und Markierung nachfuehren, falls der Browser sie doch zuruecksetzt  # v1.05
         self._layout = layout  # v1.04
         self._cols_sig = cols_sig  # v1.04
         self._shown_version = ws.tksheet.version  # v1.01
+        try:  # v1.12
+            self.page.sync_pictures(ws)                      # Bilder des Blatts fuer das Sichern der Arbeitsmappe merken  # v1.12
+        except Exception:                                    # noqa: BLE001  # v1.12
+            logger.debug("Bilder nicht gemerkt", exc_info=True)  # v1.12
         ui.run_javascript("window.mllShapes(%s)" % json.dumps(self.shapes_payload(ws)))  # v1.01
         try:  # v1.10
             keys = [f"{r - 1},c{c - 1}" for r, c in self.page.dialog_cells(ws)]       # Zellen mit Dialog beim Doppelklick  # v1.10
@@ -704,10 +826,88 @@ class PatternView:
             text += f", {meta['shown_rows']} sichtbar"
         self.info.set_text(text)
 
+    def apply_design(self, ws, rows, led_count=1):  # v1.14
+        """Gestaltung wie im Excel-Patterngenerator: Farben der Kopfzeilen, Schrift der Ergebniszeilen, schwarze Rahmen, zentrierte Zahlen. Die Werte sind aus einem
+        Screenshot des Excel-Programms gemessen. Die Bereiche der Rahmen stehen als GridList in der Definition der Arbeitsmappe (Zeile 28 Dauer, Zeile 47 Goto,
+        ab Zeile 49 die Tabelle der LEDs, jeweils bis Spalte BK)."""
+        by_row = {r["_r"] + 1: r for r in rows}                # Excel-Zeilennummer (1-basiert)  # v1.14
+
+        def style(r, col, **css):  # v1.14
+            row = by_row.get(r)  # v1.14
+            if row is not None:  # v1.14
+                row.setdefault("_st", {}).setdefault(f"c{col}", {}).update(css)  # v1.14
+
+        def fill(r, col, color):                             # nur wo das Blatt keine Farbe vorgibt (zum Beispiel die LED-Namen)  # v1.14
+            row = by_row.get(r)  # v1.14
+            if row is not None and "backgroundColor" not in row.get("_st", {}).get(f"c{col}", {}):  # v1.14
+                style(r, col, backgroundColor=color)  # v1.14
+        last_led = DESIGN_FIRST_LED_ROW + max(1, int(led_count)) - 1                   # die Tabelle hat so viele LED-Zeilen (Spalte D hat immer die Nummern 1 bis 20)  # v1.14
+        # Schrift der Ergebniszeilen
+        style(20, 4, color="#0000FF", fontWeight="bold")                        # Ergebnis  # v1.14
+        style(23, 4, color="#00B050", fontWeight="bold")                        # Makro  # v1.14
+        style(25, 4, color="#AEAAAA")                                           # Makro mit StCh  # v1.14
+        style(DESIGN_FLASH_ROW, 4, fontSize="10px")                             # Flashbedarf  # v1.14
+        # Farben
+        style(DESIGN_HEAD_ROW, 3, backgroundColor="#FFF2CC")                  # LED Nr  # v1.14
+        for r in range(DESIGN_FIRST_LED_ROW, last_led + 1):  # v1.14
+            style(r, 3, backgroundColor="#FFF2CC")  # v1.14
+        for c in range(4, DESIGN_LAST_COL + 1):  # v1.14
+            fill(DESIGN_HEAD_ROW, c, "#BDD7EE")                                 # Spalte Nr -> und die Zahlen der Spalten  # v1.14
+        style(DESIGN_GOTO_ROW, 4, backgroundColor="#C6E0B4")                    # Goto Tabelle  # v1.14
+        # zentrierte Zahlen und Marken
+        for r, first in ((DESIGN_DAUER_ROW, 4), (DESIGN_GOTO_ROW, 4)):  # v1.14
+            for c in range(first, DESIGN_LAST_COL + 1):  # v1.14
+                style(r, c, textAlign="center")  # v1.14
+        style(DESIGN_HEAD_ROW, 3, textAlign="center")  # v1.14
+        style(DESIGN_HEAD_ROW, 4, textAlign="right")                           # Spalte Nr ->  # v1.14
+        for c in range(5, DESIGN_LAST_COL + 1):  # v1.14
+            style(DESIGN_HEAD_ROW, c, textAlign="center")  # v1.14
+        for r in range(DESIGN_FIRST_LED_ROW, last_led + 1):  # v1.14
+            style(r, 3, textAlign="center")  # v1.14
+            for c in range(5, DESIGN_LAST_COL + 1):  # v1.14
+                style(r, c, textAlign="center")  # v1.14
+        # schwarze Rahmen (1 px): rechts und unten an jeder Zelle, oben an der ersten Zeile, links an der ersten Spalte des Bereichs
+        black = "1px solid #000000"  # v1.14
+        for r1, r2, c1 in ((DESIGN_DAUER_ROW, DESIGN_DAUER_ROW, 4), (DESIGN_GOTO_ROW, DESIGN_GOTO_ROW, 4), (DESIGN_HEAD_ROW, last_led, 3)):  # v1.14
+            for r in range(r1, r2 + 1):  # v1.14
+                for c in range(c1, DESIGN_LAST_COL + 1):  # v1.14
+                    css = {"borderRight": black, "borderBottom": black}  # v1.14
+                    if r == r1:  # v1.14
+                        css["borderTop"] = black  # v1.14
+                    if c == c1:  # v1.14
+                        css["borderLeft"] = black  # v1.14
+                    style(r, c, **css)  # v1.14
+
     def refresh(self):
         """Beim Wechsel auf den Reiter: Blattliste und Tabelle auffrischen"""
         self.rebuild_tabs()
         self.show()
+
+
+PICTURE_URLS = {}                                   # Pfad -> URL der Bilddatei (Bilder bleiben, wo sie sind; nur diese Dateien werden ausgeliefert)  # v1.12
+
+
+def scaled_height(height, factor) -> int:  # v1.14
+    """Zeilenhoehe der Excel-Schicht im Gitter (mit dem Faktor der Schriftgroesse); dieselbe Rechnung fuer die Zeilen (_h) und fuer die Lage der Formen"""  # v1.14
+    try:  # v1.15
+        height = float(height)  # v1.15
+    except (TypeError, ValueError):                       # keine Hoehe (veraltete headless_sheet.py): Standardhoehe  # v1.15
+        height = float(ROW_PX)  # v1.15
+    return max(10, int(round(height * factor)))  # v1.15
+
+
+def picture_url(path: str) -> str:  # v1.12
+    """URL, unter der der Browser die Bilddatei einer Form holt. Ausgeliefert werden nur Dateien, die als Bild in einem Blatt stehen."""  # v1.12
+    url = PICTURE_URLS.get(path)  # v1.12
+    if url is None:  # v1.12
+        url = "/mll_pcf_pic/" + hashlib.md5(path.encode("utf-8")).hexdigest()[:16] + os.path.splitext(path)[1].lower()  # v1.12
+        app.add_static_file(local_file=path, url_path=url)  # v1.12
+        PICTURE_URLS[path] = url  # v1.12
+    try:  # v1.12
+        stamp = int(os.path.getmtime(path))  # v1.12
+    except OSError:  # v1.12
+        stamp = 0  # v1.12
+    return f"{url}?v={stamp}"  # v1.12
 
 
 def build(ctrl, page, grid_scale, offer_download=None) -> PatternView:  # v1.07

@@ -1,15 +1,17 @@
-# Datei-Version: 1.07 (2026-10-18) - web_access.py
+# Datei-Version: 1.09 (2026-10-19) - web_access.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_access.py
 # Path:           _web/web_access.py
-# Version:        1.07
-# Last Update:    2026-10-18
+# Version:        1.09
+# Last Update:    2026-10-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.05  2026-10-18  Bereich Firewall (Windows): Knoepfe Zugriff aus dem Netz freigeben und Freigabe entfernen (web_firewall), Hinweis fuer macOS und Linux, SERVER (Adresse und Port des Servers); davor bis 1.04 (2026-10-15), nicht erfasst
 #   1.06  2026-10-18  Bereich Firewall: Status nach Wirkung (auch von Hand angelegte Regeln und Regeln fuer Python), Blockierregeln als Warnung, Entfernen loescht alle Regeln webMobaLedLib*
 #   1.07  2026-10-18  Firewall: Fehler beim Lesen des Zustands werden angezeigt (statt keine Regel), Warten liefert ok, timeout oder unknown
+#   1.08  2026-10-19  Schalter Zugriff aus dem Netz erlauben (build_lan, on_lan, Rueckfrage nach einem Passwort, Neustart); Datei network.json ueber web_network
+#   1.09  2026-10-19  Einschalten von Zugriff aus dem Netz legt unter Windows die Firewall-Regel an (ensure_firewall_for_lan); Warnung zur Adresse des Servers nennt den Schalter statt MLL_HOST
 # ----------------------------------------------------------------------------------------------
 """Zusatzfelder der Seite Programm Einstellungen: Passwort fuer den Zugriff auf die Web-Oberflaeche aus dem Netz aendern und (nur auf
 dem Raspberry Pi mit installiertem Hilfsprogramm) den Namen des Rechners im Netz aendern.
@@ -25,10 +27,12 @@ import socket
 import subprocess
 
 from _web import web_dialogs as wd
+from _web import web_network  # v1.08
 from _web import web_firewall as wf  # v1.05
 from _web import web_password
 
 LOCAL_HOSTS = ("127.0.0.1", "localhost", "::1")
+HOOKS = {}                                       # "restart": Funktion zum Neustart des Programms (setzt webmobaledlib.py)  # v1.08
 # Adresse und Port, auf denen der Server lauscht (main() in webmobaledlib.py setzt sie aus --host und --port; vorher die Umgebungsvariablen)
 SERVER = {"host": os.environ.get("MLL_HOST", "127.0.0.1"), "port": int(os.environ.get("MLL_PORT", "8080") or 8080)}  # v1.05
 HOSTNAME_HELPER = "/usr/local/sbin/mobaledlib-set-hostname"        # von install_pi.sh installiert (root, nicht veraenderbar)
@@ -71,6 +75,8 @@ class WebAccess:
         self.new = self.again = self.status = self.warning = self.reset_btn = None
         self.host_input = self.host_status = self.host_result = None
         self.fw_status = self.fw_warning = self.fw_remove = None  # v1.05
+        self.lan_switch = self.lan_status = self.lan_addr = self.lan_restart = None  # v1.08
+        self._lan_guard = False  # v1.08
 
     def collect(self) -> dict:
         values = {}                                                               # Darstellung und Bedienung der Tabelle werden mit gespeichert
@@ -86,6 +92,8 @@ class WebAccess:
         self.layout.build()
         self.table = web_layout.TableSetting(self.ctrl)
         self.table.build()
+        if not os.environ.get("INVOCATION_ID"):                                 # nicht beim Dienst (Raspberry Pi): dort steht die Adresse in der Einstellungsdatei des Dienstes  # v1.08
+            self.build_lan()  # v1.08
         with ui.card().props("flat bordered").classes("w-full gap-2"):
             ui.label("Zugriff über das Netz (Web-Oberfläche)").classes("text-subtitle1").style("font-weight: 600")
             ui.label("Wird die Oberfläche von einem anderen Rechner im Netz aufgerufen (zum Beispiel beim Raspberry Pi), fragt der Browser "
@@ -103,6 +111,104 @@ class WebAccess:
         self.build_firewall()  # v1.05
         if hostname_change_possible():
             self.build_hostname()
+
+    # ------------------------------------------------------------------ Zugriff aus dem Netz erlauben (Schalter, ersetzt MLL_HOST in der Startdatei)
+    def build_lan(self):  # v1.08
+        from nicegui import ui  # v1.08
+        with ui.card().props("flat bordered").classes("w-full gap-2"):  # v1.08
+            ui.label("Zugriff aus dem Netz erlauben").classes("text-subtitle1").style("font-weight: 600")  # v1.08
+            ui.label("Eingeschaltet können andere Rechner im Heimnetz die Oberfläche in ihrem Browser öffnen. Das gilt nach einem Neustart des Programms. "  # v1.08
+                     "Ohne Passwort kann dann jeder im Netz die Oberfläche benutzen und Programme auf den angeschlossenen Arduino laden: "  # v1.08
+                     "Bitte unten ein Passwort setzen.").classes("text-caption text-grey-8")  # v1.08
+            self.lan_switch = ui.switch("Zugriff aus dem Netz erlauben", value=web_network.lan_access(), on_change=self.on_lan)  # v1.08
+            if web_network.SOURCE["name"] in ("cli", "env"):  # v1.08
+                self.lan_switch.disable()  # v1.08
+            self.lan_status = ui.label("")  # v1.08
+            self.lan_addr = ui.label("").classes("text-caption")  # v1.08
+            self.lan_restart = ui.button("Jetzt neu starten", on_click=self.restart_now).props("color=primary no-caps")  # v1.08
+        self.refresh_lan()  # v1.08
+
+    def refresh_lan(self):  # v1.08
+        if self.lan_status is None:  # v1.08
+            return  # v1.08
+        setting = web_network.lan_access()  # v1.08
+        text, restart = web_network.describe(setting, SERVER["host"], web_network.SOURCE["name"])  # v1.08
+        self.lan_status.set_text(text)  # v1.08
+        self.lan_restart.set_visibility(restart)  # v1.08
+        url = self.lan_url() if setting else ""  # v1.08
+        if url:  # v1.08
+            user = f" (Benutzername {web_password.username()})" if web_password.auth_required() else ""  # v1.08
+            self.lan_addr.set_text(("Adresse für andere Rechner" if not restart else "Adresse nach dem Neustart") + f": {url}{user}")  # v1.08
+        else:  # v1.08
+            self.lan_addr.set_text("")  # v1.08
+
+    async def on_lan(self, e):  # v1.08
+        from nicegui import ui  # v1.08
+        if self._lan_guard:  # v1.08
+            return  # v1.08
+        value = bool(e.value)  # v1.08
+        if value and not web_password.auth_required():  # v1.08
+            password = await self.ask_password_for_lan()  # v1.08
+            if password is None:                                                   # abgebrochen: Schalter zurueck  # v1.08
+                self._lan_guard = True  # v1.08
+                self.lan_switch.set_value(False)  # v1.08
+                self._lan_guard = False  # v1.08
+                return  # v1.08
+            if password:  # v1.08
+                web_password.set_password(password)  # v1.08
+                self.refresh()  # v1.08
+                ui.notify("Das Passwort ist gesetzt.", type="positive")  # v1.08
+        web_network.set_lan_access(value)  # v1.08
+        self.refresh_lan()  # v1.08
+        ui.notify("Gespeichert. Es gilt nach einem Neustart des Programms (Knopf „Jetzt neu starten“).", type="positive")  # v1.08
+        if value:  # v1.09
+            await self.ensure_firewall_for_lan()  # v1.09
+
+    async def ensure_firewall_for_lan(self):  # v1.09
+        """Windows: beim Einschalten die Firewall-Regel fuer den Port anlegen, wenn die Firewall ihn noch nicht zulaesst (Windows fragt nach Administratorrechten)"""  # v1.09
+        from nicegui import run, ui  # v1.09
+        if not wf.supported() or self.fw_status is None:  # v1.09
+            return  # v1.09
+        port = SERVER["port"]  # v1.09
+        status = await run.io_bound(wf.rule_status, port)  # v1.09
+        if status.get("known", True) and status.get("rules") and not status.get("blocked"):  # v1.09
+            ui.notify(f"Die Windows-Firewall lässt den Port {port} schon zu.", type="info")  # v1.09
+        else:  # v1.09
+            await self.add_firewall()  # v1.09
+            status = await run.io_bound(wf.rule_status, port)  # v1.09
+        if "Public" in status.get("networks", []):  # v1.09
+            ui.notify("Das Netzwerk ist als „Öffentlich“ eingestuft, die Regel gilt aber nur für Privatnetzwerke: Einstellungen → Netzwerk und Internet → "  # v1.09
+                      "(WLAN oder Ethernet) → Eigenschaften → Netzwerkprofil „Privat“.", type="warning", timeout=30000)  # v1.09
+        await self.update_firewall()  # v1.09
+
+    async def ask_password_for_lan(self):  # v1.08
+        """Rueckfrage beim Einschalten ohne Passwort. Rueckgabe: None (abgebrochen), \"\" (ohne Passwort) oder das neue Passwort"""  # v1.08
+        from nicegui import ui  # v1.08
+        with ui.dialog() as dlg, ui.card().classes("w-[560px] max-w-full"):  # v1.08
+            ui.label("Zugriff aus dem Netz einschalten").classes("text-h6")  # v1.08
+            ui.label("Es ist noch kein Passwort eingerichtet. Ohne Passwort kann jeder, der dein Heimnetz erreicht, die Oberfläche benutzen und Programme "  # v1.08
+                     "auf den angeschlossenen Arduino laden. Besser jetzt ein Passwort eingeben (mindestens 4 Zeichen). Der Benutzername ist "  # v1.08
+                     f"„{web_password.username()}“. Leer lassen: ohne Passwort.").classes("text-body2")  # v1.08
+            entry = ui.input("Passwort", password=True, password_toggle_button=True).props("dense outlined").classes("w-full")  # v1.08
+            with ui.row().classes("justify-end w-full gap-2"):  # v1.08
+                ui.button("Abbrechen", on_click=lambda: dlg.submit(None)).props("flat no-caps")  # v1.08
+                ui.button("Einschalten", on_click=lambda: dlg.submit(str(entry.value or ""))).props("color=primary no-caps")  # v1.08
+        result = await dlg  # v1.08
+        dlg.delete()  # v1.08
+        if result:  # v1.08
+            error = web_password.validate_new(result, result)  # v1.08
+            if error:  # v1.08
+                ui.notify(error, type="warning")  # v1.08
+                return None  # v1.08
+        return result  # v1.08
+
+    async def restart_now(self):  # v1.08
+        from nicegui import ui  # v1.08
+        restart = HOOKS.get("restart")  # v1.08
+        if restart is None:  # v1.08
+            ui.notify("Bitte das Programm beenden (Knopf BEENDEN) und neu starten.", type="warning")  # v1.08
+            return  # v1.08
+        await restart()  # v1.08
 
     def build_hostname(self):
         from nicegui import ui
@@ -131,6 +237,7 @@ class WebAccess:
             ui.label("Damit ein anderer Rechner im Heimnetz die Oberfläche erreicht, muss die Windows-Firewall den Port zulassen. Der Knopf richtet dafür die "  # v1.05
                      "Regel „webMobaLedLib <Port>“ ein (TCP, nur für Privatnetzwerke); eine ältere Regel mit diesem Namen wird dabei ersetzt. Windows fragt dabei nach Administratorrechten: mit „Ja“ bestätigen."  # v1.06
                      ).classes("text-caption text-grey-8")  # v1.05
+            ui.label("Beim Einschalten von „Zugriff aus dem Netz erlauben“ (oben) wird diese Regel automatisch angelegt.").classes("text-caption text-grey-8")  # v1.09
             self.fw_status = ui.label("Wird geprüft ...")  # v1.05
             self.fw_warning = ui.label("").classes("text-negative").style("white-space: pre-wrap")  # v1.05
             with ui.row().classes("items-center gap-3"):  # v1.05
@@ -169,8 +276,12 @@ class WebAccess:
             warnings.append(f"Eine Blockierregel verhindert den Zugriff: {names}. Eine Blockierregel gewinnt gegen jede Zulassungsregel. Sie muss in der "  # v1.06
                             "Windows-Firewall gelöscht werden (Anleitung, Kapitel 8).")  # v1.06
         if SERVER["host"] in LOCAL_HOSTS:  # v1.05
-            warnings.append("Der Server lauscht nur auf diesem Rechner (MLL_HOST=127.0.0.1). Für den Zugriff aus dem Netz MLL_HOST=0.0.0.0 setzen "  # v1.05
-                            "und das Programm neu starten (Anleitung, Kapitel 8).")  # v1.05
+            if web_network.SOURCE["name"] in ("cli", "env"):  # v1.09
+                warnings.append(f"Der Server lauscht nur auf diesem Rechner: Die Adresse {SERVER['host']} ist fest vorgegeben (Startparameter --host oder Umgebungsvariable MLL_HOST).")  # v1.09
+            elif web_network.lan_access():  # v1.09
+                warnings.append("Der Zugriff aus dem Netz ist eingeschaltet, der Server lauscht aber noch nur auf diesem Rechner: Das Programm neu starten (Knopf „Jetzt neu starten“ oben).")  # v1.09
+            else:  # v1.09
+                warnings.append("Der Server lauscht nur auf diesem Rechner. Oben „Zugriff aus dem Netz erlauben“ einschalten und das Programm neu starten.")  # v1.09
         if "Public" in status.get("networks", []):  # v1.06
             warnings.append("Das Netzwerk ist als „Öffentlich“ eingestuft, die Regel gilt aber nur für Privatnetzwerke: Einstellungen → Netzwerk und "  # v1.05
                             "Internet → Eigenschaften → Netzwerkprofil „Privat“.")  # v1.05

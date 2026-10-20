@@ -1,3 +1,14 @@
+# Datei-Version: 1.01 (2026-10-19) - M08_Load_Sheet_Data.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M08_Load_Sheet_Data.py
+# Path:           pattgen/M08_Load_Sheet_Data.py
+# Version:        1.01
+# Last Update:    2026-10-19
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-19  Load_Picture: .jpg nur dann durch .png ersetzen, wenn die PNG-Datei existiert (ein eingefuegtes JPG-Bild wurde beim erneuten Laden nicht gefunden); davor Original-Port, nicht erfasst
+# ----------------------------------------------------------------------------------------------
 from vb2py.vbfunctions import *
 from vb2py.vbdebug import *
 import ExcelAPI.XLA_Application as X02
@@ -462,7 +473,9 @@ def Load_Picture(Line, SourceDir):
     Edges = Split(M30.CorrectKomma(Params(0)), ';')
     # 02.07.19: Added: CorrectKomma()
     PicName = SourceDir + Params(1)
-    PicName=PicName.replace(".jpg",".png")
+    # PicName=PicName.replace(".jpg",".png")  # v1.01 (ersetzt: ein JPG ohne PNG-Datei daneben wurde nie gefunden)
+    if LCase(Right(PicName, 4)) == '.jpg' and Dir(Left(PicName, Len(PicName) - 4) + '.png') != '':  # v1.01
+        PicName = Left(PicName, Len(PicName) - 4) + '.png'                  # die Beispiele liefern PNG-Dateien zu den JPG-Namen der Dateien mit  # v1.01
     # 25.11.19: First look in the source dir
     if Dir(PicName) == '':
         SecondDir = PG.ThisWorkbook.Path + '/' + M01.ExampleDir + '/'

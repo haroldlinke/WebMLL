@@ -1,9 +1,9 @@
-# Datei-Version: 1.09 (2026-10-18) - headless_pattgen.py
+# Datei-Version: 1.13 (2026-10-19) - headless_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_pattgen.py
 # Path:           headless/headless_pattgen.py
-# Version:        1.09
-# Last Update:    2026-10-18
+# Version:        1.13
+# Last Update:    2026-10-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -18,6 +18,10 @@
 #   1.07  2026-10-18  Doppelklick-Dialoge Spezial Mode und RGB Modul Nr: HeadlessSelectFromSheetForm (Ersatz fuer Select_from_Sheet_Form), led_address_dialog, HeadlessPresenters, dialog_cells, run_cell_dialog
 #   1.08  2026-10-18  dialog_cells: auch die Seite Main (Is_Data_Sheet des Originals fragt nur nach dem Bereich RGB_Modul_Nr), nur die Hilfsblaetter ausnehmen
 #   1.09  2026-10-18  Goto Aktivierung (3c): Doppelklick, Auswahlliste mit Check_Param_Goto, HeadlessUserFormOther (Parameterdialog fuer Counter, RandomTime ...), check_param_value
+#   1.10  2026-10-19  Bilder: sync_pictures und restore_pictures (nach dem Neustart), insert_picture (Bild einfuegen), remove_pictures, image_size; die Bilder bleiben, wo sie sind (nur Pfad und Lage werden gesichert)
+#   1.11  2026-10-19  led_row_count: Zahl der LED-Zeilen der Tabelle (fuer die Rahmen)
+#   1.12  2026-10-19  restore_dynamic_rows: nach dem Neustart Goto- und Spezial-Mode-Zeilen neu bestimmen (Hide_Show_*_If_Enabled)
+#   1.13  2026-10-19  restore_dynamic_rows: auch die Zeile Goto Aktivierung (Zeile 13) neu bestimmen (Hide_Show_Check_Goto_Activation); die Vorlage versteckt sie, nach dem Neustart fehlte sie
 # ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Pattern_GeneratorPage: baut die Arbeitsmappe "PatternWorkbook" des Patterngenerators.
 
@@ -38,6 +42,7 @@ import logging
 import os
 import re  # v1.01
 import shutil  # v1.06
+import struct  # v1.10
 import tempfile  # v1.06
 import types  # v1.01
 import zipfile  # v1.06
@@ -53,6 +58,8 @@ import pattgen.DieseArbeitsmappe as AM
 import pattgen.M01_Public_Constants_a_Var as M01  # v1.04
 import pattgen.M03_Analog_Trend as M03  # v1.01
 import pattgen.M07_Save_Sheet_Data as M07  # v1.06
+import pattgen.M02_Main as M02A  # v1.13
+import pattgen.M06_Goto_Graph as M06G  # v1.12
 import pattgen.M08_Load_Sheet_Data as M08  # v1.06
 import pattgen.M14_Select_GotoAct as M14  # v1.09
 import pattgen.M60_Select_LED as M60  # v1.07
@@ -211,6 +218,32 @@ class HeadlessUserFormOther:  # v1.09
         M14.Userform_Res = str(Name) + "(" + ", ".join(str(v).strip() for v in values) + ")"  # v1.09
 
 
+def image_size(path):  # v1.10
+    """Breite und Hoehe eines PNG- oder JPEG-Bilds in Pixeln, gelesen aus dem Dateikopf (ohne Pillow, das die Installation nicht braucht)"""  # v1.10
+    with open(path, "rb") as fh:  # v1.10
+        head = fh.read(32)  # v1.10
+        if head[:8] == b"\x89PNG\r\n\x1a\n":  # v1.10
+            width, height = struct.unpack(">II", head[16:24])  # v1.10
+            return int(width), int(height)  # v1.10
+        if head[:2] == b"\xff\xd8":  # v1.10
+            fh.seek(2)  # v1.10
+            while True:  # v1.10
+                marker = fh.read(2)  # v1.10
+                if len(marker) < 2 or marker[0] != 0xFF:  # v1.10
+                    break  # v1.10
+                while marker[1] == 0xFF:                                              # Fuellbytes vor dem Markercode  # v1.10
+                    marker = b"\xff" + fh.read(1)  # v1.10
+                code = marker[1]  # v1.10
+                if code in (0x01, 0xD8) or 0xD0 <= code <= 0xD7:                      # Marker ohne Laenge  # v1.10
+                    continue  # v1.10
+                length = struct.unpack(">H", fh.read(2))[0]  # v1.10
+                if 0xC0 <= code <= 0xCF and code not in (0xC4, 0xC8, 0xCC):           # SOFn: Praezision, Hoehe, Breite  # v1.10
+                    _, height, width = struct.unpack(">BHH", fh.read(5))  # v1.10
+                    return int(width), int(height)  # v1.10
+                fh.seek(length - 2, 1)  # v1.10
+    raise ValueError("Die Bildgroesse konnte nicht gelesen werden (nur PNG und JPG)")  # v1.10
+
+
 def led_address_dialog():  # v1.07
     """Ersatz fuer M60.Select_LED_Address_Dialog. Das Original sucht ein Modul am USB-Anschluss und laesst zur Kontrolle die gewaehlte LED blinken.
     Hier wird nur die Nummer eingegeben (das Blinken gibt es erst mit dem Senden an das Modul). Rueckgabe: Nummer oder -1 bei Abbruch"""
@@ -314,6 +347,8 @@ class HeadlessPatternGeneratorPage:
         self.attach_controls()  # v1.01
         for ws in self.workbook.sheets:  # v1.02
             self.apply_column_widths(ws)  # v1.02
+        self.restore_all_pictures()  # v1.10
+        self.restore_dynamic_rows()  # v1.12
         PGP.ThisWorkbook = self.workbook
         PGP.dialog_parent = self
         self.workbook.activate_sheet(PGP.start_sheet)
@@ -599,6 +634,7 @@ class HeadlessPatternGeneratorPage:
                     M03.Update_Grafik()  # v1.06
                 except Exception:                                                      # noqa: BLE001  # v1.06
                     logger.exception("Grafik des Blatts %s nicht aufgebaut", name)  # v1.06
+                self.sync_pictures(ws)  # v1.10
         return added, skipped  # v1.06
 
     def load_examples(self, names):  # v1.06
@@ -700,6 +736,113 @@ class HeadlessPatternGeneratorPage:
             elif kind == "goto_act":  # v1.09
                 M14.Select_GotoAct()  # v1.09
         return kind  # v1.07
+
+    # ------------------------------------------------------------------ Bilder (bleiben, wo sie sind: nur Pfad und Lage werden mit dem Blatt gesichert)
+    def picture_dir(self):  # v1.10
+        """Ordner fuer Bilder, die der Anwender einfuegt (hochgeladene Dateien sind nur Zwischendateien)"""  # v1.10
+        folder = os.path.join(self.controller.data_dir, "pattern_pictures")  # v1.10
+        os.makedirs(folder, exist_ok=True)  # v1.10
+        return folder  # v1.10
+
+    @staticmethod  # v1.10
+    def pictures_of(ws):  # v1.10
+        return [s for s in (getattr(ws, "shapelist", None) or []) if str(getattr(s, "Type", "")) == "13"]  # v1.10
+
+    def sync_pictures(self, ws):  # v1.10
+        """Die Bilder des Blatts (Pfad, Lage, Groesse) in persistent_controls_dict merken, damit sie mit der Arbeitsmappe gesichert werden. Die Formen selbst
+        werden nicht gesichert (LoadWorkbook mit copyshapes=False): nach einem Neustart legt restore_pictures sie wieder an."""
+        entries = []  # v1.10
+        for shape in self.pictures_of(ws):  # v1.10
+            try:  # v1.10
+                entries.append({"path": str(shape.Name), "left": float(shape.Left), "top": float(shape.Top), "width": float(shape.Width), "height": float(shape.Height)})  # v1.10
+            except (TypeError, ValueError):  # v1.10
+                continue  # v1.10
+        if getattr(ws, "persistent_controls_dict", None) is None:  # v1.10
+            ws.persistent_controls_dict = {}  # v1.10
+        if ws.persistent_controls_dict.get("pcf_pictures") != entries:  # v1.10
+            ws.persistent_controls_dict["pcf_pictures"] = entries  # v1.10
+        ws.tksheet.persistent_controls_dict = ws.persistent_controls_dict        # das Sichern der Arbeitsmappe liest das Woerterbuch des tksheet  # v1.10
+
+    def restore_pictures(self, ws):  # v1.10
+        """Bilder nach dem Neustart wieder anlegen (sofern die Datei noch da ist)"""  # v1.10
+        entries = (getattr(ws, "persistent_controls_dict", None) or {}).get("pcf_pictures") or []  # v1.10
+        have = {str(shape.Name) for shape in self.pictures_of(ws)}  # v1.10
+        for entry in entries:  # v1.10
+            path = entry.get("path")  # v1.10
+            if not path or path in have:  # v1.10
+                continue  # v1.10
+            if not os.path.exists(path):  # v1.10
+                logger.info("Bild %s fehlt (Blatt %s): nicht wiederhergestellt", path, ws.Name)  # v1.10
+                continue  # v1.10
+            ws.addPicture(path, entry["left"], entry["top"], entry["width"], entry["height"])  # v1.10
+            have.add(path)  # v1.10
+
+    def restore_dynamic_rows(self):  # v1.12
+        """Nach dem Neustart die Goto-Zeilen und die Zeilen des Spezial Modes neu bestimmen (wie Set_Defaults_for_Sheet nach dem Laden einer Datei): Das Blatt legt die versteckten Zeilen
+        der Vorlage an, dazu gehoert die Goto-Zeile 47. Sicherungen ohne gemerkte versteckte Zeilen (aeltere Fassungen) kennen den Zustand nicht. Wer ihn schon hat, aendert sich nicht."""
+        for ws in self.workbook.sheets:  # v1.12
+            if ws.Name in NON_DATA_SHEETS and ws.Name != M01.MAIN_SH:  # v1.12
+                continue  # v1.12
+            try:  # v1.12
+                with self.activated():  # v1.12
+                    self.use(ws)  # v1.12
+                    M02A.Hide_Show_Check_Goto_Activation()                       # Zeile Goto Aktivierung (die Vorlage versteckt sie)  # v1.13
+                    M06G.Hide_Show_GotoLines_If_Enabled()  # v1.12
+                    M06G.Hide_Show_Special_ModeLines_If_Enabled()  # v1.12
+            except Exception:                                                    # noqa: BLE001  # v1.12
+                logger.exception("Zeilen des Blatts %s nicht bestimmt", ws.Name)  # v1.12
+
+    def restore_all_pictures(self):  # v1.10
+        for ws in self.workbook.sheets:  # v1.10
+            try:  # v1.10
+                self.restore_pictures(ws)  # v1.10
+            except Exception:                                                    # noqa: BLE001  # v1.10
+                logger.exception("Bilder des Blatts %s nicht wiederhergestellt", ws.Name)  # v1.10
+
+    def insert_picture(self, ws, source):  # v1.10
+        """Ein Bild (PNG oder JPG) unter der Tabelle einfuegen (wie M80.Load_New_Picture: an der Zelle B63, natuerliche Groesse). Die hochgeladene Datei ist
+        nur eine Zwischendatei und wird in den Bilderordner kopiert. Rueckgabe: Dateiname"""
+        extension = os.path.splitext(source)[1].lower()  # v1.10
+        if extension not in (".png", ".jpg", ".jpeg"):  # v1.10
+            raise ValueError("Nur PNG- und JPG-Bilder koennen eingefuegt werden")  # v1.10
+        width, height = image_size(source)  # v1.10
+        name = os.path.basename(source)  # v1.10
+        dest = os.path.join(self.picture_dir(), name)  # v1.10
+        if os.path.exists(dest):  # v1.10
+            with open(dest, "rb") as a, open(source, "rb") as b:  # v1.10
+                same = a.read() == b.read()  # v1.10
+            if not same:                                                         # gleicher Name, anderes Bild: nicht ueberschreiben  # v1.10
+                stem, ext = os.path.splitext(name)  # v1.10
+                number = 2  # v1.10
+                while os.path.exists(os.path.join(self.picture_dir(), f"{stem}_{number}{ext}")):  # v1.10
+                    number += 1  # v1.10
+                dest = os.path.join(self.picture_dir(), f"{stem}_{number}{ext}")  # v1.10
+        if not os.path.exists(dest):  # v1.10
+            shutil.copy2(source, dest)  # v1.10
+        with self.activated():  # v1.10
+            ws.Activate()  # v1.10
+            cell = X02.Cells(63, 2)  # v1.10
+            factor = float(X02.guifactor) * 0.75                                 # Pixel in Punkte, dann der Faktor der Oberflaeche (so legt Load_Picture sie an)  # v1.10
+            ws.addPicture(dest, float(cell.Left), float(cell.Top), width * factor, height * factor)  # v1.10
+        self.sync_pictures(ws)  # v1.10
+        return os.path.basename(dest)  # v1.10
+
+    def remove_pictures(self, ws):  # v1.10
+        """Alle Bilder des Blatts entfernen. Rueckgabe: Zahl der Bilder"""  # v1.10
+        shapes = self.pictures_of(ws)  # v1.10
+        for shape in list(shapes):  # v1.10
+            ws.shapelist.remove(shape)  # v1.10
+        self.sync_pictures(ws)  # v1.10
+        return len(shapes)  # v1.10
+
+    def led_row_count(self, ws):  # v1.11
+        """Zahl der LED-Zeilen der Tabelle (benannter Bereich LED_Cnt_Rng, E5). In Spalte D stehen die Nummern 1 bis 20 immer, die Tabelle hat aber nur so viele Zeilen."""  # v1.11
+        with self.activated():  # v1.11
+            self.use(ws)  # v1.11
+            try:  # v1.11
+                return max(1, int(float(str(X02.Range(M01.LED_Cnt_Rng).Value))))  # v1.11
+            except (TypeError, ValueError):  # v1.11
+                return 1  # v1.11
 
     def protected_columns(self, sheetname):  # v1.01
         """Spalten, die nicht editierbar sind (Formating/ProtectedCells der Blattdefinition, zum Beispiel A:D)"""  # v1.01

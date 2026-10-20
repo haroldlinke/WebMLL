@@ -1,13 +1,14 @@
-# Datei-Version: 1.01 (2026-10-17) - headless_sheet.py
+# Datei-Version: 1.02 (2026-10-19) - headless_sheet.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_sheet.py
 # Path:           ExcelAPI/headless_sheet.py
-# Version:        1.01
-# Last Update:    2026-10-17
+# Version:        1.02
+# Last Update:    2026-10-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-17  getColorAt/setColorAt: Zellfarben fuer den Patterngenerator (bisher No-Op); davor 1.00 (2026-10-12), nicht erfasst
+#   1.02  2026-10-19  Zeilenhoehen nach Datenzeile speichern (data_row_height), get_row_heights und row_positions fuer die angezeigten Zeilen; vorher rutschten die Hoehen auf andere Zeilen, wenn danach Zeilen versteckt wurden
 # ----------------------------------------------------------------------------------------------
 """HeadlessSheet: GUI-freier Ersatz für die von XLA_Application.py benutzte Teilmenge
 der tksheet-7-Schnittstelle (Datenhaltung, Spans, Highlights, versteckte Zeilen, Höhen).
@@ -563,10 +564,23 @@ class HeadlessSheet:
 
     # ------------------------------------------------------------------ Höhen / Breiten
     def row_height(self, row=None, height=None, **kw):
+        # tksheet: row ist ein ANGEZEIGTER Index. Gespeichert wird nach Datenzeile (data_row_height): Die Zeilenhoehen blieben sonst nicht bei ihrer Zeile,
+        # wenn danach Zeilen ver- oder entsteckt werden (Hide_Show_GotoLines setzt die Hoehen der Zeilen ueber und unter der Goto-Zeile).
+        data_row = self.displayed_row_to_data(row) if row is not None else row  # v1.02
+        return self.data_row_height(data_row, height)  # v1.02
+
+    def data_row_height(self, row, height=None):  # v1.02
+        """Zeilenhoehe einer DATENZEILE (Index in den Daten, unabhaengig davon, welche Zeilen gerade versteckt sind)"""  # v1.02
         if height is None:
             return self._row_h.get(row, self.default_rowheight)
         self._row_h[row] = int(height)
         return int(height)
+
+    def data_row_heights(self):  # v1.02
+        return dict(self._row_h)  # v1.02
+
+    def set_data_row_heights(self, heights):  # v1.02
+        self._row_h = {int(r): int(h) for r, h in (heights or {}).items()}  # v1.02
 
     def column_width(self, column=None, width=None, **kw):
         if width is None:
@@ -583,7 +597,9 @@ class HeadlessSheet:
         return pos
 
     def get_row_heights(self, canvas_positions: bool = False, **kw):
-        h = [self.row_height(r) for r in range(self.get_total_rows())]
+        # die ANGEZEIGTEN Zeilen (wie tksheet: die Positionen gelten fuer die angezeigten Zeilen, nicht fuer alle)
+        rows = self.displayed_rows or range(self.get_total_rows())  # v1.02
+        h = [self._row_h.get(r, self.default_rowheight) for r in rows]  # v1.02
         return self._positions(h) if canvas_positions else h
 
     def get_column_widths(self, canvas_positions: bool = False, **kw):
@@ -594,7 +610,8 @@ class HeadlessSheet:
         hs = row_heights or []
         if canvas_positions:
             hs = [b - a for a, b in zip(hs, hs[1:])]
-        self._row_h = {i: int(h) for i, h in enumerate(hs)}
+        rows = self.displayed_rows or range(len(hs))                   # die Liste gilt fuer die angezeigten Zeilen  # v1.02
+        self._row_h = {r: int(h) for r, h in zip(rows, hs)}  # v1.02
 
     def set_column_widths(self, column_widths=None, canvas_positions: bool = False, **kw):
         ws = column_widths or []

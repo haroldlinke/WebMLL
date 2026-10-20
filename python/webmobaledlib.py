@@ -1,9 +1,9 @@
-# Datei-Version: 1.69 (2026-10-18) - webmobaledlib.py
+# Datei-Version: 1.78 (2026-10-19) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        1.69
-# Last Update:    2026-10-18
+# Version:        1.78
+# Last Update:    2026-10-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -38,6 +38,15 @@
 #   1.66  2026-10-18  Zugriff aus dem Netz (Windows): Browser oeffnet die Adresse, auf der der Server lauscht (browser_host), Hinweis auf die Firewall beim Start
 #   1.67  2026-10-18  Programm Einstellungen: Firewall-Regel fuer den Zugriff aus dem Netz per Knopf (Windows), web_access 1.05, web_firewall 1.00
 #   1.68  2026-10-18  Firewall-Bereich erkennt auch von Hand angelegte Regeln fuer den Port, Entfernen loescht alle Regeln webMobaLedLib* (web_firewall 1.01, web_access 1.06)
+#   1.78  2026-10-19  Mindestversion von web_access.py 1.09 (Einschalten legt die Firewall-Regel an)
+#   1.77  2026-10-19  Zugriff aus dem Netz als Einstellung (web_network 1.00, web_access 1.08): --host ohne Vorgabe, Rangfolge Aufruf, MLL_HOST, Einstellung; Hook fuer den Neustart
+#   1.76  2026-10-19  Mindestversion von headless_pattgen.py 1.13 (Zeile Goto Aktivierung nach dem Neustart)
+#   1.75  2026-10-19  Pruefung der Dateiversionen beim Start (REQUIRED_FILES, check_file_versions): Protokoll, Konsole und rote Meldung oben auf der Seite
+#   1.74  2026-10-19  Patterngenerator nach dem Neustart: Goto-Zeile wieder sichtbar, Pfeile an der richtigen Stelle (XLA_Application 1.09, headless_pattgen 1.12)
+#   1.73  2026-10-19  Absturz im Patterngenerator bei veralteter ExcelAPI/headless_sheet.py (web_pattgen 1.15, XLA_Application 1.08)
+#   1.72  2026-10-19  Patterngenerator: Zeilenhoehen wie in Excel, Gestaltung wie Excel (Farben, Schrift, Rahmen); ExcelAPI: Zeilenhoehen nach Datenzeile (headless_sheet 1.02, XLA_Application 1.07, web_pattgen 1.14, headless_pattgen 1.11)
+#   1.71  2026-10-19  Patterngenerator: Goto-Pfeile in voller Laenge (web_pattgen 1.13)
+#   1.70  2026-10-19  Patterngenerator Stufe 4a bis 4c: Goto-Pfeile, Bilder anzeigen und merken, Bild einfuegen (web_pattgen 1.12, headless_pattgen 1.10, M08_Load_Sheet_Data 1.01)
 #   1.69  2026-10-18  Firewall-Status ohne Administratorrechte lesen (zwei Wege, Fehler anzeigen und protokollieren; web_firewall 1.02, web_access 1.07)
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
@@ -63,6 +72,7 @@ import inspect
 import json
 import logging
 import os
+import re  # v1.75
 import platform
 import shutil
 import socket
@@ -74,6 +84,36 @@ import uuid
 
 os.environ["MLL_HEADLESS"] = "1"
 here = os.path.dirname(os.path.abspath(__file__))
+
+# Mindestversionen der Dateien, die zu diesem Stand gehoeren (Zeile "Datei-Version" am Anfang jeder Datei). Beim Einspielen einzelner Dateien fehlte schon zweimal eine;
+# dann stuerzt ein Teil ab oder tut nichts. Die Pruefung beim Start meldet es im Protokoll, auf der Konsole und mit einer roten Meldung oben auf der Seite.
+REQUIRED_FILES = {  # v1.75
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.09", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.15",  # v1.76 (headless_pattgen 1.13)
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)
+    "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.75
+    "proggen/M18a_Load_PicoConfig.py": "1.01", "proggen/M17_Import_old_Data.py": "1.01",  # v1.75
+}  # v1.75
+FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
+
+
+def check_file_versions(base=None):  # v1.75
+    """Vergleicht die Dateiversionen mit REQUIRED_FILES. Rueckgabe: eine Zeile je Abweichung (leer: alles passt). Eine neuere Datei ist in Ordnung."""  # v1.75
+    base = base or here  # v1.75
+    problems = []  # v1.75
+    for rel, wanted in REQUIRED_FILES.items():  # v1.75
+        try:  # v1.75
+            with open(os.path.join(base, *rel.split("/")), "r", encoding="utf-8", errors="replace") as fh:  # v1.75
+                head = "".join(fh.readline() for _ in range(8))  # v1.75
+        except OSError:  # v1.75
+            problems.append(f"{rel}: Datei fehlt (verlangt wird mindestens Version {wanted})")  # v1.75
+            continue  # v1.75
+        found = re.search(r"Datei-Version:\s*(\d+)\.(\d+)", head)  # v1.75
+        if not found:  # v1.75
+            problems.append(f"{rel}: keine Versionsangabe (verlangt wird mindestens Version {wanted})")  # v1.75
+        elif (int(found.group(1)), int(found.group(2))) < tuple(int(x) for x in wanted.split(".")):  # v1.75
+            problems.append(f"{rel}: Version {found.group(1)}.{found.group(2)}, verlangt wird mindestens {wanted}")  # v1.75
+    return problems  # v1.75
+
 if here not in sys.path:
     sys.path.insert(0, here)
 import userdata                                                    # noqa: E402  Datenordner des Anwenders, ausserhalb des Projektordners
@@ -549,7 +589,16 @@ def font_scales(ctrl) -> dict:
             "grid": factor("FontNormal"), "small": factor("FontSmall"), "name": name or "Arial"}
 
 
-VERSION = "1.69 (2026-10-18)"  # v1.69
+VERSION = "1.78 (2026-10-19)"  # v1.78
+# VERSION = "1.77 (2026-10-19)"  # v1.78 (ersetzt)
+# VERSION = "1.76 (2026-10-19)"  # v1.77 (ersetzt)
+# VERSION = "1.75 (2026-10-19)"  # v1.76 (ersetzt)
+# VERSION = "1.74 (2026-10-19)"  # v1.75 (ersetzt)
+# VERSION = "1.73 (2026-10-19)"  # v1.74 (ersetzt)
+# VERSION = "1.72 (2026-10-19)"  # v1.73 (ersetzt)
+# VERSION = "1.71 (2026-10-19)"  # v1.72 (ersetzt)
+# VERSION = "1.70 (2026-10-19)"  # v1.71 (ersetzt)
+# VERSION = "1.69 (2026-10-18)"  # v1.70 (ersetzt)
 # VERSION = "1.68 (2026-10-18)"  # v1.69 (ersetzt)
 # VERSION = "1.67 (2026-10-18)"  # v1.68 (ersetzt)
 # VERSION = "1.66 (2026-10-18)"  # v1.67 (ersetzt)
@@ -995,6 +1044,11 @@ def index():
         # -------------------------------------------------------------- Menue (wie im Tk-Hauptfenster); im kompakten Layout in der Kopfzeile
         menu_slot = ui.row().classes("items-center gap-0 mll-menu")
     autosave_label = ui.label("").classes("text-caption text-grey-7 mll-autosave")
+    if FILE_PROBLEMS:                                   # rote Meldung oben auf der Seite  # v1.75
+        with ui.column().classes("w-full gap-0 q-pa-sm").style("background:#ffebee;border:2px solid #c62828;border-radius:4px"):  # v1.75
+            ui.label(f"Nicht alle Dateien passen zur Version {VERSION}. Bitte alle Dateien dieses Stands einspielen, bis dahin kann etwas falsch aussehen oder fehlen:").style("color:#b71c1c;font-weight:600")  # v1.75
+            for line in FILE_PROBLEMS:  # v1.75
+                ui.label(line).style("color:#b71c1c;font-size:13px")  # v1.75
 
     # ------------------------------------------------------------------ Registerkarten (wie im Tk-Hauptfenster)
     with ui.tabs(value="pg").props("dense align=left no-caps active-color=primary").classes("w-full main-tabs") as tabs:
@@ -2719,6 +2773,7 @@ def index():
     # ---- Einstellungsseiten (aus MacroDef/MacroParamDef erzeugt): Programm, ProgGenerator, ARDUINO
     from _web import web_params
     from _web import web_access                                  # Passwort fuer den Zugriff aus dem Netz (auf der Seite Programm Einstellungen)
+    web_access.HOOKS["restart"] = restart_program                # der Schalter Zugriff aus dem Netz startet das Programm neu  # v1.77
     settings_pages = {}                                # Reiter -> (Seite, Titel der Rueckfrage, Text der Rueckfrage)
     settings_containers = {}
 
@@ -3020,8 +3075,8 @@ def lan_addresses() -> list[str]:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host", default=os.environ.get("MLL_HOST", "127.0.0.1"),
-                        help="Adresse, auf der der Server lauscht (0.0.0.0: im ganzen Netz erreichbar); Umgebung: MLL_HOST")
+    parser.add_argument("--host", default=None,  # v1.77
+                        help="Adresse, auf der der Server lauscht (0.0.0.0: im ganzen Netz erreichbar); Umgebung: MLL_HOST; sonst die Einstellung Zugriff aus dem Netz in den Programm Einstellungen")  # v1.77
     parser.add_argument("--port", type=int, default=int(os.environ.get("MLL_PORT", "8080")), help="Umgebung: MLL_PORT")
     parser.add_argument("--no-browser", action="store_true", default=os.environ.get("MLL_NO_BROWSER") == "1",
                         help="Browser nicht automatisch oeffnen (Dienst ohne Bildschirm); Umgebung: MLL_NO_BROWSER=1")
@@ -3031,6 +3086,8 @@ def main():
     parser.add_argument("--open-if-running", action="store_true",
                         help="Laeuft die Oberflaeche schon, nur den Browser oeffnen und beenden (fuer die Starter unter Windows/macOS)")
     args, _ = parser.parse_known_args()
+    from _web import web_network  # v1.77
+    args.host, host_source = web_network.resolve_host(args.host)         # Aufruf, MLL_HOST, Einstellung in den Programm Einstellungen, 127.0.0.1  # v1.77
     if args.restart:                                         # nach einem Update: warten, bis die alte Instanz beendet ist (Port frei)
         for _ in range(120):
             if not port_in_use(args.host, args.port):
@@ -3115,6 +3172,9 @@ def main():
     for url, folder in (("/mll_images", "images"), ("/mll_icons", "icons")):     # Symbole fuer Toolbar und Makrobaum
         if os.path.isdir(os.path.join(here, folder)):
             nicegui_app.add_static_files(url, os.path.join(here, folder))
+    FILE_PROBLEMS[:] = check_file_versions()  # v1.75
+    for line in FILE_PROBLEMS:  # v1.75
+        logger.error("Datei passt nicht zur Version %s: %s", VERSION, line)  # v1.75
     start_backend()
     shown_host = browser_host(args.host)  # v1.66
     print(f"\nwebmobaledlib.py Version {VERSION}")
@@ -3122,6 +3182,13 @@ def main():
     if LOGFILE:
         print(f"Protokoll:   {LOGFILE}  (Stufe {LOG_INFO['level']})")
     print(f"Oberflaeche: http://{shown_host}:{args.port}")
+    logger.info("Adresse des Servers: %s (%s)", args.host, {"cli": "Startparameter --host", "env": "Umgebungsvariable MLL_HOST", "setting": "Einstellung Zugriff aus dem Netz",  # v1.77
+                                                            "default": "Voreinstellung"}[host_source])  # v1.77
+    if FILE_PROBLEMS:  # v1.75
+        print(f"\nACHTUNG: Nicht alle Dateien passen zur Version {VERSION}. Bitte alle Dateien dieses Stands einspielen:")  # v1.75
+        for line in FILE_PROBLEMS:  # v1.75
+            print("   " + line)  # v1.75
+        print()  # v1.75
     if args.host in ("", "0.0.0.0"):
         for ip in lan_addresses():
             print(f"             http://{ip}:{args.port}   (von anderen Rechnern im Netz)")

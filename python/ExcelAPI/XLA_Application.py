@@ -1,9 +1,9 @@
-# Datei-Version: 1.06 (2026-10-18) - XLA_Application.py
+# Datei-Version: 1.09 (2026-10-19) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.06
-# Last Update:    2026-10-18
+# Version:        1.09
+# Last Update:    2026-10-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,9 @@
 #   1.04  2026-10-17  Calculate(): Calc_Worksheet auch bei EnableEvents = False (Excel rechnet immer); davor blieben die berechneten Zellen des Patterngenerators nach Makros mit abgeschalteten Ereignissen veraltet, z. B. beim Import in ein neues Blatt
 #   1.05  2026-10-17  CRange.ClearContents: Bereich 1-basiert nach tksheet.span (0-basiert) umgerechnet, die erste Zeile und Spalte des Bereichs blieben stehen (Vorlagenzeile RGB_Heartbeat in geladenen Blaettern)
 #   1.06  2026-10-18  SaveWorkbook: in eine Hilfsdatei schreiben und ersetzen, nicht serialisierbare Werte (Command der Steuerelemente) weglassen; ein Formularknopf im Blatt hat die ganze JSON-Datei abgebrochen
+#   1.07  2026-10-19  Zeilenhoehen nach Datenzeile (RowHeight von CRange und CRow, Sichern und Laden: row_heights); bei Tk unveraendert
+#   1.08  2026-10-19  Pruefung auf die Zeilenhoehen nach Datenzeile ueber die Klasse (hasattr(type(...))): HeadlessSheet liefert fuer jede unbekannte Methode ein No-Op, bei einer veralteten headless_sheet.py war hasattr immer wahr
+#   1.09  2026-10-19  Versteckte Zeilen mit dem Blatt sichern und wiederherstellen (hidden_rows); getCellCoords fuer versteckte Zeilen: Hoehe 0 an der naechsten angezeigten Zeile; nach einem Neustart war die Goto-Zeile 47 wieder versteckt und die Pfeile lagen unten
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -2824,6 +2827,12 @@ class CWorksheet(object):
             new_r = self.tksheet.displayed_rows.index(r)
         except:
             new_r = r
+            if hasattr(type(self.tksheet), "data_row_heights") and self.tksheet.displayed_rows:    # HEADLESS: versteckte Zeile: Hoehe 0 an der Oberkante der naechsten angezeigten Zeile  # v1.09
+                import bisect  # v1.09
+                new_r = bisect.bisect_left(self.tksheet.displayed_rows, r)  # v1.09
+                x1 = self.tksheet.MT.col_positions[c]  # v1.09
+                y1 = self.tksheet.MT.row_positions[new_r]  # v1.09
+                return x1, y1, self.tksheet.MT.col_positions[c + 1] - 1, y1  # v1.09
         x1 = self.tksheet.MT.col_positions[c]
         y1 = self.tksheet.MT.row_positions[new_r]
         x2 = self.tksheet.MT.col_positions[c + 1] - 1
@@ -2964,6 +2973,10 @@ class CWorksheet(object):
             data["TKSHEET_highlighted_rows"] = copy.deepcopy(new_highlighted_rows)
         
         data["row_pos"] = copy.deepcopy(self.tksheet.get_row_heights(canvas_positions=True))
+        if hasattr(type(self.tksheet), "data_row_heights"):                               # HEADLESS: Zeilenhoehen nach Datenzeile  # v1.08
+            data["row_heights"] = {str(r): h for r, h in self.tksheet.data_row_heights().items()}  # v1.07
+            shown = self.tksheet.displayed_rows                                     # versteckte Zeilen (Datenzeilen): der Zustand der Vorlage stimmt nach einem Neustart nicht (Goto-Zeile 47)  # v1.09
+            data["hidden_rows"] = sorted(set(range(self.tksheet.get_total_rows())) - set(shown)) if shown else []  # v1.09
         data["col_pos"] = copy.deepcopy(self.tksheet.get_column_widths(canvas_positions=True))
         if self.saveShapes:
             shapelist = self.shapelist
@@ -3084,7 +3097,14 @@ class CWorksheet(object):
             self.shapelist = new_shapelist
 
         row_pos = data.get("row_pos", [])
-        if row_pos != []:
+        if hasattr(type(self.tksheet), "set_data_row_heights"):                           # HEADLESS: nur die nach Datenzeile gesicherten Hoehen; row_pos aelterer Sicherungen hing am angezeigten Index  # v1.08
+            if "row_heights" in data:  # v1.07
+                self.tksheet.set_data_row_heights({int(r): h for r, h in data["row_heights"].items()})  # v1.07
+            if "hidden_rows" in data:                                              # versteckte Zeilen wie beim Sichern (nicht die der Vorlage, die das Blatt beim Anlegen anwendet)  # v1.09
+                self.tksheet.display_rows(all_displayed=True)  # v1.09
+                if data["hidden_rows"]:  # v1.09
+                    self.tksheet.hide_rows([int(r) for r in data["hidden_rows"]])  # v1.09
+        elif row_pos != []:  # v1.07
             self.tksheet.set_row_heights(row_heights=row_pos, canvas_positions=True)
             
         col_pos = data.get("col_pos", [])
@@ -3568,10 +3588,15 @@ class CRange(str):
     def _set_rowheight(self,row,newval):
         #ActiveSheet.tksheet.rowheightlist[row-1]=newval
         newval = int(newval)
-        displayed_row = ActiveSheet.data_row_to_displayed(row-1)
-        ActiveSheet.tksheet.row_height(row=displayed_row, height=newval)
+        if hasattr(type(ActiveSheet.tksheet), "data_row_height"):  # v1.08
+            ActiveSheet.tksheet.data_row_height(row-1, newval)                    # HEADLESS: nach Datenzeile speichern (der angezeigte Index verschiebt sich beim Verstecken)  # v1.07
+        else:  # v1.07
+            displayed_row = ActiveSheet.data_row_to_displayed(row-1)  # v1.07
+            ActiveSheet.tksheet.row_height(row=displayed_row, height=newval)  # v1.07
         ActiveSheet.Redraw_table()
     def _get_rowheight(self,row):
+        if hasattr(type(ActiveSheet.tksheet), "data_row_height"):  # v1.08
+            return ActiveSheet.tksheet.data_row_height(row-1)  # v1.07
         return ActiveSheet.tksheet.row_height(row=row-1, height=None)
         #return ActiveSheet.tksheet.rowheightlist[row-1]    
     def set_RowHeight(self, newval):
@@ -3580,7 +3605,10 @@ class CRange(str):
             self._set_rowheight(row,newval)
     def get_RowHeight(self):
         #rowheight = ActiveSheet.tksheet.rowheightlist.get(self.start[0]-1,ActiveSheet.tksheet.default_rowheight)
-        rowheight = ActiveSheet.tksheet.row_height(row=self.start[0]-1, redraw=False)
+        if hasattr(type(ActiveSheet.tksheet), "data_row_height"):  # v1.08
+            rowheight = ActiveSheet.tksheet.data_row_height(self.start[0]-1)  # v1.07
+        else:  # v1.07
+            rowheight = ActiveSheet.tksheet.row_height(row=self.start[0]-1, redraw=False)  # v1.07
         rowheight = int(rowheight/xlvp2py_guifactor)
         return rowheight
     RowHeight = property(get_RowHeight, set_RowHeight, doc='CRange RowHeight')
@@ -4164,11 +4192,16 @@ class CRow(object):
     def _set_rowheight(self,row,newval):
         #ActiveSheet.tksheet.rowheightlist[row-1]=newval
         newval = int(newval)
-        displayed_row = ActiveSheet.data_row_to_displayed(row-1)
-        ActiveSheet.tksheet.row_height(row=displayed_row, height=newval)
+        if hasattr(type(ActiveSheet.tksheet), "data_row_height"):  # v1.08
+            ActiveSheet.tksheet.data_row_height(row-1, newval)                    # HEADLESS: nach Datenzeile speichern (der angezeigte Index verschiebt sich beim Verstecken)  # v1.07
+        else:  # v1.07
+            displayed_row = ActiveSheet.data_row_to_displayed(row-1)  # v1.07
+            ActiveSheet.tksheet.row_height(row=displayed_row, height=newval)  # v1.07
         ActiveSheet.Redraw_table()
         
     def _get_rowheight(self,row):
+        if hasattr(type(ActiveSheet.tksheet), "data_row_height"):  # v1.08
+            return ActiveSheet.tksheet.data_row_height(row-1)  # v1.07
         return ActiveSheet.tksheet.row_height(row=row-1, height=None)
         #return ActiveSheet.tksheet.rowheightlist[row-1]
         
@@ -4195,7 +4228,10 @@ class CRow(object):
     
     def get_RowHeight(self):
         #rowheight = ActiveSheet.tksheet.rowheightlist.get(self.Row-1,ActiveSheet.tksheet.default_rowheight)
-        rowheight = ActiveSheet.tksheet.row_height(row=self.Row-1, redraw=False)
+        if hasattr(type(ActiveSheet.tksheet), "data_row_height"):  # v1.08
+            rowheight = ActiveSheet.tksheet.data_row_height(self.Row-1)  # v1.07
+        else:  # v1.07
+            rowheight = ActiveSheet.tksheet.row_height(row=self.Row-1, redraw=False)  # v1.07
         rowheight = int(rowheight/xlvp2py_guifactor)
         return rowheight
         

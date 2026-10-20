@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 2.51 (2026-10-18), gilt für webMobaLedLib 1.69*
+*Datei-Version: 2.54 (2026-10-20), gilt für webMobaLedLib 1.78*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -292,7 +292,7 @@ Minus) Platz.
 ### 2.10 Der Patterngenerator
 
 Der Reiter **Patterngenerator** erstellt aus einer Tabelle ein Muster für die LEDs (Wechselblinker, Lauflicht usw.). Das Ergebnis ist ein Makro, das im Programmgenerator eingetragen wird.
-**Stand:** Anzeigen, Bearbeiten, Berechnen sowie **Export zu ProgGen** und **Import von ProgGen** gehen. Dazu kommen **Optionen** mit den Beispielen und die Auswahldialoge für **Spezial Mode**, **RGB Modul Nr** und **Goto Aktivierung**. **Noch nicht** gibt es das Testen auf dem Arduino („Test Pattern“),
+**Stand:** Anzeigen, Bearbeiten, Berechnen sowie **Export zu ProgGen** und **Import von ProgGen** gehen. Dazu kommen **Optionen** mit den Beispielen und die Auswahldialoge für **Spezial Mode**, **RGB Modul Nr** und **Goto Aktivierung**. Die Seiten zeigen auch ihre **Bilder** und die **Goto-Pfeile**, **Bild einfügen** fügt eigene Bilder ein. **Noch nicht** gibt es das Testen auf dem Arduino („Test Pattern“),
 das Senden an ein Modul (damit auch das Blinken der LED bei RGB Modul Nr), die Wirkung der Spezial Modes auf dem Modul und den Multiplexer.
 
 - **Aufbau:** Oben stehen die gelben Eingabefelder (Erste RGB LED, Anzahl der Ausgabe Kanäle, Mode usw.) und darunter das Ergebnis (`PatternT1(…)`), der Makroname und das Makro. Unten liegt die
@@ -300,6 +300,16 @@ das Senden an ein Modul (damit auch das Blinken der LED bei RGB Modul Nr), die W
 - **Eingeben:** Zelle anklicken und schreiben, **F2** oder Doppelklick bearbeitet eine Zelle, **Entf** leert sie. **Strg+C**, **Strg+X** und **Strg+V** kopieren, schneiden aus und fügen ein.
   Beim Einfügen von mehreren Zellen (aus einer Tabellenkalkulation) gilt: Zeilen durch Zeilenwechsel, Spalten durch Tabulator, ab der markierten Zelle. Das Kontextmenü (Rechtsklick) bietet dasselbe.
   Beim ersten Einfügen aus der Zwischenablage fragt der Browser, ob er sie lesen darf.
+- **Bilder:** Die Seiten zeigen ihre Bilder (zum Beispiel das Signal oder die Anlage zum Muster) unter der Tabelle. Die Bilder **bleiben, wo sie sind**: Bilder der Beispiele im Ordner
+  `Pattern_Config_Examples`, eigene Bilder im Datenordner (`pattern_pictures`). Mit der Seite werden nur der Pfad und die Lage gemerkt. Fehlt eine Bilddatei nach einem Neustart, fehlt das Bild.
+- **Bild einfügen:** Der Knopf lädt ein PNG- oder JPG-Bild hoch und setzt es in natürlicher Größe unter die Tabelle (Zelle B63). Da das Hochladen nur eine Zwischendatei liefert, wird die Datei in den
+  Datenordner kopiert (gleicher Name und gleicher Inhalt: keine zweite Kopie; gleicher Name und anderer Inhalt: Name mit `_2`). Das Bild lässt sich nicht verschieben. **Optionen → Bilder dieser Seite
+  entfernen** nimmt alle Bilder der Seite weg (die Dateien bleiben). Beim Speichern einer Seite (Optionen) gehören die Bilder zur ZIP-Datei.
+- **Aussehen wie in Excel:** Die Kopfzeile der Tabelle (Spalte Nr) ist hellblau, die Spalte LED Nr hellgelb, die Beschriftung der Goto Tabelle hellgrün. Um die Zeile Dauer, die Goto Tabelle
+  und die Tabelle der LEDs (so viele Zeilen, wie LEDs oder Kanäle eingestellt sind) liegen schwarze Rahmen. Die Zeile Ergebnis ist blau, die Zeile Makro grün. Bei aktivem Goto Mode sind die
+  Zeilen über und unter der Goto Tabelle viel höher als die anderen, damit die Pfeile und Bögen Platz haben, wie in Excel.
+- **Goto-Pfeile:** Bei aktivem Goto Mode zeigt die Tabelle, wie das Muster startet und springt: grüne Pfeile mit der Nummer der Startspalte, rote Pfeile mit **E** am Ende des Musters und blaue gebogene
+  Pfeile für die Sprünge zwischen den Spalten.
 - **Doppelklick auf besondere Zellen:** Ein Doppelklick auf **Spezial Mode** öffnet eine Liste der Spezial Modes. Unter der Liste stehen die ausführliche Beschreibung des gewählten Eintrags;
   ein Doppelklick auf einen Eintrag oder **Auswahl** trägt ihn in die Zelle ein. Ein Doppelklick auf **RGB Modul Nr** öffnet eine Zahleneingabe mit − und +. Ohne ein Modul am USB-Anschluss
   blinkt dabei keine LED, die Nummer wird nur eingetragen. Tippen und **F2** bearbeiten die Zelle weiterhin direkt.
@@ -311,8 +321,8 @@ das Senden an ein Modul (damit auch das Blinken der LED bei RGB Modul Nr), die W
 - **Werkzeugleiste:**
   - **Neues Blatt:** legt eine Kopie des aktuellen Blatts an (der Name wird abgefragt, ein Reiter erscheint unten).
   - **Aktualisieren:** zeichnet die Balken neu. **Neu berechnen:** berechnet alle Formeln neu.
-    **Hinweis:** Die Balken werden nicht mitgespeichert. Nach einem Neustart des Programms zeigen die Blätter (außer dem ersten) zunächst keine Balken: Das Blatt anklicken und
-    **Aktualisieren** drücken, dann erscheinen sie. Die Tabelle selbst ist vollständig wieder da.
+    **Hinweis:** Die Balken werden nicht mitgespeichert. Nach einem Neustart des Programms zeichnet jede Seite ihre Balken beim ersten Anzeigen (Reiter anklicken) neu. Fehlen sie trotzdem,
+    hilft **Aktualisieren**. Die Tabelle selbst ist vollständig wieder da, und die **Bilder** der Seiten kommen von selbst zurück.
   - **+** und **−:** fügt vor der markierten Zelle eine Spalte in die Tabelle ein bzw. löscht die Spalte. Dazu muss die markierte Zelle **in der Tabelle** liegen (LED-Tabelle, Dauer oder Goto-Zeile),
     sonst erscheint die Meldung „Cursor outside the table“. Beim ersten Mal erklärt das Programm die Funktion.
   - **RGB LED:** schaltet das Blatt auf RGB-LEDs um.
@@ -648,8 +658,20 @@ fragt der Browser beim nächsten Aufruf nach dem neuen Passwort. Solange noch da
   `web_password.json` im Datenordner löschen. Dann gilt wieder das Passwort aus `/etc/mobaledlib-web.env` (Voreinstellung `mobaledlib`).
 - Das Anfangspasswort lässt sich bei der Installation mit `--password` festlegen, oder später in `/etc/mobaledlib-web.env` (`MLL_PASSWORD=...`).
 
-**Auf anderen Systemen** (Windows, macOS, Linux-Desktop) gibt es standardmäßig keinen Zugriff aus dem Netz und kein Passwort. Für den Zugriff aus dem Netz vor dem Start die
-Umgebungsvariablen `MLL_HOST=0.0.0.0` und ein Passwort `MLL_PASSWORD=...` setzen (Benutzername `MLL_USER`, Voreinstellung `mobaledlib`). Wo:
+**Auf anderen Systemen** (Windows, macOS, Linux-Desktop) ist die Oberfläche standardmäßig nur auf dem eigenen Rechner erreichbar und ohne Passwort. **Zugriff aus dem Netz
+einschalten (ab Version 1.77):** Reiter **Programm Einstellungen**, Kasten **Zugriff aus dem Netz erlauben**, Schalter einschalten. Es muss **nichts in einer Startdatei bearbeitet** werden.
+
+- Ist noch kein Passwort eingerichtet, fragt ein Dialog danach (mindestens 4 Zeichen; leer lassen: ohne Passwort; *Abbrechen* schaltet den Schalter zurück). Der Benutzername ist `mobaledlib`.
+  Ohne Passwort kann jeder im Heimnetz die Oberfläche benutzen und Programme auf den angeschlossenen Arduino laden. Das Passwort lässt sich im Kasten darunter jederzeit ändern.
+- Danach **Jetzt neu starten**: Das Programm sichert, startet neu, und der Browserreiter lädt sich selbst neu. Die Einstellung steht in der Datei `network.json` im Datenordner (2.6).
+- **Windows:** Das Einschalten legt gleich die Firewall-Regel „webMobaLedLib 8080“ an (nur Privatnetzwerke). Windows fragt dabei nach Administratorrechten: mit *Ja* bestätigen, mehr ist nicht zu
+  bestätigen. Lässt die Firewall den Port schon zu, fragt es nicht. Gilt das Netzwerk als „Öffentlich“, weist das Programm darauf hin, es auf „Privat“ zu stellen. Das **Ausschalten** entfernt die
+  Regel nicht (Knopf *Freigabe entfernen* im Bereich Firewall). Die Regel steht in der Windows-Firewall unter *Eingehende Regeln* (nicht unter „Zugelassene Apps“).
+- Auf dem Rechner, auf dem das Programm läuft, ist kein Passwort nötig. Von einem anderen Rechner im Browser `http://<Adresse des PCs>:8080` öffnen, Benutzername und Passwort eingeben.
+- Ist die Adresse von außen vorgegeben (Startparameter `--host` oder Umgebungsvariable `MLL_HOST`), ist der Schalter gesperrt, und die Seite sagt es.
+
+**Alternativ von Hand** (für Fortgeschrittene; die Vorgabe geht dem Schalter vor): vor dem Start die Umgebungsvariablen `MLL_HOST=0.0.0.0` und ein Passwort `MLL_PASSWORD=...` setzen (Benutzername
+`MLL_USER`, Voreinstellung `mobaledlib`). Wo:
 
 | System | Wo |
 |---|---|
@@ -658,12 +680,12 @@ Umgebungsvariablen `MLL_HOST=0.0.0.0` und ein Passwort `MLL_PASSWORD=...` setzen
 | Linux-Desktop | `export ...` in `install/start_linux.sh` |
 | Raspberry Pi | in `/etc/mobaledlib-web.env` (`sudo nano /etc/mobaledlib-web.env`), danach `sudo systemctl restart mobaledlib-web` |
 
-**Windows im Detail:** So geht der Zugriff von einem anderen Rechner im Heimnetz.
+**Windows im Detail:** So geht der Zugriff von einem anderen Rechner im Heimnetz. Mit dem Schalter (oben) erledigen die Schritte 1 und 2 das Programm; die Beschreibung hilft, wenn etwas nicht klappt.
 
-1. In `install\start_windows.bat` (oder in der Eingabeaufforderung vor dem Start) `set MLL_HOST=0.0.0.0` und `set MLL_PASSWORD=...` eintragen. **Nicht die IP-Adresse des PCs** (zum Beispiel
+1. Schalter **Zugriff aus dem Netz erlauben** einschalten und neu starten. **Von Hand statt des Schalters:** In `install\start_windows.bat` nach der Zeile `set "MLL_HEADLESS=1"` die Zeilen `set "MLL_HOST=0.0.0.0"` und `set "MLL_PASSWORD=..."` einfügen. **Nicht die IP-Adresse des PCs** (zum Beispiel
    `192.168.178.79`) als `MLL_HOST` eintragen: Dann lauscht der Server nur auf dieser einen Adresse, und `http://localhost:8080` auf dem PC selbst geht nicht mehr. Ab Version 1.66 öffnet das Programm
    den Browser mit der Adresse, auf der es lauscht, in älteren Versionen kam „Seite nicht gefunden“.
-2. **Windows-Firewall:** Beim ersten Start fragt Windows, ob Python Verbindungen aus dem Netz zulassen darf. **Privatnetzwerke** anhaken und *Zugriff zulassen*. Wurde das weggeklickt oder gilt das
+2. **Windows-Firewall:** Das Einschalten des Schalters legt die Regel gleich an. Das Folgende gilt, wenn es nicht geklappt hat. Beim ersten Start fragt Windows, ob Python Verbindungen aus dem Netz zulassen darf. **Privatnetzwerke** anhaken und *Zugriff zulassen*. Wurde das weggeklickt oder gilt das
    Netzwerk als **Öffentlich**, antwortet der Server anderen Rechnern nicht, und deren Browser meldet einen Ladefehler. Abhilfe:
    - **Einfachster Weg (ab Version 1.67):** Reiter **Programm Einstellungen**, Bereich **Firewall**, Knopf **Zugriff aus dem Netz freigeben**. Windows fragt nach Administratorrechten (*Ja*), nach
      einigen Sekunden steht dort „Der Port 8080 ist freigegeben, Regel „webMobaLedLib 8080“ (Privatnetzwerke)“. Der Bereich prüft nach **Wirkung**: Er erkennt jede Regel, die eingehende Verbindungen
@@ -760,7 +782,8 @@ danach im Browser `http://localhost:8080`.
 |---|---|
 | „Python wurde nicht gefunden“ oder „Python wurde installiert, ist aber in diesem Fenster noch nicht bekannt“ | **PC neu starten** (oder ab- und wieder anmelden) und das Skript noch einmal starten. Python von Hand: python.org, dabei „Add python.exe to PATH“ ankreuzen |
 | „Der Computer wurde durch Windows geschützt“ | *Weitere Informationen → Trotzdem ausführen* |
-| Beim Start „Seite nicht gefunden“ unter `localhost:8080`, obwohl `MLL_HOST` gesetzt ist | `MLL_HOST` enthält eine IP-Adresse. Dann lauscht der Server nur dort. `MLL_HOST=0.0.0.0` verwenden oder auf Version 1.66 aktualisieren (öffnet die richtige Adresse), siehe Kapitel 8 |
+| Beim Start „Seite nicht gefunden“ unter `localhost:8080`, obwohl `MLL_HOST` gesetzt ist | `MLL_HOST` enthält eine IP-Adresse. Dann lauscht der Server nur dort. Besser den Schalter **Zugriff aus dem Netz erlauben** in den Programm Einstellungen benutzen und `MLL_HOST` nicht setzen, oder `MLL_HOST=0.0.0.0` verwenden, siehe Kapitel 8 |
+| Rote Meldung oben auf der Seite „Nicht alle Dateien passen zur Version …“ | Es wurden nicht alle Dateien des Stands eingespielt. Jede Zeile nennt Datei, gefundene und verlangte Version. Die genannten Dateien in den **richtigen Ordner** kopieren (der Pfad steht davor, zum Beispiel `ExcelAPI/headless_sheet.py`); die Version steht in der ersten Zeile jeder Datei. Dieselbe Meldung steht beim Start im Konsolenfenster und im Protokoll |
 | Ein anderer Rechner im Netz erreicht die Oberfläche nicht (Ladefehler, keine Antwort) | Meist die Windows-Firewall oder das Netzwerkprofil „Öffentlich“: Programm Einstellungen → Firewall → **Zugriff aus dem Netz freigeben** (ab 1.67), sonst Kapitel 8, Abschnitt „Windows im Detail“ (Regel von Hand, mit `netstat` und `curl` prüfen) |
 | Fenster geht sofort wieder zu | `install\start_windows.bat` in einer Eingabeaufforderung starten und die Meldung lesen; außerdem `webmobaledlib.log` im Datenordner (2.6) |
 | Verknüpfung fehlt auf dem Desktop | Pfad des Projektordners ohne `'` und `&`? Sonst `install\start_windows.bat` per Rechtsklick → *Senden an → Desktop* |
