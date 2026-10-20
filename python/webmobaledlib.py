@@ -1,8 +1,8 @@
-# Datei-Version: 1.79 (2026-10-20) - webmobaledlib.py
+# Datei-Version: 1.90 (2026-10-20) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        1.79
+# Version:        1.90
 # Last Update:    2026-10-20
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -38,6 +38,17 @@
 #   1.66  2026-10-18  Zugriff aus dem Netz (Windows): Browser oeffnet die Adresse, auf der der Server lauscht (browser_host), Hinweis auf die Firewall beim Start
 #   1.67  2026-10-18  Programm Einstellungen: Firewall-Regel fuer den Zugriff aus dem Netz per Knopf (Windows), web_access 1.05, web_firewall 1.00
 #   1.68  2026-10-18  Firewall-Bereich erkennt auch von Hand angelegte Regeln fuer den Port, Entfernen loescht alle Regeln webMobaLedLib* (web_firewall 1.01, web_access 1.06)
+#   1.90  2026-10-20  Mindestversion M37_Inst_Libraries.py 1.03 (ESP32 auf 64-Bit-ARM nicht automatisch installieren)
+#   1.89  2026-10-20  Hilfsbefehl python fuer die ESP32-Platine 1.0.4 beim Start (arduino_prefs 1.02)
+#   1.88  2026-10-20  Mindestversion M37_Inst_Libraries.py 1.02 (Linux: Platinen esp32 und rp2040 bekamen den falschen Paketindex)
+#   1.87  2026-10-20  Servo Test: Wert 0 und Direktmodus beenden auch beim Verlassen der Seite, beim Beenden und beim Neustart (web_servotest 2.03)
+#   1.86  2026-10-20  Servo Test 1: Taste Verbinden statt Schliessen (web_servotest 2.02); connect_arduino gemeinsam fuer Menue und Seite
+#   1.85  2026-10-20  Servo Test 1: Layout fuer das Smartphone (web_servotest 2.01)
+#   1.84  2026-10-20  Servo Test 1 nach dem Excel-Dialog (web_servotest 2.00, web_serial 1.02); Schliessen wechselt zum Programm Generator
+#   1.83  2026-10-20  Reiter Servo Test 1 (web_servotest 1.00, web_serial 1.01, web_tabs 1.01)
+#   1.82  2026-10-20  Reiter direkt per Adresse aufrufen (/Farbtest ...) und mit ?vollbild=1 im Vollbild (web_tabs 1.00, web_fullscreen 1.02); index() baut ueber build_page
+#   1.81  2026-10-20  Vollbild: ein Knopf in der Kopfzeile neben Beenden statt je einer in jedem Reiter, Beenden bleibt im Vollbild (web_fullscreen 1.01, web_pattgen 1.17)
+#   1.80  2026-10-20  Knopf Vollbild in jedem Reiter (web_fullscreen 1.00, web_pattgen 1.16)
 #   1.79  2026-10-20  Raspberry Pi, erster Start: Frage nach den ARDUINO Bibliotheken wird gestellt, wenn ein Browser verbunden ist (headless_startup 1.00, no_tk 1.01, M37_Inst_Libraries 1.01)
 #   1.78  2026-10-19  Mindestversion von web_access.py 1.09 (Einschalten legt die Firewall-Regel an)
 #   1.77  2026-10-19  Zugriff aus dem Netz als Einstellung (web_network 1.00, web_access 1.08): --host ohne Vorgabe, Rangfolge Aufruf, MLL_HOST, Einstellung; Hook fuer den Neustart
@@ -89,8 +100,8 @@ here = os.path.dirname(os.path.abspath(__file__))
 # Mindestversionen der Dateien, die zu diesem Stand gehoeren (Zeile "Datei-Version" am Anfang jeder Datei). Beim Einspielen einzelner Dateien fehlte schon zweimal eine;
 # dann stuerzt ein Teil ab oder tut nichts. Die Pruefung beim Start meldet es im Protokoll, auf der Konsole und mit einer roten Meldung oben auf der Seite.
 REQUIRED_FILES = {  # v1.75
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.09", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.15",  # v1.76 (headless_pattgen 1.13)
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.79
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.09", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.01", "_web/web_servotest.py": "2.03", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v1.87
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.03", "arduino_prefs.py": "1.02", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.90
     "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.75
     "proggen/M18a_Load_PicoConfig.py": "1.01", "proggen/M17_Import_old_Data.py": "1.01",  # v1.75
 }  # v1.75
@@ -150,6 +161,7 @@ def start_backend():
     """Excel-Schicht und Programmgenerator ohne Tk starten (dauert einige Sekunden)."""
     global ctrl, page
     import arduino_prefs
+    arduino_prefs.ensure_python_command()        # macOS, Linux: Befehl python fuer die ESP32-Platine 1.0.4 (sonst: exec: 'python': executable file not found in $PATH)  # v1.89
     arduino_prefs.ensure_arduino_prefs()         # Linux: preferences.txt der ARDUINO IDE anlegen, bevor Workbook_Open sie liest
     ARGS = {"loaddatafile": "True", "logfilename": LOGFILE}        # wie COMMAND_LINE_ARG_DICT im Original
     if LOG_INFO["level_explicit"]:
@@ -594,7 +606,18 @@ def font_scales(ctrl) -> dict:
             "grid": factor("FontNormal"), "small": factor("FontSmall"), "name": name or "Arial"}
 
 
-VERSION = "1.79 (2026-10-20)"  # v1.79
+VERSION = "1.90 (2026-10-20)"  # v1.90
+# VERSION = "1.89 (2026-10-20)"  # v1.90 (ersetzt)
+# VERSION = "1.88 (2026-10-20)"  # v1.89 (ersetzt)
+# VERSION = "1.87 (2026-10-20)"  # v1.88 (ersetzt)
+# VERSION = "1.86 (2026-10-20)"  # v1.87 (ersetzt)
+# VERSION = "1.85 (2026-10-20)"  # v1.86 (ersetzt)
+# VERSION = "1.84 (2026-10-20)"  # v1.85 (ersetzt)
+# VERSION = "1.83 (2026-10-20)"  # v1.84 (ersetzt)
+# VERSION = "1.82 (2026-10-20)"  # v1.83 (ersetzt)
+# VERSION = "1.81 (2026-10-20)"  # v1.82 (ersetzt)
+# VERSION = "1.80 (2026-10-20)"  # v1.81 (ersetzt)
+# VERSION = "1.79 (2026-10-20)"  # v1.80 (ersetzt)
 # VERSION = "1.78 (2026-10-19)"  # v1.79 (ersetzt)
 # VERSION = "1.77 (2026-10-19)"  # v1.78 (ersetzt)
 # VERSION = "1.76 (2026-10-19)"  # v1.77 (ersetzt)
@@ -984,8 +1007,8 @@ AUTOSAVE_IDLE = 3.0          # Sekunden Ruhe nach der letzten Aenderung
 AUTOSAVE_INTERVAL = 30.0     # frueheste Zeit zwischen zwei Sicherungen
 
 
-@ui.page("/")
-def index():
+def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
+    """Die Seite aufbauen. start_tab: Schluessel des Reiters, der sich oeffnet (Adressen siehe web_tabs); fullscreen: gleich im Vollbild (?vollbild=1)"""  # v1.82
     t_page = time.monotonic()
     marks = {"t": t_page}
 
@@ -1002,6 +1025,10 @@ def index():
     ui.add_css(CSS_GRID)
     from _web import web_layout                        # kompaktes Layout fuer kleine Bildschirme (Programm Einstellungen)
     ui.add_head_html(web_layout.head_html(web_layout.get_mode(ctrl)))
+    from _web import web_fullscreen  # v1.80
+    ui.add_head_html(web_fullscreen.head_html())       # Vollbild ein und aus (der Knopf steht in der Kopfzeile)  # v1.81
+    if fullscreen:                                      # Adresse mit ?vollbild=1: ohne Titel, Menue und Reiter oeffnen, der erste Tipp schaltet auch den Browser um  # v1.82
+        ui.add_head_html("<script>document.addEventListener('DOMContentLoaded', function () { window.mllSetFull(true); window.mllArmTapFullscreen(); });</script>")  # v1.82
     ui.add_head_html(SCROLL_JS)
     ui.add_head_html(DROP_JS)
     ui.on("mll_jserror", lambda e: logger.warning("Browser-Fehler: %s", e.args))
@@ -1062,6 +1089,7 @@ def index():
         ui.tab("patt", label="Patterngenerator")   # v1.39
         ui.tab("progcfg", label="ProgGenerator Einstellungen")
         ui.tab("farb", label="Farb Test")
+        ui.tab("servo1", label="Servo Test 1")  # v1.83
         ui.tab("mon", label="Serial Monitor")
         ui.tab("arduinocfg", label="ARDUINO Einstellungen")
         ui.tab("config", label="Programm Einstellungen")
@@ -1071,6 +1099,7 @@ def index():
 
     # ------------------------------------------------------------------ Toolbar
     with ui.row().classes("items-start gap-1 mll-toolbar"):
+        # web_fullscreen.button()                         # Vollbild ein und aus (entfallen: ein Knopf in der Kopfzeile)  # v1.81
         toolbar_slot = ui.row().classes("items-start gap-1 mll-toolbar")
 
     def sync_all_sheets():
@@ -1127,6 +1156,11 @@ def index():
         """Programm ordentlich abschliessen (Shapes nachfuehren, Seiteneinstellungen sichern, Arduino trennen, Workbook speichern,
         Zwischensicherung loeschen). False bei einem Fehler (dann wurde nichts beendet)."""
         try:
+            try:  # v1.87
+                from _web import web_servotest  # v1.87
+                web_servotest.stop_all(wait=True)  # Servo Test: Wert 0 und Direktmodus beenden, bevor die Verbindung zum Arduino getrennt wird  # v1.87
+            except Exception:                      # noqa: BLE001  # v1.87
+                logger.debug("Servo Test nicht gestoppt", exc_info=True)  # v1.87
             if save:
                 sync_all_sheets()                  # Top_val/TopLeftCell_Row der Shapes zur Zeile passend speichern
                 try:
@@ -1209,6 +1243,7 @@ def index():
         ui.space()
         status_label = ui.label("").classes("mll-status")         # Meldung des Programms: verschwindet nach einigen Sekunden
         conn_label = ui.label("").classes("text-caption mll-conn")        # Verbindung zum Arduino: bleibt stehen
+        web_fullscreen.button()                                       # Vollbild ein und aus: neben Beenden, in jedem Reiter erreichbar und auch im Vollbild sichtbar  # v1.81
         ui.button("Beenden", on_click=quit_program, icon="power_settings_new").props("color=negative outline dense").classes("mll-quit")
 
     STATUS_TTL = 10.0                                             # Sekunden, die eine Meldung nach der letzten Aenderung stehen bleibt
@@ -2635,6 +2670,7 @@ def index():
             remove_autosave()
 
     import proggen.M06_Write_MLLConfig as M06cfg
+    connect_arduino = run_command(lambda: ctrl.connect(), "Verbinden")          # Menuepunkt ARDUINO -> Verbinden und die Taste Verbinden der Seite Servo Test 1  # v1.86
     MENU = {
         "Datei": [
             ("Jetzt zwischenspeichern", autosave_manual),
@@ -2654,7 +2690,7 @@ def index():
             ("Symbole und Testtasten neu aufbauen (Reparatur)", run_command(rebuild_decorations, "Symbole und Testtasten")),
         ],
         "ARDUINO": [
-            ("Verbinden", run_command(lambda: ctrl.connect(), "Verbinden")),
+            ("Verbinden", connect_arduino),  # v1.86
             ("Trennen", run_command(lambda: ctrl.disconnect(), "Trennen")),
             ("Alle LED aus", run_command(lambda: ctrl.led_off(), "Alle LED aus")),
             ("Konfiguration vom Pico laden (experimentell)", run_command(lambda: M06cfg.download_from_Pico(), "Konfiguration laden")),
@@ -2754,6 +2790,7 @@ def index():
     from _web import web_serial_page
     mon_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: auto; flex-wrap: nowrap")
     with mon_container:
+        # web_fullscreen.button()                         # Vollbild ein und aus (entfallen: ein Knopf in der Kopfzeile)  # v1.81
         web_serial_page.build(ctrl, run_command)
     mon_container.set_visibility(False)
     mark("Serial Monitor")
@@ -2817,6 +2854,7 @@ def index():
     def build_settings(tab):                           # Inhalt einer Einstellungsseite (aus MacroDef/MacroParamDef)
         macro, save_cb, after_cb, extra_cls, ask_title, ask_text = settings_defs[tab]
         with settings_containers[tab]:
+            # web_fullscreen.button()                         # Vollbild ein und aus (entfallen: ein Knopf in der Kopfzeile)  # v1.81
             if macro in ctrl.MacroDef.data:
                 cfg_page = web_params.build_settings_page(ctrl, macro, on_save=save_cb, after_save=after_cb,
                                                           extra=extra_cls(ctrl) if extra_cls else None)
@@ -2833,20 +2871,33 @@ def index():
 
     def build_farb():                                  # das Farbrad zu berechnen dauert auf langsamen Rechnern mehrere Sekunden
         with farb_container:
+            # web_fullscreen.button()                         # Vollbild ein und aus (entfallen: ein Knopf in der Kopfzeile)  # v1.81
             state["colorcheck"] = web_colorcheck.build(ctrl, goto_generator=lambda: tabs.set_value("pg"),
                                                        is_active=lambda: tabs.value == "farb", run_command=run_command)
+
+    # ---- Karte Servo Test 1 (wie der Farb Test: Direktmodus zum Arduino)
+    from _web import web_servotest  # v1.83
+    servo_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: auto; flex-wrap: nowrap")  # v1.83
+    servo_container.set_visibility(False)  # v1.83
+
+    def build_servo():  # v1.83
+        with servo_container:  # v1.83
+            state["servo1"] = web_servotest.build(ctrl, is_active=lambda: tabs.value == "servo1", connect=connect_arduino)      # Taste Verbinden: wie der Menuepunkt ARDUINO -> Verbinden  # v1.86
+            context.client.on_disconnect(lambda *_: state["servo1"].page_closed())         # Browser zu, neu geladen oder Verbindung weg: Wert 0 senden, nichts haengen lassen  # v1.87
 
     built = set()
 
     def ensure_built(tab_name):
-        """Seite beim ersten Oeffnen aufbauen (Einstellungsseiten, Farb Test); die Behaelter sind schon da"""
-        if tab_name in built or not (tab_name in ("farb", "patt") or tab_name in settings_defs):  # v1.39
+        """Seite beim ersten Oeffnen aufbauen (Einstellungsseiten, Farb Test, Servo Test 1); die Behaelter sind schon da"""  # v1.83
+        if tab_name in built or not (tab_name in ("farb", "patt", "servo1") or tab_name in settings_defs):  # v1.83
         # if tab_name in built or not (tab_name == "farb" or tab_name in settings_defs):  # v1.39 (ersetzt)
             return
         built.add(tab_name)
         t_tab = time.monotonic()
         if tab_name == "farb":
             build_farb()
+        elif tab_name == "servo1":  # v1.83
+            build_servo()  # v1.83
         elif tab_name == "patt":  # v1.39
             build_patt()  # v1.39
         else:
@@ -2854,7 +2905,7 @@ def index():
         logger.info("Seite '%s' aufgebaut in %.1f s", tab_name, time.monotonic() - t_tab)
 
     if not LAZY_TABS:                                  # MLL_LAZY_TABS=0: alles gleich aufbauen
-        for tab_name in (*settings_defs, "farb"):
+        for tab_name in (*settings_defs, "farb", "servo1"):  # v1.83
             ensure_built(tab_name)
     tab_state = {"cur": "pg"}
 
@@ -2880,7 +2931,7 @@ def index():
                 return
             if answer:
                 cfg_page.save()
-        if new_tab not in built and (new_tab in ("farb", "patt") or new_tab in settings_defs):  # v1.39
+        if new_tab not in built and (new_tab in ("farb", "patt", "servo1") or new_tab in settings_defs):  # v1.83
         # if new_tab not in built and (new_tab == "farb" or new_tab in settings_defs):  # v1.39 (ersetzt)
             ui.notify("Die Seite wird aufgebaut ...", timeout=4000)
             await asyncio.sleep(0.15)                          # die Meldung noch senden, bevor der Aufbau den Server blockiert
@@ -2888,6 +2939,7 @@ def index():
         tab_state["cur"] = new_tab
         pg_container.set_visibility(new_tab == "pg")
         farb_container.set_visibility(new_tab == "farb")
+        servo_container.set_visibility(new_tab == "servo1")  # v1.83
         patt_container.set_visibility(new_tab == "patt")  # v1.39
         if new_tab == "patt" and old_tab != "patt" and patt_state["view"] is not None:  # v1.39
             patt_state["view"].refresh()  # v1.39  Tabelle und Blattreiter auffrischen
@@ -2898,11 +2950,19 @@ def index():
             state["colorcheck"].tab_unselected()           # Direktmodus beenden, LEDs aus
             if new_tab == "pg":
                 ctrl.checkcolor_callback = None            # ohne "Palette uebergeben" verlassen: der Rueckruf ist ueberholt
+        if old_tab == "servo1" and new_tab != "servo1" and state.get("servo1") is not None:  # v1.83
+            state["servo1"].tab_unselected()               # gedrueckte Tasten loslassen, Programmieren abbrechen, Direktmodus beenden  # v1.83
         if new_tab == "farb" and old_tab != "farb":
             state["colorcheck"].tab_selected(coltab=ctrl.coltab if old_tab == "pg" else None)
+        if new_tab == "servo1" and old_tab != "servo1" and state.get("servo1") is not None:  # v1.83
+            state["servo1"].tab_selected()                 # Direktmodus starten  # v1.83
         if new_tab in settings_pages:
             settings_pages[new_tab][0].mark_saved()            # store_old_config (tabselected)
     tabs.on_value_change(on_tab)
+    if start_tab != "pg":                                 # Adresse eines Reiters (zum Beispiel /Farbtest): wie ein Klick auf den Reiter  # v1.82
+        tabs.set_value(start_tab)  # v1.82
+    if fullscreen:                                        # Knopf und Beschriftung nach dem Aufbau der Seite angleichen  # v1.82
+        ui.timer(0.6, lambda: ui.run_javascript("if (window.mllFull) window.mllSetFull(true)"), once=True)  # v1.82
 
     def web_show_page(name):
         """Aufruf aus dem Hintergrund-Thread (Makro, z. B. M60.Open_MobaLedCheckColors): Registerkarte umschalten."""
@@ -2941,6 +3001,39 @@ def index():
     show(state["ws"])
     mark("Tabelle fuellen (show)")
     logger.info("Seite aufgebaut in %.1f s (Client %s)", time.monotonic() - t_page, context.client.id)
+
+
+@ui.page("/")  # v1.82
+def index():  # v1.82
+    build_page()  # v1.82
+
+
+def _tab_page(tab: str, name: str):  # v1.82
+    from _web import web_tabs  # v1.82
+
+    def page(vollbild: str = ""):  # v1.82
+        build_page(tab, web_tabs.is_fullscreen(vollbild))  # v1.82
+    page.__name__ = "tab_" + name  # v1.82
+    return page  # v1.82
+
+
+from _web import web_tabs as _web_tabs                    # noqa: E402  Adressen der Reiter: /Farbtest, /Patterngenerator ... (?vollbild=1: im Vollbild)  # v1.82
+for _name, _tab in _web_tabs.TAB_URLS.items():  # v1.82
+    ui.page("/" + _name)(_tab_page(_tab, _name))  # v1.82
+
+
+@nicegui_app.exception_handler(404)  # v1.82
+async def not_found(request, exception):  # v1.82
+    """Andere Schreibweise eines Reiters (/farbtest): umleiten. Sonst fuer Browser die Liste der gueltigen Adressen, fuer alles andere die Standardantwort."""  # v1.82
+    from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse  # v1.82
+    path = request.url.path  # v1.82
+    name = _web_tabs.canonical_name(path)  # v1.82
+    if name is not None:  # v1.82
+        query = request.url.query  # v1.82
+        return RedirectResponse(f"/{name}" + (f"?{query}" if query else ""))  # v1.82
+    if "text/html" in request.headers.get("accept", "") and "." not in path.rsplit("/", 1)[-1]:  # v1.82
+        return HTMLResponse(_web_tabs.not_found_page(path), status_code=404)  # v1.82
+    return JSONResponse({"detail": "Not Found"}, status_code=404)  # v1.82
 
 
 def running_instance_info(host: str, port: int):
@@ -3227,6 +3320,8 @@ def main():
 
     nicegui_app.on_connect(on_connect)
     nicegui_app.on_disconnect(on_disconnect)
+    from _web import web_servotest as _servo_page  # v1.87
+    nicegui_app.on_shutdown(lambda: _servo_page.stop_all(wait=True))           # Programm wird beendet (auch Strg+C, Dienst gestoppt): Servo nicht laufen lassen  # v1.87
     nicegui_app.on_startup(web_logging.attach_loop_diagnostics)      # Blockaden der Ereignisschleife und Fehler in Aufgaben melden
     nicegui_app.on_startup(web_logging.attach_to_uvicorn)           # Fehler des Servers (uvicorn) auch in die Protokolldatei
     if not args.no_browser:

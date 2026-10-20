@@ -1,4 +1,16 @@
-# Datei-Version: 1.00 (2026-10-12) - web_serial.py
+# Datei-Version: 1.02 (2026-10-20) - web_serial.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_serial.py
+# Path:           _web/web_serial.py
+# Version:        1.02
+# Last Update:    2026-10-20
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Serielle Verbindung ohne Tk (Original, nicht erfasst)
+#   1.01  2026-10-20  send_to_ARDUINO_servo (Seite Servo Test 1): eigene Pause je Zeichen, Sendeschleife kennt eine Pause je Nachricht
+#   1.02  2026-10-20  tx_idle (Keep-Alive der Seite Servo Test nur bei leerer Sendewarteschlange)
+# ----------------------------------------------------------------------------------------------
 """Serielle Verbindung zum Arduino/Pico ohne Tk (Mixin fuer HeadlessAppController).
 
 Entspricht dem, was im Tk-Programm pyMobaLedLib.py (connect, connectIP, disconnect, send_to_ARDUINO,
@@ -280,10 +292,11 @@ class SerialMixin:
             item = self._tx_queue.get()
             if item is None:
                 return
-            port, message, slowmode = item
+            port, message, slowmode = item[:3]  # v1.01
+            wait_override = item[3] if len(item) > 3 else None                       # Servo-Nachrichten: eigene Pause (send_to_ARDUINO_servo)  # v1.01
             self.send_active = True
             try:
-                wait = max(self.waittime_int, 1) / 1000.0
+                wait = wait_override if wait_override is not None else max(self.waittime_int, 1) / 1000.0  # v1.01
                 burst = self.ARDUINO_has_readbuffer and not (self.waittime_slowmode or slowmode)
                 for i, c in enumerate(message):
                     if port is None or not getattr(port, "is_open", False):
@@ -315,6 +328,22 @@ class SerialMixin:
         self._ensure_tx_thread()
         self.send_active = True
         self._tx_queue.put((port, str(message), slowmode))
+
+    def send_to_ARDUINO_servo(self, message, arduino=None, comport=None):  # v1.01
+        """Wie send_to_ARDUINO_servo im Original (pyMobaLedLib.py): Zeichen fuer Zeichen mit der Pause maxLEDcnt * 0,2 ms (zehnmal laenger als bei Farben, die Servoplatine braucht
+        mehr Zeit). Die Pause von einer Sekunde nach jeder Nachricht entfaellt: Das Original blockierte damit die Oberflaeche, hier sorgt der Sendepuffer fuer die Reihenfolge."""
+        port = arduino if arduino is not None else self.arduino  # v1.01
+        if not port:  # v1.01
+            return  # v1.01
+        wait = max(self.get_maxLEDcnt() * 0.0002, 0.001)  # v1.01
+        logger.debug("send_to_ARDUINO_servo: %r", message)  # v1.01
+        self._ensure_tx_thread()  # v1.01
+        self.send_active = True  # v1.01
+        self._tx_queue.put((port, str(message), True, wait))  # v1.01
+
+    def tx_idle(self):  # v1.02
+        """Ist nichts mehr zu senden (Warteschlange leer, kein Senden aktiv)? Die Seite Servo Test schickt das Keep-Alive nur dann."""  # v1.02
+        return self._tx_queue.empty() and not self.send_active  # v1.02
 
     def send_to_ARDUINO_init_buffer(self, immediatly=False):
         while not self._tx_queue.empty():

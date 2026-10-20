@@ -1,13 +1,15 @@
-# Datei-Version: 1.01 (2026-10-20) - M37_Inst_Libraries.py
+# Datei-Version: 1.03 (2026-10-20) - M37_Inst_Libraries.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M37_Inst_Libraries.py
 # Path:           proggen/M37_Inst_Libraries.py
-# Version:        1.01
+# Version:        1.03
 # Last Update:    2026-10-20
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-20  Update der ARDUINO Bibliotheken (Linux): Antwort Nein auf die Frage ist kein Fehler mehr (UPDATE_DECLINED statt Fehler 1 beim Ausfuehren des Update Programms ''); davor Original-Port, nicht erfasst
+#   1.02  2026-10-20  Linux: Platinen bekommen alle URLs der Paketindizes (wie im VBA-Code) statt der i-ten URL; Wiederholung nur fuer das Fehlende (Keep_Only_Missing_Selected); keine weitere Wiederholung ohne Fortschritt
+#   1.03  2026-10-20  Select_Missing: esp32:esp32 wird auf Linux mit 64-Bit-ARM (Raspberry Pi) nicht ausgewaehlt (keine Werkzeuge fuer ESP32 1.0.4), sonst scheitert die Installation bei jedem Start
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -912,10 +914,10 @@ def Create_Do_Update_Script_Linux_part2(LibList, BrdList,OthersourceList,URLList
             return Res
     # *** Boards ***
     if BrdList != '':
-        if URLList != '':
-            URLList_split=URLList.split(",")
-        else:
-            URLList_split = []
+        # if URLList != '':  # v1.02 (entfallen: die URLs wurden der Reihe nach auf die Platinen verteilt)
+        #     URLList_split=URLList.split(",")  # v1.02 (entfallen)
+        # else:  # v1.02 (entfallen)
+        #     URLList_split = []  # v1.02 (entfallen)
         BrdList = M30.DelLast(BrdList)
         URLList = M30.DelLast(URLList)
         Debug.Print('ECHO *********************************', '\n')
@@ -934,9 +936,13 @@ def Create_Do_Update_Script_Linux_part2(LibList, BrdList,OthersourceList,URLList
             #    VBFiles.writeText(fp, ' --pref "boardsmanager.additional.urls=' + URLList + '"')
                 
             CommandStr = '"' + M08.Find_ArduinoExe() + '"' + ' --install-boards ' + Brd
-            if URLList_split != []:
-                CommandStr= CommandStr +' --pref "boardsmanager.additional.urls=' + URLList_split[0] + '"'
-                del URLList_split[0]
+            # if URLList_split != []:  # v1.02 (entfallen)
+            #     CommandStr= CommandStr +' --pref "boardsmanager.additional.urls=' + URLList_split[0] + '"'  # v1.02 (entfallen)
+            #     del URLList_split[0]  # v1.02 (entfallen)
+            # Wie im VBA-Code (Create_Do_Update_Script): jede Platine bekommt ALLE URLs. Nur die Zeilen mit einer URL stehen in URLList, die Platinen in BrdList: Die i-te URL gehoert
+            # nicht zur i-ten Platine (zum Beispiel arduino:avr hat keine URL). So fand esp32:esp32 seinen Paketindex nicht und rp2040:rp2040 bekam gar keinen.
+            if URLList != '':  # v1.02
+                CommandStr = CommandStr + ' --pref "boardsmanager.additional.urls=' + URLList + '"'  # v1.02
                 
             #PG.dialog_parent.execute_shell_cmd(CommandStr)
             Res = PG.get_dialog_parent().execute_shell_cmd(CommandStr,"Install Boards" + Brd)
@@ -1206,6 +1212,22 @@ def Update_All_Selected_Libraries():
     ChDir(M08.GetWorkbookPath())
     return _fn_return_value
 
+def Keep_Only_Missing_Selected():  # v1.02
+    """Fuer die Wiederholung: von den ausgewaehlten Zeilen nur die behalten, die nicht installiert sind (die anderen werden nicht noch einmal geloescht und geladen: Die Platinen
+    wiegen hunderte Megabyte). Rueckgabe: die Namen der Zeilen, die noch fehlen."""
+    missing = []  # v1.02
+    Sh = PG.ThisWorkbook.Sheets(M02.LIBRARYS__SH)  # v1.02
+    Row = First_Dat_Row  # v1.02
+    while Sh.Cells(Row, Libr_Name_Col) != '':  # v1.02
+        if Sh.Cells(Row, SelectRow_Col) != '':  # v1.02
+            if Sh.Cells(Row, Installed_Col) != "1":  # v1.02
+                missing.append(str(Sh.Cells(Row, Libr_Name_Col)))  # v1.02
+            else:  # v1.02
+                with_k = Sh.Cells(Row, SelectRow_Col)  # v1.02
+                with_k.Value = ''  # v1.02
+        Row = Row + 1  # v1.02
+    return missing  # v1.02
+
 def Update_All_Selected_Libraries_Linux():
     global UnzipList, UPDATE_LIB_CMD_NAME
     _fn_return_value = False
@@ -1232,6 +1254,7 @@ def Update_All_Selected_Libraries_Linux():
             continue_update= False        
         if continue_update:    
             Start_Update = True
+            previous_missing = None  # v1.02
             ## VB2PY (CheckDirective) VB directive took path 1 on VBA7
             #hwnd = Application.hwnd
             while 1:
@@ -1283,6 +1306,12 @@ def Update_All_Selected_Libraries_Linux():
                     Ask_User = True
                     Pause_at_End = True
                 Update_General_Versions()
+                missing = Keep_Only_Missing_Selected()  # v1.02
+                if missing and Trials >= 2 and missing == previous_missing:  # v1.02
+                    # nichts Neues installiert: nicht noch einmal fragen und laden (der Raspberry Pi blieb in dieser Schleife stehen)
+                    P01.MsgBox(M09.Get_Language_Str('Bei der Wiederholung wurde nichts Neues installiert. Es wird nicht noch einmal versucht.' + vbCr + vbCr + 'Nicht installiert:') + vbCr + '   ' + (vbCr + '   ').join(missing) + vbCr + vbCr + M09.Get_Language_Str('Bitte das Protokoll pruefen (Hilfe -> Logfile anzeigen).'), vbCritical, M09.Get_Language_Str('Es sind Fehler beim Aktualisieren aufgetreten'))  # v1.02
+                    break  # v1.02
+                previous_missing = missing  # v1.02
                 if not (Check_All_Selected_Libraries_Result(Ask_User)):
                     _fn_return_value = True
                     break
@@ -1292,6 +1321,13 @@ def Update_All_Selected_Libraries_Linux():
     M08.SafeChDriveAndDir(M08.GetWorkbookPath())
     # 18.01.24: Jürgen
     return _fn_return_value
+
+def Board_not_installable(Name):  # v1.03
+    """ESP32 1.0.4 (die verlangte Version) hat keine Werkzeuge fuer Linux auf 64-Bit-ARM (Raspberry Pi): Die Installation scheitert mit \"Tool esptool_py is not available for
+    your operating system\" (siehe Anleitung, Kapitel 10). Solche Zeilen waehlt Select_Missing nicht aus, sonst fragt das Programm bei jedem Start nach der Installation, scheitert
+    und meldet jedes Mal einen Fehler."""
+    import platform  # v1.03
+    return str(Name).startswith('esp32:') and platform.system() == 'Linux' and platform.machine().lower() in ('aarch64', 'arm64')  # v1.03
 
 def Select_Missing():
     _fn_return_value = False
@@ -1312,7 +1348,7 @@ def Select_Missing():
     while Sh.Cells(Row, Libr_Name_Col) != '':
         with_3 = Sh.Cells(Row, SelectRow_Col)
         with_3.Value = ''
-        if InStr(str(Sh.Cells(Row, Lib_Board_Col)), '*') == 0:
+        if InStr(str(Sh.Cells(Row, Lib_Board_Col)), '*') == 0 and not Board_not_installable(Sh.Cells(Row, Libr_Name_Col)):  # v1.03
             if Sh.Cells(Row, Installed_Col) != "1":
                 with_3.Value = ChrW(M02.Hook_CHAR)
                 NotInstCnt = NotInstCnt + 1

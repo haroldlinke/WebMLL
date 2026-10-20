@@ -1,9 +1,9 @@
-# Datei-Version: 1.15 (2026-10-19) - web_pattgen.py
+# Datei-Version: 1.17 (2026-10-20) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
-# Version:        1.15
-# Last Update:    2026-10-19
+# Version:        1.17
+# Last Update:    2026-10-20
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -24,6 +24,8 @@
 #   1.13  2026-10-19  Goto-Pfeile zu kurz (KS_Hauptsignal...): Laenge und Abstaende bleiben, nur der Anker wird auf das Zeilenraster umgerechnet; Beschriftung am Pfeilanfang
 #   1.14  2026-10-19  Zeilenhoehen je Zeile wie in Excel (_h, getRowHeight, resetRowHeights), Formen mit den echten Hoehen; Gestaltung wie Excel (apply_design: Farben, Schrift, schwarze Rahmen, zentrierte Zahlen)
 #   1.15  2026-10-19  Absturz beim Wechsel in den Patterngenerator mit veralteter headless_sheet.py: Klassenpruefung statt hasattr am Objekt, keine Hoehe wird zur Standardhoehe, Warnung im Protokoll
+#   1.16  2026-10-20  Knopf Vollbild in der Werkzeugleiste des Patterngenerators (web_fullscreen)
+#   1.17  2026-10-20  Knopf Vollbild entfaellt hier: Er steht jetzt einmal in der Kopfzeile (webmobaledlib)
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 
@@ -48,6 +50,7 @@ import json  # v1.01
 import logging
 import os  # v1.12
 
+# from _web import web_fullscreen                        # (entfallen: ein Knopf in der Kopfzeile)  # v1.17
 from nicegui import app, context, run, ui  # v1.12
 
 from _web import web_dialogs, web_form_select  # v1.10
@@ -264,6 +267,7 @@ class PatternView:
         ui.run_javascript(JS_SCROLL)  # v1.05
 
         with ui.row().classes("items-center gap-2 w-full mll-pattbar"):  # v1.01
+            # web_fullscreen.button()                              # Vollbild ein und aus (entfallen: ein Knopf in der Kopfzeile)  # v1.17
             ui.button("Neues Blatt", on_click=self.on_new_sheet).props("dense outline no-caps").tooltip("Kopie des aktuellen Blatts anlegen")  # v1.01
             ui.button("Aktualisieren", on_click=self.on_update).props("dense outline no-caps").tooltip("Grafik (Balken) neu aufbauen")  # v1.01
             ui.button("Neu berechnen", on_click=self.on_recalc).props("dense outline no-caps").tooltip("Formeln neu berechnen")  # v1.01

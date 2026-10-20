@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 2.54 (2026-10-20), gilt für webMobaLedLib 1.78*
+*Datei-Version: 2.55 (2026-10-20), gilt für webMobaLedLib 1.90*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -159,7 +159,15 @@ prüft die Bibliotheken und Boards beim Start („Überprüfe Bibliotheken und B
   Den Haken einer Zeile setzt oder entfernst du mit einem **Klick in die Zelle der Spalte „Select“**.
 - **Boards** (zum Beispiel Raspberry Pi Pico) installiert das Programm über dieselbe Tabelle „Libraries“. Boards sind groß (mehrere hundert MB) und brauchen Zeit.
 - **ESP32:** Das Programm verlangt das ESP32-Paket in der Version 1.0.4. Auf Windows (Intel/AMD) und Intel-Macs funktioniert das. Auf dem
-  Raspberry Pi und anderen 64-Bit-ARM-Rechnern (auch Macs mit Apple-Chip, nicht geprüft) fehlen für diese Version die Werkzeuge, siehe Kapitel 10.
+  Raspberry Pi und anderen 64-Bit-ARM-Rechnern (auch Macs mit Apple-Chip, nicht geprüft) fehlen für diese Version die Werkzeuge, siehe Kapitel 10. Das Programm wählt das
+  ESP32-Paket auf Linux mit 64-Bit-ARM deshalb **nicht mehr automatisch** aus (ab Version 1.90).
+- **Fehlende Bibliotheken beim Start:** Das Programm prüft beim Start und **fragt im Browser** (sobald er verbunden ist), ob fehlende Bibliotheken und Boards installiert werden sollen.
+  Meldungen, die beim Start noch niemand sehen konnte, erscheinen in einem Dialog „Meldungen beim Start des Programms“. Mit „Nein“ geht es ohne Fehlermeldung weiter. Gelingt
+  etwas nicht, wiederholt das Programm einmal nur, **was noch fehlt** (nicht noch einmal alles). Bringt die Wiederholung nichts Neues, endet das Update mit einer Meldung und dem
+  Hinweis auf das Protokoll, ohne Endlosschleife (Hilfe → Logfile anzeigen). Die Platinen sind groß: Internet und Platz auf dem Datenträger prüfen.
+- **ESP32 und der Befehl `python`:** Das ESP32-Paket 1.0.4 ruft `python` auf. Neuere macOS-Versionen (ab 12.3) und Debian-Systeme (auch das Raspberry Pi OS) haben nur `python3`. Das Programm legt
+  deshalb beim Start einen Hilfsbefehl `python` im Datenordner an (`bin/python`, ruft den Python des Programms auf), wenn es keinen gibt (ab Version 1.89). Ohne ihn endet das Prüfen
+  und Hochladen mit `exec: "python": executable file not found in $PATH`. Nach dem Einspielen das Programm neu starten.
 
 ### 2.4 Starten, Beenden, Speichern
 
@@ -344,6 +352,44 @@ das Senden an ein Modul (damit auch das Blinken der LED bei RGB Modul Nr), die W
 - **Spaltenbreite:** Die Muster-Spalten sind gleich breit. Das Programm passt die benutzten Spalten an die Dauer an, wenn die Zeiten sehr unterschiedlich sind (wie in Excel).
   In dieser Tabelle lassen sich die Spalten nicht von Hand verstellen, weil die Balken an den Spaltenbreiten hängen.
 - **Daten:** Die Blätter werden beim Beenden im Datenordner gesichert (`temp_workbook.table_PatternWorkbook.json`) und beim nächsten Start geladen.
+
+### 2.11 Vollbild und Adressen der Reiter
+
+- **Vollbild:** Der Knopf **Vollbild** in der Kopfzeile (neben **Beenden**) blendet Titel, Menü und Reiterleiste aus. Die Statusmeldungen und die Knöpfe Vollbild und Beenden bleiben, die
+  Tabelle bekommt den Platz. Wenn der Browser es erlaubt, geht er dabei auch in den Vollbildmodus (auf dem iPhone gibt es das nicht, dort wirkt nur das Ausblenden). Derselbe Knopf (dann
+  **Vollbild beenden**) oder die Taste ESC schaltet zurück. Gedacht ist es für kleine Bildschirme, zum Beispiel das Smartphone. Im Vollbild ist die Reiterleiste weg: Zum Wechseln erst das Vollbild beenden.
+- **Reiter direkt aufrufen:** Jeder Reiter hat eine eigene Adresse, zum Beispiel `http://localhost:8080/Farbtest`:
+
+| Adresse | Reiter |
+|---|---|
+| `/ProgGenerator` | Programm Generator |
+| `/Patterngenerator` | Patterngenerator |
+| `/ProgGeneratorEinstellungen` | ProgGenerator Einstellungen |
+| `/Farbtest` | Farb Test |
+| `/ServoTest1` | Servo Test 1 |
+| `/SerialMonitor` | Serial Monitor |
+| `/ARDUINOEinstellungen` | ARDUINO Einstellungen |
+| `/ProgrammEinstellungen` | Programm Einstellungen |
+
+  Groß- und Kleinschreibung ist egal (`/farbtest` wird umgeleitet). Mit dem Zusatz **`?vollbild=1`** öffnet sich der Reiter gleich im Vollbild (zum Beispiel `/ServoTest1?vollbild=1`);
+  der erste Tipp auf die Seite schaltet dann auch den Browser auf Vollbild. Bei einem unbekannten Namen zeigt das Programm die Liste der gültigen Adressen. Die Startseite `/` bleibt der
+  Programm Generator. Aus dem Netz heißt es `http://<Adresse des Rechners>:8080/Farbtest`; das Passwort (Kapitel 8) gilt auch hier.
+
+### 2.12 Servo Test 1
+
+Der Reiter **Servo Test 1** (Adresse `/ServoTest1`) bedient die Servoplatine der MobaLedLib (Servos über LED-Befehle) und ist wie der **Excel-Dialog „Servo Test und Einstellung“** aufgebaut. Er
+arbeitet über dieselbe serielle Verbindung wie der Farb Test: zuerst mit dem Arduino **verbinden** (Taste **Verbinden** unten rechts oder Menü ARDUINO → Verbinden).
+
+- **Servo wählen:** In der Zeile **Servo Modul Auswahl** stehen **LED Nummer**, **Anschluss** (0 bis 2) und **LED Kanal**. Nach jeder Änderung wählt das Programm den Servo und lässt ihn
+  **kurz wackeln**, damit man ihn erkennt. Die Werte werden gemerkt.
+- **Position:** Der Regler (10 bis 210) mit den Pfeilen daneben stellt die Position ein, rechts steht der Wert.
+- **Servo Konfigurieren** führt in drei Schritten durch **Minimalposition**, **Maximalposition** und **Geschwindigkeit**. Mit den Pfeiltasten **<< < > >>** wird der Wert eingestellt
+  (**gedrückt halten**: schneller). **Weiter** geht zum nächsten Schritt, **Einstellungen speichern** speichert (in jedem Schritt möglich), **nicht speichern** bricht ab.
+- **Servo zurücksetzen** stellt nach einer Rückfrage die Grundeinstellungen des Servos wieder her (Limits und Geschwindigkeit).
+- **Beschreibung:** Der Text oben ist einzeilig; ein Tipp darauf klappt ihn auf.
+- **Verlassen:** Beim Wechseln des Reiters, beim Schließen oder Neuladen der Seite und beim Beenden des Programms bekommt der Servo den **Wert 0**, ein laufender Ablauf wird abgebrochen und
+  der Direktmodus beendet. So bleibt kein Servo in Bewegung.
+- Die Seite ist für das **Smartphone** gebaut (eine Spalte, große Tasten); zusammen mit dem Vollbild (2.11) bleibt viel Platz.
 
 ## 3. Windows
 
@@ -538,7 +584,7 @@ Die allgemeinen Hinweise stehen in 2.2 und 2.3. Besonderheiten des Pi:
   bash ~/mobaledlib/python/pi/install_arduino_libs.sh --pico            # Raspberry Pi Pico (RP2040)
   bash ~/mobaledlib/python/pi/install_arduino_libs.sh --pico=5.4.2 --esp32
   ```
-  (Das ESP32-Paket lässt sich auf dem Pi nicht installieren, siehe Kapitel 10.)
+  (Das ESP32-Paket lässt sich auf dem Pi nicht installieren, siehe Kapitel 10; das Programm wählt es dort seit 1.90 nicht mehr aus.)
 
 ### 6.5 Alltag auf dem Pi
 
@@ -771,6 +817,8 @@ danach im Browser `http://localhost:8080`.
 | Board installieren: `NullPointerException at … BaseNoGui.onBoardOrPortChange` | Die IDE hat ein nicht installiertes Board ausgewählt. Das Programm und die Skripte setzen die Auswahl auf `arduino:avr:uno` zurück. Von Hand (Linux/Pi): `sed -i -E '/^(target_package\|target_platform\|board\|custom_[A-Za-z0-9_.]+)=/d' ~/.arduino15/preferences.txt; printf 'target_package=arduino\ntarget_platform=avr\nboard=uno\n' >> ~/.arduino15/preferences.txt`, dann wiederholen |
 | Board `esp32:esp32` installieren: `Tool esptool_py is not available for your operating system` | Für diese Version des ESP32-Pakets fehlen Werkzeuge für die Prozessorart (64-Bit-ARM), siehe Kapitel 10 |
 | Pakete lassen sich nicht installieren | Internetverbindung, Firmenproxy; im Fenster steht die Fehlermeldung von `pip` |
+| Beim Start: „Fehler beim Aktualisieren aufgetreten“, Bibliotheken oder Boards fehlen | Die Frage kommt im Browser (2.3). Die Wiederholung lädt nur, was fehlt, und endet ohne Fortschritt mit einer Meldung (ab 1.88). Die Ausgabe der IDE steht im Protokollfenster des Befehls und im Protokoll (Hilfe → Logfile anzeigen). Platinen sind groß: Internet und Platz auf dem Datenträger prüfen |
+| ESP32 prüfen oder hochladen: `exec: "python": executable file not found in $PATH` | Die ESP32-Platine 1.0.4 braucht den Befehl `python`, neuere macOS-Versionen und Debian haben nur `python3`. Seit Version 1.89 legt das Programm ihn beim Start selbst an (`bin/python` im Datenordner, 2.3). Das Programm neu starten; fehlt die Datei dort, steht der Grund im Protokoll |
 | Beim Installieren der Python-Pakete: `Failed to build <Paket>` oder `Failed to build installable wheels` | Für dieses System gibt es keine fertige Datei (Wheel) des Pakets, und pip versucht, es zu übersetzen, was meist scheitert. Häufigste Ursachen: 32-Bit-System, sehr altes oder sehr neues Python, kein Internet. Das Linux-Skript zeigt eine Diagnose (Prozessor, Python, pip, glibc): bitte mitschicken. Pillow wird nicht mehr gebraucht (`requirements-web.txt` ab Version 1.01); bei einer älteren Fassung die Zeile `Pillow` aus `install/requirements-web.txt` löschen und das Skript noch einmal ausführen |
 | „ARDUINO IDE nicht gefunden“ (Protokoll, Meldung beim Start, kein Kompilieren möglich) | Siehe 2.2. Die IDE 1.8.19 nach `~/arduino-1.8.19` legen, oder in „ARDUINO Einstellungen“ **IDE suchen** benutzen bzw. den vollständigen Pfad der Startdatei `arduino` eintragen. Es muss die IDE **1.8.x** sein, nicht 2.x. Die Orte, an denen gesucht wurde, stehen im Protokoll |
 | `ModuleNotFoundError: No module named 'xyz'` | `venv_web/bin/pip install xyz` (Windows `venv_web\Scripts\pip`, Pi `venv/bin/pip`) |
@@ -828,17 +876,18 @@ danach im Browser `http://localhost:8080`.
   bietet Espressif keine Werkzeuge für diese Prozessorart an, die Installation über die Boardverwaltung der IDE 1.8.19 scheitert mit „Tool esptool_py is not
   available for your operating system“. ESP32-Programme werden deshalb auf einem Windows- oder Intel-Rechner erzeugt und hochgeladen. Pico und Arduino laufen auch
   auf dem Pi. `python3 pi/esp32_index_check.py <Version>` zeigt, für welche Versionen alle Werkzeuge für den Rechner vorhanden sind. Eine neuere Version müsste das
-  Projekt festlegen und testen.
+  Projekt festlegen und testen. Seit Version 1.90 wählt das Programm das ESP32-Paket auf Linux mit 64-Bit-ARM nicht mehr automatisch aus (sonst scheiterte die Installation bei jedem Start).
 - **Noch nicht umgesetzte Formulare** (es gab sie in der Tk-Version): ServoAnim, LEDAnim, LEDColorAnim, Multiple_LEDColorAnim und der Mustereditor. Sie zeigen nichts an.
-- **Weitere Reiter** (ARDUINO Monitor, Sound Test, DCC Keyboard, Servo Test) gibt es im Web noch nicht.
-- **Patterngenerator:** Test Pattern, Send2Module, Bild einfügen, Beispiele laden und speichern, Spezialmodi, Multiplexer und die Auswahldialoge beim Doppelklick (Mode, Goto) fehlen noch (2.10).
+- **Weitere Reiter** (ARDUINO Monitor, Sound Test, DCC Keyboard, Servo Test 2) gibt es im Web noch nicht. Servo Test 1 gibt es (2.12).
+- **Patterngenerator:** Test Pattern und Senden an ein Modul, die Wirkung der Spezial Modes auf dem Modul und der Multiplexer fehlen noch (2.10).
 - **Stand der Prüfung:** Ausprobiert sind
   - **Raspberry Pi** (Raspberry Pi OS Trixie, Python 3.13): Neuinstallation mit `install_pi.sh`, Dienst, Zugriff aus dem Netz, Desktop-Symbol, IDE, Bibliotheken,
     Boards (ohne ESP32) und das Herunterfahren.
   - **Linux Mint** (32-Bit-Debian 12, Python 3.11, sehr langsamer Laptop) und **Ubuntu 25.10** (Python 3.13): Installation mit `install_linux.sh`, Betrieb, Update
     über das Menü und das kompakte Layout.
   - **Windows 10** (`install_windows.bat /ide` nach dem Neustart des PCs, Python 3.12) und **Windows 11** (Python 3.14): Installation und Betrieb.
-  - **Nicht ausprobiert:** **macOS** (auf macOS 10.11.6 scheitert die Installation der Python-Pakete, `orjson`; neuere Versionen sind nicht getestet) und der Download und
+  - **macOS:** Ein Tester setzt das Programm auf einem neueren macOS ein. Sein Fehler beim Prüfen für den ESP32 (`python` fehlt) ist seit Version 1.89 behoben, die Rückmeldung dazu steht noch aus.
+  - **Nicht ausprobiert:** der Rest von **macOS** (auf macOS 10.11.6 scheitert die Installation der Python-Pakete, `orjson`; neuere Versionen sind nicht getestet) und der Download und
     die stille Installation der IDE unter Windows und macOS. Die Skripte für macOS liefen nur unter Linux mit einer lokalen ZIP-Datei als Ersatz.
   - **Ohne Tk** (Standard ab Version 1.33): Auf dem Pi ist das seit Langem so. Auf Windows, dem Linux-Desktop und macOS wurde bis Version 1.32 ein unsichtbares echtes Tk-Fenster
     angelegt. Der Ersatz ist dort ab Version 1.33 der Normalfall: **Auf Windows (Entwicklungsrechner) läuft er**, auf dem Linux-Desktop und macOS ist er noch wenig ausprobiert.

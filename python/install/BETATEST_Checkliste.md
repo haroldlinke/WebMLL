@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 1.23 (2026-10-20), gilt für webMobaLedLib 1.78*
+*Datei-Version: 1.24 (2026-10-20), gilt für webMobaLedLib 1.90*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -106,6 +106,14 @@ Trage das Ergebnis in die Tabelle am Ende ein.
 50. Schalter ausschalten und neu starten: Ist die Oberfläche vom zweiten Rechner nicht mehr erreichbar? Bleibt die Firewall-Regel bestehen (Knopf *Freigabe entfernen* nimmt sie weg)?
 51. Programm mit gesetzter Umgebungsvariable `MLL_HOST` starten: Ist der Schalter gesperrt, und sagt die Seite, dass die Adresse fest vorgegeben ist?
 52. **Versionsprüfung:** Erscheint beim normalen Start keine rote Meldung oben auf der Seite? Eine Datei des Programms (zum Beispiel `ExcelAPI/headless_sheet.py`) durch eine ältere ersetzen: Nennt die rote Meldung die Datei, die gefundene und die verlangte Version?
+53. **Vollbild** (Knopf in der Kopfzeile neben Beenden): Verschwinden Titel, Menü und Reiterleiste, bleiben Statusmeldungen, Vollbild und Beenden? Geht der Browser in den Vollbildmodus (nicht iPhone)? Schaltet der Knopf (jetzt „Vollbild beenden“) oder ESC zurück?
+54. **Adressen der Reiter:** Öffnen `/Farbtest`, `/ServoTest1`, `/Patterngenerator` den richtigen Reiter, auch von einem zweiten Rechner oder dem Telefon (mit Passwort)? Leitet `/farbtest` um? Zeigt `/Farbtset` die Liste der Adressen? Öffnet `/Farbtest?vollbild=1` gleich im Vollbild, und schaltet der erste Tipp den Browser um?
+55. **Servo Test 1, Einstellen:** Nach **Verbinden** (Taste unten rechts) und der Wahl von LED Nummer, Anschluss und LED Kanal: Wackelt der gewählte Servo kurz? Folgt er dem Regler? Steht „Servo Modul Auswahl“ in der Zeile der Felder, die drei Tasten in einer Zeile, die Beschreibung einzeilig und aufklappbar (Telefon)?
+56. **Servo Test 1, Konfigurieren:** Servo Konfigurieren, Weiter (Minimalposition, Maximalposition, Geschwindigkeit): Bewegt sich der Servo bei gehaltenen Pfeiltasten (<< < > >>), schneller bei Halten? Speichern in verschiedenen Schritten, nicht speichern und **Servo zurücksetzen** (mit Rückfrage) wie in Excel? Rutscht der Finger von einer Pfeiltaste ab: bleibt der Servo stehen?
+57. **Servo Test 1, Verlassen:** Reiter wechseln, Seite neu laden, Browser-Reiter schließen und das Programm beenden, jeweils während ein Servo läuft oder ein Ablauf (zum Beispiel Servo zurücksetzen) arbeitet: Hält der Servo an (Wert 0), und läuft nichts mehr weiter?
+58. **Erster Start einer frischen Installation:** Kommt die Frage nach fehlenden Bibliotheken und Boards **im Browser** (nicht nur im Protokoll)? Erscheinen Meldungen vom Start in einem Dialog? Ist „Nein“ ohne Fehlermeldung möglich?
+59. **Raspberry Pi, Bibliotheken:** Wird **ESP32 nicht** ausgewählt, werden **rp2040** und die Arduino-Boards installiert? Lädt die Wiederholung nur, was fehlt, und endet sie ohne Fortschritt mit einer Meldung (statt einer Endlosschleife)? Friert der Pi dabei nicht mehr ein?
+60. **macOS, Linux, Pi: ESP32 1.0.4:** Gelingt das Prüfen und Hochladen ohne `exec: "python": executable file not found in $PATH`? Gibt es nach dem Start die Datei `bin/python` im Datenordner (Protokoll: „Der Befehl python fehlt: Hilfsbefehl …“)?
 
 ## 4. Ergebnis
 

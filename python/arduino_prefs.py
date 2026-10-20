@@ -1,4 +1,15 @@
-# Datei-Version: 1.01 (2026-10-12) - arduino_prefs.py
+# Datei-Version: 1.02 (2026-10-20) - arduino_prefs.py
+# ----------------------------------------------------------------------------------------------
+# Name:           arduino_prefs.py
+# Path:           arduino_prefs.py
+# Version:        1.02
+# Last Update:    2026-10-20
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-10-12  Einstellungsdatei der ARDUINO IDE unter Linux vorbereiten (Original, nicht erfasst)
+#   1.02  2026-10-20  ensure_python_command: Hilfsbefehl python fuer die Platine esp32:esp32 1.0.4 (macOS ab 12.3, Debian, Raspberry Pi OS haben nur python3)
+# ----------------------------------------------------------------------------------------------
 """Einstellungsdatei der ARDUINO IDE 1.8 unter Linux (~/.arduino15/preferences.txt) vorbereiten.
 
 Das Programm liest daraus den Sketchbook-Ordner (M02a.Read_Sketchbook_Path_from_preferences_txt) und meldet sonst
@@ -11,6 +22,9 @@ from __future__ import annotations
 import logging
 import os
 import platform
+import shlex  # v1.02
+import shutil  # v1.02
+import sys  # v1.02
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +39,47 @@ def prefs_path() -> str:
 
 def default_sketchbook() -> str:
     return os.path.expanduser("~/Documents/Arduino" if platform.system() == "Darwin" else "~/Arduino")
+
+
+def python_shim_dir() -> str:  # v1.02
+    """Ordner mit dem Hilfsbefehl python (im Datenordner des Programms)"""  # v1.02
+    import userdata  # v1.02
+    return os.path.join(userdata.data_dir(), "bin")  # v1.02
+
+
+def ensure_python_command() -> str | None:  # v1.02
+    """Sorgt dafuer, dass es den Befehl \"python\" gibt, solange das Programm laeuft (Linux und macOS).
+
+    Die Platine esp32:esp32 in der Version 1.0.4 (die Excel-Fassung verlangt sie) ruft in ihren Regeln \"python\" auf: das Pruefen und Hochladen endet sonst mit
+    exec: \"python\": executable file not found in $PATH. Neuere macOS-Versionen (ab 12.3), Debian und das Raspberry Pi OS haben nur \"python3\". Die ARDUINO IDE erbt die
+    Umgebung des Programms; darum legt diese Funktion im Datenordner eine kleine Datei python an, die den Python des Programms aufruft (mit seinen Paketen, auch
+    pyserial fuer esptool), und stellt den Ordner an den Anfang von PATH. Gibt es schon einen Befehl python, passiert nichts.
+    Rueckgabe: der Pfad der Hilfsdatei, sonst None (nicht noetig oder nicht moeglich)."""
+    if platform.system() not in ("Linux", "Darwin"):  # v1.02
+        return None  # v1.02
+    if shutil.which("python"):  # v1.02
+        return None  # v1.02
+    shim_dir = python_shim_dir()  # v1.02
+    shim = os.path.join(shim_dir, "python")  # v1.02
+    content = f"#!/bin/sh\n# von webMobaLedLib angelegt: ruft den Python des Programms auf (der Befehl python fehlt auf diesem System)\nexec {shlex.quote(sys.executable)} \"$@\"\n"  # v1.02
+    try:  # v1.02
+        os.makedirs(shim_dir, exist_ok=True)  # v1.02
+        current = ""  # v1.02
+        if os.path.isfile(shim):  # v1.02
+            with open(shim, encoding="utf-8", errors="replace") as fh:  # v1.02
+                current = fh.read()  # v1.02
+        if current != content or not os.access(shim, os.X_OK):  # v1.02
+            tmp = shim + ".tmp"  # v1.02
+            with open(tmp, "w", encoding="utf-8") as fh:  # v1.02
+                fh.write(content)  # v1.02
+            os.chmod(tmp, 0o755)  # v1.02
+            os.replace(tmp, shim)  # v1.02
+    except OSError:  # v1.02
+        logger.warning("Der Hilfsbefehl python konnte nicht angelegt werden (%s)", shim, exc_info=True)  # v1.02
+        return None  # v1.02
+    os.environ["PATH"] = shim_dir + os.pathsep + os.environ.get("PATH", "")  # v1.02
+    logger.info("Der Befehl python fehlt: Hilfsbefehl %s ruft %s auf", shim, sys.executable)  # v1.02
+    return shim  # v1.02
 
 
 def supported() -> bool:
