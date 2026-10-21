@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-20) - M07_COM_Port.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M07_COM_Port.py
+# Path:           proggen/M07_COM_Port.py
+# Version:        1.01
+# Last Update:    2026-10-20
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-20  EnumComPorts: FTDI-Adapter (VID 0403, Beschreibung FT232 ...) werden erkannt, sonst meldete die Pruefung beim Hochladen 'kein Arduino angeschlossen'; DetectArduino: kein Absturz, wenn die Verbindung inzwischen getrennt wurde
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -609,7 +621,7 @@ def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True):
         for comport in temp_comports_list:
             Debug.Print("EnumComPorts:"+repr(comport.description)+" "+repr(comport.device))
             # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 ) ) or ( ESP_Inst == True and InStr(comport.description, 'Silicon Labs CP210x') > 0 )  or  ( PICO_Inst == True and InStr(comport.description, 'USB\\\\VID_2E8A&PID_000A\\') > 0 ):
-            if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and InStr(comport.hwid, 'USB VID:PID=2E8A:000A') > 0 ):
+            if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and InStr(comport.hwid, 'USB VID:PID=2E8A:000A') > 0 ):  # v1.01
                 Ports.append(comport.device)
                 ResNames.append(comport.description)
                 idx=idx+1
@@ -847,10 +859,14 @@ def DetectArduino(port,baudrate, HWVersion=255, SWMajorVersion=255, SWMinorVersi
         port_str="COM"+str(port)
     else:
         port_str = port
-    PG.global_controller.arduino.port = port_str
-    PG.global_controller.arduino.dtr = False
+    ser = PG.global_controller.arduino  # v1.01
+    if ser is None:                                     # die Verbindung wurde inzwischen getrennt (zum Beispiel nach einem Schreibfehler im Sendethread): kein Absturz  # v1.01
+        logging.debug("M07.detect_arduino: Verbindung zum Arduino ist weg")  # v1.01
+        return -2, None  # v1.01
+    ser.port = port_str  # v1.01
+    ser.dtr = False  # v1.01
     try:
-        PG.global_controller.arduino.open()
+        ser.open()  # v1.01
     except BaseException as e:
         logging.debug("M07.detect_arduino: Error opening  port "+port_str)
         logging.debug(e, exc_info=True) 

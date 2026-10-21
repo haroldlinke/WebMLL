@@ -1,4 +1,16 @@
-# Datei-Version: 1.00 (2026-10-12) - Prog_Generator.py
+# Datei-Version: 1.02 (2026-10-21) - Prog_Generator.py
+# ----------------------------------------------------------------------------------------------
+# Name:           Prog_Generator.py
+# Path:           mlpyproggen/Prog_Generator.py
+# Version:        1.02
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (start_ARDUINO_program_cmd)
+#   1.02  2026-10-21  execute_shell_cmd: Ausgabe vollstaendig lesen (der Rest nach dem Ende des Prozesses ging verloren, zum Beispiel der Traceback von esptool); Zeichen, die nicht UTF-8 sind, ersetzen statt die Zeile zu verlieren
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Prog_Generator
@@ -366,6 +378,32 @@ def build_workbook_dict(default_font, default_smallfont, default_boldfont):
                      "JumpTable" : globalprocs
                      }
     return workbook_dict
+
+
+def _drain_output(process, page, timeout=2.0):  # v1.02
+    """Rest der Ausgabe lesen, nachdem sich der Prozess beendet hat: Zum Beispiel esptool schreibt einen Traceback und endet sofort, die letzten Zeilen standen dann noch im
+    Puffer und gingen verloren. Haelt ein Kindprozess die Leitung offen, wird nach timeout Sekunden aufgegeben (kein Haengen).
+    Eine Funktion auf Modulebene und keine Methode: HeadlessProgGeneratorPage uebernimmt aus Prog_GeneratorPage nur die Methoden einer festen Liste (_BORROWED)."""
+    import threading  # v1.02
+    chunks = []  # v1.02
+
+    def reader():  # v1.02
+        try:  # v1.02
+            while True:  # v1.02
+                chunk = process.stdout.read1(65536)                    # was schon da ist, ohne auf das Ende der Leitung zu warten  # v1.02
+                if not chunk:  # v1.02
+                    break  # v1.02
+                chunks.append(chunk)  # v1.02
+        except BaseException:                                          # noqa: BLE001  # v1.02
+            pass  # v1.02
+    thread = threading.Thread(target=reader, daemon=True)  # v1.02
+    thread.start()  # v1.02
+    thread.join(timeout)  # v1.02
+    data = b"".join(list(chunks))  # v1.02
+    for line in data.decode("utf-8", errors="replace").splitlines():  # v1.02
+        page.add_text_to_textwindow(line + "\n")  # v1.02
+    if data:  # v1.02
+        page.update()  # v1.02
 
 
 class Prog_GeneratorPage(tk.Frame):
@@ -942,6 +980,9 @@ class Prog_GeneratorPage(tk.Frame):
                 self.arduinoMonitorPage.add_text_to_textwindow('ECHO    "   |    [@] [@] [@]          |  ' + M09.Get_Language_Str('Falls Probleme auftreten, dann wird      "'), '\n')
                 self.arduinoMonitorPage.add_text_to_textwindow('ECHO    "   |__________________[:::]__|  ' + M09.Get_Language_Str('das angezeigt.                           "'), '\n')
                 self.arduinoMonitorPage.add_text_to_textwindow('ECHO    "                                                                         "', '\n')
+                self.arduinoMonitorPage.add_text_to_textwindow('ECHO    "   ' + M30.AddSpaceToLen(M09.Get_Language_Str("Bleibt es bei 'Connecting....' stehen: am ESP32 die Taste BOOT"), 70) + '"', '\n')  # v1.01
+                self.arduinoMonitorPage.add_text_to_textwindow('ECHO    "   ' + M30.AddSpaceToLen(M09.Get_Language_Str("gedrueckt halten, bis 'Writing at ...' erscheint."), 70) + '"', '\n')  # v1.01
+                self.arduinoMonitorPage.add_text_to_textwindow('ECHO    "                                                                         "', '\n')  # v1.01
                 self.arduinoMonitorPage.add_text_to_textwindow('ECHO    " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " "', '\n')
             elif (Mode == M02.HT_PICO):
                 # 18.04.21:
@@ -1053,16 +1094,22 @@ class Prog_GeneratorPage(tk.Frame):
             # Poll process.stdout to show stdout live
             while True:
                 output = self.process.stdout.readline()
-                if self.process.poll() is not None:
-                    logging.debug("shell ended")
-                    #print("shell ended")
-                    break
+                # if self.process.poll() is not None:  # v1.02 (verschoben hinter die Ausgabe: die gelesene Zeile ging verloren)
+                #     logging.debug("shell ended")  # v1.02 (verschoben)
+                #     #print("shell ended")  # v1.02 (verschoben)
+                #     break  # v1.02 (verschoben)
                 if output:
                     try:
-                        self.arduinoMonitorPage.add_text_to_textwindow(output.decode('utf-8')+"\n")
+                        self.arduinoMonitorPage.add_text_to_textwindow(output.decode('utf-8', errors='replace')+"\n")  # v1.02
                     except BaseException as e:
                         logging.debug("ProgGenerator - execute_shell_cmd-output:"+str(e))
                     self.arduinoMonitorPage.update()
+                if self.process.poll() is not None:  # v1.02
+                    logging.debug("shell ended")  # v1.02
+                    _drain_output(self.process, self.arduinoMonitorPage)  # v1.02
+                    break  # v1.02
+                if not output:  # v1.02
+                    time.sleep(0.01)  # v1.02
     
             rc = self.process.returncode
             

@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 2.55 (2026-10-20), gilt für webMobaLedLib 1.90*
+*Datei-Version: 2.58 (2026-10-21), gilt für webMobaLedLib 1.96*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -260,7 +260,7 @@ setzt `MLL_LOG_LIBS=1`. Bei einer Fehlermeldung bitte die Datei `webmobaledlib.l
 Auf kleinen Bildschirmen (zum Beispiel einem Laptop mit 1366 × 768 Punkten, auf dem der Browser nur rund 600 Punkte Höhe hat) bleibt für die Tabelle wenig Platz, weil
 Kopfzeile, Menü, Reiter und die großen Symbole der Funktionsknöpfe mehr als die Hälfte belegen. Das **kompakte Layout** schafft Platz:
 
-- Menü (Datei, Tabelle, ARDUINO, Hilfe), Titel, Statusmeldung und der Knopf **Beenden** stehen in **einer** Zeile. Der Titel ist kleiner und ohne „(Prototyp)“, der Knopf
+- Menü (Datei, Tabelle, ARDUINO, Hilfe), Titel, Statusmeldung und der Knopf **Beenden** stehen in **einer** Zeile. Der Titel ist kleiner, der Knopf
   Beenden ohne Symbol, die Versionsangabe und die Zeit der Zwischensicherung sind ausgeblendet (die Version steht unter Hilfe → Über …).
 - Die Reiter sind schmaler.
 - Die **Symbole der Funktionsknöpfe werden durch ihren Text ersetzt:** eine schmale Reihe kleiner Textknöpfe statt großer Symbole.
@@ -366,7 +366,10 @@ das Senden an ein Modul (damit auch das Blinken der LED bei RGB Modul Nr), die W
 | `/Patterngenerator` | Patterngenerator |
 | `/ProgGeneratorEinstellungen` | ProgGenerator Einstellungen |
 | `/Farbtest` | Farb Test |
-| `/ServoTest1` | Servo Test 1 |
+| `/ServoTest1` | Servo Einstellungen |
+| `/ServoTest2` | DM Servo Einstellungen (nur mit eingeschalteter Option, siehe 2.13) |
+| `/SoundTest` | Sound Test |
+| `/DCCKeyboard` | DCC Keyboard |
 | `/SerialMonitor` | Serial Monitor |
 | `/ARDUINOEinstellungen` | ARDUINO Einstellungen |
 | `/ProgrammEinstellungen` | Programm Einstellungen |
@@ -375,9 +378,9 @@ das Senden an ein Modul (damit auch das Blinken der LED bei RGB Modul Nr), die W
   der erste Tipp auf die Seite schaltet dann auch den Browser auf Vollbild. Bei einem unbekannten Namen zeigt das Programm die Liste der gültigen Adressen. Die Startseite `/` bleibt der
   Programm Generator. Aus dem Netz heißt es `http://<Adresse des Rechners>:8080/Farbtest`; das Passwort (Kapitel 8) gilt auch hier.
 
-### 2.12 Servo Test 1
+### 2.12 Servo Einstellungen
 
-Der Reiter **Servo Test 1** (Adresse `/ServoTest1`) bedient die Servoplatine der MobaLedLib (Servos über LED-Befehle) und ist wie der **Excel-Dialog „Servo Test und Einstellung“** aufgebaut. Er
+Der Reiter **Servo Einstellungen** (früher Servo Test 1, Adresse `/ServoTest1`) bedient die Servoplatine der MobaLedLib (Servos über LED-Befehle) und ist wie der **Excel-Dialog „Servo Test und Einstellung“** aufgebaut. Er
 arbeitet über dieselbe serielle Verbindung wie der Farb Test: zuerst mit dem Arduino **verbinden** (Taste **Verbinden** unten rechts oder Menü ARDUINO → Verbinden).
 
 - **Servo wählen:** In der Zeile **Servo Modul Auswahl** stehen **LED Nummer**, **Anschluss** (0 bis 2) und **LED Kanal**. Nach jeder Änderung wählt das Programm den Servo und lässt ihn
@@ -390,6 +393,13 @@ arbeitet über dieselbe serielle Verbindung wie der Farb Test: zuerst mit dem Ar
 - **Verlassen:** Beim Wechseln des Reiters, beim Schließen oder Neuladen der Seite und beim Beenden des Programms bekommt der Servo den **Wert 0**, ein laufender Ablauf wird abgebrochen und
   der Direktmodus beendet. So bleibt kein Servo in Bewegung.
 - Die Seite ist für das **Smartphone** gebaut (eine Spalte, große Tasten); zusammen mit dem Vollbild (2.11) bleibt viel Platz.
+
+### 2.13 DM Servo Einstellungen, Sound Test und DCC Keyboard
+
+- **DM Servo Einstellungen** (früher Servo Test 2, Adresse `/ServoTest2`) steuert Servos im **Direct Mode** (ein ATtiny statt des WS2811-Chips). Parameter: **Servo Modul Adresse**, **LED Kanal**, **Servo Betriebsart** (1 Normal, 2 und 3 Training, 4 Max Speed, 5 Invers, 6 Servo zurücksetzen, 7 Werkseinstellung, 8 letzte Position zurücksetzen, 9 Oszillator trimmen, 10 Speed Legacy; 0: es wird nichts gesendet) und **Fast Refresh**. Regler 0 bis 255, **Pos 0**, **Pos 255** und die Taste **ENTER** (gedrückt halten; in den Betriebsarten 2 und 3 zweimal drücken, die Beschriftung zeigt „2nd Step“). Nach ENTER in den Betriebsarten 4 bis 8 und 10 steht die Betriebsart auf 0. Die Betriebsart wird nicht gemerkt, die Seite beginnt immer mit 1. Das Programmieren des ATtiny (Hex-Datei) und das Formular für den Programmieradapter gibt es noch nicht. **Der Reiter erscheint nur, wenn in den Programm Einstellungen die Option „DM Servo Einstellungen anzeigen“ eingeschaltet ist** (und nach dem Speichern sofort, ohne Neustart; vorher hieß die Option „Programmgenerator anzeigen“ und hatte im Web keine Wirkung). Ruft man `/ServoTest2` bei ausgeschalteter Option auf, kommt ein Hinweis, und der Programm Generator bleibt offen.
+- **Sound Test** (`/SoundTest`) prüft die MLL-Soundplatine (MP3-TF-16): **Soundmodul-Adresse**, **LED Kanal**, **Impulslänge** und die Werte **R, G, B** (Sound-Auswahl) bestimmen den Ton. **Sound an ARDUINO schicken** sendet den Wert und beendet den Impuls nach der Impulslänge; Änderungen an Adresse, Impulslänge, R, G und B senden gleich (nach kurzer Ruhe beim Tippen). Mit der Taste **Verbinden** (wie ARDUINO → Verbinden) verbindet man zuerst. Beim Verlassen des Reiters oder der Seite wird ein laufender Impuls beendet. Die Tastenkürzel Strg-R und Alt-R der Tk-Seite gibt es nicht (Strg-R lädt im Browser die Seite neu).
+- **DCC Keyboard** (`/DCCKeyboard`) schickt dem ARDUINO die Kommandos `@ AAA CC 01`, die sonst der DCC-ARDUINO an den LED-ARDUINO schickt, damit man die DCC-Schalter ausprobieren kann: 32 Adressen ab der **DCC-Basisadresse**, je ein roter (Kanal 0, mit der Adresse beschriftet) und ein grüner Knopf (Kanal 1), in vier Gruppen zu acht. Beim ersten Tastendruck verbindet die Seite selbst; das kann etwas dauern, und manchmal reagiert der ARDUINO erst auf den zweiten Tastendruck.
+- Alle drei Seiten sind für das Smartphone gebaut (Beschreibung einzeilig und aufklappbar, große Tasten) und im Vollbild (2.11) gut zu bedienen.
 
 ## 3. Windows
 
@@ -819,6 +829,7 @@ danach im Browser `http://localhost:8080`.
 | Pakete lassen sich nicht installieren | Internetverbindung, Firmenproxy; im Fenster steht die Fehlermeldung von `pip` |
 | Beim Start: „Fehler beim Aktualisieren aufgetreten“, Bibliotheken oder Boards fehlen | Die Frage kommt im Browser (2.3). Die Wiederholung lädt nur, was fehlt, und endet ohne Fortschritt mit einer Meldung (ab 1.88). Die Ausgabe der IDE steht im Protokollfenster des Befehls und im Protokoll (Hilfe → Logfile anzeigen). Platinen sind groß: Internet und Platz auf dem Datenträger prüfen |
 | ESP32 prüfen oder hochladen: `exec: "python": executable file not found in $PATH` | Die ESP32-Platine 1.0.4 braucht den Befehl `python`, neuere macOS-Versionen und Debian haben nur `python3`. Seit Version 1.89 legt das Programm ihn beim Start selbst an (`bin/python` im Datenordner, 2.3). Das Programm neu starten; fehlt die Datei dort, steht der Grund im Protokoll |
+| ESP32 hochladen bleibt bei `Connecting........_____` stehen und endet mit `A fatal error occurred: Failed to connect to ESP32: Timed out waiting for packet header` | Der Chip kommt nicht in den Bootloader: auf dem ESP32-Board die Taste **BOOT** (IO0) **gedrückt halten**, sobald im Fenster „Connecting…“ erscheint, bis „Writing at …“ kommt. Viele DevKit-Nachbauten haben keinen zuverlässigen Auto-Reset (ein Kondensator von 10 µF zwischen EN und GND behebt das dauerhaft). Hilft es nicht: ein Datenkabel (kein reines Ladekabel) direkt am Rechner ohne Hub, einen anderen USB-Port, bei zwei Anschlüssen desselben Boards (`/dev/cu.usbserial-…` und `/dev/cu.SLAB_USBtoUART`) den anderen wählen. Das Programm weist vor dem Hochladen darauf hin |
 | Beim Installieren der Python-Pakete: `Failed to build <Paket>` oder `Failed to build installable wheels` | Für dieses System gibt es keine fertige Datei (Wheel) des Pakets, und pip versucht, es zu übersetzen, was meist scheitert. Häufigste Ursachen: 32-Bit-System, sehr altes oder sehr neues Python, kein Internet. Das Linux-Skript zeigt eine Diagnose (Prozessor, Python, pip, glibc): bitte mitschicken. Pillow wird nicht mehr gebraucht (`requirements-web.txt` ab Version 1.01); bei einer älteren Fassung die Zeile `Pillow` aus `install/requirements-web.txt` löschen und das Skript noch einmal ausführen |
 | „ARDUINO IDE nicht gefunden“ (Protokoll, Meldung beim Start, kein Kompilieren möglich) | Siehe 2.2. Die IDE 1.8.19 nach `~/arduino-1.8.19` legen, oder in „ARDUINO Einstellungen“ **IDE suchen** benutzen bzw. den vollständigen Pfad der Startdatei `arduino` eintragen. Es muss die IDE **1.8.x** sein, nicht 2.x. Die Orte, an denen gesucht wurde, stehen im Protokoll |
 | `ModuleNotFoundError: No module named 'xyz'` | `venv_web/bin/pip install xyz` (Windows `venv_web\Scripts\pip`, Pi `venv/bin/pip`) |
@@ -878,7 +889,7 @@ danach im Browser `http://localhost:8080`.
   auf dem Pi. `python3 pi/esp32_index_check.py <Version>` zeigt, für welche Versionen alle Werkzeuge für den Rechner vorhanden sind. Eine neuere Version müsste das
   Projekt festlegen und testen. Seit Version 1.90 wählt das Programm das ESP32-Paket auf Linux mit 64-Bit-ARM nicht mehr automatisch aus (sonst scheiterte die Installation bei jedem Start).
 - **Noch nicht umgesetzte Formulare** (es gab sie in der Tk-Version): ServoAnim, LEDAnim, LEDColorAnim, Multiple_LEDColorAnim und der Mustereditor. Sie zeigen nichts an.
-- **Weitere Reiter** (ARDUINO Monitor, Sound Test, DCC Keyboard, Servo Test 2) gibt es im Web noch nicht. Servo Test 1 gibt es (2.12).
+- **Weitere Reiter:** Die Ausgabe beim Kompilieren und Hochladen (der ARDUINO Monitor der Tk-Fassung) erscheint im Protokollfenster. Von den DM Servo Einstellungen fehlen das Programmieren des ATtiny (Hex-Datei über den Bus) und das Formular für den Programmieradapter (2.13).
 - **Patterngenerator:** Test Pattern und Senden an ein Modul, die Wirkung der Spezial Modes auf dem Modul und der Multiplexer fehlen noch (2.10).
 - **Stand der Prüfung:** Ausprobiert sind
   - **Raspberry Pi** (Raspberry Pi OS Trixie, Python 3.13): Neuinstallation mit `install_pi.sh`, Dienst, Zugriff aus dem Netz, Desktop-Symbol, IDE, Bibliotheken,

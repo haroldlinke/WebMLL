@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-20) - M08_ARDUINO.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M08_ARDUINO.py
+# Path:           proggen/M08_ARDUINO.py
+# Version:        1.01
+# Last Update:    2026-10-20
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -1353,6 +1365,9 @@ def Create_Cmd_file(ResultName, ComPort, BuildOptions, InoName, Mode, SrcDir, CP
         VBFiles.writeText(fp, 'ECHO    "   |    [@] [@] [@]          |  ' + M09.Get_Language_Str('Falls Probleme auftreten, dann wird      "'), '\n')
         VBFiles.writeText(fp, 'ECHO    "   |__________________[:::]__|  ' + M09.Get_Language_Str('das angezeigt.                           "'), '\n')
         VBFiles.writeText(fp, 'ECHO    "                                                                         "', '\n')
+        VBFiles.writeText(fp, 'ECHO    "   ' + M30.AddSpaceToLen(M09.Get_Language_Str("Bleibt es bei 'Connecting....' stehen: am ESP32 die Taste BOOT"), 70) + '"', '\n')  # v1.01
+        VBFiles.writeText(fp, 'ECHO    "   ' + M30.AddSpaceToLen(M09.Get_Language_Str("gedrueckt halten, bis 'Writing at ...' erscheint."), 70) + '"', '\n')  # v1.01
+        VBFiles.writeText(fp, 'ECHO    "                                                                         "', '\n')  # v1.01
         VBFiles.writeText(fp, 'ECHO    " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " "', '\n')
     elif (Mode == M02.HT_PICO):
         # 18.04.21:

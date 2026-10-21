@@ -1,9 +1,9 @@
-# Datei-Version: 1.90 (2026-10-20) - webmobaledlib.py
+# Datei-Version: 1.96 (2026-10-21) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        1.90
-# Last Update:    2026-10-20
+# Version:        1.96
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -38,6 +38,12 @@
 #   1.66  2026-10-18  Zugriff aus dem Netz (Windows): Browser oeffnet die Adresse, auf der der Server lauscht (browser_host), Hinweis auf die Firewall beim Start
 #   1.67  2026-10-18  Programm Einstellungen: Firewall-Regel fuer den Zugriff aus dem Netz per Knopf (Windows), web_access 1.05, web_firewall 1.00
 #   1.68  2026-10-18  Firewall-Bereich erkennt auch von Hand angelegte Regeln fuer den Port, Entfernen loescht alle Regeln webMobaLedLib* (web_firewall 1.01, web_access 1.06)
+#   1.96  2026-10-21  Reiter Servo Einstellungen und DM Servo Einstellungen (mit Option), Titel ohne (Prototyp), Breite der Zeilennummer nach der groessten Nummer
+#   1.95  2026-10-21  Reiter Sound Test und DCC Keyboard (web_soundtest 1.00, web_dcckeyboard 1.00, web_tabs 1.03)
+#   1.94  2026-10-21  ESP32 unter Windows: blinkender Zeitgeber der Port-Auswahl endet mit dem Dialog (web_form_comport 1.03), Ausgabe von Befehlen vollstaendig (Prog_Generator 1.02)
+#   1.93  2026-10-20  Fehler vom Raspberry Pi: LNet Lizenzformular (web_dialogs 1.06), FTDI-Adapter erkennen (M07_COM_Port 1.01), Fenster der Installation beim Start schliessen
+#   1.92  2026-10-20  ESP32: Hinweis auf die Taste BOOT vor dem Hochladen (Prog_Generator 1.01, M08_ARDUINO 1.01)
+#   1.91  2026-10-20  Reiter Servo Test 2: direkte Steuerung von Direct Mode Servos (web_servotest2 1.00, web_tabs 1.02)
 #   1.90  2026-10-20  Mindestversion M37_Inst_Libraries.py 1.03 (ESP32 auf 64-Bit-ARM nicht automatisch installieren)
 #   1.89  2026-10-20  Hilfsbefehl python fuer die ESP32-Platine 1.0.4 beim Start (arduino_prefs 1.02)
 #   1.88  2026-10-20  Mindestversion M37_Inst_Libraries.py 1.02 (Linux: Platinen esp32 und rp2040 bekamen den falschen Paketindex)
@@ -100,8 +106,8 @@ here = os.path.dirname(os.path.abspath(__file__))
 # Mindestversionen der Dateien, die zu diesem Stand gehoeren (Zeile "Datei-Version" am Anfang jeder Datei). Beim Einspielen einzelner Dateien fehlte schon zweimal eine;
 # dann stuerzt ein Teil ab oder tut nichts. Die Pruefung beim Start meldet es im Protokoll, auf der Konsole und mit einer roten Meldung oben auf der Seite.
 REQUIRED_FILES = {  # v1.75
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.09", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.01", "_web/web_servotest.py": "2.03", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v1.87
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.03", "arduino_prefs.py": "1.02", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.90
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.09", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.00", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.03", "_web/web_servotest2.py": "1.00", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v1.96
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.03", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.94
     "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.75
     "proggen/M18a_Load_PicoConfig.py": "1.01", "proggen/M17_Import_old_Data.py": "1.01",  # v1.75
 }  # v1.75
@@ -148,7 +154,7 @@ if _hidden_root is None:
 from nicegui import app as nicegui_app, context, run, ui               # noqa: E402
 
 from headless.headless_app_controller import HeadlessAppController     # noqa: E402
-from headless.headless_gridmodel import build_grid                      # noqa: E402
+from headless.headless_gridmodel import build_grid, row_number_width                      # noqa: E402  # v1.96
 from _web import web_dialogs                                    # noqa: E402
 from ExcelAPI.headless_sheet import Selected                    # noqa: E402  (liegt im Ordner ExcelAPI)
 
@@ -606,7 +612,13 @@ def font_scales(ctrl) -> dict:
             "grid": factor("FontNormal"), "small": factor("FontSmall"), "name": name or "Arial"}
 
 
-VERSION = "1.90 (2026-10-20)"  # v1.90
+VERSION = "1.96 (2026-10-21)"  # v1.96
+# VERSION = "1.95 (2026-10-21)"  # v1.96 (ersetzt)
+# VERSION = "1.94 (2026-10-21)"  # v1.95 (ersetzt)
+# VERSION = "1.93 (2026-10-20)"  # v1.94 (ersetzt)
+# VERSION = "1.92 (2026-10-20)"  # v1.93 (ersetzt)
+# VERSION = "1.91 (2026-10-20)"  # v1.92 (ersetzt)
+# VERSION = "1.90 (2026-10-20)"  # v1.91 (ersetzt)
 # VERSION = "1.89 (2026-10-20)"  # v1.90 (ersetzt)
 # VERSION = "1.88 (2026-10-20)"  # v1.89 (ersetzt)
 # VERSION = "1.87 (2026-10-20)"  # v1.88 (ersetzt)
@@ -1019,6 +1031,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         marks["t"] = now
 
     logger.info("Seite wird aufgebaut (Client %s)", context.client.id)
+    from _web import web_tabs as _wt  # v1.96
+    _wt.apply_param_overrides(ctrl)                    # Text der Option "DM Servo Einstellungen anzeigen" (vorher: Programmgenerator anzeigen), bevor die Einstellungsseiten entstehen  # v1.96
     ui.add_head_html(JS_DIALOG_KEYS)
     ui.add_head_html(JS_DBLCLICK)
     ui.add_head_html("<script>" + JS_COPY_HELPER + "</script>")
@@ -1071,7 +1085,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     with ui.row().classes("items-center w-full mll-header") as header_row:    # Kopfzeile: gilt fuer alle Registerkarten
         with ui.row().classes("items-baseline gap-2 no-wrap mll-titlebox"):
             ui.label("webMobaLedLib – Programmgenerator").classes("text-h5 mll-title")
-            ui.label("(Prototyp)").classes("text-h5 mll-proto")
+            # ui.label("(Prototyp)").classes("text-h5 mll-proto")  # v1.96 (entfallen)
         ui.label(f"webMobaLedLib {VERSION}").classes("text-caption text-grey-6 mll-ver")      # zeigt, welche Datei wirklich laeuft
 
         # -------------------------------------------------------------- Menue (wie im Tk-Hauptfenster); im kompakten Layout in der Kopfzeile
@@ -1089,10 +1103,24 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         ui.tab("patt", label="Patterngenerator")   # v1.39
         ui.tab("progcfg", label="ProgGenerator Einstellungen")
         ui.tab("farb", label="Farb Test")
-        ui.tab("servo1", label="Servo Test 1")  # v1.83
+        ui.tab("servo1", label="Servo Einstellungen")  # v1.96
+        servo2_tab = ui.tab("servo2", label="DM Servo Einstellungen")  # v1.96
+        ui.tab("sound", label="Sound Test")  # v1.95
+        ui.tab("dcc", label="DCC Keyboard")  # v1.95
         ui.tab("mon", label="Serial Monitor")
         ui.tab("arduinocfg", label="ARDUINO Einstellungen")
         ui.tab("config", label="Programm Einstellungen")
+    optional_tabs = {"servo2": servo2_tab}               # Reiter mit Option in den Programm Einstellungen (web_tabs.OPTIONAL_TABS)  # v1.96
+
+    def apply_optional_tabs():  # v1.96
+        """Reiter mit Option ein- oder ausblenden; ist der ausgeblendete gerade offen, zurueck zum Programm Generator"""  # v1.96
+        from _web import web_tabs  # v1.96
+        for tab_key, element in optional_tabs.items():  # v1.96
+            on = web_tabs.tab_enabled(tab_key, ctrl)  # v1.96
+            element.set_visibility(on)  # v1.96
+            if not on and tabs.value == tab_key:  # v1.96
+                tabs.set_value("pg")  # v1.96
+    apply_optional_tabs()  # v1.96
     pg_container = ui.column().classes("w-full gap-2 mll-pg").style("flex: 1 1 0; min-height: 0; flex-wrap: nowrap")
     pg_container.__enter__()                     # alles bis "pg_container.__exit__" gehoert zur Karte Programm Generator
     mark("Kopf, Menue, Reiter")
@@ -1159,6 +1187,10 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             try:  # v1.87
                 from _web import web_servotest  # v1.87
                 web_servotest.stop_all(wait=True)  # Servo Test: Wert 0 und Direktmodus beenden, bevor die Verbindung zum Arduino getrennt wird  # v1.87
+                from _web import web_servotest2  # v1.91
+                web_servotest2.stop_all(wait=True)  # Servo Test 2: Direktmodus beenden  # v1.91
+                from _web import web_soundtest as _sound_page  # v1.95
+                _sound_page.stop_all(wait=True)  # Sound Test: laufenden Impuls beenden, Direktmodus beenden  # v1.95
             except Exception:                      # noqa: BLE001  # v1.87
                 logger.debug("Servo Test nicht gestoppt", exc_info=True)  # v1.87
             if save:
@@ -1512,11 +1544,14 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         shown["shapes"] = len(getattr(ws, "shapelist", []) or [])
         ic = icon_column(ws)
         ec = enable_column(ws)
+        shown_rows = getattr(ws.tksheet, "displayed_rows", None)                  # Breite der Zeilennummer nach der groessten angezeigten Nummer (_r + 1)  # v1.96
+        max_row_number = (max(shown_rows) + 1) if shown_rows else len(getattr(ws.tksheet, "data", None) or [])  # v1.96
         column_defs, rows, pinned, meta = build_grid(ws.tksheet, collect_icons(ws),
                                                      no_edit_cols={ic} if ic is not None else None,
                                                      check_cols={ec} if ec is not None else None,
                                                      max_col=last_column(ws), tooltip_cols=tooltip_columns(ws),
-                                                     test_buttons=test_button_data(ws))
+                                                     test_buttons=test_button_data(ws),  # v1.96
+                                                     row_number_width=row_number_width(max_row_number, font_scales(ctrl)["grid"]))  # v1.96
         t_build = time.perf_counter()  # v1.49
         if SHAPES_DEBUG:  # v1.51
             logger.info("SHAPES: show(%s): %s | Zeilen mit Testtasten %s | Zeilen mit Symbol %s", ws.Name, shapes_report(ws),  # v1.51
@@ -2828,6 +2863,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
     def after_settings_save(values):                   # nach dem Sichern: Einstellungen in der Oberflaeche wirksam machen
         ctrl.show_hiddentables = str(ctrl.getConfigData("ShowHiddentables")).lower() in ("1", "true")
+        apply_optional_tabs()                          # DM Servo Einstellungen anzeigen: Reiter ein- oder ausblenden, ohne Neustart  # v1.96
         rebuild_sheet_tabs()                           # versteckte Tabellen als Reiter ein-/ausblenden
         scales = font_scales(ctrl)
         ui.run_javascript("let s=document.getElementById('mll-fonts'); if(!s){s=document.createElement('style'); "
@@ -2885,11 +2921,37 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             state["servo1"] = web_servotest.build(ctrl, is_active=lambda: tabs.value == "servo1", connect=connect_arduino)      # Taste Verbinden: wie der Menuepunkt ARDUINO -> Verbinden  # v1.86
             context.client.on_disconnect(lambda *_: state["servo1"].page_closed())         # Browser zu, neu geladen oder Verbindung weg: Wert 0 senden, nichts haengen lassen  # v1.87
 
+    # ---- Karte Servo Test 2 (Direct Mode Servos: direkte Steuerung)
+    from _web import web_servotest2  # v1.91
+    servo2_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: auto; flex-wrap: nowrap")  # v1.91
+    servo2_container.set_visibility(False)  # v1.91
+
+    def build_servo2():  # v1.91
+        with servo2_container:  # v1.91
+            state["servo2"] = web_servotest2.build(ctrl, is_active=lambda: tabs.value == "servo2")  # v1.91
+            context.client.on_disconnect(lambda *_: state["servo2"].page_closed())         # Browser zu, neu geladen oder Verbindung weg: Direktmodus beenden  # v1.91
+
+    # ---- Karte Sound Test (Direktmodus zum Arduino) und DCC Keyboard (Kommandos @ AAA CC 01)
+    from _web import web_soundtest, web_dcckeyboard  # v1.95
+    sound_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: auto; flex-wrap: nowrap")  # v1.95
+    sound_container.set_visibility(False)  # v1.95
+    dcc_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: auto; flex-wrap: nowrap")  # v1.95
+    dcc_container.set_visibility(False)  # v1.95
+
+    def build_sound():  # v1.95
+        with sound_container:  # v1.95
+            state["sound"] = web_soundtest.build(ctrl, is_active=lambda: tabs.value == "sound", connect=connect_arduino)       # Taste Verbinden: wie der Menuepunkt ARDUINO -> Verbinden  # v1.95
+            context.client.on_disconnect(lambda *_: state["sound"].page_closed())          # Browser zu, neu geladen oder Verbindung weg: Impuls beenden, Direktmodus beenden  # v1.95
+
+    def build_dcc():  # v1.95
+        with dcc_container:  # v1.95
+            state["dcc"] = web_dcckeyboard.build(ctrl, is_active=lambda: tabs.value == "dcc")  # v1.95
+
     built = set()
 
     def ensure_built(tab_name):
-        """Seite beim ersten Oeffnen aufbauen (Einstellungsseiten, Farb Test, Servo Test 1); die Behaelter sind schon da"""  # v1.83
-        if tab_name in built or not (tab_name in ("farb", "patt", "servo1") or tab_name in settings_defs):  # v1.83
+        """Seite beim ersten Oeffnen aufbauen (Einstellungsseiten, Farb Test, Servo Test 1 und 2); die Behaelter sind schon da"""  # v1.91
+        if tab_name in built or not (tab_name in ("farb", "patt", "servo1", "servo2", "sound", "dcc") or tab_name in settings_defs):  # v1.95
         # if tab_name in built or not (tab_name == "farb" or tab_name in settings_defs):  # v1.39 (ersetzt)
             return
         built.add(tab_name)
@@ -2898,6 +2960,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             build_farb()
         elif tab_name == "servo1":  # v1.83
             build_servo()  # v1.83
+        elif tab_name == "servo2":  # v1.91
+            build_servo2()  # v1.91
+        elif tab_name == "sound":  # v1.95
+            build_sound()  # v1.95
+        elif tab_name == "dcc":  # v1.95
+            build_dcc()  # v1.95
         elif tab_name == "patt":  # v1.39
             build_patt()  # v1.39
         else:
@@ -2905,7 +2973,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         logger.info("Seite '%s' aufgebaut in %.1f s", tab_name, time.monotonic() - t_tab)
 
     if not LAZY_TABS:                                  # MLL_LAZY_TABS=0: alles gleich aufbauen
-        for tab_name in (*settings_defs, "farb", "servo1"):  # v1.83
+        for tab_name in (*settings_defs, "farb", "servo1", "servo2", "sound", "dcc"):  # v1.95
             ensure_built(tab_name)
     tab_state = {"cur": "pg"}
 
@@ -2931,7 +2999,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 return
             if answer:
                 cfg_page.save()
-        if new_tab not in built and (new_tab in ("farb", "patt", "servo1") or new_tab in settings_defs):  # v1.83
+        if new_tab not in built and (new_tab in ("farb", "patt", "servo1", "servo2", "sound", "dcc") or new_tab in settings_defs):  # v1.95
         # if new_tab not in built and (new_tab == "farb" or new_tab in settings_defs):  # v1.39 (ersetzt)
             ui.notify("Die Seite wird aufgebaut ...", timeout=4000)
             await asyncio.sleep(0.15)                          # die Meldung noch senden, bevor der Aufbau den Server blockiert
@@ -2940,6 +3008,9 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         pg_container.set_visibility(new_tab == "pg")
         farb_container.set_visibility(new_tab == "farb")
         servo_container.set_visibility(new_tab == "servo1")  # v1.83
+        servo2_container.set_visibility(new_tab == "servo2")  # v1.91
+        sound_container.set_visibility(new_tab == "sound")  # v1.95
+        dcc_container.set_visibility(new_tab == "dcc")  # v1.95
         patt_container.set_visibility(new_tab == "patt")  # v1.39
         if new_tab == "patt" and old_tab != "patt" and patt_state["view"] is not None:  # v1.39
             patt_state["view"].refresh()  # v1.39  Tabelle und Blattreiter auffrischen
@@ -2952,14 +3023,28 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 ctrl.checkcolor_callback = None            # ohne "Palette uebergeben" verlassen: der Rueckruf ist ueberholt
         if old_tab == "servo1" and new_tab != "servo1" and state.get("servo1") is not None:  # v1.83
             state["servo1"].tab_unselected()               # gedrueckte Tasten loslassen, Programmieren abbrechen, Direktmodus beenden  # v1.83
+        if old_tab == "servo2" and new_tab != "servo2" and state.get("servo2") is not None:  # v1.91
+            state["servo2"].tab_unselected()               # ENTER loslassen, Direktmodus beenden  # v1.91
+        if old_tab == "sound" and new_tab != "sound" and state.get("sound") is not None:  # v1.95
+            state["sound"].tab_unselected()                # laufenden Impuls beenden, Direktmodus beenden  # v1.95
+        if old_tab == "dcc" and new_tab != "dcc" and state.get("dcc") is not None:  # v1.95
+            state["dcc"].tab_unselected()  # v1.95
         if new_tab == "farb" and old_tab != "farb":
             state["colorcheck"].tab_selected(coltab=ctrl.coltab if old_tab == "pg" else None)
         if new_tab == "servo1" and old_tab != "servo1" and state.get("servo1") is not None:  # v1.83
             state["servo1"].tab_selected()                 # Direktmodus starten  # v1.83
+        if new_tab == "servo2" and old_tab != "servo2" and state.get("servo2") is not None:  # v1.91
+            state["servo2"].tab_selected()                 # Direktmodus starten, Zeitgeber an  # v1.91
+        if new_tab == "sound" and old_tab != "sound" and state.get("sound") is not None:  # v1.95
+            state["sound"].tab_selected()                  # Direktmodus starten  # v1.95
+        if new_tab == "dcc" and old_tab != "dcc" and state.get("dcc") is not None:  # v1.95
+            state["dcc"].tab_selected()  # v1.95
         if new_tab in settings_pages:
             settings_pages[new_tab][0].mark_saved()            # store_old_config (tabselected)
     tabs.on_value_change(on_tab)
-    if start_tab != "pg":                                 # Adresse eines Reiters (zum Beispiel /Farbtest): wie ein Klick auf den Reiter  # v1.82
+    if start_tab != "pg" and not _web_tabs.tab_enabled(start_tab, ctrl):                       # Adresse eines ausgeschalteten Reiters (/ServoTest2)  # v1.96
+        ui.notify(f"Der Reiter {_web_tabs.TAB_TITLES.get(start_tab, start_tab)} ist ausgeschaltet. Einschalten: Programm Einstellungen, \"DM Servo Einstellungen anzeigen\".", type="warning")  # v1.96
+    elif start_tab != "pg":                                 # Adresse eines Reiters (zum Beispiel /Farbtest): wie ein Klick auf den Reiter  # v1.96
         tabs.set_value(start_tab)  # v1.82
     if fullscreen:                                        # Knopf und Beschriftung nach dem Aufbau der Seite angleichen  # v1.82
         ui.timer(0.6, lambda: ui.run_javascript("if (window.mllFull) window.mllSetFull(true)"), once=True)  # v1.82
@@ -2994,7 +3079,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     func()  # v1.79
                 except Exception:                                  # noqa: BLE001  # v1.79
                     logger.exception("%s ist fehlgeschlagen", name)  # v1.79
+        weblog = getattr(ctrl, "weblog", None)  # v1.93
+        if weblog is not None:  # v1.93
+            weblog.last_result = None                  # Ergebnis des Log-Fensters fuer diesen Lauf neu bestimmen  # v1.93
         await run_in_worker(work)  # v1.79
+        if weblog is not None:  # v1.93
+            weblog.close_later_if_ok()                 # wie nach jedem Befehl: das Fenster der Installation nach Erfolg nach 10 s schliessen  # v1.93
         show(state["ws"])  # v1.79
     ui.timer(1.5, run_startup_tasks, once=True)  # v1.79
 
@@ -3321,7 +3411,9 @@ def main():
     nicegui_app.on_connect(on_connect)
     nicegui_app.on_disconnect(on_disconnect)
     from _web import web_servotest as _servo_page  # v1.87
-    nicegui_app.on_shutdown(lambda: _servo_page.stop_all(wait=True))           # Programm wird beendet (auch Strg+C, Dienst gestoppt): Servo nicht laufen lassen  # v1.87
+    from _web import web_servotest2 as _servo2_page  # v1.91
+    from _web import web_soundtest as _sound2_page  # v1.95
+    nicegui_app.on_shutdown(lambda: (_servo_page.stop_all(wait=True), _servo2_page.stop_all(wait=True), _sound2_page.stop_all(wait=True)))           # Programm wird beendet (auch Strg+C, Dienst gestoppt): Servo nicht laufen lassen  # v1.95
     nicegui_app.on_startup(web_logging.attach_loop_diagnostics)      # Blockaden der Ereignisschleife und Fehler in Aufgaben melden
     nicegui_app.on_startup(web_logging.attach_to_uvicorn)           # Fehler des Servers (uvicorn) auch in die Protokolldatei
     if not args.no_browser:

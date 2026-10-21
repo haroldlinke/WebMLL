@@ -1,19 +1,31 @@
-# Datei-Version: 1.01 (2026-10-17) - headless_gridmodel.py
+# Datei-Version: 1.02 (2026-10-21) - headless_gridmodel.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_gridmodel.py
 # Path:           headless/headless_gridmodel.py
-# Version:        1.01
-# Last Update:    2026-10-17
+# Version:        1.02
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-17  build_grid: data_header (Kopfzeilenlogik abschaltbar) und tooltips_in_cells (Beschriftung§Tooltip in jeder Zelle) fuer den Patterngenerator; davor 1.00 (2026-10-12), nicht erfasst
+#   1.02  2026-10-21  row_number_width: Breite der Spalte Zeilennummer passend zur groessten Zeilennummer (Programmgenerator); ohne Angabe bleibt sie 76 (Patterngenerator)
 # ----------------------------------------------------------------------------------------------
 """Uebersetzt ein HeadlessSheet in Spalten- und Zeilendaten fuer AG Grid (ohne NiceGUI-Import,
 daher einzeln testbar)."""
 from __future__ import annotations
 
 from typing import Any
+
+ROW_NUMBER_WIDTH = 76                   # feste Breite der Spalte Zeilennummer (Patterngenerator)  # v1.02
+ROW_NUMBER_DIGIT_WIDTH = 10             # Pixel je Ziffer (fette Schrift) bei der Schriftgroesse 1  # v1.02
+ROW_NUMBER_EXTRA = 16                   # Rand der Zelle (links und rechts zusammen)  # v1.02
+ROW_NUMBER_MIN = 36  # v1.02
+
+
+def row_number_width(max_row_number: int, scale: float = 1.0) -> int:  # v1.02
+    """Breite der Spalte Zeilennummer in Pixeln, passend zur groessten Zeilennummer (Ziffern mal Breite plus Rand, mit der Schriftgroesse der Tabelle skaliert)"""  # v1.02
+    digits = len(str(max(1, int(max_row_number))))  # v1.02
+    return max(ROW_NUMBER_MIN, int(round((digits * ROW_NUMBER_DIGIT_WIDTH + ROW_NUMBER_EXTRA) * scale)))  # v1.02
 
 
 # Tooltip mit dem vollstaendigen Zelltext (lange Eintraege sind in der Zelle abgeschnitten); Kopfzeilen behalten
@@ -42,7 +54,8 @@ def _json_value(v: Any):
 def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None,
                check_cols: set | None = None, max_col: int | None = None,
                tooltip_cols: set | None = None, test_buttons: dict | None = None,  # v1.01
-               data_header: bool = True, tooltips_in_cells: bool = False  # v1.01
+               data_header: bool = True, tooltips_in_cells: bool = False,  # v1.02
+               row_number_width: int | None = None  # Breite der Spalte Zeilennummer; None: feste Breite (76) wie bisher  # v1.02
                ) -> tuple[list[dict], list[dict], list[dict], dict]:
     """Liefert (columnDefs, rowData, pinnedTopRowData, info).
 
@@ -65,12 +78,13 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
 
     # Zeilennummern wie in Excel (1-basiert, versteckte Zeilen lassen Luecken). Die Nummer kommt per
     # JavaScript-valueGetter aus _r, die Spalte ist links angeheftet und nicht editierbar.
+    rn_width = ROW_NUMBER_WIDTH if row_number_width is None else int(row_number_width)  # v1.02
     row_number_col = {
         "headerName": "",
         "colId": "_rn",
-        "width": 76,
-        "minWidth": 76,
-        "maxWidth": 76,
+        "width": rn_width,  # v1.02
+        "minWidth": rn_width,  # v1.02
+        "maxWidth": rn_width,  # v1.02
         "suppressSizeToFit": True,
         "pinned": "left",
         "lockPosition": True,
@@ -80,7 +94,7 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
         "resizable": False,
         ":valueGetter": "params => params.data ? params.data._r + 1 : ''",
         "cellStyle": {"backgroundColor": "#e9e9e9", "color": "#555555", "textAlign": "right",
-                      "fontWeight": "bold"},
+                      "fontWeight": "bold", **({"paddingLeft": "4px", "paddingRight": "6px"} if row_number_width is not None else {})},  # v1.02
     }
 
     column_defs = [row_number_col] + [{

@@ -1,4 +1,15 @@
-# Datei-Version: 1.02 (2026-10-15) - web_form_comport.py
+# Datei-Version: 1.03 (2026-10-21) - web_form_comport.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_form_comport.py
+# Path:           _web/web_form_comport.py
+# Version:        1.03
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.02  2026-10-15  Web-Ersatz fuer Select_COM_Port_Userform (Original, nicht erfasst)
+#   1.03  2026-10-21  Update_SpinButton: ohne offenen Dialog den Zeitgeber der blinkenden LEDs beenden (stand 10 Minuten lang auf COM6 und blockierte esptool)
+# ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/Select_COM_Port_Userform.py (Auswahl des Arduino/Pico-Ports).
 
 WebSelectComPort erbt von CSelect_COM_Port_UserForm und ersetzt ShowDialog, Update_SpinButton und
@@ -146,6 +157,11 @@ def make_class(Base):
             return LocalComPorts, port, M30.DelLast("".join(p + " " for p in LocalComPorts)) if LocalComPorts else ""
 
         def Update_SpinButton(self, DefaultPort):
+            if not getattr(self, "IsActive", False):  # v1.03
+                # Kein Dialog offen (geschlossen oder nie geoeffnet): den Zeitgeber der blinkenden LEDs beenden (CheckCOMPort = " "). Ohne das setzte das Tk-Original unten
+                # CheckCOMPort immer wieder auf den ersten Port, der Zeitgeber lief endlos und oeffnete den Port jede Sekunde (esptool: Zugriff verweigert).
+                M07.CheckCOMPort = " "  # v1.03
+                return  # v1.03
             if not wd.bridge_usable() and self._ui is None:
                 return super().Update_SpinButton(DefaultPort)
             if not self.isInitialised:

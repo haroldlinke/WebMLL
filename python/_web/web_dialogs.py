@@ -1,13 +1,14 @@
-# Datei-Version: 1.05 (2026-10-17) - web_dialogs.py
+# Datei-Version: 1.06 (2026-10-20) - web_dialogs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_dialogs.py
 # Path:           _web/web_dialogs.py
-# Version:        1.05
-# Last Update:    2026-10-17
+# Version:        1.06
+# Last Update:    2026-10-20
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.05  2026-10-17  redirect_messagebox(): tkinter.messagebox im Browser anzeigen (Patterngenerator); davor bis 1.04 nicht erfasst
+#   1.06  2026-10-20  Web-Formular fuer UserForm_ConfirmLicense (LNet Lizenzbestimmungen): vorher Fehler 'HeadlessAppController' object has no attribute 'wait_window'
 # ----------------------------------------------------------------------------------------------
 """Web-Dialoge fuer MsgBox und InputBox (NiceGUI) mit Bruecke aus dem Worker-Thread.
 
@@ -333,6 +334,64 @@ class WebDescription(_WebForm):
         return self._orig.Userform_res
 
 
+# ---------------------------------------------------------------------------- LNet Lizenzbestimmungen
+LICENSE_IMAGE = "LocoNetLicense.png"  # v1.06
+
+
+def license_image_uri() -> str:  # v1.06
+    """Bild der Lizenzbestimmungen (Ordner images im Programmordner) als data-URI, leer wenn es fehlt"""  # v1.06
+    import base64  # v1.06
+    import os  # v1.06
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "images", LICENSE_IMAGE)  # v1.06
+    try:  # v1.06
+        with open(path, "rb") as fh:  # v1.06
+            return "data:image/png;base64," + base64.b64encode(fh.read()).decode("ascii")  # v1.06
+    except OSError:  # v1.06
+        logger.warning("Lizenzbild %s nicht gefunden", path)  # v1.06
+        return ""  # v1.06
+
+
+def build_license_dialog(ui, o):  # v1.06
+    """Dialog der LNet Lizenzbestimmungen (UserForm_ConfirmLicense): Text, Link, Bild, Bestaetigung; OK erst nach der Bestaetigung.
+    Rueckgabe: (Dialog, Kontrollfeld, OK-Knopf, Abbrechen-Knopf)"""
+    comps = {c["Name"]: c for c in o.ConfirmLicense_Form_RSC["UserForm"]["Components"]}  # v1.06
+    with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[620px] max-w-[96vw]"):  # v1.06
+        ui.label(o.ConfirmLicense_Form_RSC["UserForm"]["Caption"]).classes("text-h6")  # v1.06
+        _pre_line(ui.label(comps["Label1"]["Caption"]))  # v1.06
+        link = comps["Label3"]["Caption"]  # v1.06
+        ui.link(link, link, new_tab=True)  # v1.06
+        uri = license_image_uri()  # v1.06
+        if uri:  # v1.06
+            ui.image(uri).classes("w-full")  # v1.06
+        box = ui.checkbox(comps["CheckBox1"]["Caption"])  # v1.06
+        with ui.row().classes("justify-end w-full"):  # v1.06
+            cancel = ui.button(comps["Abort_Button"]["Caption"], on_click=lambda: dlg.submit(False)).props("flat").classes("mll-cancel")  # v1.06
+            ok = ui.button(comps["OK_Button"]["Caption"], on_click=lambda: dlg.submit(True)).classes("mll-default")  # v1.06
+            ok.set_enabled(False)  # v1.06
+        box.on_value_change(lambda e: ok.set_enabled(bool(e.value)))  # v1.06
+    return dlg, box, ok, cancel  # v1.06
+
+
+async def _license_async(o):  # v1.06
+    from nicegui import ui  # v1.06
+    with _bridge["client"]:  # v1.06
+        dlg, _, _, _ = build_license_dialog(ui, o)  # v1.06
+        res = await dlg  # v1.06
+        safe_delete(dlg)  # v1.06
+    return res  # v1.06
+
+
+class WebConfirmLicense(_WebForm):  # v1.06
+    """Ersatz fuer UserForm_ConfirmLicense (vor dem Hochladen des LNet Programms): Das Tk-Original wartet mit wait_window, das es ohne Tk nicht gibt."""  # v1.06
+
+    def ShowForm(self):  # v1.06
+        if not bridge_usable():  # v1.06
+            return self._orig.ShowForm()  # v1.06
+        res = call_in_loop(_license_async, self._orig, default=False)  # v1.06
+        self._orig.UserForm_Res = "ok" if res else ""  # v1.06
+        return bool(res)  # v1.06
+
+
 # ---------------------------------------------------------------------------- einfache Formulare aus der Beschreibung
 def _real_color(c):
     """VBA-Systemfarben ('#00000F', '#000012' ...) ignorieren, echte RGB-Werte uebernehmen."""
@@ -580,7 +639,8 @@ def install_forms(F00):
                       ("UserForm_Description", WebDescription),
                       ("UserForm_Connector", WebConnector),
                       ("UserForm_Select_Typ_DCC", WebSelectTypDCC),
-                      ("UserForm_Select_Typ_SX", WebSelectTypSX)):
+                      ("UserForm_Select_Typ_SX", WebSelectTypSX),  # v1.06
+                      ("UserForm_ConfirmLicense", WebConfirmLicense)):  # v1.06
         orig = getattr(F00, attr, None)
         if orig is not None and not isinstance(orig, _WebForm):
             setattr(F00, attr, cls(orig))
@@ -592,7 +652,7 @@ def install_forms(F00):
         F00.UserForm_Options = cls()
     from _web import web_form_comport
     web_form_comport.install_instance(F00)
-    logger.info("Web-Formulare installiert (DialogGuide1, Description, Connector, Select_Typ_DCC, Select_Typ_SX, Options, Select_COM_Port)")
+    logger.info("Web-Formulare installiert (DialogGuide1, Description, Connector, Select_Typ_DCC, Select_Typ_SX, ConfirmLicense, Options, Select_COM_Port)")  # v1.06
 
 
 # tkinter.messagebox.* wird im Betrieb ohne Tk nur ins Protokoll geschrieben (siehe no_tk.py). Der Patterngenerator meldet damit Fehler
