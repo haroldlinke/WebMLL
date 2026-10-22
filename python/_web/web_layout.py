@@ -1,4 +1,4 @@
-# Datei-Version: 1.04 (2026-10-15) - web_layout.py
+# Datei-Version: 1.05 (2026-10-21) - web_layout.py
 """Kompaktes Layout fuer kleine Bildschirme (Programm Einstellungen -> Darstellung).
 
 Drei Stufen: "normal" (Aus), "compact" (Ein) und "auto" (kompakt, wenn das Browserfenster niedriger als AUTO_HEIGHT Pixel ist). Die Umschaltung
@@ -28,6 +28,7 @@ CSS = """
 .mll-header { flex-wrap: wrap; }
 .mll-header > .mll-menu { order: 10; flex: 1 1 100%; }
 .mll-tool-text.mll-hide-normal { display: none; }
+.mll-connect { white-space: nowrap; }
 
 /* ---------- Kompaktes Layout (Klasse mll-compact am html-Element) ---------- */
 .mll-compact .nicegui-content { padding: 2px 6px !important; gap: 2px !important; }
@@ -41,6 +42,7 @@ CSS = """
 .mll-compact .mll-menu .q-btn { min-height: 24px; padding: 0 8px; }
 .mll-compact .mll-quit { min-height: 22px !important; padding: 0 8px !important; font-size: 11px; }
 .mll-compact .mll-quit .q-icon { display: none; }
+.mll-compact .mll-connect { min-height: 22px !important; padding: 0 8px !important; font-size: 11px; }
 .mll-compact .mll-status, .mll-compact .mll-conn { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw; }
 .mll-compact .main-tabs { margin-bottom: 0; min-height: 26px; }
 .mll-compact .main-tabs .q-tab { min-height: 26px; padding: 0 10px; font-size: 12px; }

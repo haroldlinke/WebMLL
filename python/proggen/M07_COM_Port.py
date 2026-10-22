@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-20) - M07_COM_Port.py
+# Datei-Version: 1.02 (2026-10-21) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.01
-# Last Update:    2026-10-20
+# Version:        1.02
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  EnumComPorts: FTDI-Adapter (VID 0403, Beschreibung FT232 ...) werden erkannt, sonst meldete die Pruefung beim Hochladen 'kein Arduino angeschlossen'; DetectArduino: kein Absturz, wenn die Verbindung inzwischen getrennt wurde
+#   1.02  2026-10-21  Pico: jede Kennung VID 2E8A und Adafruit 239A:813D (vorher nur 2E8A:000A), pyserial- und Windows-Zweig; DetectArduino schaltet RTS ein (Version K des Excel-Programms)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -392,7 +393,8 @@ def EnumComPorts_old(Show_Unknown, ResNames, PrintDebug=True):
     ESP_Inst = ( M02a.Get_BoardTyp() == M02.HT_ESP32 )
     PICO_Inst = ( M02a.Get_BoardTyp() == M02.HT_PICO )
     for objItem in GetObject('winmgmts:\\\\.\\root\\CIMV2').ExecQuery('SELECT * FROM Win32_PnPEntity WHERE ClassGuid="{4d36e978-e325-11ce-bfc1-08002be10318}"', VBGetMissingArgument(GetObject.ExecQuery, 1), 48):
-        if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(objItem.Caption, 'CH340') > 0 or InStr(objItem.Caption, 'Arduino') > 0 or InStr(objItem.Caption, 'USB Serial Port') > 0 ) ) or ( ESP_Inst == True and InStr(objItem.Caption, 'Silicon Labs CP210x') > 0 )  or  ( PICO_Inst == True and InStr(objItem.Path_.Path, 'USB\\\\VID_2E8A&PID_000A\\') > 0 ):
+        # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(objItem.Caption, 'CH340') > 0 or InStr(objItem.Caption, 'Arduino') > 0 or InStr(objItem.Caption, 'USB Serial Port') > 0 ) ) or ( ESP_Inst == True and InStr(objItem.Caption, 'Silicon Labs CP210x') > 0 )  or  ( PICO_Inst == True and InStr(objItem.Path_.Path, 'USB\\\\VID_2E8A&PID_000A\\') > 0 ):  # v1.02 (entfallen)
+        if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(objItem.Caption, 'CH340') > 0 or InStr(objItem.Caption, 'Arduino') > 0 or InStr(objItem.Caption, 'USB Serial Port') > 0 ) ) or ( ESP_Inst == True and InStr(objItem.Caption, 'Silicon Labs CP210x') > 0 )  or  ( PICO_Inst == True and ( InStr(objItem.Path_.Path, 'USB\\\\VID_2E8A&PID_') > 0 or InStr(objItem.Path_.Path, 'USB\\\\VID_239A&PID_813D') > 0 ) ):  # v1.02
             # 10.11.20: Added: "Silicon Labs CP210x" for the ESP32  02.05.20: Added: "USB Serial Port" for original Nano (Frank)
             # 21.04.21: Added: "Silicon Labs CP210x" for the PICO
             if PrintDebug:
@@ -621,7 +623,8 @@ def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True):
         for comport in temp_comports_list:
             Debug.Print("EnumComPorts:"+repr(comport.description)+" "+repr(comport.device))
             # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 ) ) or ( ESP_Inst == True and InStr(comport.description, 'Silicon Labs CP210x') > 0 )  or  ( PICO_Inst == True and InStr(comport.description, 'USB\\\\VID_2E8A&PID_000A\\') > 0 ):
-            if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and InStr(comport.hwid, 'USB VID:PID=2E8A:000A') > 0 ):  # v1.01
+            # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and InStr(comport.hwid, 'USB VID:PID=2E8A:000A') > 0 ):  # v1.02 (entfallen)
+            if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and ( InStr(comport.hwid, 'USB VID:PID=2E8A:') > 0 or InStr(comport.hwid, 'USB VID:PID=239A:813D') > 0 ) ):  # v1.02
                 Ports.append(comport.device)
                 ResNames.append(comport.description)
                 idx=idx+1
@@ -871,6 +874,10 @@ def DetectArduino(port,baudrate, HWVersion=255, SWMajorVersion=255, SWMinorVersi
         logging.debug("M07.detect_arduino: Error opening  port "+port_str)
         logging.debug(e, exc_info=True) 
         return -1, None           
+    try:  # v1.02
+        ser.rts = True                                  # 11.02.26: Version K - manche Module brauchen RTS high, um senden zu duerfen  # v1.02
+    except BaseException as e:  # v1.02
+        logging.debug(e, exc_info=True)  # v1.02
     try:
         PG.global_controller.arduino.dtr = True
         time.sleep(0.250)

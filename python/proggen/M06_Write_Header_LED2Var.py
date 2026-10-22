@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - M06_Write_Header_LED2Var.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M06_Write_Header_LED2Var.py
+# Path:           proggen/M06_Write_Header_LED2Var.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Neu: Add_LED_Name_Entry (Makros Name_LED_Number und Name_LED_Offset), LED_Names_Tab (Version K des Excel-Programms)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -83,13 +95,16 @@ import ExcelAPI.XLA_Application as P01
 """
 
 LED2Var_Tab = String()
+LED_Names_Tab = String()                                    # Version K  # v1.01
 
 def Init_HeaderFile_Generation_LED2Var(firstSheet):
-    global LED2Var_Tab
+    # global LED2Var_Tab  # v1.01 (entfallen)
+    global LED2Var_Tab, LED_Names_Tab  # v1.01
     _fn_return_value = None
     #--------------------------------------------------------------
     if firstSheet:
         LED2Var_Tab = ''
+        LED_Names_Tab = ''                                          # Version K  # v1.01
     _fn_return_value = True
     return _fn_return_value
 
@@ -126,6 +141,31 @@ def Add_LED2Var_Entry(Cmd, LEDNr):
     Cmd = '// ' + Cmd
     _fn_return_value = True
     return _fn_return_value, Cmd
+
+def Add_LED_Name_Entry(Row, Cmd, LEDNr, key):  # v1.01
+    # Version K: Name_LED_Number(Name[, Anzahl]) und Name_LED_Offset(Name[, Anzahl]) werden zu "#define Name <LED-Nummer>" (bei Anzahl > 1 eine Folge Name0, Name1, ...)
+    #-------------------------------------------------------------------------------
+    parts = Split(Replace(Replace(Replace(Trim(Cmd), key + '(', ''), ')', ''), ' ', ''), ',')  # v1.01
+    if UBound(parts) == 1:  # v1.01
+        NumOfLeds = int(P01.val(parts(1)))  # v1.01
+    else:  # v1.01
+        NumOfLeds = 1  # v1.01
+    if UBound(parts) == 0 or NumOfLeds == 1:  # v1.01
+        Cmd = '#define ' + parts(0) + ' ' + str(LEDNr)  # v1.01
+    elif UBound(parts) == 1:  # v1.01
+        StartNr, TxtLen = M06SW.Check_Nr_From_Var(Row, parts(0), 0, 'VarLed')  # v1.01
+        if StartNr < 0:  # v1.01
+            return False, Cmd  # v1.01
+        Cmd = ''  # v1.01
+        for i in vbForRange(1, NumOfLeds):  # v1.01
+            TargetVariable = Left(parts(0), TxtLen) + str(StartNr + i - 1)  # v1.01
+            if Cmd != '':  # v1.01
+                Cmd = Cmd + vbCrLf  # v1.01
+            Cmd = Cmd + '#define ' + TargetVariable + ' ' + str(LEDNr + i - 1)  # v1.01
+    else:  # v1.01
+        # TODO error
+        return False, Cmd  # v1.01
+    return True, Cmd  # v1.01
 
 def Write_Header_File_LED2Var(fp):
     global LED2Var_Tab

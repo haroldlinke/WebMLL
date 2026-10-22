@@ -1,3 +1,17 @@
+# Datei-Version: 1.03 (2026-10-21) - M06_Write_Header_SW.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M06_Write_Header_SW.py
+# Path:           proggen/M06_Write_Header_SW.py
+# Version:        1.03
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Version K des Excel-Programms: Makros Name_LED_Number und Name_LED_Offset in Add_InpVars (bekannte LED-Variablen, KnownVariables); Praefix-Parameter (Get_Par_Prefix); Check_Nr_From_Var herausgezogen; Add_Undefined_Input_Var; Warnung bei mehrfach gesetzten Zielvariablen auch in Check_Detected_Variables
+#   1.02  2026-10-21  Fehlalarme: LED-Namen (Name_LED_Number, Name_LED_Offset), die mehrfach vorkommen, loesen die Warnung 'Zielvariablen werden mehrfach gesetzt' nicht mehr aus; die Warnung kommt je Liste nur einmal; Praefix-Tabelle bei jeder Erzeugung neu einlesen
+#   1.03  2026-10-21  Warnung 'Zielvariablen werden mehrfach gesetzt': nennt Blatt und Zeile beider Definitionen und steht damit im Protokoll (WARNING); dieselbe Zeile desselben Blattes noch einmal gelesen zaehlt nicht als doppelte Definition; die Frage kommt nur, wenn die Liste neu ist (nicht fuer jedes eingebundene Blatt)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -43,6 +57,7 @@ from vb2py.vbconstants import *
 from ExcelAPI.XLC_Excel_Consts import *
 
 import proggen.M02_Public as M02
+import proggen.M10_Par_Description as M10  # v1.01
 import proggen.M02a_Public as M02a
 import proggen.M06_Write_Header as M06
 import proggen.M09_Language as M09
@@ -59,6 +74,11 @@ import ExcelAPI.XLA_Application as P01
 
 DstVar_List = String()
 MultiSet_DstVar_List = String()
+DstVar_Source = {}                                         # Version K: Zielvariable -> (Blatt, Zeile) der ersten Definition  # v1.03
+MultiSet_Info = {}                                         # mehrfach gesetzte Zielvariable -> Text mit den Fundstellen  # v1.03
+Current_Source = ('', 0)                                   # (Blatt, Zeile), die gerade analysiert wird  # v1.03
+MultiSet_Asked = String()                                  # Version K: Text der Warnung 'mehrfach gesetzt', die der Anwender schon gesehen hat (nicht zweimal fragen)  # v1.02
+KnownVariables = {}                                        # Version K: bekannte Variablen je Art (zum Beispiel 'LedNumber': Namen der Makros Name_LED_Number und Name_LED_Offset)  # v1.01
 StoreVar_List = String()
 MaxUsed_Loc_InCh = Long()
 MaxUsed_Loc_InCh_Row = Long()
@@ -231,12 +251,36 @@ def Add_InpVars(MacroName, Org_Macro, Filled_Macro, r, Org_Macro_Row):
             return _fn_return_value
         _fn_return_value = Add_Logic_InpVars(Fil_List(1), r)
         return _fn_return_value
+    elif (_select0 == M02.SF_NAME_LED_NUMBER or _select0 == M02.SF_NAME_LED_OFFSET):  # v1.01
+        # Name_LED_Number(Name[, Anzahl]) und Name_LED_Offset(Name[, Anzahl]): die Namen sind danach als LED-Variablen bekannt
+        parts = Split(Replace(Replace(Replace(Trim(Filled_Macro), MacroName + '(', ''), ')', ''), ' ', ''), ',')  # v1.01
+        if UBound(parts) == 1:  # v1.01
+            NumOfLeds = int(P01.val(parts(1)))  # v1.01
+        else:  # v1.01
+            NumOfLeds = 1  # v1.01
+        if UBound(parts) == 0 or NumOfLeds == 1:  # v1.01
+            _fn_return_value = Add_Variable_to_KnownVariables('LedNumber', parts(0))  # v1.01
+            return _fn_return_value  # v1.01
+        elif UBound(parts) == 1:  # v1.01
+            StartNr, TxtLen = Check_Nr_From_Var(Org_Macro_Row, parts(0), 0, 'VarLed')  # v1.01
+            if StartNr < 0:  # v1.01
+                _fn_return_value = False  # v1.01
+                return _fn_return_value  # v1.01
+            for i in vbForRange(1, NumOfLeds):  # v1.01
+                TargetVariable = Left(parts(0), TxtLen) + str(StartNr + i - 1)  # v1.01
+                if Add_Variable_to_KnownVariables('LedNumber', TargetVariable) == False:  # v1.01
+                    return _fn_return_value  # v1.01
     else:
         Det_Cnt = 0
         Pos_CounterVar = - 1
         Pos_InCh = - 1
         for ArgNr in vbForRange(0, UBound(Arg_List)):
             Arg = Arg_List(ArgNr)
+            Prefix = M10.Get_Par_Prefix(Arg)                                                       # Version K: Parameter mit Praefix (pf=...) duerfen eine LED-Variable sein  # v1.01
+            if Prefix != '':  # v1.01
+                if not IsNumeric(Fil_List(ArgNr)):  # v1.01
+                    if not IsKnownVariable('LedNumber', Fil_List(ArgNr)):  # v1.01
+                        Add_Undefined_Input_Var(Fil_List(ArgNr), r)  # v1.01
             if Arg == 'InCh_Cnt' or Arg == 'States' or Arg == 'BinStates':
                 Pos_CounterVar = ArgNr
             if Arg == 'InCh':
@@ -305,6 +349,7 @@ def First_Scan_of_Data_Rows():
     
     global Switch_Damping_Fact, DMX_LedChan,Read_LDR,Store_Status_Enabled,Use_WS2811, SwitchA_InpLst, SwitchB_InpLst, SwitchC_InpLst, SwitchD_InpLst, CLK_Pin_Number, RST_Pin_Number, LDR_Pin_Number, LED_PINNr_List, DMX_LedChan,Read_LDR, USE_ATTiny_CAN_GBM, DstVar_List
     
+    global Current_Source                                                                                # Version K  # v1.03
     _fn_return_value = False
     r = Long()
 
@@ -373,6 +418,7 @@ def First_Scan_of_Data_Rows():
                     if line == '#define USE_ATTiny_CAN_GBM':
                         USE_ATTiny_CAN_GBM = True   # Must be located at the beginning of the configuration
                         # 12.02.23: Hardi                    
+                    Current_Source = (str(P01.ActiveSheet.Name), r)                                      # Version K: Fundstelle fuer die Meldung 'mehrfach gesetzt'  # v1.03
                     if Add_Inp_and_DstVars(line, r) == False:
                         return _fn_return_value
                         # Add the destination variable to DstVar_List
@@ -570,11 +616,53 @@ def Add_Variable_to_DstVar_List(VarName):
     Check = ' ' + VarName + ' '
     if InStr(DstVar_List, Check) == 0:
         DstVar_List = DstVar_List + VarName + ' '
+        DstVar_Source[VarName] = Current_Source                                                          # Version K: wo wurde die Variable zuerst gesetzt  # v1.03
     else:
+        first = DstVar_Source.get(VarName)  # v1.03
         if not VarName.startswith("_V") and InStr(MultiSet_DstVar_List, Check) == 0:
-            MultiSet_DstVar_List = MultiSet_DstVar_List + VarName + ' '
+            # MultiSet_DstVar_List = MultiSet_DstVar_List + VarName + ' '  # v1.03 (entfallen)
+            if first is not None and first == Current_Source and Current_Source[1] != 0:  # v1.03
+                # dieselbe Zeile desselben Blattes noch einmal gelesen (zum Beispiel Blatt mehrfach eingebunden): keine zweite Definition
+                logging.info("Zielvariable '" + VarName + "': Zeile " + str(Current_Source[1]) + " im Blatt '" + Current_Source[0] + "' wurde noch einmal gelesen (keine doppelte Definition)")  # v1.03
+            else:  # v1.03
+                MultiSet_DstVar_List = MultiSet_DstVar_List + VarName + ' '  # v1.03
+                where_first = ("Blatt '" + first[0] + "' Zeile " + str(first[1])) if first is not None else "unbekannt"  # v1.03
+                MultiSet_Info[VarName] = where_first + " und Blatt '" + Current_Source[0] + "' Zeile " + str(Current_Source[1])  # v1.03
+                logging.warning("Zielvariable '" + VarName + "' wird mehrfach gesetzt: " + MultiSet_Info[VarName])  # v1.03
     _fn_return_value = True
     return _fn_return_value
+
+def MultiSet_Message_Text():  # v1.03
+    # Text der Warnung 'Zielvariablen werden mehrfach gesetzt' mit den Fundstellen (Blatt und Zeile) jeder Variablen
+    Txt = M09.Get_Language_Str('Achtung: Die folgenden Zielvariablen werden mehrfach gesetzt:') + vbCr + MultiSet_DstVar_List  # v1.03
+    for Name in Split(Trim(MultiSet_DstVar_List), ' '):  # v1.03
+        if Name in MultiSet_Info:  # v1.03
+            Txt = Txt + vbCr + '  ' + Name + ': ' + MultiSet_Info[Name]  # v1.03
+    return Txt + vbCr + M09.Get_Language_Str('Senden zum Arduino abbrechen?')  # v1.03
+
+def Add_Variable_to_KnownVariables(key, VarName):  # v1.01
+    global MultiSet_DstVar_List  # v1.01
+    #-------------------------------------------------------------------------------
+    Check = ' ' + VarName + ' '  # v1.01
+    Items = KnownVariables.get(key, '')  # v1.01
+    if InStr(Items, Check) == 0:  # v1.01
+        if Items == '':  # v1.01
+            KnownVariables[key] = ' ' + VarName + ' '  # v1.01
+        else:  # v1.01
+            KnownVariables[key] = Items + VarName + ' '  # v1.01
+    else:  # v1.01
+        # if InStr(MultiSet_DstVar_List, Check) == 0:  # v1.02 (entfallen)
+            # MultiSet_DstVar_List = MultiSet_DstVar_List + VarName + ' '  # v1.02 (entfallen)
+        # Der Name ist schon bekannt (Blatt mehrfach eingebunden oder derselbe Name in mehreren Blaettern): in Excel kommt hier die Warnung "Zielvariablen werden mehrfach gesetzt".
+        # Im Port gab das Fehlalarme (zum Beispiel Foto0 Foto1 FotoAkt1 bei eingebundenen Blaettern), deshalb nur ein Eintrag im Protokoll.
+        logging.debug("LED-Name '" + str(VarName) + "' ist mehrfach definiert (" + str(key) + ")")  # v1.02
+    return True  # v1.01
+
+def IsKnownVariable(key, VarName):  # v1.01
+    #-------------------------------------------------------------------------------
+    if key not in KnownVariables:  # v1.01
+        return False  # v1.01
+    return InStr(KnownVariables[key], ' ' + VarName + ' ') != 0  # v1.01
 
 def Add_Matching_Arg_to_DstVars(Org_Macro, line, DestVarName):
     _fn_return_value = False
@@ -621,6 +709,13 @@ def StoreVar_List_Present(VarName):
     return _fn_return_value
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: TxtLen - ByRef 
+def Check_Nr_From_Var(Row, Arg1, TxtLen, Example):  # v1.01
+    # 28.12.25: Juergen - Nummer am Ende einer Variablen lesen, sonst Fehlermeldung (herausgezogen aus Add_Cx_to_DstVars)
+    Nr, TxtLen = Get_Nr_From_Var(Arg1, TxtLen)  # v1.01
+    if Nr < 0:  # v1.01
+        P01.MsgBox(Replace(Replace(Replace(M09.Get_Language_Str('Fehler: Die Zielvariable \'#1#\' in Zeile #2# muss eine Zahl am Ende haben ' + 'weil sie Teil einer Sequenz ist.' + vbCr + '  Beispiel: #3#'), "#1#", Arg1), '#2#', str(Row)), '#3#', Example + '0'), vbCritical, M09.Get_Language_Str('Fehler: Zielvariable ungültig für Sequenz'))  # v1.01
+    return Nr, TxtLen  # v1.01
+
 def Get_Nr_From_Var(Name, TxtLen):
     _fn_return_value = 0
     p = Long()
@@ -700,9 +795,10 @@ def Add_Cx_to_DstVars(Org_Macro, line, cnt, r):
     # Example: PushButton_w_LED_0_2(B_LED, B_LED_Cx, InCh, DstVar1, Rotate, Timeout)
     Arg1 = Get_Matching_Arg(Org_Macro, line, 'DstVar1')
     if Arg1 != '':
-        StartNr, TxtLen = Get_Nr_From_Var(Arg1, TxtLen)
+        # StartNr, TxtLen = Get_Nr_From_Var(Arg1, TxtLen)  # v1.01 (entfallen)
+        StartNr, TxtLen = Check_Nr_From_Var(r, Arg1, TxtLen, Arg1)                                  # 28.12.25: Juergen extract function  # v1.01
         if StartNr < 0:
-            P01.MsgBox(Replace(Replace(Replace(M09.Get_Language_Str('Fehler: Die Zielvariable \'#1#\' in Zeile #2# muss eine Zahl am Ende haben ' + 'weil sie Teil einer Sequenz ist.' + vbCr + '  Beispiel: #3#'), "#1#", Arg1), '#2#', r), '#3#', Arg1 + '0'), vbCritical, M09.Get_Language_Str('Fehler: Zielvariable ungültig für Sequenz'))
+            # P01.MsgBox(Replace(Replace(Replace(M09.Get_Language_Str('Fehler: Die Zielvariable \'#1#\' in Zeile #2# muss eine Zahl am Ende haben ' + 'weil sie Teil einer Sequenz ist.' + vbCr + '  Beispiel: #3#'), "#1#", Arg1), '#2#', r), '#3#', Arg1 + '0'), vbCritical, M09.Get_Language_Str('Fehler: Zielvariable ungültig für Sequenz'))  # v1.01 (entfallen)
             return _fn_return_value
         EndNr = StartNr + cnt - 1
         for i in vbForRange(StartNr, EndNr):
@@ -933,10 +1029,16 @@ def Valid_Var_Name(Name, row):
     #  Error_Msg_Varaible_Not_Defined Name, Row
     #  Valid_Var_Name = False
     # Add the undefined input variable to a list which is checked later
+    Add_Undefined_Input_Var(Name, row)  # v1.01
+    return _fn_return_value  # v1.01
+
+def Add_Undefined_Input_Var(Name, Row):  # v1.01
+    # 01.02.26: Juergen - eine noch nicht definierte Eingangsvariable merken, sie wird spaeter geprueft (Check_Detected_Variables)
     if InStr(M06.Undefined_Input_Var, ' ' + Name + ' ') == 0:
         M06.Undefined_Input_Var = M06.Undefined_Input_Var + Name + ' '
-        M06.Undef_Input_Var_Row = M06.Undef_Input_Var_Row + str(row) + ' '
-    return _fn_return_value
+        # M06.Undef_Input_Var_Row = M06.Undef_Input_Var_Row + str(row) + ' '  # v1.01 (entfallen)
+    # return _fn_return_value  # v1.01 (entfallen)
+        M06.Undef_Input_Var_Row = M06.Undef_Input_Var_Row + str(Row) + ' '  # v1.01
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Arg - ByVal 
 def Valid_Var_Name_and_Skip_InCh_and_Numbers(Arg, row):
@@ -1499,7 +1601,7 @@ def No_Duplicates_in_InpLists():
 def Init_HeaderFile_Generation_SW(firstRun):
     
     global  MaxUsed_Loc_InCh, Read_LDR, Store_Status_Enabled, Use_WS2811, SwitchA_InpCnt, SwitchB_InpCnt,SwitchC_InpCnt
-    global SwitchD_InpCnt,DMX_LedChan,Serial_PinLst,LED_PINNr_List,LDR_Pin_Number,SwitchA_InpLst,SwitchB_InpLst,SwitchC_InpLst,SwitchD_InpLst,CLK_Pin_Number,RST_Pin_Number,DstVar_List, MultiSet_DstVar_List
+    global SwitchD_InpCnt,DMX_LedChan,Serial_PinLst,LED_PINNr_List,LDR_Pin_Number,SwitchA_InpLst,SwitchB_InpLst,SwitchC_InpLst,SwitchD_InpLst,CLK_Pin_Number,RST_Pin_Number,DstVar_List, MultiSet_DstVar_List, MultiSet_Asked  # v1.02
     global  CTR_Channels_1, CTR_Channels_2, But_Inp_List_1,But_Inp_List_2, Channel1InpCnt, Channel2InpCnt,CTR_Cha_Name_1,CTR_Cha_Name_2
     _fn_return_value = False
     #---------------------------------------------------------
@@ -1532,11 +1634,20 @@ def Init_HeaderFile_Generation_SW(firstRun):
         RST_Pin_Number = M30.Get_Current_Platform_String('RST_Pin')
         DstVar_List = ' '
         MultiSet_DstVar_List = ' '
+        MultiSet_Asked = ''  # v1.02
+        DstVar_Source.clear()  # v1.03
+        MultiSet_Info.clear()  # v1.03
+        M10.Reset_Par_Prefix_Cache()                                                                 # Version K: Praefixe der Parameter neu einlesen  # v1.02
+        KnownVariables.clear()                                                                       # Version K  # v1.01
     if not First_Scan_of_Data_Rows():
         return _fn_return_value
         # Scan the data rows and fill the variables above if the corrosponding functions are used in the Config__Col
-    if MultiSet_DstVar_List != ' ':
-        if P01.MsgBox(M09.Get_Language_Str('Achtung: Die folgenden Zielvariablen werden mehrfach gesetzt:') + vbCr + MultiSet_DstVar_List + vbCr + M09.Get_Language_Str('Senden zum Arduino abbrechen?'), vbQuestion + vbYesNo, M09.Get_Language_Str('Warnung: Mehrfach benutzte Zielvariablen')) == vbYes:
+    # if MultiSet_DstVar_List != ' ':  # v1.03 (entfallen)
+        # MultiSet_Asked = MultiSet_DstVar_List                                                        # Version K: diese Liste hat der Anwender gesehen  # v1.03 (entfallen)
+        # if P01.MsgBox(M09.Get_Language_Str('Achtung: Die folgenden Zielvariablen werden mehrfach gesetzt:') + vbCr + MultiSet_DstVar_List + vbCr + M09.Get_Language_Str('Senden zum Arduino abbrechen?'), vbQuestion + vbYesNo, M09.Get_Language_Str('Warnung: Mehrfach benutzte Zielvariablen')) == vbYes:  # v1.03 (entfallen)
+    if MultiSet_DstVar_List != ' ' and MultiSet_DstVar_List != MultiSet_Asked:                        # Version K: nur fragen, wenn die Liste neu ist (nicht fuer jedes eingebundene Blatt wieder)  # v1.03
+        MultiSet_Asked = MultiSet_DstVar_List                                                        # diese Liste hat der Anwender gesehen  # v1.03
+        if P01.MsgBox(MultiSet_Message_Text(), vbQuestion + vbYesNo, M09.Get_Language_Str('Warnung: Mehrfach benutzte Zielvariablen')) == vbYes:  # v1.03
             return _fn_return_value
     if No_Duplicates_in_InpLists() == False:
         return _fn_return_value
@@ -1640,6 +1751,11 @@ def Check_Detected_Variables():
                 P01.MsgBox(Replace(M09.Get_Language_Str('Fehler: Die Variable \'#1#\' wird als Eingang benutzt, wird aber nirgendwo gesetzt.'), "#1#", UnDefVar), vbCritical, M09.Get_Language_Str('Fehler: Undefinierter Zustand eine Eingangsvariablen'))
                 return _fn_return_value
             UndefNr = UndefNr + 1
+    # if MultiSet_DstVar_List != ' ':                                                                  # Version K  # v1.02 (entfallen)
+    if MultiSet_DstVar_List != ' ' and MultiSet_DstVar_List != MultiSet_Asked:                        # Version K (nur fragen, wenn die Liste neu ist)  # v1.02
+        # if P01.MsgBox(M09.Get_Language_Str('Achtung: Die folgenden Zielvariablen werden mehrfach gesetzt:') + vbCr + MultiSet_DstVar_List + vbCr + M09.Get_Language_Str('Senden zum Arduino abbrechen?'), vbQuestion + vbYesNo, M09.Get_Language_Str('Warnung: Mehrfach benutzte Zielvariablen')) == vbYes:  # v1.03 (entfallen)
+        if P01.MsgBox(MultiSet_Message_Text(), vbQuestion + vbYesNo, M09.Get_Language_Str('Warnung: Mehrfach benutzte Zielvariablen')) == vbYes:  # v1.03
+            return _fn_return_value  # v1.01
     _fn_return_value = True
     return _fn_return_value
 

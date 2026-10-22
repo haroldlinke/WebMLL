@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - M02a_Public.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M02a_Public.py
+# Path:           proggen/M02a_Public.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Neu: Get_FirmwareDir (Ordner der fertigen Firmware-Dateien, Version K des Excel-Programms; die Konstante FirmwareDir steht in M02_Public)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         M02_Public
@@ -144,6 +156,10 @@ def Get_SrcDirExamp():
     #    fn_return_value = ARDU_ResPath + "/examples/"
     logging.debug("Get_SrcDirExamp="+ fn_return_value)
     return fn_return_value
+
+def Get_FirmwareDir():  # v1.01
+    # Ordner mit den fertigen Firmware-Dateien fuer den Pico (VBA: Documents\\Arduino\\MobaLedLib\\firmware, hier unterhalb des Sketchbook-Ordners)
+    return Get_Sketchbook_Path() + M02.FirmwareDir  # v1.01
 
 def Get_BoardTyp():
     #---------------------------------------

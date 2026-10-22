@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - M09_Language.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M09_Language.py
+# Path:           proggen/M09_Language.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Neu: Get_Language_Identifier (Sprachnummer -> DE, EN, NL, FR, IT, ES; Version K des Excel-Programms)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -466,6 +478,10 @@ def __Get_Language_Def():
 def Set_Language_Def(LanguageNr):
     #----------------------------------------------
     PG.ThisWorkbook.Sheets[M02.ConfigSheet].Range[r'Language_Def'] = LanguageNr
+
+def Get_Language_Identifier(language):  # v1.01
+    # Kuerzel der Sprache aus der Nummer von Get_ExcelLanguage (Version K, fuer den Firmware-Dialog: Beschreibungen DE oder EN)
+    return {0: 'DE', 1: 'EN', 2: 'NL', 3: 'FR', 4: 'IT', 5: 'ES'}.get(language, 'EN')  # v1.01
 
 def Get_ExcelLanguage():
     global __Simulate_Language,__Check_Languages

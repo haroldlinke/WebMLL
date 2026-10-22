@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - M02_Public.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M02_Public.py
+# Path:           proggen/M02_Public.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Version K des Excel-Programms: Test_Suffix K; neue Konstanten (DEFAULT_TX_PAUSE, FirmwareDir, MLLFORUM_*, MLLSHOP_LINK, SF_PRO_SOUND_LED, SF_NAME_LED_NUMBER, SF_NAME_LED_OFFSET, SCT_*, SMT_*, PAT_ExtensionName, PAT_LEDVariableName, VT_LEDOrName, VT_LEDName)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         M02_Public
@@ -59,11 +71,13 @@ from ExcelAPI.XLC_Excel_Consts import *
 # ##################################################### Public Const
 
 Lib_Version_Nr = '3.5.0'                                   # If changed check also "Exp_Prog_Gen_Version" in Pattern_Configurator
-Test_Suffix = 'C1'                                          # The Excel programs use the same version number than the library to avoid confusion
+# Test_Suffix = 'C1'                                          # The Excel programs use the same version number than the library to avoid confusion  # v1.01 (entfallen)
+Test_Suffix = 'K'                                           # The Excel programs use the same version number than the library to avoid confusion  # v1.01
 Prog_Version = 'Ver. ' + Lib_Version_Nr + Test_Suffix       # A sufix could be used for beta version
 Prog_Version_Nr = Lib_Version_Nr + Test_Suffix              # Call Gen_Release_Version() to update all sheets
 DEBUG_CHANGEEVENT = False
 DEBUG_DCCSEND = False
+DEFAULT_TX_PAUSE = 5000                                     # 5ms pause between chars when trasmitting to ATMEGA (Windows, in us)  # v1.01
 
 InoName_DCC = '23_A.DCC_Interface.ino'
 InoName__SX = '23_A.Selectrix_Interface.ino'
@@ -81,6 +95,7 @@ DestDir_All = '/MobaLedLib/Ver_' + Lib_Version_Nr + '/'
 MobaUserDir = '/'
 Ardu_LibDir = '/libraries/'
 SrcDirExamp = '/libraries/MobaLedLib/examples/'
+FirmwareDir = '/MobaLedLib/firmware/'                        # 01.02.26: here the ProgGenerator looks for pre build firmware files (below the sketchbook)  # v1.01
 
 MyExampleDir = 'Prog_Generator_Data'
 
@@ -104,7 +119,10 @@ SUCHE_ICON = "Icons/06_Michael_Suche.ico"
 SUCHE_LINK = "https://suche.mobaledlib.de"
 
 MLLSHOP_ICON = 'Icons/06_Michael_Shop.ico'
-MLLSHOP_LINK = 'https://eberwein.shop/'
+# MLLSHOP_LINK = 'https://eberwein.shop/'  # v1.01 (entfallen)
+MLLSHOP_LINK = 'https://shop.mobaledlib.de'                    # url updated  # v1.01
+MLLFORUM_ICON = 'Icons/06_Michael_Forum.ico'  # v1.01
+MLLFORUM_LINK = 'https://forum.mobaledlib.de'  # v1.01
 Env_USERPROFILE = 'USERPROFILE'
 
 Include_FileName = 'LEDs_AutoProg.h'
@@ -117,6 +135,32 @@ INTERNAL_COL_CNT = 1 + 4                                # 03.04.21: Juergen Inte
 # Special function prefixes
 SF_LED_TO_VAR = 'LED_to_Var('
 SF_SERIAL_SOUND_PIN = 'SOUND_CHANNEL_DEFINITON('
+SF_PRO_SOUND_LED = 'SOUND_PRO_DEFINITON('  # v1.01
+SF_NAME_LED_NUMBER = 'Name_LED_Number'  # v1.01
+SF_NAME_LED_OFFSET = 'Name_LED_Offset'  # v1.01
+
+# Sound commnication types
+SCT_SERIAL = 'serial'  # v1.01
+SCT_PRO = 'pro'  # v1.01
+
+# Sound module types
+SMT_JQ6500 = 1  # v1.01
+SMT_JQ6500_AA = 2  # v1.01
+SMT_MP3_TF_16P = 3  # v1.01
+SMT_MP3_TF_16P_NO_CRC = 4  # v1.01
+
+# search patterns
+# the name of an extension must contain only basic letters (A-Z or a-z) and numbers (0-9), underscores (_)and dashes (-).
+# They must start with a letter or number. They must contain at least one letter.
+PAT_ExtensionName = r'^[A-Za-z0-9][A-Za-z0-9_\-]*$'  # v1.01
+
+# the name of a LED variable must contain only basic letters (A-Z or a-z) and numbers (0-9) and underscores (_).
+# They must start with a letter.
+PAT_LEDVariableName = r'^[A-Za-z][A-Za-z0-9_]*$'  # v1.01
+
+# predefined variable type name (Sheet Par_Description)
+VT_LEDOrName = 'LED#OrName'  # v1.01
+VT_LEDName = 'LEDName'  # v1.01
 
 # Sheet Lib_Macros: (The Sheet can not be changed by the USER => We keep the constants)
 SM_DIALOGDATA_ROW1 = 4

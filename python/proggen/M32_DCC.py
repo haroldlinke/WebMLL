@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - M32_DCC.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M32_DCC.py
+# Path:           proggen/M32_DCC.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  SendDCCAccessoryCommand: Adresse 0 ist erlaubt (Addr < 0 statt Addr < 1; Version K des Excel-Programms)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -160,7 +172,8 @@ def SendDCCAccessoryCommand(Addr, Direction, IsSwitch):
     if M07.Check_USB_Port_with_Dialog(M25.COMPort_COL) == False:
         return _fn_return_value
         # 04.05.20: Added exit (Prior Check_USB_Port_with_Dialog ends the program in case of an error)
-    if ( Addr < 1 or Addr > 9999 ) :
+    # if ( Addr < 1 or Addr > 9999 ) :  # v1.01 (entfallen)
+    if ( Addr < 0 or Addr > 9999 ) :  # v1.01
         P01.MsgBox(M09.Get_Language_Str('Die Adresse muss im Bereich 1 bis 9999 liegen'), vbCritical, M09.Get_Language_Str('Fehler: Decoder senden fehlgeschlagen'))
         return _fn_return_value
     ComPort = P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL)

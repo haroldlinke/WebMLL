@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - Userform_Other.py
+# ----------------------------------------------------------------------------------------------
+# Name:           Userform_Other.py
+# Path:           proggen/Userform_Other.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Version K des Excel-Programms: Parametertypen LED#OrName und LEDName (Check_Variable_Name), Option pf=<Praefix> (ValToParVal, ParValToVal, Prefix)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -81,6 +93,20 @@ except:
 
 import logging
 
+def ValToParVal(Prefix, val):  # v1.01
+    # 8.12.25: Juergen - Praefix (Option pf=...) vom Wert des Parameters abziehen, damit der Anwender nur den Namen sieht
+    result = val  # v1.01
+    if Prefix != '':  # v1.01
+        if Left(val, Len(Prefix)) == Prefix:  # v1.01
+            result = Mid(val, Len(Prefix) + 1)  # v1.01
+    return result  # v1.01
+
+def ParValToVal(Prefix, val):  # v1.01
+    # 8.12.25: Juergen - Praefix wieder vorsetzen; 11.2.26: nur bei Variablen, nicht bei Zahlen
+    if IsNumeric(val):  # v1.01
+        return val  # v1.01
+    return Prefix + val  # v1.01
+
 class UserForm_Other():
     def __init__(self):
 
@@ -106,6 +132,7 @@ class UserForm_Other():
         self.MaxA = vbObjectInitialize((self.MAX_PAR_CNT,), Variant)
         self.ParName = vbObjectInitialize((self.MAX_PAR_CNT,), String)
         self.Invers = vbObjectInitialize((self.MAX_PAR_CNT,), Boolean)
+        self.Prefix = vbObjectInitialize((self.MAX_PAR_CNT,), String)                    # Version K: Praefix der Parameter (Option pf=...)  # v1.01
         self.DEFAULT_PAR_WIDTH = 48
         self.ParamVar = {}
         self.Controls={}
@@ -237,6 +264,13 @@ class UserForm_Other():
         return _fn_return_value
     
     
+    def Check_Variable_Name(self, ParNr, value):  # v1.01
+        # 01.02.26: Juergen - Name einer LED-Variablen pruefen (Buchstaben, Ziffern, Unterstrich; beginnt mit einem Buchstaben)
+        if not M30.IsValidVariableName(str(value)):  # v1.01
+            P01.MsgBox(Replace(M09.Get_Language_Str('Der Parameter \'#1#\' hat einen ungültigen Variablennamen'), '#1#', self.Controls.get('LabelPar' + str(ParNr), 'key not found')), vbInformation, M09.Get_Language_Str('Ungültigen Variablennamen'))  # v1.01
+            return False  # v1.01
+        return True  # v1.01
+
     def LimmitActivInput(self, ct, MinVal, MaxVal):
         #--------------------------------------------------------------------------------
         with_0 = ct
@@ -391,6 +425,18 @@ class UserForm_Other():
         elif (select_1 == 'MB_LED'):
             if ( IsNumeric(value) and  ( int(value) < 0 or int(value) > 16 ) )  or  ( not IsNumeric(value) and int(InStr(' ' + M02.MB_LED_NR_STR + ' ', ' ' + value + ' ')) == 0 ) :
                 P01.MsgBox(Replace(Replace(M09.Get_Language_Str('Fehler: Der Parameter \'#1#\' muss eine der folgenden Werte enthalten:' + vbCr + '  #2#'), '#1#', VarLabel), '#2#', '0 - 16, D2 - D5, D7 - D13, A0 - A5'), vbCritical, M09.Get_Language_Str('Ungültige LED Bezeichnung'))
+                return fn_return_value  # v1.01
+        elif (select_1 == M02.VT_LEDOrName):  # v1.01
+            # Either a LED number or a LED variable name                              01.02.26: Juergen
+            if not IsNumeric(value):  # v1.01
+                if self.Check_Variable_Name(ParNr, value) == False:  # v1.01
+                    return fn_return_value  # v1.01
+            else:  # v1.01
+                if not self.Check_Limit_to_MinMax(ParNr, value):  # v1.01 (Check_Limit_to_MinMax liefert bei einem Fehler None, nicht False)
+                    return fn_return_value  # v1.01
+        elif (select_1 == M02.VT_LEDName):  # v1.01
+            # a LED-Name                                                              01.02.26: Juergen
+            if self.Check_Variable_Name(ParNr, value) == False:  # v1.01
                 return fn_return_value
         else:
             P01.MsgBox('Internal error: Unknown parameter Typ: \'' + self.TypA(ParNr - 1) + '\'', vbCritical, 'Internal Error')
@@ -1057,6 +1103,11 @@ class UserForm_Other():
                                     else:
                                         ParVal = 0
                                     self.Controls['Par' + str(UsedParNr)] = ParVal
+                                elif (select_4 == 'pf'):  # v1.01
+                                    # 08.12.25: Juergen prefix for argument
+                                    self.Prefix[UsedParNr - 1] = Parts(1)  # v1.01
+                                    ParVal = ValToParVal(Parts(1), ParVal)  # v1.01
+                                    self.Controls['Par' + str(UsedParNr)] = ParVal  # v1.01
                                 elif (select_4 == '...') or (select_4 == '…'):
                                     if UseOldParams:
                                         for i in vbForRange(UsedParNr + 1, UBound(OldParams)):
@@ -1304,6 +1355,7 @@ class UserForm_Other():
                                     val = 1
                                 else:
                                     val = 0
+                            val = ParValToVal(self.Prefix(Nr - 1), str(val))                      # 8.12.25: Juergen  # v1.01
                             break
             if val == 'Not Found':
                 P01.MsgBox(M09.Get_Language_Str('Fehler der Parameter \'') + p + M09.Get_Language_Str('\' wurde nicht gefunden'), vbCritical, M09.Get_Language_Str('Programm Fehler'))

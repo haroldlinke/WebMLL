@@ -1,8 +1,8 @@
-# Datei-Version: 1.96 (2026-10-21) - webmobaledlib.py
+# Datei-Version: 2.04 (2026-10-21) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        1.96
+# Version:        2.04
 # Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -38,6 +38,9 @@
 #   1.66  2026-10-18  Zugriff aus dem Netz (Windows): Browser oeffnet die Adresse, auf der der Server lauscht (browser_host), Hinweis auf die Firewall beim Start
 #   1.67  2026-10-18  Programm Einstellungen: Firewall-Regel fuer den Zugriff aus dem Netz per Knopf (Windows), web_access 1.05, web_firewall 1.00
 #   1.68  2026-10-18  Firewall-Bereich erkennt auch von Hand angelegte Regeln fuer den Port, Entfernen loescht alle Regeln webMobaLedLib* (web_firewall 1.01, web_access 1.06)
+#   1.99  2026-10-21  Fehlerkorrektur zu 1.98: Header-Erzeugung wieder schnell (M10_Par_Description 1.02: Praefixe einmal lesen), keine Fehlalarme 'Zielvariablen werden mehrfach gesetzt' bei LED-Namen (M06_Write_Header_SW 1.02)
+#   1.98  2026-10-21  Excel-Programm 3.5.0K nachgezogen: Mindestversionen der geaenderten Module (M02, M02a, M03, M06_Write_Header*, M07_COM_Port, M09_Language, M10_Par_Description, M20, M30_Tools, M32_DCC, M38_Extensions, clsExtension, Userform_Other, web_form_other)
+#   1.97  2026-10-21  Excel-Datei 3.5.0K: ungueltige benannte Bereiche (#REF!) im Lader (XLA_Application 1.10), Pfade der Tabelle Libraries mit Backslash (M37_Inst_Libraries 1.04)
 #   1.96  2026-10-21  Reiter Servo Einstellungen und DM Servo Einstellungen (mit Option), Titel ohne (Prototyp), Breite der Zeilennummer nach der groessten Nummer
 #   1.95  2026-10-21  Reiter Sound Test und DCC Keyboard (web_soundtest 1.00, web_dcckeyboard 1.00, web_tabs 1.03)
 #   1.94  2026-10-21  ESP32 unter Windows: blinkender Zeitgeber der Port-Auswahl endet mit dem Dialog (web_form_comport 1.03), Ausgabe von Befehlen vollstaendig (Prog_Generator 1.02)
@@ -66,6 +69,11 @@
 #   1.71  2026-10-19  Patterngenerator: Goto-Pfeile in voller Laenge (web_pattgen 1.13)
 #   1.70  2026-10-19  Patterngenerator Stufe 4a bis 4c: Goto-Pfeile, Bilder anzeigen und merken, Bild einfuegen (web_pattgen 1.12, headless_pattgen 1.10, M08_Load_Sheet_Data 1.01)
 #   1.69  2026-10-18  Firewall-Status ohne Administratorrechte lesen (zwei Wege, Fehler anzeigen und protokollieren; web_firewall 1.02, web_access 1.07)
+#   2.00  2026-10-21  Meldung 'Zielvariablen werden mehrfach gesetzt' mit Blatt und Zeile und im Protokoll, kein Fehlalarm beim erneuten Lesen derselben Zeile, Frage nur einmal je Liste (M06_Write_Header_SW 1.03)
+#   2.01  2026-10-21  Version der MobaLedLib (Ver.3.5.0-K) rechts in der Knopfzeile der Programmgeneratorseite; Knopf Mit ARDUINO verbinden (rot, mit Verbindung gruen Mit ARDUINO verbunden) in der Kopfzeile fuer alle Reiter, die Tasten Verbinden in Servo Einstellungen und Sound Test entfallen
+#   2.02  2026-10-21  Version der MobaLedLib nicht mehr alle 5 Sekunden, sondern beim Aufbau der Seite, nach der Pruefung beim Start und nach jedem Befehl lesen; Menue ARDUINO ohne Konfiguration vom Pico laden
+#   2.03  2026-10-21  Fehler 'Anzahl der verwendeten Eingangskanaele ist zu gross': Mindestversionen M06_Write_Header 1.04 und vb2py/vbfunctions 1.01 (Replace mit Zahlen)
+#   2.04  2026-10-21  Zeilenende _x000D_ in Meldungen: Mindestversion XLA_Application 1.11 (Kuerzel _xHHHH_ aus Excel umwandeln, genaue Suche in der Tabelle Languages)
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -106,10 +114,19 @@ here = os.path.dirname(os.path.abspath(__file__))
 # Mindestversionen der Dateien, die zu diesem Stand gehoeren (Zeile "Datei-Version" am Anfang jeder Datei). Beim Einspielen einzelner Dateien fehlte schon zweimal eine;
 # dann stuerzt ein Teil ab oder tut nichts. Die Pruefung beim Start meldet es im Protokoll, auf der Konsole und mit einer roten Meldung oben auf der Seite.
 REQUIRED_FILES = {  # v1.75
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.09", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.00", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.03", "_web/web_servotest2.py": "1.00", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v1.96
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.03", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.94
-    "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.75
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.09", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.00", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.03", "_web/web_servotest2.py": "1.00", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v1.97 (entfallen)
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.03", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.97 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.10", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.00", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.03", "_web/web_servotest2.py": "1.00", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.01 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.10", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.04 (entfallen)
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.04
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.04", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.97
+    # "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.98 (entfallen)
+    # "proggen/M06_Write_Header.py": "1.03", "proggen/M20_PageEvents_a_Functions.py": "1.03", "proggen/M18_Save_Load.py": "1.01",  # v2.03 (entfallen)
+    "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.03
     "proggen/M18a_Load_PicoConfig.py": "1.01", "proggen/M17_Import_old_Data.py": "1.01",  # v1.75
+    # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.01", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.01", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v1.99 (entfallen)
+    # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.02", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.00 (entfallen)
+    "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.03", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.00
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -612,7 +629,16 @@ def font_scales(ctrl) -> dict:
             "grid": factor("FontNormal"), "small": factor("FontSmall"), "name": name or "Arial"}
 
 
-VERSION = "1.96 (2026-10-21)"  # v1.96
+# VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
+VERSION = "2.04 (2026-10-21)"  # v2.04
+# VERSION = "2.03 (2026-10-21)"  # v2.04 (entfallen)
+# VERSION = "2.02 (2026-10-21)"  # v2.03 (entfallen)
+# VERSION = "2.01 (2026-10-21)"  # v2.02 (entfallen)
+# VERSION = "2.00 (2026-10-21)"  # v2.01 (entfallen)
+# VERSION = "1.99 (2026-10-21)"  # v2.00 (entfallen)
+# VERSION = "1.98 (2026-10-21)"  # v1.99 (entfallen)
+# VERSION = "1.97 (2026-10-21)"  # v1.98 (entfallen)
+# VERSION = "1.96 (2026-10-21)"  # v1.97 (ersetzt)
 # VERSION = "1.95 (2026-10-21)"  # v1.96 (ersetzt)
 # VERSION = "1.94 (2026-10-21)"  # v1.95 (ersetzt)
 # VERSION = "1.93 (2026-10-20)"  # v1.94 (ersetzt)
@@ -1126,9 +1152,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     mark("Kopf, Menue, Reiter")
 
     # ------------------------------------------------------------------ Toolbar
-    with ui.row().classes("items-start gap-1 mll-toolbar"):
+    # with ui.row().classes("items-start gap-1 mll-toolbar"):  # v2.01 (entfallen)
+    with ui.row().classes("items-start gap-1 mll-toolbar w-full"):  # v2.01
         # web_fullscreen.button()                         # Vollbild ein und aus (entfallen: ein Knopf in der Kopfzeile)  # v1.81
         toolbar_slot = ui.row().classes("items-start gap-1 mll-toolbar")
+        ui.space()  # v2.01
+        lib_version_label = ui.label("").classes("text-caption mll-libver").style("white-space: nowrap; align-self: center")             # Version der MobaLedLib wie in Excel: Ver.3.5.0-K  # v2.01
 
     def sync_all_sheets():
         for sheet in list(wb.sheets):
@@ -1275,6 +1304,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         ui.space()
         status_label = ui.label("").classes("mll-status")         # Meldung des Programms: verschwindet nach einigen Sekunden
         conn_label = ui.label("").classes("text-caption mll-conn")        # Verbindung zum Arduino: bleibt stehen
+        connect_btn = ui.button("Mit ARDUINO verbinden", on_click=lambda: connect_from_header()).props("unelevated no-caps dense color=negative").classes("mll-connect")      # fuer alle Reiter: rot ohne, gruen mit Verbindung zum Arduino  # v2.01
+        connect_btn.tooltip("Verbindung zum Arduino herstellen (wie ARDUINO → Verbinden). Rot: keine Verbindung, grün: verbunden. Trennen: Menü ARDUINO → Trennen")  # v2.01
         web_fullscreen.button()                                       # Vollbild ein und aus: neben Beenden, in jedem Reiter erreichbar und auch im Vollbild sichtbar  # v1.81
         ui.button("Beenden", on_click=quit_program, icon="power_settings_new").props("color=negative outline dense").classes("mll-quit")
 
@@ -1296,7 +1327,29 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if conn_label.text != conn:
             conn_label.set_text(conn)
         conn_label.style("color: " + STATUS_COLORS.get(str(getattr(ctrl, "connectstatus_fg", "")).lower(), "#616161"))
+        try:  # v2.01
+            connected = bool(ctrl.is_connection_open())  # v2.01
+        except Exception:                                  # noqa: BLE001  # v2.01
+            connected = False  # v2.01
+        if state.get("connected_shown") != connected:                   # Knopf Mit ARDUINO verbinden: rot ohne Verbindung, gruen mit Verbindung  # v2.01
+            state["connected_shown"] = connected  # v2.01
+            connect_btn.set_text("Mit ARDUINO verbunden" if connected else "Mit ARDUINO verbinden")  # v2.01
+            connect_btn.props("color=positive" if connected else "color=negative")  # v2.01
+        # state["libver_tick"] = state.get("libver_tick", 0) + 1  # v2.02 (entfallen)
+        # if state["libver_tick"] % 10 == 1:                              # Version der MobaLedLib rechts in der Knopfzeile (alle 5 Sekunden neu lesen: nach einer Installation aendert sie sich)  # v2.02 (entfallen)
+            # update_lib_version()  # v2.02 (entfallen)
 
+    def update_lib_version():  # v2.01
+        try:  # v2.01
+            import proggen.M37_Inst_Libraries as M37_ver  # v2.01
+            ver = str(M37_ver.Get_Lib_Version("MobaLedLib")).strip()  # v2.01
+        except Exception:                                  # noqa: BLE001  # v2.01
+            ver = ""  # v2.01
+        text = ("Ver." + ver) if ver else ""  # v2.01
+        if lib_version_label.text != text:  # v2.01
+            lib_version_label.set_text(text)  # v2.01
+
+    update_lib_version()                                   # Version der MobaLedLib rechts in der Knopfzeile: beim Aufbau der Seite, nach der Pruefung beim Start und nach jedem Befehl (zum Beispiel einer Installation der Bibliotheken) lesen, nicht laufend  # v2.02
     ui.timer(0.5, refresh_status)
     refresh_status()
 
@@ -2364,6 +2417,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             if getattr(state["ws"], "Flag_move", False):
                 state["move_note"] = ui.notification("Zeilen verschieben: Bitte die Zielzeile anklicken. Mit Esc abbrechen.",
                                                      type="info", timeout=None, close_button="OK")
+            update_lib_version()                       # Version der MobaLedLib neu lesen (zum Beispiel nach der Installation der Bibliotheken)  # v2.02
             # Blattliste kann sich geaendert haben (Neue/Loesche Tabelle)
             load_sheet_dict()
             hook_selection()
@@ -2705,7 +2759,36 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             remove_autosave()
 
     import proggen.M06_Write_MLLConfig as M06cfg
-    connect_arduino = run_command(lambda: ctrl.connect(), "Verbinden")          # Menuepunkt ARDUINO -> Verbinden und die Taste Verbinden der Seite Servo Test 1  # v1.86
+    # connect_arduino = run_command(lambda: ctrl.connect(), "Verbinden")          # Menuepunkt ARDUINO -> Verbinden und die Taste Verbinden der Seite Servo Test 1  # v2.01 (entfallen)
+    _connect_command = run_command(lambda: ctrl.connect(), "Verbinden")        # Menuepunkt ARDUINO -> Verbinden und der Knopf Mit ARDUINO verbinden in der Kopfzeile  # v2.01
+
+    def after_connect():  # v2.01
+        """Nach dem Verbinden (Knopf oder Menue): ein offener Reiter mit Direktmodus (Servo Einstellungen, DM Servo Einstellungen, Sound Test) startet ihn neu"""  # v2.01
+        try:  # v2.01
+            connected = bool(ctrl.is_connection_open())  # v2.01
+        except Exception:                                  # noqa: BLE001  # v2.01
+            connected = False  # v2.01
+        if not connected:  # v2.01
+            return  # v2.01
+        page = state.get(tabs.value)  # v2.01
+        if page is not None and hasattr(page, "on_connected"):  # v2.01
+            try:  # v2.01
+                page.on_connected()  # v2.01
+            except Exception:                              # noqa: BLE001  # v2.01
+                logger.warning("Reiter %s nach dem Verbinden nicht aktualisiert", tabs.value, exc_info=True)  # v2.01
+
+    async def connect_arduino():  # v2.01
+        await _connect_command()  # v2.01
+        after_connect()  # v2.01
+
+    async def connect_from_header():  # v2.01
+        """Knopf Mit ARDUINO verbinden: ohne Verbindung wie ARDUINO -> Verbinden; mit Verbindung geschieht nichts (Trennen im Menue ARDUINO)"""  # v2.01
+        try:  # v2.01
+            if ctrl.is_connection_open():  # v2.01
+                return  # v2.01
+        except Exception:                                  # noqa: BLE001  # v2.01
+            pass  # v2.01
+        await connect_arduino()  # v2.01
     MENU = {
         "Datei": [
             ("Jetzt zwischenspeichern", autosave_manual),
@@ -2728,7 +2811,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ("Verbinden", connect_arduino),  # v1.86
             ("Trennen", run_command(lambda: ctrl.disconnect(), "Trennen")),
             ("Alle LED aus", run_command(lambda: ctrl.led_off(), "Alle LED aus")),
-            ("Konfiguration vom Pico laden (experimentell)", run_command(lambda: M06cfg.download_from_Pico(), "Konfiguration laden")),
+            # ("Konfiguration vom Pico laden (experimentell)", run_command(lambda: M06cfg.download_from_Pico(), "Konfiguration laden")),  # v2.02 (entfallen)
         ],
         "Hilfe": [
             ("Hilfe öffnen", run_command(open_help, "Hilfe")),
@@ -3085,6 +3168,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         await run_in_worker(work)  # v1.79
         if weblog is not None:  # v1.93
             weblog.close_later_if_ok()                 # wie nach jedem Befehl: das Fenster der Installation nach Erfolg nach 10 s schliessen  # v1.93
+        update_lib_version()                           # die Pruefung der Bibliotheken beim Start ist fertig: Version der MobaLedLib lesen  # v2.02
         show(state["ws"])  # v1.79
     ui.timer(1.5, run_startup_tasks, once=True)  # v1.79
 

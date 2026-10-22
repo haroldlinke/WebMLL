@@ -1,9 +1,9 @@
-# Datei-Version: 2.03 (2026-10-20) - web_servotest.py
+# Datei-Version: 2.04 (2026-10-21) - web_servotest.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_servotest.py
 # Path:           _web/web_servotest.py
-# Version:        2.03
-# Last Update:    2026-10-20
+# Version:        2.04
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   2.01  2026-10-20  Layout fuer das Smartphone: Beschreibung eine Zeile und aufklappbar, Servo Modul Auswahl in der Zeile der Felder, die drei Tasten in einer Zeile (auch beim Konfigurieren)
 #   2.02  2026-10-20  Die dritte Taste im Zustand Einstellen heisst Verbinden (statt Schliessen) und ruft die Funktion des Menuepunkts ARDUINO -> Verbinden auf; close entfaellt
 #   2.03  2026-10-20  Verlassen von Reiter und Seite: leave() sendet Wert 0 und beendet den Direktmodus, bricht laufende Ablaeufe ab (epoch), nur einmal und ohne eine andere Seite zu stoeren; stop_all fuer Beenden und Neustart; page_closed fuer das Trennen des Browsers
+#   2.04  2026-10-21  Die dritte Taste im Zustand Einstellen (Verbinden) entfaellt: verbunden wird mit der Taste Mit ARDUINO verbinden in der Kopfzeile fuer alle Reiter; neu ServoPage.on_connected (Direktmodus und Servo waehlen nach dem Verbinden)
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Servo Test 1" nach dem Excel-Dialog "Servo Test und Einstellung" (UserForm der Excel-Fassung, Stand Oktober 2026).
 
@@ -31,8 +32,8 @@ Zwei Zustaende wie im Dialog:
 Unterschiede zum Excel-Dialog (siehe HOC_intern.md, Version 1.84):
   * Die Pausen von 200 ms zwischen den Befehlen sind asynchron (await), der Browser bleibt bedienbar; waehrenddessen ruhen Zeitgeber und Tasten (busy).
   * Das Keep-Alive geht nur, wenn die Sendewarteschlange leer ist (Servo-Nachrichten dauern pro Zeichen maxLEDcnt * 0,2 ms).
-  * Die dritte Taste im Zustand Einstellen heisst Verbinden (im Excel-Dialog Schliessen): Sie ruft dieselbe Funktion auf wie der Menuepunkt ARDUINO -> Verbinden.
-    Ein Fenster zum Schliessen gibt es im Browser nicht. Nach dem Verbinden startet die Seite den Direktmodus und waehlt den Servo.
+  * Die dritte Taste im Zustand Einstellen (im Excel-Dialog Schliessen) gibt es im Browser nicht: Sie ist ausgeblendet. Verbunden wird mit dem Knopf Mit ARDUINO verbinden in der
+    Kopfzeile (fuer alle Reiter); danach startet die Seite den Direktmodus und waehlt den Servo (ServoPage.on_connected).
   * ResetPostition im VBA-Code ruft SendValue mit der Position statt mit dem Anschluss als Modul auf und sendet deshalb nie etwas. Das Verhalten ist uebernommen
     (reset_position tut nichts); gemeint war wohl "Wert 0 an den vorher gewaehlten Servo".
   * Tippfehler "Positition" im Text berichtigt.
@@ -108,7 +109,8 @@ TEXT_SPEED = ("Konfiguration der Geschwindigkeit\n\nMit den Pfeiltasten wird die
               "Durch Halten der Tasten wird die Geschwindigkeit schneller verändert")
 BUTTON_START, BUTTON_NEXT = "Servo Konfigurieren", "Weiter"
 BUTTON2_RESET, BUTTON2_SAVE = "Servo zurücksetzen", "Einstellungen speichern"
-BUTTON_CONNECT, BUTTON_NO_SAVE = "Verbinden", "nicht speichern"  # v2.02
+# BUTTON_CONNECT, BUTTON_NO_SAVE = "Verbinden", "nicht speichern"  # v2.04 (entfallen)
+BUTTON_CONNECT, BUTTON_NO_SAVE = "", "nicht speichern"          # die dritte Taste ist im Zustand Einstellen ausgeblendet (verbunden wird in der Kopfzeile)  # v2.04
 CONFIRM_RESET_TITLE = "Servo zurücksetzen"
 CONFIRM_RESET_TEXT = "Sollen der Servo auf die Grundeinstellungen (Limits, Geschwindigkeit) zurückgesetzt werden?"
 COLOR_DEFAULT, COLOR_STEP = "#f0f0f0", "#c0ffc0"
@@ -586,6 +588,13 @@ class ServoPage:
         self.model.leave()  # v2.03
         self._refresh()
 
+    def on_connected(self):  # v2.04
+        """Die Verbindung zum Arduino wurde hergestellt (Taste "Mit ARDUINO verbinden" oder Menue): Direktmodus starten und den Servo waehlen"""  # v2.04
+        if self.model.connected():  # v2.04
+            self.model.tab_selected()  # v2.04
+            self._timer.active = True  # v2.04
+        self._refresh()  # v2.04
+
     def page_closed(self):  # v2.03
         """Der Browser hat die Seite verlassen (geschlossen, neu geladen, Verbindung weg): Wert 0 senden, nichts mehr in die Anzeige schreiben"""  # v2.03
         self._timer.active = False  # v2.03
@@ -651,6 +660,7 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
         refs["action"].style("visibility: visible" if model.action_visible else "visibility: hidden")          # der Platz bleibt (wie im Excel-Dialog)  # v2.01
         refs["action2"].set_text(model.action2_text)
         refs["cancel"].set_text(model.cancel_text)
+        refs["cancel"].set_visibility(model.prog_step != 0)                  # nur beim Konfigurieren (nicht speichern); verbunden wird in der Kopfzeile  # v2.04
 
     def tick():
         if is_active is not None and not is_active():
@@ -691,17 +701,17 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
             await model.save()
         refresh()
 
-    async def on_connect():  # v2.02
-        """Verbinden: wie ARDUINO -> Verbinden; danach den Direktmodus starten und den Servo waehlen (connect meldet nur EFFECT Mode)"""  # v2.02
-        if connect is not None:  # v2.02
-            await connect()  # v2.02
-        if model.connected():  # v2.02
-            model.tab_selected()  # v2.02
-        refresh()  # v2.02
-
+    # async def on_connect():  # v2.04 (entfallen)
+        # """Verbinden: wie ARDUINO -> Verbinden; danach den Direktmodus starten und den Servo waehlen (connect meldet nur EFFECT Mode)"""  # v2.04 (entfallen)
+        # if connect is not None:  # v2.04 (entfallen)
+            # await connect()  # v2.04 (entfallen)
+        # if model.connected():  # v2.04 (entfallen)
+            # model.tab_selected()  # v2.04 (entfallen)
+        # refresh()  # v2.04 (entfallen)
     async def on_cancel():
-        if model.prog_step == 0:                        # Zustand Einstellen: die Taste verbindet  # v2.02
-            await on_connect()  # v2.02
+        # if model.prog_step == 0:                        # Zustand Einstellen: die Taste verbindet  # v2.04 (entfallen)
+            # await on_connect()  # v2.04 (entfallen)
+        if model.prog_step == 0:                        # Zustand Einstellen: die Taste ist ausgeblendet (verbunden wird mit der Taste "Mit ARDUINO verbinden" in der Kopfzeile)  # v2.04
             return  # v2.02
         await model.cancel_config()                     # nicht speichern  # v2.02
         refresh()
@@ -751,7 +761,8 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
             refs["action"] = ui.button(model.action_text, on_click=on_action).props("outline no-caps").classes("mll-servo-action")  # v2.01
             refs["action2"] = ui.button(model.action2_text, on_click=on_action2).props("outline no-caps").classes("mll-servo-action")  # v2.01
             refs["cancel"] = ui.button(model.cancel_text, on_click=on_cancel).props("outline no-caps").classes("mll-servo-action")  # v2.01
-            refs["cancel"].tooltip("Verbinden: wie ARDUINO → Verbinden. Beim Konfigurieren: nicht speichern")  # v2.02
+            # refs["cancel"].tooltip("Verbinden: wie ARDUINO → Verbinden. Beim Konfigurieren: nicht speichern")  # v2.04 (entfallen)
+            refs["cancel"].tooltip("Nicht speichern")  # v2.04
     timer = ui.timer(TICK, tick)
     timer.active = False
     refresh()

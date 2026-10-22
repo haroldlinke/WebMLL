@@ -1,13 +1,14 @@
-# Datei-Version: 1.00 (2026-10-20) - web_servotest2.py
+# Datei-Version: 1.01 (2026-10-21) - web_servotest2.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_servotest2.py
 # Path:           _web/web_servotest2.py
-# Version:        1.00
-# Last Update:    2026-10-20
+# Version:        1.01
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-20  Neu: Seite Servo Test 2 (ServoTestPage2.py ohne Tk), Teil A: direkte Steuerung von Direct Mode Servos (Betriebsarten 1 bis 10, ENTER, Regler 0 bis 255, Zeitgeber mit CRC4). Ohne Programmieren des ATtiny (Teil B und C)
+#   1.01  2026-10-21  Neu Servo2Page.on_connected: nach dem Verbinden (Taste Mit ARDUINO verbinden in der Kopfzeile oder Menue) den Direktmodus neu starten
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Servo Test 2" (mlpyproggen/ServoTestPage2.py, Klasse ServoTestPage2, ohne Tk): Servos im Direct Mode (Variante von Eckhart, ein ATtiny
 statt des WS2811-Chips, Kommandos mit CRC4-Pruefsumme).
@@ -343,6 +344,18 @@ class Servo2Page:
         self._timer.active = False
         self.model.leave()
         self._refresh()
+
+    def on_connected(self):  # v1.01
+        """Die Verbindung zum Arduino wurde hergestellt (Taste "Mit ARDUINO verbinden" oder Menue): Direktmodus neu starten"""  # v1.01
+        try:  # v1.01
+            connected = bool(self.model.ctrl.is_connection_open())  # v1.01
+        except Exception:                                          # noqa: BLE001  # v1.01
+            connected = False  # v1.01
+        if connected:  # v1.01
+            self.model.tab_selected()  # v1.01
+            self._timer.interval = self.model.interval()  # v1.01
+            self._timer.active = True  # v1.01
+        self._refresh()  # v1.01
 
     def page_closed(self):
         """Der Browser hat die Seite verlassen (geschlossen, neu geladen, Verbindung weg): Direktmodus beenden, nichts mehr in die Anzeige schreiben"""

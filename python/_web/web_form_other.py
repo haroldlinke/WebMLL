@@ -1,4 +1,4 @@
-# Datei-Version: 1.03 (2026-10-15) - web_form_other.py
+# Datei-Version: 1.04 (2026-10-21) - web_form_other.py
 """Web-Ersatz fuer proggen/Userform_Other.py (Parameterformular fuer Makros ohne Sonderformular).
 
 Die Klasse WebUserFormOther erbt von UserForm_Other und ersetzt nur Show_UserForm_Other:
@@ -189,6 +189,7 @@ def make_class(Base):
                             if Nr <= UBound(OldParams):
                                 ParVal = OldParams(Nr)
                     ParVal = Trim(ParVal)
+                    self.Prefix[UsedParNr] = ''                                                       # Version K  # v1.04
                     self.TypA[UsedParNr] = Typ
                     self.MinA[UsedParNr] = Min
                     self.MaxA[UsedParNr] = Max
@@ -209,6 +210,10 @@ def make_class(Base):
                                     elif key == "Inv":
                                         self.Invers[UsedParNr - 1] = True
                                         ParVal = 1 if ParVal == 0 else 0
+                                    elif key == "pf":                                        # Version K: Praefix fuer das Argument (08.12.25: Juergen)  # v1.04
+                                        self.Prefix[UsedParNr - 1] = Parts(1)  # v1.04
+                                        import proggen.Userform_Other as D07_pf                                        # Version K  # v1.04
+                                        ParVal = D07_pf.ValToParVal(Parts(1), ParVal)  # v1.04
                                     elif key in ("...", "…"):
                                         if UseOldParams:
                                             for i in range(UsedParNr + 1, UBound(OldParams) + 1):

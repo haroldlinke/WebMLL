@@ -1,15 +1,16 @@
-# Datei-Version: 1.03 (2026-10-20) - M37_Inst_Libraries.py
+# Datei-Version: 1.04 (2026-10-21) - M37_Inst_Libraries.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M37_Inst_Libraries.py
 # Path:           proggen/M37_Inst_Libraries.py
-# Version:        1.03
-# Last Update:    2026-10-20
+# Version:        1.04
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-20  Update der ARDUINO Bibliotheken (Linux): Antwort Nein auf die Frage ist kein Fehler mehr (UPDATE_DECLINED statt Fehler 1 beim Ausfuehren des Update Programms ''); davor Original-Port, nicht erfasst
 #   1.02  2026-10-20  Linux: Platinen bekommen alle URLs der Paketindizes (wie im VBA-Code) statt der i-ten URL; Wiederholung nur fuer das Fehlende (Keep_Only_Missing_Selected); keine weitere Wiederholung ohne Fortschritt
 #   1.03  2026-10-20  Select_Missing: esp32:esp32 wird auf Linux mit 64-Bit-ARM (Raspberry Pi) nicht ausgewaehlt (keine Werkzeuge fuer ESP32 1.0.4), sonst scheitert die Installation bei jedem Start
+#   1.04  2026-10-21  Norm_Path: Pfade und Namen aus der Tabelle Libraries mit / lesen (die Excel-Datei 3.5.0K schreibt Backslash: ATTinyCore\\src\\ATTinyCore.h, esp32:tools\\esptool_py); Is_Lib_Installed, Get_Lib_Version, Get_Required_Version vergleichen mit normierten Namen
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -168,6 +169,12 @@ Installed_Col = 3
 Lib_Board_Col = 4
 Libr_Name_Col = 5
 Test_File_Col = 6
+
+
+def Norm_Path(value):  # v1.04
+    """Pfade aus der Tabelle Libraries mit Schraegstrich lesen: Die Excel-Datei (Windows) schreibt Backslash (ATTinyCore\\src\\ATTinyCore.h, esp32:tools\\esptool_py).
+    Der Port arbeitet mit /; glob findet unter Linux und macOS mit Backslash nichts, die Bibliotheken galten dann als nicht installiert."""
+    return str(value).replace("\\", "/")  # v1.04
 Reque_Ver_Col = 7
 DetectVer_Col = 8
 Other_Src_Col = 9
@@ -286,7 +293,8 @@ def Get_State_of_Board_Row(row):
         Sh.CellDict[row, Installed_Col] = "1"
         Sh.CellDict[row, DetectVer_Col] = Get_Std_Arduino_Lib_Ver()
         return
-    TestFile = Sh.Cells(row, Test_File_Col)
+    # TestFile = Sh.Cells(row, Test_File_Col)  # v1.04 (entfallen)
+    TestFile = Norm_Path(Sh.Cells(row, Test_File_Col))  # v1.04
     TestFile = TestFile.replace("\\", "/")
     BoardDir = Environ(M02.Env_USERPROFILE) + M02.AppLoc_Ardu + 'packages/' + Board + '/hardware/'
     if P01.checkplatform("Windows"):
@@ -331,8 +339,10 @@ def __Get_State_of_BoardExtras_Row(row):
     Sh = PG.ThisWorkbook.Sheets(M02.LIBRARYS__SH)
     Board_and_Proc = Sh.Cells(row, Libr_Name_Col)
     Board = Split(Board_and_Proc, ':')(0)
-    ExtraType = Split(Board_and_Proc, ':')(1)
-    TestFile = Sh.Cells(row, Test_File_Col)
+    # ExtraType = Split(Board_and_Proc, ':')(1)  # v1.04 (entfallen)
+    # TestFile = Sh.Cells(row, Test_File_Col)  # v1.04 (entfallen)
+    ExtraType = Norm_Path(Split(Board_and_Proc, ':')(1))  # v1.04
+    TestFile = Norm_Path(Sh.Cells(row, Test_File_Col))  # v1.04
     BoardDir = Environ(M02.Env_USERPROFILE) + M02.AppLoc_Ardu + 'packages/' + Board
     if P01.checkplatform("Windows"):
         Res = Dir(BoardDir + '/' + ExtraType + '/*.*', vbDirectory)
@@ -386,7 +396,8 @@ def Get_All_Library_States():
     Sh = PG.ThisWorkbook.Sheets(M02.LIBRARYS__SH)
     row = First_Dat_Row
     while Sh.Cells(row, Libr_Name_Col) != '':
-        TestFile = Sh.Cells(row, Test_File_Col)
+        # TestFile = Sh.Cells(row, Test_File_Col)  # v1.04 (entfallen)
+        TestFile = Norm_Path(Sh.Cells(row, Test_File_Col))  # v1.04
         TestFile = TestFile.replace("\\", "/")
         Sh.CellDict[row, DetectVer_Col] = ''
         Sh.CellDict[row, Installed_Col] = ''
@@ -993,7 +1004,8 @@ def Get_Original_Name_from_TestFile(LibDir):
     Row = First_Dat_Row
     while Sh.Cells(Row, Libr_Name_Col) != '':
         if InStr(Sh.Cells(Row, Lib_Board_Col), 'L') > 0:
-            TestFile = Sh.Cells(Row, Test_File_Col)
+            # TestFile = Sh.Cells(Row, Test_File_Col)  # v1.04 (entfallen)
+            TestFile = Norm_Path(Sh.Cells(Row, Test_File_Col))  # v1.04
             if Dir(LibDir + TestFile) != '' or Dir(LibDir + 'src/' + TestFile) != '':
                 _fn_return_value = Sh.Cells(Row, Libr_Name_Col)
                 return _fn_return_value
@@ -1636,7 +1648,8 @@ def Is_Lib_Installed(LibName):
     Row = First_Dat_Row
     with_5 = PG.ThisWorkbook.Sheets(M02.LIBRARYS__SH)
     while Row <= LastRow:                                         # 06.12.2021 Juergen Fix issue with empty lines in sheet
-        if with_5.Cells(Row, Libr_Name_Col) == LibName:
+        # if with_5.Cells(Row, Libr_Name_Col) == LibName:  # v1.04 (entfallen)
+        if Norm_Path(with_5.Cells(Row, Libr_Name_Col)) == Norm_Path(LibName):  # v1.04
             _fn_return_value = ( str(with_5.Cells(Row, Installed_Col)) == "1" )
             return _fn_return_value
         Row = Row + 1
@@ -1650,7 +1663,8 @@ def Get_Lib_Version(LibName):
     LastRow = M30.LastUsedRowIn(M02.LIBRARYS__SH)
     with_6 = PG.ThisWorkbook.Sheets(M02.LIBRARYS__SH)
     while Row <= LastRow:                                       # 06.12.2021 Juergen Fix issue with empty lines in sheet
-        if with_6.Cells(Row, Libr_Name_Col) == LibName:
+        # if with_6.Cells(Row, Libr_Name_Col) == LibName:  # v1.04 (entfallen)
+        if Norm_Path(with_6.Cells(Row, Libr_Name_Col)) == Norm_Path(LibName):  # v1.04
             _fn_return_value = with_6.Cells(Row, DetectVer_Col)
             return _fn_return_value
         Row = Row + 1
@@ -1666,7 +1680,8 @@ def Get_Required_Version(LibName):
     with_7 = PG.ThisWorkbook.Sheets(M02.LIBRARYS__SH)
     while Row <= LastRow:
         # 06.12.2021 Juergen Fix issue with empty lines in sheet
-        if with_7.Cells(Row, Libr_Name_Col) == LibName:
+        # if with_7.Cells(Row, Libr_Name_Col) == LibName:  # v1.04 (entfallen)
+        if Norm_Path(with_7.Cells(Row, Libr_Name_Col)) == Norm_Path(LibName):  # v1.04
             _fn_return_value = with_7.Cells(Row, Reque_Ver_Col)
             return _fn_return_value
         Row = Row + 1

@@ -1,13 +1,14 @@
-# Datei-Version: 1.00 (2026-10-21) - web_soundtest.py
+# Datei-Version: 1.01 (2026-10-21) - web_soundtest.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_soundtest.py
 # Path:           _web/web_soundtest.py
-# Version:        1.00
+# Version:        1.01
 # Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-21  Neu: Reiter Sound Test (mlpyproggen/SoundCheckPage.py ohne Tk): Adresse, LED Kanal, Impulslaenge, R/G/B, Senden mit Impuls, Direktmodus
+#   1.01  2026-10-21  Die Taste Verbinden entfaellt: verbunden wird mit der Taste Mit ARDUINO verbinden in der Kopfzeile fuer alle Reiter; neu SoundPage.on_connected (Direktmodus nach dem Verbinden)
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Sound Test" (mlpyproggen/SoundCheckPage.py, Klasse SoundCheckPage, ohne Tk).
 
@@ -25,7 +26,7 @@ Unterschiede zum Tk-Original (siehe HOC_intern.md, Version 1.95):
   * Beim Verlassen des Reiters, beim Schliessen oder Neuladen der Seite und beim Beenden des Programms wird ein noch laufender Impuls sofort beendet (das Original liess ihn
     laufen: nach dem Verlassen kam das Ende nicht mehr, wenn die Seite weg war).
   * Die Tastenkuerzel Strg-R und Alt-R fuer den Rotwert gibt es nicht (Strg-R laedt im Browser die Seite neu).
-  * Die Taste Verbinden (wie bei Servo Test 1) ruft ARDUINO -> Verbinden auf; die Tk-Seite verband nicht selbst.
+  * Verbunden wird mit dem Knopf Mit ARDUINO verbinden in der Kopfzeile (fuer alle Reiter); die Tk-Seite verband nicht selbst. Danach startet die Seite den Direktmodus (SoundPage.on_connected).
 """
 from __future__ import annotations
 
@@ -52,7 +53,7 @@ CSS = """
 .mll-sound { max-width: 760px; margin: 0 auto; padding: 8px; }
 .mll-sound-desc { cursor: pointer; }
 .mll-sound-field { flex: 1 1 0; min-width: 84px; }
-.mll-sound-send { min-height: 72px; flex: 2 1 0; }
+.mll-sound-send { min-height: 72px; flex: 1 1 0; }
 """
 
 ACTIVE_MODELS: dict = {}               # Modelle der Seiten mit offenem Reiter -> laufende Nummer ihres Betretens
@@ -250,6 +251,12 @@ class SoundPage:
         self.model.leave()
         self._refresh()
 
+    def on_connected(self):  # v1.01
+        """Die Verbindung zum Arduino wurde hergestellt (Taste "Mit ARDUINO verbinden" oder Menue): Direktmodus starten"""  # v1.01
+        if self.model.connected():  # v1.01
+            self.model.tab_selected()  # v1.01
+        self._refresh()  # v1.01
+
     def page_closed(self):
         """Der Browser hat die Seite verlassen: laufende Impulse beenden, nichts mehr in die Anzeige schreiben"""
         self.model.leave()
@@ -297,13 +304,12 @@ def build(ctrl, is_active=None, connect=None):
     def send_now():
         model.send_sound()
 
-    async def on_connect():
-        if connect is not None:
-            await connect()
-        if model.connected():
-            model.tab_selected()
-        refresh()
-
+    # async def on_connect():  # v1.01 (entfallen)
+        # if connect is not None:  # v1.01 (entfallen)
+            # await connect()  # v1.01 (entfallen)
+        # if model.connected():  # v1.01 (entfallen)
+            # model.tab_selected()  # v1.01 (entfallen)
+        # refresh()  # v1.01 (entfallen)
     def number(key):
         text, lo, hi, _, hint = model.definition(key)
         max_ = model.channel_max() if key == "SoundLEDChannel" else hi
@@ -328,8 +334,8 @@ def build(ctrl, is_active=None, connect=None):
                 for key in ("Sound_RED", "Sound_GREEN", "Sound_BLUE"):
                     number(key)
         with ui.row().classes("w-full items-stretch no-wrap gap-2"):
-            connect_button = ui.button("Verbinden", on_click=on_connect).props("outline no-caps").style("min-height: 72px; flex: 1 1 0")
-            connect_button.tooltip("Verbinden: wie ARDUINO → Verbinden")
+            # connect_button = ui.button("Verbinden", on_click=on_connect).props("outline no-caps").style("min-height: 72px; flex: 1 1 0")  # v1.01 (entfallen)
+            # connect_button.tooltip("Verbinden: wie ARDUINO → Verbinden")  # v1.01 (entfallen)
             refs["send"] = ui.button(send_text, on_click=send_now).props("unelevated no-caps color=primary").classes("mll-sound-send")
     refresh()
     return SoundPage(model, refresh)

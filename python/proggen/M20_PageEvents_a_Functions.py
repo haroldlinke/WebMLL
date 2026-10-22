@@ -1,14 +1,15 @@
-# Datei-Version: 1.02 (2026-10-17) - M20_PageEvents_a_Functions.py
+# Datei-Version: 1.03 (2026-10-21) - M20_PageEvents_a_Functions.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M20_PageEvents_a_Functions.py
 # Path:           proggen/M20_PageEvents_a_Functions.py
-# Version:        1.02
-# Last Update:    2026-10-17
+# Version:        1.03
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-17  Update_All_Start_LedNr: Sh.Visible in (xlSheetVisible, True) (bisher wurde kein Blatt berechnet), Durchgang wiederholen bis Zeile 1 stabil ist (Include-Feature); davor Original-Port, nicht erfasst
 #   1.02  2026-10-17  Update_Start_LedNr: CellLinesSum(LEDs) statt CellLinesSum("") (Zeilen mit negativer LED-Zahl wie Next_LED(-1) merken den Hoechststand vor dem Abziehen: LED-Summe eines Blatts stimmte nicht mit Excel)
+#   1.03  2026-10-21  Version K des Excel-Programms: Adresse muss groesser 0 sein (Select_Typ_by_Dialog, Proc_Typ_Col, Complete_Addr_Column_with_InCnt, Update_StartValue); Update_TestButtons loescht die Testknoepfe, wenn die Adresse entfaellt oder das Makro keinen Eingang mehr braucht (ClearButtons)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -546,6 +547,8 @@ def Select_Typ_by_Dialog(Target):
     #------------------------------------------------------
     if not M25.Address_starts_with_a_Number(Target.Row):
         return
+    if P01.val(M25.Get_Address_String(Target.Row)) < 1:                                           # 08.12.25: Juergen don't allow 0 DCC address  # v1.03
+        return  # v1.03
         # 03.02.20:
     OldEvents = P01.Application.EnableEvents
     P01.Application.EnableEvents = False
@@ -644,7 +647,8 @@ def Proc_Typ_Col(Target):
     else:
         P01.MsgBox('Internal error:',' Unknown M25.Page_ID in \'Proc_Typ_Col\'', vbCritical)
         M30.EndProg()
-    if P01.Cells(Target.Row, RefCol) != '' and Target == '':
+    # if P01.Cells(Target.Row, RefCol) != '' and Target == '':  # v1.03 (entfallen)
+    if P01.Cells(Target.Row, RefCol) != '' and P01.val(P01.Cells(Target.Row, RefCol)) > 0 and Target == '':  # v1.03
         Select_Typ_by_Dialog(Target)
         Move_Active_Cell()
 
@@ -779,7 +783,8 @@ def Complete_Addr_Column_with_InCnt(r):
                                 EndAddr = EndAddr + 1
                     else:
                         EndAddr = Addr + InCnt - 1
-            if Addr != EndAddr and EndAddr != 0 or  ( InCnt > 1 and EBit_Str != '' ) :
+            # if Addr != EndAddr and EndAddr != 0 or  ( InCnt > 1 and EBit_Str != '' ) :  # v1.03 (entfallen)
+            if ( Addr != EndAddr and EndAddr != 0 or  ( InCnt > 1 and EBit_Str != '' ) ) and P01.val(Addr) > 0 :      # 08.12.25: Juergen address must be at least 1  # v1.03
                 Target = str(Addr) + SBit_Str + ' - ' + str(EndAddr) + EBit_Str
             else:
                 Target = Addr
@@ -1015,7 +1020,8 @@ def Update_StartValue(Row):
         Addr = - 2
         # it's a variable
         Channel_or_define = AddrStr
-    if Addr >= 0:
+    # if Addr >= 0:  # v1.03 (entfallen)
+    if Addr >= 1:                                                                                   # 08.12.25: Juergen allow only addresses >0  # v1.03
         Inp_TypR = P01.Cells(Row, M25.Inp_Typ_Col)
         if M25.Page_ID == 'DCC' or M25.Page_ID == 'LNet':
             # 11.10.20: Otherwise the input type is requested before the bit position on the SX page
@@ -1037,6 +1043,22 @@ def Update_StartValue(Row):
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Row - ByVal 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: onValue=0 - ByVal 
+def __Rect_List_has_Row(Row):  # v1.03
+    # gibt es in dieser Zeile noch Testknoepfe (Global_Rect_List(Row) <> "")?
+    try:  # v1.03
+        return Global_Rect_List[Row] != ''  # v1.03
+    except BaseException:  # v1.03
+        return False  # v1.03
+
+def ClearButtons(Row):  # v1.03
+    # 08.12.25: Juergen - alle Testknoepfe (Shape mit OnAction DCCSend) der Zeile loeschen
+    i = P01.ActiveSheet.Shapes.Count()  # v1.03
+    while i > 0:  # v1.03
+        shape = P01.ActiveSheet.Shapes.getShape(i)  # v1.03
+        if shape.OnAction == 'DCCSend' and shape.TopLeftCell_Row == Row:  # v1.03
+            P01.ActiveSheet.Shapes.Delete(i)  # v1.03
+        i = i - 1  # v1.03
+
 def Update_TestButtons(Row, onValue=0, First_Call=True, redraw=False):
     
     global Global_Rect_List
@@ -1144,6 +1166,10 @@ def Update_TestButtons(Row, onValue=0, First_Call=True, redraw=False):
     InCnt = P01.val(P01.Cells(Row, M25.InCnt___Col))
     #print("UpdateTestButton Row:",Row," Col:",M25.InCnt___Col," InCnt:",InCnt)
     if InCnt < 1:
+        if __Rect_List_has_Row(Row):  # v1.03
+            ClearButtons(Row)                                                                       # 08.12.25: Juergen clear buttons if macro no longer needs inCh  # v1.03
+        P01.Cells(Row, M25.Inp_Typ_Col).Value = ''  # v1.03
+        P01.Cells(Row, AddrColumn).Value = ''  # v1.03
         return
     ButtonCount = 1 * InCnt
     Direction = 1
@@ -1159,7 +1185,13 @@ def Update_TestButtons(Row, onValue=0, First_Call=True, redraw=False):
     # 03.04.20:
     Addr = M25.Get_First_Number_of_Range(Row, AddrColumn)
     #print("UpdateTestButton Row:",Row," Col:",AddrColumn," Addr:",Addr)
-    if Addr == '' or P01.val(Addr) < 0:
+    # if Addr == '' or P01.val(Addr) < 0:  # v1.03 (entfallen)
+    if Addr == '' or P01.val(Addr) < 1:  # v1.03
+        if __Rect_List_has_Row(Row):  # v1.03
+            ClearButtons(Row)                                                                       # 08.12.25: Juergen clear buttons if address is removed  # v1.03
+        P01.Cells(Row, M25.Inp_Typ_Col).Value = ''  # v1.03
+        if P01.val(Addr) > 0:                                                                       # 08.12.25: Juergen don't remove 0 value to enable #InCh=0 for InCh and BinCh macros  # v1.03
+            P01.Cells(Row, AddrColumn).Value = ''  # v1.03
         return
     # 04.05.20: Added: Or Val(Addr) < 0 to fix problems with the error returned by Get_First_Number_of_Range() (Mail from Jürgen)
     if isSx:

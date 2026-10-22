@@ -1,14 +1,16 @@
-# Datei-Version: 1.02 (2026-10-18) - M06_Write_Header.py
+# Datei-Version: 1.04 (2026-10-21) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.02
-# Last Update:    2026-10-18
+# Version:        1.04
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-18  LED Kanal von Zeilen ohne Eintrag: Previous_LEDChannel als Modulvariable von M06 (global in Create_Header_Entry und ProcessSheet), Bedingung auf den Zellentext statt Trim(Val()) (nie leer); LED_to_Var in eingebundenen Blaettern bekam Kanal 0 und dessen Offset (LED2Var_Tab stimmte nicht mit Excel); davor Original-Port, nicht erfasst
 #   1.02  2026-10-18  Create_HeaderFile: vor dem Erzeugen alle Blaetter neu rechnen (Update_All_Start_LedNr), das aktive Blatt danach wieder auswaehlen
+#   1.03  2026-10-21  Version K des Excel-Programms: Makros Name_LED_Number und Name_LED_Offset (Proc_Special_Functions), Variable #ChannelOffset (Generate_Config_Line mit ChannelBaseOffset), Adresse 0 (Addr >= 1 in Create_Header_Entry, Addr >= 0 in ProcessLine), keine Pruefung des Boards bei nur Simulator, START_MSG ohne Test_Suffix, inch_t in HandleValue_t
+#   1.04  2026-10-21  Meldung 'Anzahl der verwendeten Eingangskanaele ist zu gross': MaxInput und Channel als Zeichenkette (Replace mit einer Zahl stuerzte ab) und die Klammern richtig gesetzt (MsgBox bekam nur den ersten Teil als Text, Titel und Symbol fehlten)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -146,7 +148,8 @@ MINLEDs = 20
 #-------------------------------------------------------
 def Init_HeaderFile_Generation():
 #-------------------------------------------------------
-    global LocInChNr, CurrentCounterId, Ext_AddrTxt, Store_ValuesTxt, Store_Val_Written, InChTxt, ConfigTxt, ErrorText, Channel, LEDNr, AddrComment, Start_Values, Undefined_Input_Var, DayAndNightTimer, includeCount, Start_LED_Channel, LEDs_per_Channel, Max_Channels, LEDs_per_ChannelList
+    # global LocInChNr, CurrentCounterId, Ext_AddrTxt, Store_ValuesTxt, Store_Val_Written, InChTxt, ConfigTxt, ErrorText, Channel, LEDNr, AddrComment, Start_Values, Undefined_Input_Var, DayAndNightTimer, includeCount, Start_LED_Channel, LEDs_per_Channel, Max_Channels, LEDs_per_ChannelList  # v1.03 (entfallen)
+    global LocInChNr, CurrentCounterId, Ext_AddrTxt, Store_ValuesTxt, Store_Val_Written, InChTxt, ConfigTxt, ErrorText, Channel, LEDNr, AddrComment, Start_Values, Undefined_Input_Var, Undef_Input_Var_Row, DayAndNightTimer, includeCount, Start_LED_Channel, LEDs_per_Channel, Max_Channels, LEDs_per_ChannelList  # v1.03
     _fn_return_value = False
     
     ReserveLeds = Long()
@@ -170,6 +173,7 @@ def Init_HeaderFile_Generation():
     AddrComment = ''
     Start_Values = ''
     Undefined_Input_Var = ''
+    Undef_Input_Var_Row = ''                                                                          # 08.12.25: Juergen fix detection of undefined input row  # v1.03
     DayAndNightTimer = ''
     includeCount = 0
     M06SW.ATTINY_GBM_CHECK_ERROR = False                                            # 13.02.23:
@@ -441,7 +445,8 @@ def Do_Replace_Sym_Pin_Name(Cmd, PinStr):
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Cmd - ByRef 
 #----------------------------------------------------
-def Proc_Special_Functions(Row, Cmd, LEDNr, Channel):
+# def Proc_Special_Functions(Row, Cmd, LEDNr, Channel):  # v1.03 (entfallen)
+def Proc_Special_Functions(Row, Cmd, LEDNr, ChannelBaseOffset, Channel):  # v1.03
 #----------------------------------------------------
     _fn_return_value = False
     Replace_Sym_Pin_Name = False
@@ -469,6 +474,14 @@ def Proc_Special_Functions(Row, Cmd, LEDNr, Channel):
         fret, Cmd = M06LED.Add_LED2Var_Entry(Cmd, LEDNr)
         if not fret:
             return _fn_return_value, Cmd
+    if InStr(Cmd, M02.SF_NAME_LED_NUMBER + '(') > 0:                                                  # 08.12.25:  # v1.03
+        fret, Cmd = M06LED.Add_LED_Name_Entry(Row, Cmd, LEDNr, M02.SF_NAME_LED_NUMBER)  # v1.03
+        if not fret:  # v1.03
+            return _fn_return_value, Cmd  # v1.03
+    if InStr(Cmd, M02.SF_NAME_LED_OFFSET + '(') > 0:                                                  # 08.12.25:  # v1.03
+        fret, Cmd = M06LED.Add_LED_Name_Entry(Row, Cmd, LEDNr - ChannelBaseOffset, M02.SF_NAME_LED_OFFSET)  # v1.03
+        if not fret:  # v1.03
+            return _fn_return_value, Cmd  # v1.03
     if InStr(Cmd, M02.SF_SERIAL_SOUND_PIN) > 0:
         # 08.10.21: Juergen
         fret, Cmd = M06Sound.Add_SoundPin_Entry(Row, Cmd, LEDNr)
@@ -479,7 +492,8 @@ def Proc_Special_Functions(Row, Cmd, LEDNr, Channel):
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Channel_or_define - ByVal 
 #----------------------------------------------------
-def Generate_Config_Line(LEDNr, Channel_or_define, r, Config_Col, Addr):
+# def Generate_Config_Line(LEDNr, Channel_or_define, r, Config_Col, Addr):  # v1.03 (entfallen)
+def Generate_Config_Line(LEDNr, ChannelBaseOffset, Channel_or_define, r, Config_Col, Addr):  # v1.03
 #----------------------------------------------------
     
     global LocInChNr
@@ -549,7 +563,10 @@ def Generate_Config_Line(LEDNr, Channel_or_define, r, Config_Col, Addr):
             Inc_LocInChNr = True
             # 18.11.19:
             
-        fret,Cmd = Proc_Special_Functions(r, Cmd, LEDNr, Channel_or_define) #*HL
+        # fret,Cmd = Proc_Special_Functions(r, Cmd, LEDNr, Channel_or_define) #*HL  # v1.03 (entfallen)
+        if InStr(Cmd, '#ChannelOffset') > 0:                                                         # 08.12.25: Juergen introduce variable #ChannelOffset  # v1.03
+            Cmd = Replace(Cmd, '#ChannelOffset', str(ChannelBaseOffset))  # v1.03
+        fret,Cmd = Proc_Special_Functions(r, Cmd, LEDNr, ChannelBaseOffset, Channel_or_define) #*HL  # v1.03
         if fret == False:
             _fn_return_value = '#ERROR#'
             P01.Cells(r, M25.Config__Col).Select()
@@ -733,7 +750,8 @@ def Create_Header_Entry(r, AddrStr, IsRM, LEDOffset, LEDsInUse, MaxLEDNrInSheet)
         Addr = - 2
         # it's a variable
         Channel_or_define = AddrStr
-    if Addr >= 0:
+    # if Addr >= 0:  # v1.03 (entfallen)
+    if Addr >= 1:                                                                                    # 08.12.25: Juergen special handling for address 0  # v1.03
         Inp_TypR = P01.Cells(r, M25.Inp_Typ_Col)
         if IsRM == False:  
             # 12.02.23: Hardi        
@@ -787,7 +805,8 @@ def Create_Header_Entry(r, AddrStr, IsRM, LEDOffset, LEDsInUse, MaxLEDNrInSheet)
         return _fn_return_value
     LEDNr = M20.Get_LED_Nr(LEDNr, r, LEDs_Channel)
     # Entry for the configuration array which contains the macros
-    Res = Generate_Config_Line(LEDNr + LEDOffset[LEDs_Channel], Channel_or_define, r, M25.Config__Col, Addr) 
+    # Res = Generate_Config_Line(LEDNr + LEDOffset[LEDs_Channel], Channel_or_define, r, M25.Config__Col, Addr)  # v1.03 (entfallen)
+    Res = Generate_Config_Line(LEDNr + LEDOffset[LEDs_Channel], Start_LED_Channel[LEDs_Channel], Channel_or_define, r, M25.Config__Col, Addr)   # v1.03
     # 17.04.23 Juergen
     if Res == '#ERROR#':
         return _fn_return_value
@@ -852,7 +871,8 @@ def Create_Header_Entry(r, AddrStr, IsRM, LEDOffset, LEDsInUse, MaxLEDNrInSheet)
         Store_ValuesTxt = Store_ValuesTxt + TextLine + vbCrLf
         # 21.12.22 replace vbcr with vbcrlf
     #end change 01.05.20: Jürgen
-    if Addr >= 0:
+    # if Addr >= 0:  # v1.03 (entfallen)
+    if Addr >= 1:                                                                                    # 08.12.25: Juergen allow only addresses >0  # v1.03
         # Defines for expert users and duplicate adresses
         InChTxt = InChTxt + Generate_Define_Line(Addr, r, Channel, Comment, IsRM)
         # Definition of the array with the external adresses for DCC, Selecrix and CAN
@@ -1202,7 +1222,8 @@ def Create_HeaderFile(CreateFilesOnly = False): #20.12.21: Jürgen add CreateFil
     if not SimulatorOnly:
         SimulatorOnly = M28.Get_Num_Config_Var_Range("SimAutostart", 0, 3, 0) != 3 and shift_pressed
        
-    if SimulatorOnly and CreateFilesOnly == False and M02a.Get_BoardTyp() == M02.HT_AM328:
+    # if SimulatorOnly and CreateFilesOnly == False and M02a.Get_BoardTyp() == M02.HT_AM328:  # v1.03 (entfallen)
+    if SimulatorOnly and CreateFilesOnly == False:                                                  # 08.12.25: Juergen remove platform check  # v1.03
         Debug.Print(" go to UploadToSimulator")
         _fn_return_value = M39.UploadToSimulator(True)
         return _fn_return_value
@@ -1368,7 +1389,8 @@ def ProcessLine(r, sx, addressOffset, LEDsOffset, LEDsInUse, MaxLEDNrInSheet):
                         Add_to_Err(P01.Cells(r, M25.DCC_or_CAN_Add_Col), M09.Get_Language_Str('Die Ausgewählte Funktion in Zeile ') + str(r) + M09.Get_Language_Str(' ist immer aktiv und kann nicht über DCC, LNet oder CAN geschaltet werden.'))
                     Addr = - 1
                     # No address given of InCnt <= 0 or empty
-                elif Addr >= 1 and Addr + addressOffset <= MaxAddr:
+                # elif Addr >= 1 and Addr + addressOffset <= MaxAddr:  # v1.03 (entfallen)
+                elif Addr >= 0 and Addr + addressOffset <= MaxAddr:                                    # 08.12.25: Juergen  # v1.03
                     # Valid adress range
                     Addr = Addr + addressOffset
                 else:
@@ -1518,7 +1540,8 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     VBFiles.writeText(fp, '#include <MobaLedLib.h>', '\n')
     VBFiles.writeText(fp, '', '\n')
     # 30.03.25 Juergen/Harold: add board type to version information
-    VBFiles.writeText(fp, '#define START_MSG "LEDs_AutoProg Ver 3: ' + M02a.Get_BoardTyp() + " " + M37.Get_Lib_Version("MobaLedLib") + M02.Test_Suffix + " " + P01.Format(P01.Date_str(), 'dd.mm.yy') + ' ' + P01.Format(P01.Time_str(), 'hh:mm') + '"', '\n')
+    # VBFiles.writeText(fp, '#define START_MSG "LEDs_AutoProg Ver 3: ' + M02a.Get_BoardTyp() + " " + M37.Get_Lib_Version("MobaLedLib") + M02.Test_Suffix + " " + P01.Format(P01.Date_str(), 'dd.mm.yy') + ' ' + P01.Format(P01.Time_str(), 'hh:mm') + '"', '\n')  # v1.03 (entfallen)
+    VBFiles.writeText(fp, '#define START_MSG "LEDs_AutoProg Ver 3: ' + M02a.Get_BoardTyp() + " " + M37.Get_Lib_Version("MobaLedLib") + " " + P01.Format(P01.Date_str(), 'dd.mm.yy') + ' ' + P01.Format(P01.Time_str(), 'hh:mm') + '"', '\n')  # v1.03
     # The version could be read out in a future version of this tool
     VBFiles.writeText(fp, '', '\n')
     if M25.Page_ID == 'Selectrix':
@@ -1701,7 +1724,8 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
         # 01.05.20: disabled in Mail from Juergen
         VBFiles.writeText(fp, '', '\n')
         VBFiles.writeText(fp, '// if function returns TRUE the calling loop stops', '\n')
-        VBFiles.writeText(fp, 'typedef bool(*HandleValue_t) (uint8_t CallbackType, uint8_t ValueId, uint8_t* Value, uint16_t EEPromAddr, uint8_t TargetValueId, uint8_t Options);', '\n')
+        # VBFiles.writeText(fp, 'typedef bool(*HandleValue_t) (uint8_t CallbackType, uint8_t ValueId, uint8_t* Value, uint16_t EEPromAddr, uint8_t TargetValueId, uint8_t Options);', '\n')  # v1.03 (entfallen)
+        VBFiles.writeText(fp, 'typedef bool(*HandleValue_t) (uint8_t CallbackType, inch_t ValueId, uint8_t* Value, uint16_t EEPromAddr, inch_t TargetValueId, uint8_t Options);', '\n')  # v1.03
         VBFiles.writeText(fp, '', '\n')
         VBFiles.writeText(fp, '', '\n')
         VBFiles.writeText(fp, '#define InCnt_MSK  0x003F  // 6 bits are used for the InCnt, 2 bits for the type ttcc cccc => Max InCnt=63', '\n')
@@ -1756,7 +1780,8 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     # VB2PY (UntranslatedCode) On Error GoTo 0
     if Channel - 1 > MaxInput:
         #P01.MsgBox(M09.Get_Language_Str('Fehler: Die Anzahl der verwendeten Eingangskanäle ist zu groß!' + vbCr + 'Es sind maximal 250 verfügbar. Die Konfiguration enthält aber ') + str(Channel - 1) + '.' + vbCr + vbCr + M09.Get_Language_Str('Die Eingangskanäle werden zum einlesen von DCC, LNet, Selectrix und CAN Daten benutzt. ' + vbCr + 'Außerdem werden sie als interne Zwischenspeicher benötigt.'), vbCritical, M09.Get_Language_Str('Anzahl der InCh Variablen überschritten'))
-        P01.MsgBox(Replace(M09.Get_Language_Str("Fehler: Die Anzahl der verwendeten Eingangskanäle ist zu groß!" + vbCr + "Es sind maximal #1# verfügbar. Die Konfiguration enthält aber "), "#1#", MaxInput)) + Channel + "." + vbCr + vbCr + M09.Get_Language_Str("Die Eingangskanäle werden zum einlesen von DCC, LNet, Selectrix und CAN Daten benutzt. " + vbCr + "Außerdem werden sie als interne Zwischenspeicher benötigt."), vbCritical, M09.Get_Language_Str("Anzahl der InCh Variablen überschritten")        
+        # P01.MsgBox(Replace(M09.Get_Language_Str("Fehler: Die Anzahl der verwendeten Eingangskanäle ist zu groß!" + vbCr + "Es sind maximal #1# verfügbar. Die Konfiguration enthält aber "), "#1#", MaxInput)) + Channel + "." + vbCr + vbCr + M09.Get_Language_Str("Die Eingangskanäle werden zum einlesen von DCC, LNet, Selectrix und CAN Daten benutzt. " + vbCr + "Außerdem werden sie als interne Zwischenspeicher benötigt."), vbCritical, M09.Get_Language_Str("Anzahl der InCh Variablen überschritten")  # v1.04 (entfallen)
+        P01.MsgBox(Replace(M09.Get_Language_Str("Fehler: Die Anzahl der verwendeten Eingangskanäle ist zu groß!" + vbCr + "Es sind maximal #1# verfügbar. Die Konfiguration enthält aber "), "#1#", str(MaxInput)) + str(Channel) + "." + vbCr + vbCr + M09.Get_Language_Str("Die Eingangskanäle werden zum einlesen von DCC, LNet, Selectrix und CAN Daten benutzt. " + vbCr + "Außerdem werden sie als interne Zwischenspeicher benötigt."), vbCritical, M09.Get_Language_Str("Anzahl der InCh Variablen überschritten"))  # v1.04
         M30.EndProg()
         
     if ConfigTxt == "": #*HL and M38.ExtensionsActiveCount == 0:                       # 17.04.22: Juergen improve empty configuration warning

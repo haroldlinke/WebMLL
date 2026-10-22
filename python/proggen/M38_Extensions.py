@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - M38_Extensions.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M38_Extensions.py
+# Path:           proggen/M38_Extensions.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Extensions-Schnittstelle V2: MinimumMobaLedLibVersion aus der JSON-Datei, #define USE_EXTENSIONS_V2 ab Mindestversion 3.5.0 (Version K des Excel-Programms)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -305,6 +317,7 @@ def __CollectExtensions():
                 Extension.Path = Replace(LibName, '/MobaLedLib.properties', '')
                 Extension.Includes = JSONData.get('includes')
                 Extension.MacroIncludes = JSONData.get('macroIncludes')
+                Extension.MinimumMobaLedLibVersion = JSONData.get('minimumMobaLedLibVersion', '')                # Version K: Extensions-Schnittstelle V2  # v1.01
                 typeslist = JSONData.get("types", [])
                 #for Index in __ToIndexList('obj.types(#).TypeName'):
                 for Index in range(0, len(typeslist)):
@@ -495,9 +508,15 @@ def Add_Extension_Entry(Cmd):
     fn_return_value = True
     return fn_return_value, Cmd #*HL ByRef
 
+def __GetExtensionsMinimumMobaLedLibVersion():  # v1.01
+    # hoechste Mindestversion der MobaLedLib aller aktiven Extensions (Version K)
+    result = '0.0.0'  # v1.01
+    for Extension in __ExtensionsActive.values():  # v1.01
+        if M30.VersionStr_is_GreaterEqual(Extension.MinimumMobaLedLibVersion, result):  # v1.01
+            result = Extension.MinimumMobaLedLibVersion  # v1.01
+    return result  # v1.01
+
 def Write_Header_File_Extension_Before_Config(fp):
-    return True # 3.5.0K
-    
     fn_return_value = None
     #Extension = clsExtension()
 
@@ -509,6 +528,10 @@ def Write_Header_File_Extension_Before_Config(fp):
     # e.g. macros
     HeaderWritten = False
     if len(__ExtensionsActive) > 0:
+        if M30.VersionStr_is_GreaterEqual(__GetExtensionsMinimumMobaLedLibVersion(), '3.5.0'):                # Version K: Extensions-Schnittstelle V2  # v1.01
+            VBFiles.writeText(fp, '// ----- at least one extion uses Externions API V2 -----', '\n')  # v1.01
+            VBFiles.writeText(fp, '#define USE_EXTENSIONS_V2', '\n')  # v1.01
+            VBFiles.writeText(fp, '', '\n')  # v1.01
         for Extension in Extensions:
             if Extension.MacroIncludes != '':
                 if HeaderWritten == False:

@@ -1,9 +1,9 @@
-# Datei-Version: 1.09 (2026-10-19) - XLA_Application.py
+# Datei-Version: 1.11 (2026-10-21) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.09
-# Last Update:    2026-10-19
+# Version:        1.11
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -16,6 +16,8 @@
 #   1.07  2026-10-19  Zeilenhoehen nach Datenzeile (RowHeight von CRange und CRow, Sichern und Laden: row_heights); bei Tk unveraendert
 #   1.08  2026-10-19  Pruefung auf die Zeilenhoehen nach Datenzeile ueber die Klasse (hasattr(type(...))): HeadlessSheet liefert fuer jede unbekannte Methode ein No-Op, bei einer veralteten headless_sheet.py war hasattr immer wahr
 #   1.09  2026-10-19  Versteckte Zeilen mit dem Blatt sichern und wiederherstellen (hidden_rows); getCellCoords fuer versteckte Zeilen: Hoehe 0 an der naechsten angezeigten Zeile; nach einem Neustart war die Goto-Zeile 47 wieder versteckt und die Pfeile lagen unten
+#   1.10  2026-10-21  LoadSheetfromExcelWorkbook: benannte Bereiche mit ungueltigem Bezug (#REF!) und Bereiche werden uebersprungen statt mit IndexError abzubrechen (die Excel-Datei 3.5.0K hat viele Namen mit #REF!)
+#   1.11  2026-10-21  LoadSheetfromExcelWorkbook: das Kuerzel _x000D_ (und andere _xHHHH_) aus Excel wird in das Zeichen umgewandelt (die Meldungen zeigten |_x000D_); find_in_col_ret_col_val: bei langen Texten (nur die ersten 50 Zeichen im Zwischenspeicher) muss die gefundene Zeile den ganzen Text enthalten, sonst genaue Suche (falsche Zeile mit gleichem Anfang in der Tabelle Languages)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -740,6 +742,8 @@ class CWorkbook(object):
                             if cell.data_type != "f": # no formulas
                                 #print(cell,cell.value,cell.comment)
                                 text=str(cell.value)
+                                if "_x" in text:                                                    # Excel schreibt Zeichen wie das Zeilenende (CR) als _x000D_; openpyxl gibt das Kuerzel unveraendert zurueck (zum Beispiel in der Tabelle Languages)  # v1.11
+                                    text = re.sub(r"_x([0-9A-Fa-f]{4})_", lambda m: chr(int(m.group(1), 16)), text)  # v1.11
                                 if text == chr(252) or text == chr(61692):
                                      # old hook value
                                     text = chr(xlhookchar)
@@ -805,10 +809,16 @@ class CWorkbook(object):
                     rec_dict.append(attr_split[0]) # sheetname
                     colrow_str = attr_split[1]
                     colrow_split=colrow_str.split("$")
+                    if len(colrow_split) < 3 or not colrow_split[1]:               # Bezug ungueltig, zum Beispiel #REF! (die Quelle der Verknuepfung fehlt): Name ueberspringen  # v1.10
+                        continue  # v1.10
                     column_str = colrow_split[1]
                     column = ord(column_str[0])-ord("A")+1
                     row_str    = colrow_split[2]
-                    row    = int(row_str)
+                    # row    = int(row_str)  # v1.10 (entfallen)
+                    try:  # v1.10
+                        row    = int(row_str)  # v1.10
+                    except ValueError:                                              # Bereich ($A$1:$B$5) oder anderer Aufbau: Name ueberspringen  # v1.10
+                        continue  # v1.10
                     rec_dict.append(column)
                     rec_dict.append(row)
                     dictdata.append(rec_dict)
@@ -2792,6 +2802,7 @@ class CWorksheet(object):
     def create_search_colcache(self,searchcol):
         colcontent = self.tksheet.get_data(self.tksheet.span(None, (searchcol-1)))
         row = 1
+        self.__dict__["_scan_misses"] = set()                                      # der Inhalt kann sich geaendert haben  # v1.11
         self.searchcache[searchcol]={}
         searchcol_dict = self.searchcache[searchcol]
         for col in colcontent:
@@ -2807,13 +2818,19 @@ class CWorksheet(object):
             if not colcache:
                 self.create_search_colcache(searchcol)
                 colcache = self.searchcache.get(searchcol,None)
+            full_text = searchtext  # v1.11
             if len(searchtext)>50:
                 searchtext=searchtext[:50]
             res_row = colcache.get(searchtext,None)
             if not res_row:
                 return None # searchtext not found
-            else:
-                return self.getCellRecord(res_row-1, resultcol-1)
+            # else:  # v1.11 (entfallen)
+                # return self.getCellRecord(res_row-1, resultcol-1)  # v1.11 (entfallen)
+            if len(full_text) > 50:                                                  # nur die ersten 50 Zeichen sind gleich: die Zeile muss den ganzen Text enthalten (wie Range.Find mit xlPart), sonst genau suchen  # v1.11
+                key_text = self.getCellRecord(res_row-1, searchcol-1)  # v1.11
+                if full_text not in str(key_text):  # v1.11
+                    return None  # v1.11
+            return self.getCellRecord(res_row-1, resultcol-1)  # v1.11
         else:
             pass
         return None
@@ -2867,11 +2884,27 @@ class CWorksheet(object):
             res_row = colcache.get(searchtext,None)
             if res_row == None:
                 res_row = colcache.get(searchtext+" ",None)
+            if not res_row and len(searchtext) > 50:                                 # der Zwischenspeicher kennt nur die ersten 50 Zeichen: genau suchen wie Range.Find mit xlPart (gross und klein unterschieden)  # v1.11
+                res_row = self.__scan_col_contains(searchtext, searchcol)  # v1.11
             if not res_row:
                 return None # searchtext not found
             else:
                 return res_row
         return None    
+
+    def __scan_col_contains(self, searchtext, searchcol):  # v1.11
+        misses = self.__dict__.setdefault("_scan_misses", set())               # Texte, die nicht vorkommen: nicht jedes Mal die ganze Spalte lesen (wird mit dem Zwischenspeicher geleert)  # v1.11
+        key = (searchcol, searchtext)  # v1.11
+        if key in misses:  # v1.11
+            return None  # v1.11
+        colcontent = self.tksheet.get_data(self.tksheet.span(None, (searchcol-1)))  # v1.11
+        row = 1  # v1.11
+        for cell in colcontent:  # v1.11
+            if searchtext in str(cell):  # v1.11
+                return row  # v1.11
+            row = row + 1  # v1.11
+        misses.add(key)  # v1.11
+        return None  # v1.11
                 
     def find_in_col_set_col_val(self,searchtext, searchcol, setcol,setval,cache=False):
         if cache:

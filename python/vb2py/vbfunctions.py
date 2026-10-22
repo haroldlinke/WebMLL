@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - vbfunctions.py
+# ----------------------------------------------------------------------------------------------
+# Name:           vbfunctions.py
+# Path:           vb2py/vbfunctions.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Replace wandelt Zahlen (und None) wie VBA in Zeichenketten um, statt mit TypeError abzubrechen (zum Beispiel Replace(Text, '#1#', MaxInput))
+# ----------------------------------------------------------------------------------------------
 """
 Functions to mimic VB intrinsic functions or things
 """
@@ -451,6 +463,13 @@ def Replace(expression, find, replace, start=1, count=-1,Compare=None):
     the expression string. It is not a copy of the original string from start to finish.
 
     """
+    # VBA wandelt Zahlen in Zeichenketten um (Replace(Text, "#1#", 250) ist erlaubt); str.replace wuerde bei einer Zahl mit TypeError abbrechen
+    if not isinstance(expression, str):  # v1.01
+        expression = "" if expression is None else str(expression)  # v1.01
+    if not isinstance(find, str):  # v1.01
+        find = "" if find is None else str(find)  # v1.01
+    if not isinstance(replace, str):  # v1.01
+        replace = "" if replace is None else str(replace)  # v1.01
     if find:
         return expression[:start - 1] + expression[start - 1:].replace(find, replace, count)
     else:

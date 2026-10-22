@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - M30_Tools.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M30_Tools.py
+# Path:           proggen/M30_Tools.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Neu: IsValidVariableName (Muster PAT_LEDVariableName) und VersionStr_is_GreaterEqual (Version K des Excel-Programms)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -1310,6 +1322,11 @@ def VersionStr_is_Greater(Ver1, Ver2, Delimmiter=r'.'):
             return fn_return_value
     return False
 
+def VersionStr_is_GreaterEqual(Ver1, Ver2, Delimiter=r'.'):  # v1.01
+    #-------------------------------------------------------------------------------------------------------------------
+    # Ver1 >= Ver2 (wie VersionStr_is_Greater, die Zahlen zaehlen, ein Zusatz wie -K nicht)
+    return VersionStr_is_Greater(Ver1, Ver2, Delimiter) or VersionStr_is_Equal(Ver1, Ver2, Delimiter)  # v1.01
+
 def Test_VersionStr_is_Greater():
     #UT-------------------------------------
     #Debug.Print VersionStr_is_Greater("1.0.7", "1.03.1")
@@ -1628,6 +1645,11 @@ def CreateAllHeaderFiles():
 """ 31.01.22: Juergen
 ---------------------------------------------------------------------------------------------------------------------------------
 """
+def IsValidVariableName(Name):  # v1.01
+    # Name einer LED-Variablen: nur Buchstaben, Ziffern und Unterstriche, beginnt mit einem Buchstaben (M02.PAT_LEDVariableName)
+    import re  # v1.01
+    return re.match(M02.PAT_LEDVariableName, str(Name)) is not None  # v1.01
+
 def Matches(p_str, reg, matchIndex=VBMissingArgument, subMatchIndex=VBMissingArgument):
     #---------------------------------------------------------------------------------------------------------------------------------
     # VB2PY (UntranslatedCode) On Error GoTo ErrHandl

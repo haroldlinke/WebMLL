@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-21) - M03_Dialog.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M03_Dialog.py
+# Path:           proggen/M03_Dialog.py
+# Version:        1.01
+# Last Update:    2026-10-21
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-21  Input_Address: die Spalte InCnt bekommt mit der Adresse den Wert 1 (Version K des Excel-Programms)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -217,6 +229,7 @@ def Input_Address():
             break
     M30.Show_Status_for_a_while('')
     if Valid:
+        P01.Cells(P01.ActiveCell().Row, M25.InCnt___Col).Value = 1                                  # Version K: die Spalte InCnt bekommt mit der Adresse den Wert 1  # v1.01
         with_0 = P01.Cells(P01.ActiveCell().Row, M25.DCC_or_CAN_Add_Col + M25.SX_Channel_Col)
         with_0.Value = P01.val(Inp)
         P01.Application.EnableEvents = False
