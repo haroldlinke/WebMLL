@@ -1,9 +1,9 @@
-# Datei-Version: 2.04 (2026-10-21) - webmobaledlib.py
+# Datei-Version: 2.13 (2026-10-23) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        2.04
-# Last Update:    2026-10-21
+# Version:        2.13
+# Last Update:    2026-10-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -74,6 +74,15 @@
 #   2.02  2026-10-21  Version der MobaLedLib nicht mehr alle 5 Sekunden, sondern beim Aufbau der Seite, nach der Pruefung beim Start und nach jedem Befehl lesen; Menue ARDUINO ohne Konfiguration vom Pico laden
 #   2.03  2026-10-21  Fehler 'Anzahl der verwendeten Eingangskanaele ist zu gross': Mindestversionen M06_Write_Header 1.04 und vb2py/vbfunctions 1.01 (Replace mit Zahlen)
 #   2.04  2026-10-21  Zeilenende _x000D_ in Meldungen: Mindestversion XLA_Application 1.11 (Kuerzel _xHHHH_ aus Excel umwandeln, genaue Suche in der Tabelle Languages)
+#   2.05  2026-10-21  Reiter Z21 Simulator (web_z21 1.00, web_tabs 1.05), Phase 1: Z21-Protokoll mit einem Arduino
+#   2.06  2026-10-21  Z21 Simulator Phase 2: Rueckmeldung (RMBUS) vom Arduino; Mindestversionen web_z21 1.01 und web_serial 1.03
+#   2.07  2026-10-21  Wiederherstellung: Schnellpruefung der Installation gegen die Pruefliste des Releases beim Start, Update-Dialog mit Rueckfrage bei aelterer Version (web_update 1.02, release_tools 1.01)
+#   2.08  2026-10-21  Wiederherstellung Stufe 2: abgebrochenes Update beim Start rueckgaengig machen (recover.py), Hinweis dazu, Mindestversionen web_update 1.03, release_tools 1.02, recover 1.00, repair 1.00
+#   2.09  2026-10-21  Mindestversion M06_Write_Header_SW 1.04 (List_Lenght: leere Liste hat 0 Eintraege, TOTAL_VARIABLES)
+#   2.10  2026-10-23  Erzeugte Dateien (LEDs_AutoProg.h, LEDs_AutoProg/*.cmd) aus dem Dateivergleich genommen: Mindestversionen web_update 1.04, release_tools 1.03, repair 1.01
+#   2.11  2026-10-23  Menue Tabelle: Tabelle neu berechnen, Symbole aktualisieren und Testtasten neu aufbauen entfallen (stecken in Tabelle neu berechnen), Tabelle reparieren mit Rueckfrage
+#   2.12  2026-10-23  Mindestversion M18_Save_Load 1.02 (keine Meldung Datei wurde geschrieben beim Speichern im Format MLL_PGF)
+#   2.13  2026-10-23  Korrektur 2.10: LEDs_AutoProg.h und LEDs_AutoProg/*.cmd gehoeren ins Release, nur Abweichungen sind kein Fehler (web_update 1.05, release_tools 1.04, repair 1.02)
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -111,6 +120,24 @@ import uuid
 os.environ["MLL_HEADLESS"] = "1"
 here = os.path.dirname(os.path.abspath(__file__))
 
+# Ein abgebrochenes oder fehlgeschlagenes Update rueckgaengig machen, BEVOR ein anderes Modul des Programms geladen wird (nur recover.py, nur Standardbibliothek; siehe recover.py).
+# Danach startet das Programm mit dem wiederhergestellten Stand neu. MLL_RECOVERED verhindert eine Schleife.
+if os.environ.get("MLL_RECOVERED") != "1":  # v2.08
+    try:  # v2.08
+        if here not in sys.path:  # v2.08
+            sys.path.insert(0, here)  # v2.08
+        import recover  # v2.08
+        if recover.recover_if_needed(here):  # v2.08
+            print("\nEin abgebrochenes Update wurde rückgängig gemacht. Das Programm startet mit dem vorherigen Stand neu ...", flush=True)  # v2.08
+            os.environ["MLL_RECOVERED"] = "1"  # v2.08
+            if os.name == "nt":                                    # os.execv zerlegt unter Windows Pfade mit Leerzeichen  # v2.08
+                sys.exit(subprocess.call([sys.executable] + sys.argv))  # v2.08
+            os.execv(sys.executable, [sys.executable] + sys.argv)  # v2.08
+    except SystemExit:  # v2.08
+        raise  # v2.08
+    except Exception as _recover_error:                        # noqa: BLE001  die Pruefung darf den Start nie verhindern  # v2.08
+        print(f"Hinweis: Die Prüfung auf ein abgebrochenes Update ist fehlgeschlagen: {_recover_error}", flush=True)  # v2.08
+
 # Mindestversionen der Dateien, die zu diesem Stand gehoeren (Zeile "Datei-Version" am Anfang jeder Datei). Beim Einspielen einzelner Dateien fehlte schon zweimal eine;
 # dann stuerzt ein Teil ab oder tut nichts. Die Pruefung beim Start meldet es im Protokoll, auf der Konsole und mit einer roten Meldung oben auf der Seite.
 REQUIRED_FILES = {  # v1.75
@@ -118,15 +145,23 @@ REQUIRED_FILES = {  # v1.75
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.03", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.97 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.10", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.00", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.03", "_web/web_servotest2.py": "1.00", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.01 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.10", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.04 (entfallen)
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.04
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.05 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_z21.py": "1.00", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.06 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_z21.py": "1.00", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.07 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.02", "release_tools.py": "1.01", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.08 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.03", "release_tools.py": "1.02", "recover.py": "1.00", "repair.py": "1.00", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.10 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.04", "release_tools.py": "1.03", "recover.py": "1.00", "repair.py": "1.01", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.13 (entfallen)
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.05", "release_tools.py": "1.04", "recover.py": "1.00", "repair.py": "1.02", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.13
     "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.04", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.97
     # "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.98 (entfallen)
     # "proggen/M06_Write_Header.py": "1.03", "proggen/M20_PageEvents_a_Functions.py": "1.03", "proggen/M18_Save_Load.py": "1.01",  # v2.03 (entfallen)
-    "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.03
+    # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.12 (entfallen)
+    "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.02",  # v2.12
     "proggen/M18a_Load_PicoConfig.py": "1.01", "proggen/M17_Import_old_Data.py": "1.01",  # v1.75
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.01", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.01", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v1.99 (entfallen)
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.02", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.00 (entfallen)
-    "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.03", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.00
+    # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.03", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.09 (entfallen)
+    "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.09
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -148,6 +183,53 @@ def check_file_versions(base=None):  # v1.75
         elif (int(found.group(1)), int(found.group(2))) < tuple(int(x) for x in wanted.split(".")):  # v1.75
             problems.append(f"{rel}: Version {found.group(1)}.{found.group(2)}, verlangt wird mindestens {wanted}")  # v1.75
     return problems  # v1.75
+
+def update_notice(base=None):  # v2.08
+    """Hinweis von recover.py oder repair.py (.update_notice.json): Das Update wurde rueckgaengig gemacht, das Zuruecksetzen war nicht vollstaendig, oder die Installation wurde repariert.
+    Rueckgabe: (Art, Text) oder None."""
+    base = base or here  # v2.08
+    try:  # v2.08
+        import recover  # v2.08
+        notice = recover.read_notice(base)  # v2.08
+    except Exception:                                      # noqa: BLE001  # v2.08
+        return None  # v2.08
+    if not notice:  # v2.08
+        return None  # v2.08
+    kind, old_v, new_v = notice.get("kind"), notice.get("version_old", "?"), notice.get("version_new", "?")  # v2.08
+    if kind == "rolled_back":  # v2.08
+        return kind, (f"Das Update auf Version {new_v} ist abgebrochen oder fehlgeschlagen. Das Programm ist automatisch zur vorherigen Version {old_v} zurückgegangen "  # v2.08
+                      f"({notice.get('restored', 0)} Dateien wiederhergestellt, {notice.get('time', '')}). Bitte das Update später noch einmal versuchen. "  # v2.08
+                      "Ein Sicherungs- oder Virenprogramm kann Dateien sperren; hilft es nicht, bitte melden.")  # v2.08
+    if kind == "failed":  # v2.08
+        return kind, (f"Das Update auf Version {new_v} ist abgebrochen, und das automatische Zurückgehen war nicht vollständig ({'; '.join(notice.get('problems', [])[:3])}). "  # v2.08
+                      "Bitte die Installation reparieren: Hilfe → Update webMobaLedLib … oder repair_windows.bat / repair_linux.sh / repair_mac.command (Anleitung, Abschnitt 9.6).")  # v2.08
+    if kind == "repaired":  # v2.08
+        return kind, f"Die Installation wurde repariert (Version {new_v}, {notice.get('written', 0)} Dateien geschrieben, {notice.get('time', '')}). Bitte das Programm neu starten, falls noch nicht geschehen."  # v2.08
+    return None  # v2.08
+
+
+def installation_problems(base=None):  # v2.07
+    """Vergleicht die Dateien der Installation mit der Pruefliste des Releases (release_manifest.json): Dateien, die fehlen oder eine andere Groesse haben
+    (unterbrochene oder beschaedigte Aktualisierung). Rueckgabe: Zeilen fuer die Meldung (leer: in Ordnung). Ohne Pruefliste (aeltere Installation) und in einer
+    Git-Arbeitskopie (Entwicklung) keine Pruefung; MLL_NO_INSTALL_CHECK=1 schaltet sie aus."""
+    base = base or here  # v2.07
+    if os.environ.get("MLL_NO_INSTALL_CHECK") == "1":  # v2.07
+        return []  # v2.07
+    try:  # v2.07
+        import release_tools  # v2.07
+        if release_tools.development_checkout(base):  # v2.07
+            return []  # v2.07
+        problems = release_tools.check_installation(base)  # v2.07
+    except Exception:                                      # noqa: BLE001  die Pruefung darf den Start nie verhindern  # v2.07
+        return []  # v2.07
+    if not problems:  # v2.07
+        return []  # v2.07
+    lines = [f"{len(problems)} Dateien fehlen oder haben eine andere Größe als in der Prüfliste des Releases (unterbrochenes Update oder beschädigte Dateien?):"]  # v2.07
+    lines += ["    " + p for p in problems[:8]]  # v2.07
+    if len(problems) > 8:  # v2.07
+        lines.append(f"    ... und {len(problems) - 8} weitere")  # v2.07
+    lines.append("Abhilfe: Menü Hilfe → Update webMobaLedLib … (stellt die Dateien wieder her), oder die Anleitung, Kapitel „Wenn nichts mehr geht“.")  # v2.07
+    return lines  # v2.07
 
 if here not in sys.path:
     sys.path.insert(0, here)
@@ -630,7 +712,16 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "2.04 (2026-10-21)"  # v2.04
+VERSION = "2.13 (2026-10-23)"  # v2.13
+# VERSION = "2.12 (2026-10-23)"  # v2.13 (entfallen)
+# VERSION = "2.11 (2026-10-23)"  # v2.12 (entfallen)
+# VERSION = "2.10 (2026-10-23)"  # v2.11 (entfallen)
+# VERSION = "2.09 (2026-10-21)"  # v2.10 (entfallen)
+# VERSION = "2.08 (2026-10-21)"  # v2.09 (entfallen)
+# VERSION = "2.07 (2026-10-21)"  # v2.08 (entfallen)
+# VERSION = "2.06 (2026-10-21)"  # v2.07 (entfallen)
+# VERSION = "2.05 (2026-10-21)"  # v2.06 (entfallen)
+# VERSION = "2.04 (2026-10-21)"  # v2.05 (entfallen)
 # VERSION = "2.03 (2026-10-21)"  # v2.04 (entfallen)
 # VERSION = "2.02 (2026-10-21)"  # v2.03 (entfallen)
 # VERSION = "2.01 (2026-10-21)"  # v2.02 (entfallen)
@@ -1123,6 +1214,22 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             for line in FILE_PROBLEMS:  # v1.75
                 ui.label(line).style("color:#b71c1c;font-size:13px")  # v1.75
 
+    notice = update_notice()  # v2.08
+    if notice:                                          # Update rueckgaengig gemacht / Zuruecksetzen unvollstaendig / repariert: bleibt, bis der Anwender es bestaetigt  # v2.08
+        colors = {"rolled_back": ("#fff3e0", "#e65100", "#bf360c"), "failed": ("#ffebee", "#c62828", "#b71c1c"), "repaired": ("#e8f5e9", "#2e7d32", "#1b5e20")}[notice[0]]  # v2.08
+        with ui.row().classes("w-full items-center no-wrap q-pa-sm").style(f"background:{colors[0]};border:2px solid {colors[1]};border-radius:4px") as notice_box:  # v2.08
+            ui.label(notice[1]).classes("grow").style(f"color:{colors[2]};font-size:13px")  # v2.08
+
+            def dismiss_notice(box=notice_box):  # v2.08
+                try:  # v2.08
+                    import recover  # v2.08
+                    recover.clear_notice(here)  # v2.08
+                except Exception:                      # noqa: BLE001  # v2.08
+                    logger.debug("Hinweis nicht geloescht", exc_info=True)  # v2.08
+                box.set_visibility(False)  # v2.08
+
+            ui.button("OK", on_click=dismiss_notice).props("flat dense")  # v2.08
+
     # ------------------------------------------------------------------ Registerkarten (wie im Tk-Hauptfenster)
     with ui.tabs(value="pg").props("dense align=left no-caps active-color=primary").classes("w-full main-tabs") as tabs:
         ui.tab("pg", label="Programm Generator")
@@ -1133,10 +1240,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         servo2_tab = ui.tab("servo2", label="DM Servo Einstellungen")  # v1.96
         ui.tab("sound", label="Sound Test")  # v1.95
         ui.tab("dcc", label="DCC Keyboard")  # v1.95
+        z21_tab = ui.tab("z21", label="Z21 Simulator")  # v2.05
         ui.tab("mon", label="Serial Monitor")
         ui.tab("arduinocfg", label="ARDUINO Einstellungen")
         ui.tab("config", label="Programm Einstellungen")
-    optional_tabs = {"servo2": servo2_tab}               # Reiter mit Option in den Programm Einstellungen (web_tabs.OPTIONAL_TABS)  # v1.96
+    # optional_tabs = {"servo2": servo2_tab}               # Reiter mit Option in den Programm Einstellungen (web_tabs.OPTIONAL_TABS)  # v2.05 (entfallen)
+    optional_tabs = {"servo2": servo2_tab, "z21": z21_tab}               # Reiter mit Option in den Programm Einstellungen (web_tabs.OPTIONAL_TABS)  # v2.05
 
     def apply_optional_tabs():  # v1.96
         """Reiter mit Option ein- oder ausblenden; ist der ausgeblendete gerade offen, zurueck zum Programm Generator"""  # v1.96
@@ -1175,6 +1284,16 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         M25.Make_sure_that_Col_Variables_match()  # v1.59
         active.refreshicons()                            # Symbole aktualisieren (rechnet das Blatt noch einmal und zeichnet neu)  # v1.59
         M20.ResetTestButtons(False)                      # Testtasten auf den Stand der Tabelle bringen  # v1.59
+
+    def repair_table():  # v2.11
+        """Menue Tabelle -> Tabelle reparieren: nach Rueckfrage Symbole und Testtasten ALLER Datenblaetter neu aufbauen (rebuild_decorations).
+        Das ist die Reparatur fuer fehlende oder falsch stehende Symbole und Testtasten; "Tabelle neu berechnen" legt fehlende nicht an."""
+        answer = X02.MsgBox("Symbole und Testtasten aller Datenblätter werden gelöscht und aus dem Tabelleninhalt neu angelegt. Bei großen Tabellen kann das einige Sekunden dauern.\n\n"  # v2.11
+                            "Das ist nur nötig, wenn Symbole oder Testtasten fehlen oder an der falschen Zeile stehen. Sonst genügt \"Tabelle neu berechnen\".\n\nJetzt reparieren?",  # v2.11
+                            4 + 32, "Tabelle reparieren")                                              # Ja/Nein mit Fragezeichen  # v2.11
+        if answer != 6:                                                                              # 6 = Ja  # v2.11
+            return  # v2.11
+        rebuild_decorations()  # v2.11
 
     def rebuild_decorations():
         """Reparatur: Symbole und Testtasten aller Datenblaetter aus dem Tabelleninhalt neu anlegen (wie beim Laden
@@ -1220,6 +1339,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 web_servotest2.stop_all(wait=True)  # Servo Test 2: Direktmodus beenden  # v1.91
                 from _web import web_soundtest as _sound_page  # v1.95
                 _sound_page.stop_all(wait=True)  # Sound Test: laufenden Impuls beenden, Direktmodus beenden  # v1.95
+                from _web import web_z21 as _z21_page  # v2.05
+                _z21_page.stop_all()  # Z21 Simulator: UDP-Socket schliessen  # v2.05
             except Exception:                      # noqa: BLE001  # v1.87
                 logger.debug("Servo Test nicht gestoppt", exc_info=True)  # v1.87
             if save:
@@ -2569,7 +2690,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             status.style("color: #c62828" if error else "")
             set_buttons(("Schließen", close_update, "color=primary", "mll-default mll-cancel"))
 
-        async def do_apply():
+        # async def do_apply():  # v2.07 (entfallen)
+        async def do_apply(allow_downgrade=False):  # v2.07
             release, plan = work["release"], work["plan"]
             set_buttons()
             status.set_text("Die Tabellen werden gesichert und die Dateien ersetzt ...")
@@ -2580,7 +2702,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
             try:
                 await run.io_bound(save_now)                    # Tabellen sichern, bevor etwas veraendert wird
-                result = await run.io_bound(wu.apply, here, release, plan, progress)
+                # result = await run.io_bound(wu.apply, here, release, plan, progress)  # v2.07 (entfallen)
+                result = await run.io_bound(wu.apply, here, release, plan, progress, allow_downgrade)  # v2.07
             except wu.UpdateError as ex:
                 finish(str(ex), error=True)
                 return
@@ -2608,6 +2731,9 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             status.set_text("\n".join(lines))
             note.set_text("")
             set_buttons(("Später", close_update, "flat", "mll-cancel"), ("Neu starten", do_restart, "color=primary", "mll-default"))
+
+        async def do_apply_downgrade():  # v2.07
+            await do_apply(True)                               # der Anwender hat die ältere Version ausdrücklich bestätigt  # v2.07
 
         async def do_restart():
             set_buttons()
@@ -2650,7 +2776,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             head = (f"Neue Version: {plan.version_new}   (installiert: {VERSION})\n"
                     f"{len(plan.new)} neue und {len(plan.changed)} geänderte Dateien werden geschrieben, {len(plan.delete)} Dateien werden gelöscht, "
                     f"{plan.same} Dateien sind unverändert und werden nicht angefasst.")
+            if plan.downgrade:  # v2.07
+                head = ("ACHTUNG: Dieses ZIP hat eine ÄLTERE Version als die installierte!\n" + head +  # v2.07
+                        "\nEin Rücksprung auf eine ältere Version ist nur sinnvoll, wenn Sie ihn wollen (zum Beispiel nach einem Fehler in der neuen Version). "  # v2.07
+                        "Wurde versehentlich ein altes ZIP bereitgestellt: Abbrechen.")  # v2.07
             status.set_text(head)
+            status.style("color: #c62828; font-weight: 600" if plan.downgrade else "")  # v2.07
             listing.style("height: 260px; border: 1px solid #c8c8c8")
             with listing:
                 ui.label("\n".join(wu.describe(plan))).style("white-space: pre; font-family: monospace; font-size: 12px; padding: 6px")
@@ -2663,7 +2794,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 notes.append("Persönliche Dateien im ZIP werden ignoriert: " + ", ".join(plan.ignored))
             notes.append("Vor dem Ersetzen werden die Tabellen gesichert. Konfiguration, Passwort und Protokolle bleiben unverändert.")
             note.set_text("\n".join(notes))
-            set_buttons(("Abbrechen", close_update, "flat", "mll-cancel"), ("Aktualisieren", do_apply, "color=primary", "mll-default"))
+            # set_buttons(("Abbrechen", close_update, "flat", "mll-cancel"), ("Aktualisieren", do_apply, "color=primary", "mll-default"))  # v2.07 (entfallen)
+            if plan.downgrade:  # v2.07
+                set_buttons(("Abbrechen", close_update, "color=primary", "mll-default mll-cancel"), (f"Trotzdem auf Version {plan.version_new} zurückgehen", do_apply_downgrade, "outline color=negative", ""))  # v2.07
+            else:  # v2.07
+                set_buttons(("Abbrechen", close_update, "flat", "mll-cancel"), ("Aktualisieren", do_apply, "color=primary", "mll-default"))  # v2.07
 
         dlg.open()
         await check()
@@ -2802,10 +2937,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ("Beenden ...", quit_program),
         ],
         "Tabelle": [
-            ("Proggenerator Tabelle neuberechnen", run_command(recalc_table, "Tabelle neu berechnen")),  # v1.59
-            ("Symbole aktualisieren", run_command(lambda: X02.ActiveSheet.refreshicons(), "Symbole aktualisieren")),
-            ("Testtasten neu aufbauen", run_command(lambda: M20.ResetTestButtons(False), "Testtasten")),
-            ("Symbole und Testtasten neu aufbauen (Reparatur)", run_command(rebuild_decorations, "Symbole und Testtasten")),
+            # ("Proggenerator Tabelle neuberechnen", run_command(recalc_table, "Tabelle neu berechnen")),  # v2.11 (entfallen)
+            # ("Symbole aktualisieren", run_command(lambda: X02.ActiveSheet.refreshicons(), "Symbole aktualisieren")),  # v2.11 (entfallen)
+            # ("Testtasten neu aufbauen", run_command(lambda: M20.ResetTestButtons(False), "Testtasten")),  # v2.11 (entfallen)
+            # ("Symbole und Testtasten neu aufbauen (Reparatur)", run_command(rebuild_decorations, "Symbole und Testtasten")),  # v2.11 (entfallen)
+            ("Tabelle neu berechnen", run_command(recalc_table, "Tabelle neu berechnen")),  # v2.11
+            ("Tabelle reparieren (Symbole und Testtasten neu aufbauen) ...", run_command(repair_table, "Tabelle reparieren")),  # v2.11
         ],
         "ARDUINO": [
             ("Verbinden", connect_arduino),  # v1.86
@@ -3015,11 +3152,18 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             context.client.on_disconnect(lambda *_: state["servo2"].page_closed())         # Browser zu, neu geladen oder Verbindung weg: Direktmodus beenden  # v1.91
 
     # ---- Karte Sound Test (Direktmodus zum Arduino) und DCC Keyboard (Kommandos @ AAA CC 01)
-    from _web import web_soundtest, web_dcckeyboard  # v1.95
+    # from _web import web_soundtest, web_dcckeyboard  # v2.05 (entfallen)
+    from _web import web_soundtest, web_dcckeyboard, web_z21  # v2.05
     sound_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: auto; flex-wrap: nowrap")  # v1.95
     sound_container.set_visibility(False)  # v1.95
     dcc_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: auto; flex-wrap: nowrap")  # v1.95
     dcc_container.set_visibility(False)  # v1.95
+    z21_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: auto; flex-wrap: nowrap")  # v2.05
+    z21_container.set_visibility(False)  # v2.05
+
+    def build_z21():  # v2.05
+        with z21_container:  # v2.05
+            state["z21"] = web_z21.build(ctrl, is_active=lambda: tabs.value == "z21")            # der Simulator selbst gehoert dem Programm und laeuft beim Wechsel des Reiters weiter  # v2.05
 
     def build_sound():  # v1.95
         with sound_container:  # v1.95
@@ -3034,7 +3178,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
     def ensure_built(tab_name):
         """Seite beim ersten Oeffnen aufbauen (Einstellungsseiten, Farb Test, Servo Test 1 und 2); die Behaelter sind schon da"""  # v1.91
-        if tab_name in built or not (tab_name in ("farb", "patt", "servo1", "servo2", "sound", "dcc") or tab_name in settings_defs):  # v1.95
+        # if tab_name in built or not (tab_name in ("farb", "patt", "servo1", "servo2", "sound", "dcc") or tab_name in settings_defs):  # v2.05 (entfallen)
+        if tab_name in built or not (tab_name in ("farb", "patt", "servo1", "servo2", "sound", "dcc", "z21") or tab_name in settings_defs):  # v2.05
         # if tab_name in built or not (tab_name == "farb" or tab_name in settings_defs):  # v1.39 (ersetzt)
             return
         built.add(tab_name)
@@ -3049,6 +3194,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             build_sound()  # v1.95
         elif tab_name == "dcc":  # v1.95
             build_dcc()  # v1.95
+        elif tab_name == "z21":  # v2.05
+            build_z21()  # v2.05
         elif tab_name == "patt":  # v1.39
             build_patt()  # v1.39
         else:
@@ -3056,7 +3203,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         logger.info("Seite '%s' aufgebaut in %.1f s", tab_name, time.monotonic() - t_tab)
 
     if not LAZY_TABS:                                  # MLL_LAZY_TABS=0: alles gleich aufbauen
-        for tab_name in (*settings_defs, "farb", "servo1", "servo2", "sound", "dcc"):  # v1.95
+        # for tab_name in (*settings_defs, "farb", "servo1", "servo2", "sound", "dcc"):  # v2.05 (entfallen)
+        for tab_name in (*settings_defs, "farb", "servo1", "servo2", "sound", "dcc", "z21"):  # v2.05
             ensure_built(tab_name)
     tab_state = {"cur": "pg"}
 
@@ -3082,7 +3230,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 return
             if answer:
                 cfg_page.save()
-        if new_tab not in built and (new_tab in ("farb", "patt", "servo1", "servo2", "sound", "dcc") or new_tab in settings_defs):  # v1.95
+        # if new_tab not in built and (new_tab in ("farb", "patt", "servo1", "servo2", "sound", "dcc") or new_tab in settings_defs):  # v2.05 (entfallen)
+        if new_tab not in built and (new_tab in ("farb", "patt", "servo1", "servo2", "sound", "dcc", "z21") or new_tab in settings_defs):  # v2.05
         # if new_tab not in built and (new_tab == "farb" or new_tab in settings_defs):  # v1.39 (ersetzt)
             ui.notify("Die Seite wird aufgebaut ...", timeout=4000)
             await asyncio.sleep(0.15)                          # die Meldung noch senden, bevor der Aufbau den Server blockiert
@@ -3094,6 +3243,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         servo2_container.set_visibility(new_tab == "servo2")  # v1.91
         sound_container.set_visibility(new_tab == "sound")  # v1.95
         dcc_container.set_visibility(new_tab == "dcc")  # v1.95
+        z21_container.set_visibility(new_tab == "z21")  # v2.05
         patt_container.set_visibility(new_tab == "patt")  # v1.39
         if new_tab == "patt" and old_tab != "patt" and patt_state["view"] is not None:  # v1.39
             patt_state["view"].refresh()  # v1.39  Tabelle und Blattreiter auffrischen
@@ -3122,6 +3272,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             state["sound"].tab_selected()                  # Direktmodus starten  # v1.95
         if new_tab == "dcc" and old_tab != "dcc" and state.get("dcc") is not None:  # v1.95
             state["dcc"].tab_selected()  # v1.95
+        if new_tab == "z21" and old_tab != "z21" and state.get("z21") is not None:  # v2.05
+            state["z21"].tab_selected()                    # Status und Protokollfenster auffrischen  # v2.05
         if new_tab in settings_pages:
             settings_pages[new_tab][0].mark_saved()            # store_old_config (tabselected)
     tabs.on_value_change(on_tab)
@@ -3465,7 +3617,12 @@ def main():
     for url, folder in (("/mll_images", "images"), ("/mll_icons", "icons")):     # Symbole fuer Toolbar und Makrobaum
         if os.path.isdir(os.path.join(here, folder)):
             nicegui_app.add_static_files(url, os.path.join(here, folder))
-    FILE_PROBLEMS[:] = check_file_versions()  # v1.75
+    # FILE_PROBLEMS[:] = check_file_versions()  # v2.07 (entfallen)
+    FILE_PROBLEMS[:] = check_file_versions() + installation_problems()  # v2.07
+    _notice = update_notice()  # v2.08
+    if _notice:  # v2.08
+        print(f"\nHINWEIS: {_notice[1]}")  # v2.08
+        logger.warning("Hinweis zum Update: %s", _notice[1])  # v2.08
     for line in FILE_PROBLEMS:  # v1.75
         logger.error("Datei passt nicht zur Version %s: %s", VERSION, line)  # v1.75
     start_backend()
@@ -3497,7 +3654,9 @@ def main():
     from _web import web_servotest as _servo_page  # v1.87
     from _web import web_servotest2 as _servo2_page  # v1.91
     from _web import web_soundtest as _sound2_page  # v1.95
-    nicegui_app.on_shutdown(lambda: (_servo_page.stop_all(wait=True), _servo2_page.stop_all(wait=True), _sound2_page.stop_all(wait=True)))           # Programm wird beendet (auch Strg+C, Dienst gestoppt): Servo nicht laufen lassen  # v1.95
+    # nicegui_app.on_shutdown(lambda: (_servo_page.stop_all(wait=True), _servo2_page.stop_all(wait=True), _sound2_page.stop_all(wait=True)))           # Programm wird beendet (auch Strg+C, Dienst gestoppt): Servo nicht laufen lassen  # v2.05 (entfallen)
+    from _web import web_z21 as _z21b_page  # v2.05
+    nicegui_app.on_shutdown(lambda: (_servo_page.stop_all(wait=True), _servo2_page.stop_all(wait=True), _sound2_page.stop_all(wait=True), _z21b_page.stop_all()))           # Programm wird beendet (auch Strg+C, Dienst gestoppt): Servo nicht laufen lassen  # v2.05
     nicegui_app.on_startup(web_logging.attach_loop_diagnostics)      # Blockaden der Ereignisschleife und Fehler in Aufgaben melden
     nicegui_app.on_startup(web_logging.attach_to_uvicorn)           # Fehler des Servers (uvicorn) auch in die Protokolldatei
     if not args.no_browser:

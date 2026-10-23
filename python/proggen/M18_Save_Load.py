@@ -1,13 +1,14 @@
-# Datei-Version: 1.01 (2026-10-17) - M18_Save_Load.py
+# Datei-Version: 1.02 (2026-10-23) - M18_Save_Load.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M18_Save_Load.py
 # Path:           proggen/M18_Save_Load.py
-# Version:        1.01
-# Last Update:    2026-10-17
+# Version:        1.02
+# Last Update:    2026-10-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-17  __Copy_and_Clear_Sheet: Vorlagenzeilen des neuen Blatts ganz loeschen (EntireRow.ClearContents); die Zeile RGB_Heartbeat(#LED) blieb in jedem beim Laden einer PGF-Datei angelegten Blatt stehen; davor Original-Port, nicht erfasst
+#   1.02  2026-10-23  Speichern im Format MLL_PGF (Optionen - Update - Datei speichern): In der Web-Oberflaeche keine Meldung 'Datei wurde geschrieben' mit dem internen Pfad mehr vor der Abfrage, wohin die Datei gespeichert werden soll
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -46,6 +47,7 @@
 # 2021-01-07 v4.02 HL: - Else:, ByRef check done, first PoC release
 
 
+import os  # v1.02
 from vb2py.vbfunctions import *
 from vb2py.vbdebug import *
 from vb2py.vbconstants import *
@@ -639,7 +641,10 @@ def __Save_Data_to_File_CallBack(Do_Import, Import_FromAllSheets):
     Debug.Print('Save_Data_to_File_CallBack(' + str(Do_Import) + ', ' + str(Import_FromAllSheets) + ')')
     if Do_Import:
         if Save_Sheets_to_pgf(__Save_Data_FileName, Import_FromAllSheets, False):
-            P01.MsgBox(M09.Get_Language_Str('Die Datei wurde erfolgreich geschrieben:') + vbCr + '  \'' + __Save_Data_FileName + '\'', vbInformation, 'Datei wurde geschrieben')
+            # P01.MsgBox(M09.Get_Language_Str('Die Datei wurde erfolgreich geschrieben:') + vbCr + '  \'' + __Save_Data_FileName + '\'', vbInformation, 'Datei wurde geschrieben')  # v1.02 (entfallen)
+            # In der Web-Oberflaeche (MLL_HEADLESS=1) entfaellt die Meldung: Sie nannte den internen Pfad und stand vor der Abfrage des Browsers, wohin die Datei gespeichert werden soll.
+            if os.environ.get('MLL_HEADLESS') != '1':  # v1.02
+                P01.MsgBox(M09.Get_Language_Str('Die Datei wurde erfolgreich geschrieben:') + vbCr + '  \'' + __Save_Data_FileName + '\'', vbInformation, 'Datei wurde geschrieben')  # v1.02
 
 def __Achtivate_MyExampleDir_if_called_the_first_time():
     global __Changed2SaveDir

@@ -1,8 +1,8 @@
-# Datei-Version: 1.04 (2026-10-21) - web_tabs.py
+# Datei-Version: 1.05 (2026-10-21) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.04
+# Version:        1.05
 # Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -12,6 +12,7 @@
 #   1.02  2026-10-20  Adresse /ServoTest2 fuer den Reiter Servo Test 2
 #   1.03  2026-10-21  Adressen /SoundTest und /DCCKeyboard fuer die Reiter Sound Test und DCC Keyboard
 #   1.04  2026-10-21  Reiter Servo Einstellungen (vorher Servo Test 1) und DM Servo Einstellungen (vorher Servo Test 2, nur mit Option); OPTIONAL_TABS, tab_enabled, apply_param_overrides, is_enabled
+#   1.05  2026-10-21  Adresse /Z21Simulator und Reiter Z21 Simulator (nur mit der Option Z21 Simulator anzeigen); neuer Hinweis der Option
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -32,19 +33,24 @@ TAB_URLS = {                                  # Adresse -> Schluessel des Reiter
     "ServoTest2": "servo2",  # v1.02
     "SoundTest": "sound",  # v1.03
     "DCCKeyboard": "dcc",  # v1.03
+    "Z21Simulator": "z21",  # v1.05
     "SerialMonitor": "mon",
     "ARDUINOEinstellungen": "arduinocfg",
     "ProgrammEinstellungen": "config",
 }
-TAB_TITLES = {"pg": "Programm Generator", "patt": "Patterngenerator", "progcfg": "ProgGenerator Einstellungen", "farb": "Farb Test", "servo1": "Servo Einstellungen", "servo2": "DM Servo Einstellungen", "sound": "Sound Test", "dcc": "DCC Keyboard", "mon": "Serial Monitor",  # v1.04
+# TAB_TITLES = {"pg": "Programm Generator", "patt": "Patterngenerator", "progcfg": "ProgGenerator Einstellungen", "farb": "Farb Test", "servo1": "Servo Einstellungen", "servo2": "DM Servo Einstellungen", "sound": "Sound Test", "dcc": "DCC Keyboard", "mon": "Serial Monitor",  # v1.05 (entfallen)
+TAB_TITLES = {"pg": "Programm Generator", "patt": "Patterngenerator", "progcfg": "ProgGenerator Einstellungen", "farb": "Farb Test", "servo1": "Servo Einstellungen", "servo2": "DM Servo Einstellungen", "sound": "Sound Test", "dcc": "DCC Keyboard", "z21": "Z21 Simulator", "mon": "Serial Monitor",  # v1.05
               "arduinocfg": "ARDUINO Einstellungen", "config": "Programm Einstellungen"}
 _LOWER = {name.lower(): name for name in TAB_URLS}
 
 # Reiter, die nur mit einer Option erscheinen: Schluessel des Reiters -> ConfigName der Option (Programm Einstellungen)
-OPTIONAL_TABS = {"servo2": "ShowProgramGenerator"}  # v1.04
+# OPTIONAL_TABS = {"servo2": "ShowProgramGenerator"}  # v1.05 (entfallen)
+OPTIONAL_TABS = {"servo2": "ShowProgramGenerator", "z21": "ShowZ21Simulator"}  # v1.05
 # Die Option ShowProgramGenerator (im Original "Programmgenerator anzeigen", im Web ohne Wirkung) schaltet jetzt den Reiter DM Servo Einstellungen: neuer Text
 PARAM_OVERRIDES = {"ShowProgramGenerator": {"Input Text": "DM Servo Einstellungen anzeigen",  # v1.04
-                                            "Hint": "Der Reiter DM Servo Einstellungen (Servos im Direct Mode) wird angezeigt"}}  # v1.04
+                                            # "Hint": "Der Reiter DM Servo Einstellungen (Servos im Direct Mode) wird angezeigt"}}  # v1.05 (entfallen)
+                                            "Hint": "Der Reiter DM Servo Einstellungen (Servos im Direct Mode) wird angezeigt"},  # v1.05
+                   "ShowZ21Simulator": {"Hint": "Der Reiter Z21 Simulator wird angezeigt (sofort nach dem Speichern, ohne Neustart)"}}  # v1.05
 
 
 def is_enabled(value) -> bool:  # v1.04

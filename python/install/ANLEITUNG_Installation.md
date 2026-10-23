@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 2.61 (2026-10-21), gilt für webMobaLedLib 2.04*
+*Datei-Version: 2.69 (2026-10-23), gilt für webMobaLedLib 2.13*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -293,9 +293,13 @@ Minus) Platz.
   entfernen. Sind mehrere Zeilen markiert und man klickt in eine davon, wirken Kopieren, Ausschneiden und Löschen auf die markierten Zeilen.
 - **Spalten hinter Q:** Datenblätter zeigen nur die Spalten bis Q. Der Knopf **„Alle Spalten“** (Werkzeugleiste, hinter „Zeile färben“) blendet auch die Spalten dahinter ein, zum Beispiel die
   LED-Zahlen der Kanäle 1 bis 9 in Zeile 1. **„Spalten bis Q“** schaltet zurück. Die Einstellung gilt bis zum Beenden des Programms.
-- **Menü Tabelle → Proggenerator Tabelle neuberechnen:** rechnet **alle** Tabellenblätter neu (LED-Zahlen je Kanal und Start-LED-Nummern, auch die der eingebundenen Blätter) und
+- **Menü Tabelle → Tabelle neu berechnen:** rechnet **alle** Tabellenblätter neu (LED-Zahlen je Kanal und Start-LED-Nummern, auch die der eingebundenen Blätter) und
   aktualisiert danach für das aktive Blatt die Symbole und die Testtasten. Nötig ist das zum Beispiel, wenn gespeicherte Blätter aus einer früheren Version stammen und falsche
   LED-Zahlen in Zeile 1 stehen. Vor dem Erzeugen der Datei `LEDs_AutoProg.h` („Z. Arduino schicken“) werden ohnehin alle Blätter neu gerechnet.
+- **Menü Tabelle → Tabelle reparieren (Symbole und Testtasten neu aufbauen) …:** Reparatur, wenn **Symbole oder Testtasten fehlen** oder an der falschen Zeile stehen (zum Beispiel nach einer
+  fehlerhaft geladenen Tabelle). Nach einer Rückfrage werden Symbole und Testtasten **aller Datenblätter** gelöscht und aus dem Tabelleninhalt neu angelegt (auch die Namen aus dem Makro neu gesetzt); das
+  kann bei großen Tabellen einige Sekunden dauern. „Tabelle neu berechnen“ legt fehlende Symbole und Testtasten nicht an. (Die früheren Einträge „Symbole aktualisieren“ und „Testtasten neu aufbauen“ gibt es
+  nicht mehr: Beides macht „Tabelle neu berechnen“ für das aktive Blatt.)
 
 ### 2.10 Der Patterngenerator
 
@@ -372,6 +376,7 @@ das Senden an ein Modul (damit auch das Blinken der LED bei RGB Modul Nr), die W
 | `/ServoTest2` | DM Servo Einstellungen (nur mit eingeschalteter Option, siehe 2.13) |
 | `/SoundTest` | Sound Test |
 | `/DCCKeyboard` | DCC Keyboard |
+| `/Z21Simulator` | Z21 Simulator (nur mit eingeschalteter Option, siehe 2.14) |
 | `/SerialMonitor` | Serial Monitor |
 | `/ARDUINOEinstellungen` | ARDUINO Einstellungen |
 | `/ProgrammEinstellungen` | Programm Einstellungen |
@@ -402,6 +407,17 @@ arbeitet über dieselbe serielle Verbindung wie der Farb Test: zuerst mit dem Ar
 - **Sound Test** (`/SoundTest`) prüft die MLL-Soundplatine (MP3-TF-16): **Soundmodul-Adresse**, **LED Kanal**, **Impulslänge** und die Werte **R, G, B** (Sound-Auswahl) bestimmen den Ton. **Sound an ARDUINO schicken** sendet den Wert und beendet den Impuls nach der Impulslänge; Änderungen an Adresse, Impulslänge, R, G und B senden gleich (nach kurzer Ruhe beim Tippen). Zum Verbinden dient der Knopf **Mit ARDUINO verbinden** in der Kopfzeile (siehe 2.11). Beim Verlassen des Reiters oder der Seite wird ein laufender Impuls beendet. Die Tastenkürzel Strg-R und Alt-R der Tk-Seite gibt es nicht (Strg-R lädt im Browser die Seite neu).
 - **DCC Keyboard** (`/DCCKeyboard`) schickt dem ARDUINO die Kommandos `@ AAA CC 01`, die sonst der DCC-ARDUINO an den LED-ARDUINO schickt, damit man die DCC-Schalter ausprobieren kann: 32 Adressen ab der **DCC-Basisadresse**, je ein roter (Kanal 0, mit der Adresse beschriftet) und ein grüner Knopf (Kanal 1), in vier Gruppen zu acht. Beim ersten Tastendruck verbindet die Seite selbst; das kann etwas dauern, und manchmal reagiert der ARDUINO erst auf den zweiten Tastendruck.
 - Alle drei Seiten sind für das Smartphone gebaut (Beschreibung einzeilig und aufklappbar, große Tasten) und im Vollbild (2.11) gut zu bedienen.
+
+### 2.14 Z21 Simulator
+
+Der Reiter **Z21 Simulator** (`/Z21Simulator`) gibt sich gegenüber Modellbahn-Steuerprogrammen (Rocrail, iTrain, Traincontroller, WinDigiPet, Z21-Apps) als **Roco Z21** aus. Weichen- und Lokbefehle des Steuerprogramms schickt er als DCC-Kommando an den Arduino (`@ AAA CC AA`), so lassen sich die DCC-Schalter der MobaLedLib direkt aus dem Steuerprogramm bedienen. Die Z21 zählt Adressen ab 0, die MobaLedLib ab 1; der Simulator rechnet das um.
+
+- **Einschalten:** Programm Einstellungen → **Z21 Simulator anzeigen**, dann Speichern: Der Reiter erscheint sofort (ohne Neustart).
+- **Bedienung:** Zuerst mit dem Arduino verbinden (Knopf **Mit ARDUINO verbinden** in der Kopfzeile; der Start versucht es selbst, startet aber auch ohne Verbindung). Dann **Start Simulator**. Die Seite zeigt die **IP-Adresse und den Port 21105 (UDP)**, die im Steuerprogramm als Z21 einzutragen sind. Läuft das Steuerprogramm auf demselben Rechner, genügt `127.0.0.1`. Im Fenster darunter steht jedes Paket mit Uhrzeit, Absender und dem Befehl an den Arduino. **Stop Simulator** beendet ihn. **Zeige Taster-Adressen** zeigt die Eingangskanäle aus der zuletzt erzeugten Header-Datei.
+- Der Simulator läuft weiter, wenn man den Reiter wechselt oder die Seite neu lädt. Er endet mit **Stop** oder mit dem Beenden des Programms.
+- **Firewall und Netz:** Das Steuerprogramm muss den **UDP-Port 21105** erreichen. **Windows** fragt beim ersten Start nach der Freigabe für Python: **Private Netzwerke** erlauben. **Linux** mit `ufw`: `sudo ufw allow 21105/udp`. Auf dem **Raspberry Pi** ist der Port normalerweise frei, der Simulator läuft dann dauerhaft auf dem Pi. Ist der Port schon belegt (andere Z21-Software, zweiter Simulator), erscheint eine Meldung.
+- **Rückmeldung (RMBUS):** Hat das Steuerprogramm die Rückmeldung angemeldet (Broadcast-Flag „R-Bus“, so tun es zum Beispiel Rocrail und iTrain für die Rückmelder), fragt der Simulator den Arduino alle 100 ms nach dem Stand der Taster und Eingänge und meldet **Änderungen** an das Steuerprogramm (je Gruppe von 10 Modulen). Im Fenster erscheint nur eine Zeile, wenn sich etwas ändert; die Statuszeile nennt, für wie viele Programme die Rückmeldung läuft. Das Intervall steht in der (versteckten) Einstellung `RMbusTimer` (× 100 ms; 0 oder leer = 100 ms).
+- **Noch nicht umgesetzt:** Die **Port-Liste** (bis zu drei Arduinos mit eigenen DCC-Adressbereichen); es wird der eine mit dem Programm verbundene Arduino benutzt.
 
 ## 3. Windows
 
@@ -679,13 +695,20 @@ und zeigt, was sich ändert: neue, geänderte und zu löschende Dateien, mit Ver
 
 - **Nur Geändertes wird geschrieben.** Gleiche Dateien werden nicht angefasst. Das sind meist nur wenige Dateien statt des ganzen Ordners, und
   Virenscanner schlagen deshalb nicht an. Jede Datei wird zuerst in eine Hilfsdatei geschrieben und dann ersetzt.
+- **Alles oder nichts:** Vor dem Schreiben werden die ersetzten Dateien gesichert und ein Journal angelegt (`.update_journal.json` im Ordner `python`). Zuerst kommen alle Dateien, dann
+  werden sie noch einmal geprüft, und **erst zuletzt** `recover.py`, `webmobaledlib.py` und die Prüfliste. Schlägt ein Schritt fehl (zum Beispiel weil ein Sicherungsprogramm eine Datei sperrt),
+  stellt das Programm sofort den alten Stand wieder her und meldet es. Bricht das Programm mitten im Update ab (Stromausfall, Prozess beendet), macht es **beim nächsten Start selbst** das Update
+  rückgängig, bevor irgendetwas anderes geladen wird, und zeigt oben einen Hinweis (siehe 9.6).
 - **Gelöscht werden nur Dateien, die ein früheres Update installiert hat** und die im neuen Release fehlen (die Liste dazu steht in `update_manifest.json`
   im Datenordner). Beim **ersten Update** einer Installation gibt es diese Liste noch nicht: Dann wird nichts gelöscht. Eigene Dateien im Projektordner
   bleiben immer erhalten.
 - **Nie angefasst** werden die Python-Umgebung (`venv`, `venv_web`), `.git`, `__pycache__`, Protokolle, Konfiguration, Passwort-Datei und die Sicherungen der
-  Tabellen, auch wenn ein ZIP solche Dateien enthalten sollte.
+  Tabellen, auch wenn ein ZIP solche Dateien enthalten sollte. Eine Ausnahme sind die Dateien, die das Programm **später selbst ändert**: `LEDs_AutoProg.h` und die `.cmd`-Dateien im Ordner `LEDs_AutoProg` (`Start_Arduino.cmd`, `Start_ESP32_Sub.cmd`, `Start_PICO_Sub.cmd`, `fastBuild.cmd`, `fastBuild2.cmd`).
+  Sie **gehören zum Release**: Fehlt eine, installiert das Update sie. Ist sie da, ersetzt das Update sie **nicht**, auch wenn sie vom Release abweicht, und es meldet die Abweichung nicht als Unterschied oder Fehler;
+  ebenso die Prüfung beim Start und die Reparatur (die nur fehlende Dateien wieder herstellt). Gelöscht werden sie nie. (Andere `.cmd`-Dateien, zum Beispiel `Restart_ProgGen.cmd` und die in `hex-files`, werden wie alle Dateien behandelt.)
 - **Sicherung:** Ersetzte und gelöschte Dateien liegen vorher im Datenordner unter `update_backup/<Datum-Uhrzeit>/` (die letzten 5). Zum Zurückholen die
-  Dateien in den Projektordner zurückkopieren. Die Tabellen werden vor dem Ersetzen gesichert.
+  Dateien in den Projektordner zurückkopieren. Die Tabellen werden vor dem Ersetzen gesichert. Das installierte Release (ZIP) wird im Datenordner unter `release_cache` aufgehoben (die letzten
+  zwei), damit eine Reparatur auch ohne Internet geht.
 - **Python-Pakete:** Haben sich die Anforderungen geändert (`install/requirements-web.txt`, auf dem Pi `pi/requirements-pi.txt`), aktualisiert das Programm sie.
 - **Name der Verknüpfungen:** Das Programm heißt seit Version 1.31 **webMobaLedLib** (vorher pyMobaLedLib). Nach einem Update über das Menü heißen Symbol und Starter noch
   wie bisher. Das Installationsskript (`install_windows.bat`, `install_mac.command`, `install_linux.sh`, auf dem Pi `install_pi.sh --no-check`) benennt sie um und entfernt die alten.
@@ -696,6 +719,14 @@ und zeigt, was sich ändert: neue, geänderte und zu löschende Dateien, mit Ver
   (`MLL_ALLOW_UPDATE=1` hebt die Sperre auf). `MLL_UPDATE_URL` richtet das Update auf eine andere ZIP-Adresse.
 - **Sicherheit:** Es wird nur über HTTPS geladen. Das ZIP muss den Ordner `python` mit `webmobaledlib.py` und `_web` enthalten, Pfade nach außen und
   Verknüpfungen werden abgelehnt, und aus dem ZIP wird nichts ausgeführt.
+- **Schutz vor einem falschen oder unvollständigen ZIP:** Ein vollständiges Release enthält die **Prüfliste** `release_manifest.json` (Version, Art „vollständig“, Größe und SHA-256
+  jeder Datei). Das Update installiert nur, wenn die Prüfliste da ist und genau zu den Dateien im ZIP passt. Es **bricht ab, ohne etwas zu verändern**, wenn die Prüfliste fehlt
+  (zum Beispiel bei einer Sammlung geänderter Dateien), wenn das ZIP deutlich weniger Dateien enthält als die installierte Version (weniger als 80 Prozent), wenn es mehr als 20 Dateien
+  löschen würde oder wenn eine Datei nicht zur Prüfliste passt. Jede geschriebene Datei wird mit ihrer Prüfsumme verglichen; weicht sie ab (zum Beispiel durch ein Sicherungs- oder
+  Virenprogramm), wird sie nicht ersetzt und als Fehler gemeldet.
+- **Ältere Version:** Hat das ZIP eine **ältere** Version als die installierte, zeigt der Dialog in Rot **„ACHTUNG: Dieses ZIP hat eine ÄLTERE Version“**. Der Standardknopf ist dann
+  **Abbrechen**; erst der Knopf **„Trotzdem auf Version … zurückgehen“** installiert sie. Das ist für einen gewollten Rücksprung gedacht; wurde nur versehentlich ein altes ZIP
+  bereitgestellt, bitte abbrechen.
 - **Meldung „konnte nicht geladen werden“:** Internetverbindung, Firewall oder Proxy prüfen, und ob das Release die Datei `webmobaledlib.zip` enthält.
   „Nicht ersetzt“ bei einer Datei heißt meist, dass ein anderes Programm sie gesperrt hat: Programm beenden und das Update wiederholen.
 
@@ -882,6 +913,42 @@ danach im Browser `http://localhost:8080`.
 | Kompilieren: „no X11 DISPLAY“ oder Java-Fehler | Läuft der Dienst über `xvfb-run`? (`/etc/systemd/system/mobaledlib-web.service`, `sudo apt install xvfb`) |
 | Der Dienst startet nicht | `journalctl -u mobaledlib-web -e`; `pi_check.py` zeigt fehlende Pakete |
 | Anmeldung am Pi per Netz geht nicht | `MLL_HOST=0.0.0.0` und Passwort in `/etc/mobaledlib-web.env` (Kapitel 8) |
+
+### 9.6 Wenn nichts mehr geht (Installation beschädigt oder Update unterbrochen)
+
+Ein Update kann abbrechen, wenn der Strom ausfällt, das Programm beendet wird oder ein Sicherungs- oder Virenprogramm Dateien sperrt. Das Update ist deshalb „alles oder nichts“ (siehe 7.1), und es gibt drei Hilfen:
+
+1. **Hinweis „Das Update … ist abgebrochen oder fehlgeschlagen. Das Programm ist automatisch zur vorherigen Version … zurückgegangen“** (orange, oben auf der Seite): Das Programm hat selbst den alten Stand
+   wiederhergestellt, Ihre Tabellen und Einstellungen sind nicht betroffen. Mit **OK** schließen. Das Update später noch einmal versuchen. Scheitert es wieder an derselben Datei, **Programm beenden, Sicherungs-
+   oder Virenprogramm kurz anhalten** (oder den Ordner `python` und den Datenordner ausnehmen) und das Update wiederholen.
+2. **Rote Meldung „… Dateien fehlen oder haben eine andere Größe als in der Prüfliste des Releases“:** Menü **Hilfe → Update webMobaLedLib …** ausführen. Auch bei gleicher Version vergleicht das Update jede Datei
+   mit dem Release und **stellt fehlende und beschädigte Dateien wieder her**. Danach das Programm neu starten. (Dateien, die das Programm selbst erzeugt, zum Beispiel `LEDs_AutoProg.h`, werden beim Start nur auf Vorhandensein geprüft.)
+3. **Das Programm startet gar nicht, oder rot „Das automatische Zurückgehen war nicht vollständig“: Reparaturskript.** Es braucht das Programm nicht und läuft auch, wenn `webmobaledlib.py` beschädigt ist.
+   Das Programm vorher beenden, dann:
+
+   | System | Aufruf |
+   |---|---|
+   | **Windows** | im Ordner `python\install` die Datei **`repair_windows.bat`** doppelklicken |
+   | **Linux** | `bash install/repair_linux.sh` im Ordner `python` |
+   | **Raspberry Pi** | `bash install/repair_linux.sh`, danach `sudo systemctl restart mobaledlib-web` |
+   | **macOS** | im Ordner `python/install` die Datei **`repair_mac.command`** doppelklicken |
+
+   Es macht ein abgebrochenes Update rückgängig, vergleicht die Dateien mit der Prüfliste (`release_manifest.json`), sucht ein vollständiges Release (zuerst die zwei zwischengespeicherten im Datenordner unter
+   `release_cache`, sonst der Download von GitHub), prüft es und schreibt nur die fehlenden oder abweichenden Dateien neu. Die ersetzten Dateien werden vorher im Datenordner unter `repair_backup` gesichert.
+   Es fragt vor dem Schreiben (**j**). **Ohne Internet:** `webmobaledlib.zip` von <https://github.com/haroldlinke/WebMLL/releases> laden und das Skript mit `--zip <Pfad zu webmobaledlib.zip>` aufrufen
+   (unter Windows an `repair_windows.bat` anhängen, zum Beispiel in einer Eingabeaufforderung). Weitere Optionen: `--check-only` (nur prüfen), `--offline`, `--allow-older` (auch ein älteres Release), `--all`
+   (auch erzeugte Dateien vergleichen).
+4. **Das Update bricht mit „keine Prüfliste“, „unvollständig“ oder „würde … Dateien löschen“ ab:** Das bereitgestellte ZIP ist nicht das vollständige Release. Es wurde nichts verändert.
+   Bitte dem Entwickler melden, bis das richtige ZIP da ist.
+5. **Auch das Reparaturskript fehlt oder geht nicht** (von Hand):
+   1. Das Programm beenden.
+   2. Das aktuelle `webmobaledlib.zip` von <https://github.com/haroldlinke/WebMLL/releases> laden.
+   3. Den Ordner `python` **umbenennen** (zum Beispiel in `python_defekt`), das ZIP entpacken (es enthält den Ordner `python`) und wie gewohnt starten
+      (Windows `install\start_windows.bat`, macOS `start_mac.command`, Linux `start_linux.sh`; auf dem Raspberry Pi den Dienst neu starten: `sudo systemctl restart mobaledlib-web`).
+   4. Ihre Tabellen, Einstellungen und das Passwort liegen im **Datenordner** (Abschnitt 2.6) und bleiben dabei erhalten. Die Python-Umgebung (`venv`, `venv_web`) gehört nicht zum ZIP;
+      liegt sie im alten Ordner `python`, den Ordner `venv_web` (bzw. `venv`) in den neuen Ordner verschieben.
+6. **Dateien zurückholen:** Ersetzte und gelöschte Dateien liegen vor jedem Update im Datenordner unter `update_backup/<Datum-Uhrzeit>/` (die letzten 5), die von der Reparatur ersetzten unter
+   `repair_backup/<Datum-Uhrzeit>/`. Einzelne Dateien lassen sich von dort in den Ordner `python` zurückkopieren.
 
 ## 10. Was nicht oder noch nicht geht
 

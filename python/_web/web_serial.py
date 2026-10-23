@@ -1,15 +1,16 @@
-# Datei-Version: 1.02 (2026-10-20) - web_serial.py
+# Datei-Version: 1.03 (2026-10-21) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.02
-# Last Update:    2026-10-20
+# Version:        1.03
+# Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Serielle Verbindung ohne Tk (Original, nicht erfasst)
 #   1.01  2026-10-20  send_to_ARDUINO_servo (Seite Servo Test 1): eigene Pause je Zeichen, Sendeschleife kennt eine Pause je Nachricht
 #   1.02  2026-10-20  tx_idle (Keep-Alive der Seite Servo Test nur bei leerer Sendewarteschlange)
+#   1.03  2026-10-21  rx_listeners: Funktionen, die jede Zeile vom Arduino bekommen (Rueckmeldung des Z21 Simulators)
 # ----------------------------------------------------------------------------------------------
 """Serielle Verbindung zum Arduino/Pico ohne Tk (Mixin fuer HeadlessAppController).
 
@@ -165,6 +166,7 @@ class SerialMixin:
     def _serial_init(self):
         self.arduino = None
         self.queue = RxLog(on_line=self._on_rx_line)
+        self.rx_listeners: list = []                    # Funktionen text -> None, die jede Zeile vom Arduino bekommen (zum Beispiel der Z21 Simulator fuer die Rueckmeldung)  # v1.03
         self.ARDUINO_IP = False
         self.ARDUINO_current_portname = ""
         self.ARDUINO_status = ""
@@ -195,6 +197,11 @@ class SerialMixin:
     # ------------------------------------------------------------------ Empfang
     def _on_rx_line(self, text: str):
         """Wie SerialMonitorPage.process_serial: Startmeldung des Arduinos auswerten."""
+        for listener in list(getattr(self, "rx_listeners", ())):               # Zuhoerer (Z21 Simulator: JSON:{"RMBUS": ...}); ein Fehler darin stoert den Empfang nicht  # v1.03
+            try:  # v1.03
+                listener(text)  # v1.03
+            except Exception:                             # noqa: BLE001  # v1.03
+                logger.debug("Zuhoerer der Empfangszeile fehlgeschlagen", exc_info=True)  # v1.03
         t1 = _const("SerialIF_teststring1", "#?LEDs_AutoProg")
         t3 = _const("SerialIF_teststring3", "#?LEDs_AutoProg3")
         if text.startswith(t1) or text.startswith(t3):

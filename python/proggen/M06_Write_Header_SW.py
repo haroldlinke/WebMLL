@@ -1,8 +1,8 @@
-# Datei-Version: 1.03 (2026-10-21) - M06_Write_Header_SW.py
+# Datei-Version: 1.04 (2026-10-21) - M06_Write_Header_SW.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header_SW.py
 # Path:           proggen/M06_Write_Header_SW.py
-# Version:        1.03
+# Version:        1.04
 # Last Update:    2026-10-21
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -11,6 +11,7 @@
 #   1.01  2026-10-21  Version K des Excel-Programms: Makros Name_LED_Number und Name_LED_Offset in Add_InpVars (bekannte LED-Variablen, KnownVariables); Praefix-Parameter (Get_Par_Prefix); Check_Nr_From_Var herausgezogen; Add_Undefined_Input_Var; Warnung bei mehrfach gesetzten Zielvariablen auch in Check_Detected_Variables
 #   1.02  2026-10-21  Fehlalarme: LED-Namen (Name_LED_Number, Name_LED_Offset), die mehrfach vorkommen, loesen die Warnung 'Zielvariablen werden mehrfach gesetzt' nicht mehr aus; die Warnung kommt je Liste nur einmal; Praefix-Tabelle bei jeder Erzeugung neu einlesen
 #   1.03  2026-10-21  Warnung 'Zielvariablen werden mehrfach gesetzt': nennt Blatt und Zeile beider Definitionen und steht damit im Protokoll (WARNING); dieselbe Zeile desselben Blattes noch einmal gelesen zaehlt nicht als doppelte Definition; die Frage kommt nur, wenn die Liste neu ist (nicht fuer jedes eingebundene Blatt)
+#   1.04  2026-10-21  List_Lenght und Print_DstVar_List: eine leere Liste hat 0 Eintraege (VBA: Split eines leeren Textes liefert keinen Eintrag, Python einen leeren): TOTAL_VARIABLES war 1 statt 0, und Print_DstVar_List schrieb eine #define-Zeile ohne Namen
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -895,6 +896,12 @@ def Add_Inp_and_DstVars(line, r):
     return _fn_return_value
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Channel - ByRef 
+def Split_List(List):  # v1.04
+    """Eintraege einer Liste mit Leerzeichen als Trenner. Wie in VBA liefert Split fuer einen leeren Text KEINEN Eintrag (Python: einen leeren Eintrag)"""  # v1.04
+    text = Trim(List)  # v1.04
+    return Split(text, ' ') if text != '' else []  # v1.04
+
+
 def Print_DstVar_List(fp, Channel,Min_Channel):
     global DstVar_List
     
@@ -908,7 +915,8 @@ def Print_DstVar_List(fp, Channel,Min_Channel):
     #varlist = DstVar_List.split(" ")
     #varlist.sort()
     
-    for Var in Split(Trim(DstVar_List), ' '):
+    # for Var in Split(Trim(DstVar_List), ' '):  # v1.04 (entfallen)
+    for Var in Split_List(DstVar_List):  # v1.04
     #for Var in varlist:
         #if Var.replace(" ", "") != "":
         Var_str = str(Var)
@@ -937,7 +945,8 @@ def List_Lenght(List):
     # 21.03.23 Juergen
     #-----------------------------------------------------------------
     _fn_return_value = 0
-    for Var in Split(Trim(List), ' '):
+    # for Var in Split(Trim(List), ' '):  # v1.04 (entfallen)
+    for Var in Split_List(List):                                  # VBA: Split("") liefert 0 Eintraege, Python 1 (TOTAL_VARIABLES war 1 statt 0)  # v1.04
         _fn_return_value = _fn_return_value + 1
     return _fn_return_value
 
