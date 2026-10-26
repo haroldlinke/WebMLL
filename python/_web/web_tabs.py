@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-10-21) - web_tabs.py
+# Datei-Version: 1.06 (2026-10-26) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.05
-# Last Update:    2026-10-21
+# Version:        1.06
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,7 @@
 #   1.03  2026-10-21  Adressen /SoundTest und /DCCKeyboard fuer die Reiter Sound Test und DCC Keyboard
 #   1.04  2026-10-21  Reiter Servo Einstellungen (vorher Servo Test 1) und DM Servo Einstellungen (vorher Servo Test 2, nur mit Option); OPTIONAL_TABS, tab_enabled, apply_param_overrides, is_enabled
 #   1.05  2026-10-21  Adresse /Z21Simulator und Reiter Z21 Simulator (nur mit der Option Z21 Simulator anzeigen); neuer Hinweis der Option
+#   1.06  2026-10-26  Neue Option SaveExcelCharset (Dateien fuer das Excel-Programm im Windows-Zeichensatz speichern) in den Programm Einstellungen (PARAM_ADDITIONS)
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -23,6 +24,9 @@ not_found_page die Liste der gueltigen Adressen.
 from __future__ import annotations
 
 import html
+import logging  # v1.06
+
+logger = logging.getLogger(__name__)  # v1.06
 
 TAB_URLS = {                                  # Adresse -> Schluessel des Reiters (wie ui.tabs in webmobaledlib.py)
     "ProgGenerator": "pg",
@@ -53,6 +57,13 @@ PARAM_OVERRIDES = {"ShowProgramGenerator": {"Input Text": "DM Servo Einstellunge
                    "ShowZ21Simulator": {"Hint": "Der Reiter Z21 Simulator wird angezeigt (sofort nach dem Speichern, ohne Neustart)"}}  # v1.05
 
 
+# Neue Optionen der Programm Einstellungen (nur im Web; die JSON-Dateien gehoeren zum Tk-Programm und bleiben unveraendert): Name -> (Definition, Name der Option, hinter der sie erscheint)
+PARAM_ADDITIONS = {"SaveExcelCharset": ({"ParName": "SaveExcelCharset", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "SaveExcelCharset", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.06
+                                         "Input Text": "Dateien für das Excel-Programm speichern",  # v1.06
+                                         "Hint": "Gespeicherte Dateien (.MLL_pcf und .MLL_pgf) werden im Windows-Zeichensatz geschrieben, damit das Excel-Programm sie lesen kann (Umlaute und Trennzeichen). Enthält eine Datei Zeichen, die dort keinen Platz haben, bleibt sie UTF-8. Das Laden geht mit beiden."},  # v1.06
+                                        "ShowZ21Simulator")}  # v1.06
+
+
 def is_enabled(value) -> bool:  # v1.04
     """Wert einer Option (Checkbutton): 1, true, ja, an, ein"""  # v1.04
     return str(value if value is not None else "").strip().lower() in ("1", "true", "ja", "yes", "an", "ein", "on")  # v1.04
@@ -78,6 +89,14 @@ def apply_param_overrides(ctrl) -> None:  # v1.04
     for key, changes in PARAM_OVERRIDES.items():  # v1.04
         if key in data:  # v1.04
             data[key].update(changes)  # v1.04
+    for key, (definition, after) in PARAM_ADDITIONS.items():                            # neue Optionen anlegen und in die Seite Programm Einstellungen eintragen  # v1.06
+        data.setdefault(key, dict(definition))  # v1.06
+        try:  # v1.06
+            params = ctrl.MacroDef.data["ConfigurationPage"]["Params"]  # v1.06
+            if key not in params:  # v1.06
+                params.insert(params.index(after) + 1 if after in params else len(params), key)  # v1.06
+        except (AttributeError, KeyError, TypeError):  # v1.06
+            logger.debug("Option %s nicht in die Seite eingetragen", key, exc_info=True)  # v1.06
 
 
 def canonical_name(path: str) -> str | None:

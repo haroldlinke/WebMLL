@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-21) - M02_Public.py
+# Datei-Version: 1.02 (2026-10-26) - M02_Public.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M02_Public.py
 # Path:           proggen/M02_Public.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.02
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-21  Version K des Excel-Programms: Test_Suffix K; neue Konstanten (DEFAULT_TX_PAUSE, FirmwareDir, MLLFORUM_*, MLLSHOP_LINK, SF_PRO_SOUND_LED, SF_NAME_LED_NUMBER, SF_NAME_LED_OFFSET, SCT_*, SMT_*, PAT_ExtensionName, PAT_LEDVariableName, VT_LEDOrName, VT_LEDName)
+#   1.02  2026-10-26  Excel-Programm 3.5.0-K-long (bis zu 2048 Eingaenge): Test_Suffix K-long (Aenderung des Entwicklers)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -72,7 +73,8 @@ from ExcelAPI.XLC_Excel_Consts import *
 
 Lib_Version_Nr = '3.5.0'                                   # If changed check also "Exp_Prog_Gen_Version" in Pattern_Configurator
 # Test_Suffix = 'C1'                                          # The Excel programs use the same version number than the library to avoid confusion  # v1.01 (entfallen)
-Test_Suffix = 'K'                                           # The Excel programs use the same version number than the library to avoid confusion  # v1.01
+# Test_Suffix = 'K'                                           # The Excel programs use the same version number than the library to avoid confusion  # v1.02 (entfallen)
+Test_Suffix = 'K-long'                                           # The Excel programs use the same version number than the library to avoid confusion  # v1.02
 Prog_Version = 'Ver. ' + Lib_Version_Nr + Test_Suffix       # A sufix could be used for beta version
 Prog_Version_Nr = Lib_Version_Nr + Test_Suffix              # Call Gen_Release_Version() to update all sheets
 DEBUG_CHANGEEVENT = False

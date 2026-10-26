@@ -1,5 +1,5 @@
 @echo off
-REM Datei-Version: 1.05 (2026-10-23) - zip_erstellen.bat
+REM Datei-Version: 1.06 (2026-10-26) - zip_erstellen.bat
 REM Erstellt webmobaledlib.zip aus dem Ordner python. Dieses Skript liegt im Ordner NEBEN dem Ordner python
 REM (also im Ordner, der python enthaelt) und wird dort gestartet (Doppelklick). Vorher werden alle
 REM __pycache__-Ordner im Ordner python geloescht. Die ZIP-Datei bekommt denselben Platz wie das Skript;
@@ -10,6 +10,7 @@ REM Sicherungen und Einstellungen (zum Beispiel MobaLedTest_param.json aus frueh
 REM Die Web-Version legt solche Dateien nicht im Ordner python ab, sondern im Datenordner; die Liste ist eine Sicherheit,
 REM damit nie persoenliche Dateien bei Betatestern landen.
 REM Weitere Dateien: unten bei SKIP_FILES oder SKIP_DIRS eintragen.
+REM Seit 1.06 nicht im ZIP: der Ordner .pio (PlatformIO legt ihn im Ordner python an, mehrere hundert MB).
 REM
 REM Seit 1.03: Vor dem Packen wird die Pruefliste release_manifest.json (Version, Art "full", SHA-256 jeder Datei) in die Dateien fuer das ZIP geschrieben, nach dem
 REM Packen wird das fertige ZIP geprueft (python\release_tools.py check). Ohne Python oder bei einem Fehler wird KEIN ZIP zum Hochladen bereitgestellt: Ein
@@ -22,7 +23,7 @@ cd /d "%~dp0"
 set "SRC=python"
 set "ZIP=webmobaledlib.zip"
 set "STAGE=%TEMP%\webmobaledlib_zip_stage"
-set "SKIP_DIRS=__pycache__ venv venv_web .git .idea .vscode"
+set "SKIP_DIRS=__pycache__ venv venv_web .git .idea .vscode .pio"
 set "SKIP_FILES=MobaLedTest_param.json MobaLedTest_config.json web_password.json *.log *.log.* *.autosave.json *.tmp temp_workbook*"
 set "PY="
 set "PREV="

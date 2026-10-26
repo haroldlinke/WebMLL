@@ -1,9 +1,9 @@
-# Datei-Version: 2.04 (2026-10-21) - web_servotest.py
+# Datei-Version: 2.05 (2026-10-23) - web_servotest.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_servotest.py
 # Path:           _web/web_servotest.py
-# Version:        2.04
-# Last Update:    2026-10-21
+# Version:        2.05
+# Last Update:    2026-10-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,7 @@
 #   2.02  2026-10-20  Die dritte Taste im Zustand Einstellen heisst Verbinden (statt Schliessen) und ruft die Funktion des Menuepunkts ARDUINO -> Verbinden auf; close entfaellt
 #   2.03  2026-10-20  Verlassen von Reiter und Seite: leave() sendet Wert 0 und beendet den Direktmodus, bricht laufende Ablaeufe ab (epoch), nur einmal und ohne eine andere Seite zu stoeren; stop_all fuer Beenden und Neustart; page_closed fuer das Trennen des Browsers
 #   2.04  2026-10-21  Die dritte Taste im Zustand Einstellen (Verbinden) entfaellt: verbunden wird mit der Taste Mit ARDUINO verbinden in der Kopfzeile fuer alle Reiter; neu ServoPage.on_connected (Direktmodus und Servo waehlen nach dem Verbinden)
+#   2.05  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Servo Test 1" nach dem Excel-Dialog "Servo Test und Einstellung" (UserForm der Excel-Fassung, Stand Oktober 2026).
 
@@ -43,6 +44,11 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+try:  # v2.05
+    from _web.web_i18n import tr  # v2.05
+except ImportError:  # v2.05                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v2.05
+    def tr(text, **values):  # v2.05
+        return text.format(**values) if values else text  # v2.05
 
 logger = logging.getLogger(__name__)
 
@@ -718,7 +724,8 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
 
     def arrow_button(name):
         button = ui.button(ARROW_LABELS[name]).props("outline no-caps").classes("mll-servo-btn mll-servo-arrow").style("font-size: 20px")
-        button.tooltip(f"Wert {ARROWS[name][0]}, danach {ARROWS[name][1]:+d} je 100 ms")
+        # button.tooltip(f"Wert {ARROWS[name][0]}, danach {ARROWS[name][1]:+d} je 100 ms")  # v2.05 (entfallen)
+        button.tooltip(tr('Wert {pfeil}, danach {schritt:+d} je 100 ms', pfeil=ARROWS[name][0], schritt=ARROWS[name][1]))  # v2.05
         button.on("pointerdown", lambda e, n=name: model.arrow_press(n))
         for event in ("pointerup", "pointercancel", "pointerleave"):       # auch wenn der Finger abrutscht: immer loslassen
             button.on(event, lambda e, n=name: model.arrow_release(n))

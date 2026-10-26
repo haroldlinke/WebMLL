@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-10-23) - release_tools.py
+# Datei-Version: 1.06 (2026-10-26) - release_tools.py
 # ----------------------------------------------------------------------------------------------
 # Name:           release_tools.py
 # Path:           release_tools.py
-# Version:        1.04
-# Last Update:    2026-10-23
+# Version:        1.06
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,8 @@
 #   1.02  2026-10-21  Journal-Dateien (.update_*) gehoeren nicht ins Release; recover.py und repair.py muessen im ZIP sein; LEGACY_UNCOMPILABLE
 #   1.03  2026-10-23  Vom Programm erzeugte Dateien (LEDs_AutoProg/LEDs_AutoProg.h und LEDs_AutoProg/*.cmd) gehoeren nicht ins Release und werden nie verglichen (GENERATED_PATHS, is_generated)
 #   1.04  2026-10-23  Korrektur: LEDs_AutoProg/LEDs_AutoProg.h und LEDs_AutoProg/*.cmd gehoeren ins Release und in die Pruefliste (VOLATILE_PATHS, is_volatile); nur Abweichungen sind kein Fehler und werden beim Pruefen der Installation uebersprungen
+#   1.05  2026-10-26  platformio.ini im Ordner python (wird beim Hochladen mit PlatformIO neu geschrieben) zaehlt wie LEDs_AutoProg.h zu den vom Programm geaenderten Dateien (VOLATILE_PATHS)
+#   1.06  2026-10-26  Ordner .pio (PlatformIO, mehrere hundert MB) gehoert nicht ins Release (SKIP_DIRS); Warnung, wenn das ZIP entpackt ungewoehnlich gross ist (BIG_UNPACKED_MB)
 # ----------------------------------------------------------------------------------------------
 """Pruefliste (Manifest) und Pruefungen fuer das Release von webMobaLedLib. Nur Standardbibliothek: laeuft auch, wenn das Programm selbst nicht mehr startet.
 
@@ -43,13 +45,16 @@ MANIFEST_NAME = "release_manifest.json"
 MANIFEST_FORMAT = 1
 PROGRAM = "webMobaLedLib"
 # Persoenliche und erzeugte Dateien: nie im Release, nie in der Pruefliste (wie SKIP_DIRS und SKIP_FILES in zip_erstellen.bat und PROTECTED_* in web_update.py)
-SKIP_DIRS = {"__pycache__", "venv", "venv_web", ".git", ".idea", ".vscode"}
+# SKIP_DIRS = {"__pycache__", "venv", "venv_web", ".git", ".idea", ".vscode"}  # v1.06 (entfallen)
+SKIP_DIRS = {"__pycache__", "venv", "venv_web", ".git", ".idea", ".vscode", ".pio"}                 # .pio: PlatformIO legt es im Ordner python an (mehrere hundert MB)  # v1.06
+BIG_UNPACKED_MB = 100                                                                           # ein Release ist entpackt rund 32 MB gross: viel mehr ist ein Hinweis auf Ueberfluessiges im ZIP  # v1.06
 SKIP_FILES = ("MobaLedTest_param.json", "MobaLedTest_config.json", "web_password.json", "*.log", "*.log.*", "*.autosave.json", "*.tmp", "*.update.tmp", "temp_workbook*", ".update_*")
 # GENERATED_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd")  # v1.04 (entfallen)
 # Dateien im Ordner LEDs_AutoProg, die das Programm spaeter selbst aendert (erzeugt: LEDs_AutoProg.h und die .cmd-Dateien). Sie GEHOEREN ins Release und in die Pruefliste,
 # aber eine Abweichung ist kein Fehler: Sie werden beim Pruefen der Installation, im Update (nicht ersetzt, nicht geloescht) und in der Reparatur nicht verglichen.
 # Nur diese Pfade; andere .cmd-Dateien wie Restart_ProgGen.cmd, hex-files/*.cmd oder Configuration/build.cmd werden wie alle Dateien behandelt.
-VOLATILE_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd")  # v1.04
+# VOLATILE_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd")  # v1.05 (entfallen)
+VOLATILE_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd", "platformio.ini")  # v1.05
 # Beim Pruefen einer Installation (Start, quick, full) zaehlen nur Dateien, die sich zur Laufzeit nicht aendern. Das Programm schreibt erzeugte Dateien
 # (LEDs_AutoProg.h, LEDs_CONFIG.txt, Finished.txt, .MLL_pgf ...) in die Ordner LEDs_AutoProg, LEDs_AutoConfig, Configuration und processed_output; Vorlagen
 # und Hilfsdateien zum Kompilieren (.h, .ino, .cpp, .txt, .cmd) koennen so auch erzeugt sein. Bei diesen Dateien wird nur geprueft, ob sie da sind.
@@ -235,6 +240,16 @@ def verify_zip(zip_path: str, previous: str = "") -> Report:
         for rel in sorted(files):
             if is_skipped(rel):
                 rep.errors.append(f"Persoenliche oder erzeugte Datei im ZIP (gehoert nicht ins Release): {rel}")
+        unpacked = sum(info.file_size for info in zf.infolist() if not info.is_dir())  # v1.06
+        if unpacked > BIG_UNPACKED_MB * 1024 * 1024:                                            # ungewoehnlich gross: die groessten Ordner nennen  # v1.06
+            by_dir = {}  # v1.06
+            for info in zf.infolist():  # v1.06
+                if not info.is_dir():  # v1.06
+                    parts = info.filename.replace("\\", "/").split("/")  # v1.06
+                    top = "/".join(parts[:3]) if len(parts) > 3 else "/".join(parts[:-1]) or parts[0]  # v1.06
+                    by_dir[top] = by_dir.get(top, 0) + info.file_size  # v1.06
+            biggest = ", ".join(f"{d} ({s // (1024 * 1024)} MB)" for d, s in sorted(by_dir.items(), key=lambda kv: -kv[1])[:3])  # v1.06
+            rep.warnings.append(f"Das ZIP ist entpackt {unpacked // (1024 * 1024)} MB gross (ueblich: etwa 32 MB). Die groessten Ordner: {biggest}")  # v1.06
         for must in ("webmobaledlib.py", "release_tools.py", "recover.py", "repair.py"):
             if must not in files:
                 rep.errors.append(f"{must} fehlt im ZIP.")

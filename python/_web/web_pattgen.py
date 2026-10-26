@@ -1,9 +1,9 @@
-# Datei-Version: 1.17 (2026-10-20) - web_pattgen.py
+# Datei-Version: 1.18 (2026-10-23) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
-# Version:        1.17
-# Last Update:    2026-10-20
+# Version:        1.18
+# Last Update:    2026-10-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -26,6 +26,7 @@
 #   1.15  2026-10-19  Absturz beim Wechsel in den Patterngenerator mit veralteter headless_sheet.py: Klassenpruefung statt hasattr am Objekt, keine Hoehe wird zur Standardhoehe, Warnung im Protokoll
 #   1.16  2026-10-20  Knopf Vollbild in der Werkzeugleiste des Patterngenerators (web_fullscreen)
 #   1.17  2026-10-20  Knopf Vollbild entfaellt hier: Er steht jetzt einmal in der Kopfzeile (webmobaledlib)
+#   1.18  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 
@@ -55,6 +56,11 @@ from nicegui import app, context, run, ui  # v1.12
 
 from _web import web_dialogs, web_form_select  # v1.10
 from headless.headless_gridmodel import FULL_TEXT_TOOLTIP, build_grid
+try:  # v1.18
+    from _web.web_i18n import tr  # v1.18
+except ImportError:  # v1.18                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.18
+    def tr(text, **values):  # v1.18
+        return text.format(**values) if values else text  # v1.18
 
 logger = logging.getLogger(__name__)
 
@@ -362,7 +368,8 @@ class PatternView:
         except Exception as ex:                          # noqa: BLE001  # v1.01
             ok = False  # v1.01
             logger.exception("Aktion im Patterngenerator fehlgeschlagen")  # v1.01
-            ui.notify(f"Fehler: {ex}", type="negative")  # v1.01
+            # ui.notify(f"Fehler: {ex}", type="negative")  # v1.18 (entfallen)
+            ui.notify(tr('Fehler: {ex}', ex=ex), type="negative")  # v1.18
         finally:  # v1.01
             web_dialogs.clear_bridge()  # v1.01
             self.busy = False  # v1.01
@@ -440,7 +447,8 @@ class PatternView:
                 result["name"] = self.page.insert_picture(ws, path)  # v1.12
         ok = await self.action(fn)  # v1.12
         if ok and result.get("name"):  # v1.12
-            ui.notify(f"Das Bild {result['name']} ist unter der Tabelle eingefügt.", type="positive")  # v1.12
+            # ui.notify(f"Das Bild {result['name']} ist unter der Tabelle eingefügt.", type="positive")  # v1.18 (entfallen)
+            ui.notify(tr('Das Bild {name} ist unter der Tabelle eingefügt.', name=result['name']), type="positive")  # v1.18
 
     async def remove_pictures(self, dlg):  # v1.12
         count = len(self.page.pictures_of(self.ws))  # v1.12
@@ -453,7 +461,8 @@ class PatternView:
         result = {}  # v1.12
         ok = await self.action(lambda ws: result.update(n=self.page.remove_pictures(ws)))  # v1.12
         if ok:  # v1.12
-            ui.notify(f"{result.get('n', 0)} Bild(er) entfernt", type="positive")  # v1.12
+            # ui.notify(f"{result.get('n', 0)} Bild(er) entfernt", type="positive")  # v1.18 (entfallen)
+            ui.notify(tr('{anzahl} Bild(er) entfernt', anzahl=result.get('n', 0)), type="positive")  # v1.18
 
     async def on_new_sheet(self):  # v1.01
         before = {ws.Name for ws in self.page.workbook.sheets}  # v1.01
@@ -564,7 +573,8 @@ class PatternView:
             ui.notify("Es gibt keine Seiten zum Speichern.", type="warning")  # v1.07
             return  # v1.07
         if not all_sheets and not self.page.is_data_sheet(self.ws):  # v1.07
-            ui.notify(f"Die Seite {self.ws.Name} ist keine Musterseite und kann nicht gespeichert werden.", type="warning")  # v1.07
+            # ui.notify(f"Die Seite {self.ws.Name} ist keine Musterseite und kann nicht gespeichert werden.", type="warning")  # v1.18 (entfallen)
+            ui.notify(tr('Die Seite {blatt} ist keine Musterseite und kann nicht gespeichert werden.', blatt=self.ws.Name), type="warning")  # v1.18
             return  # v1.07
         dlg.close()  # v1.07
         result = {}  # v1.07
@@ -601,7 +611,8 @@ class PatternView:
         ok = await self.action(lambda ws: result.update(n=self.page.delete_all_data_sheets() if all_sheets else int(self.page.delete_sheet(ws))), refresh="never")  # v1.07
         if ok:  # v1.07
             await self.goto_sheet(self.page.first_sheet())  # v1.07
-            ui.notify(f"{result.get('n', 0)} Seite(n) gelöscht", type="positive")  # v1.07
+            # ui.notify(f"{result.get('n', 0)} Seite(n) gelöscht", type="positive")  # v1.18 (entfallen)
+            ui.notify(tr('{anzahl} Seite(n) gelöscht', anzahl=result.get('n', 0)), type="positive")  # v1.18
 
     async def on_recalc(self):  # v1.01
         await self.action(lambda ws: (self.page.use(ws), self.page.recalculate()))  # v1.01

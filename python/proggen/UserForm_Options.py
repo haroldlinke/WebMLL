@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-26) - UserForm_Options.py
+# ----------------------------------------------------------------------------------------------
+# Name:           UserForm_Options.py
+# Path:           proggen/UserForm_Options.py
+# Version:        1.01
+# Last Update:    2026-10-26
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-26  Beschriftungen: Installiere Korrekturversion (vorher Installiere Beta Test) und Hilfe im Forum (vorher Mail an Hardi) (Aenderung des Entwicklers)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -699,7 +711,8 @@ class CUserForm_Options:
             self.container.add(Update_frame, text=Update_frame_Name)
             
             self.Button_Setup(Update_frame,M09.Get_Language_Str("Aktualisiere Bibliotheke"),self.__Update_to_Arduino_Button_Click,"",Row=0,label_text="Aktualisiert die MobaLedLib auf den offiziellen freigegebenen Stand welcher in der Arduino IDE verfügbar ist.")
-            self.Button_Setup(Update_frame,M09.Get_Language_Str("Installiere Beta Test"),self.__Update_Beta_Button_Click,"",Row=1,label_text="Installiert die Beta Test Version der MobaLedLib Bibliothek.\n(Nur für Experten)")
+            # self.Button_Setup(Update_frame,M09.Get_Language_Str("Installiere Beta Test"),self.__Update_Beta_Button_Click,"",Row=1,label_text="Installiert die Beta Test Version der MobaLedLib Bibliothek.\n(Nur für Experten)")  # v1.01 (entfallen)
+            self.Button_Setup(Update_frame,M09.Get_Language_Str("Installiere Korrekturversion"),self.__Update_Beta_Button_Click,"",Row=1,label_text="Installiert die Korrekturversion der MobaLedLib Bibliothek. Bitte vorher prüfen, ob es eine neue Korrektur gibt!")  # v1.01
             self.Button_Setup(Update_frame,M09.Get_Language_Str("Status der Bibliotheken"),self.__Show_Lib_and_Board_Page_Button_Click,"",Row=2,label_text="Zeigt den Status aller installierten Bibliotheken und Boards an.")
             self.Button_Setup(Update_frame,M09.Get_Language_Str("Aktualisiere pyMobLedLib"),self.__Update_pyMobaLedLib_Button_Click,"",Row=3,label_text="Aktualisiert pyMobaLedLib auf die neueste Version.")
                            
@@ -720,7 +733,8 @@ class CUserForm_Options:
         self.lower_Button_frame = tk.Frame(self.top)
         self.lower_Button_frame.grid(row=2,column=0)
         
-        self.Button_Setup(self.lower_Button_frame,M09.Get_Language_Str("Mail an Hardi"),self.__HardiForum_Button_Click,"H",Row=0)
+        # self.Button_Setup(self.lower_Button_frame,M09.Get_Language_Str("Mail an Hardi"),self.__HardiForum_Button_Click,"H",Row=0)  # v1.01 (entfallen)
+        self.Button_Setup(self.lower_Button_frame,M09.Get_Language_Str("Hilfe im Forum"),self.__HardiForum_Button_Click,"H",Row=0)  # v1.01
         
         self.Button_Setup(self.lower_Button_frame,M09.Get_Language_Str("Schließen"),self.__Close_Button_Click,"S",Row=1)
                        

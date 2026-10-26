@@ -1,15 +1,16 @@
-# Datei-Version: 1.02 (2026-10-23) - repair.py
+# Datei-Version: 1.03 (2026-10-26) - repair.py
 # ----------------------------------------------------------------------------------------------
 # Name:           repair.py
 # Path:           repair.py
-# Version:        1.02
-# Last Update:    2026-10-23
+# Version:        1.03
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-21  Neu: Reparaturskript, das auch bei nicht startendem Programm laeuft (nur Standardbibliothek)
 #   1.01  2026-10-23  Vom Programm erzeugte Dateien (LEDs_AutoProg/LEDs_AutoProg.h und LEDs_AutoProg/*.cmd) werden nicht verglichen und nicht geschrieben
 #   1.02  2026-10-23  Korrektur: LEDs_AutoProg/LEDs_AutoProg.h und LEDs_AutoProg/*.cmd werden nicht verglichen und eine vorhandene nie ersetzt; fehlt sie, wird sie aus dem Release geholt (VOLATILE_PATHS)
+#   1.03  2026-10-26  platformio.ini im Ordner python wird von der Reparatur nicht ersetzt (VOLATILE_PATHS)
 # ----------------------------------------------------------------------------------------------
 """Reparatur der Installation von webMobaLedLib. Nur Standardbibliothek, braucht das Programm nicht: laeuft auch, wenn webmobaledlib.py nicht mehr startet.
 
@@ -55,7 +56,8 @@ STATIC_SUFFIXES = (".py", ".csv", ".xlsm", ".bat", ".sh", ".command", ".service"
 MUTABLE_DIRS = ("LEDs_AutoProg/", "LEDs_AutoConfig/", "Configuration/", "processed_output/")
 EXEC_SUFFIXES = (".sh", ".command")
 # GENERATED_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd")      # vom Programm erzeugt: nie vergleichen, nie schreiben (wie in release_tools.py)  # v1.02 (entfallen)
-VOLATILE_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd")        # vom Programm spaeter geaendert: nie vergleichen und nie ersetzen, nur fehlende wieder herstellen (wie in release_tools.py)  # v1.02
+# VOLATILE_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd")        # vom Programm spaeter geaendert: nie vergleichen und nie ersetzen, nur fehlende wieder herstellen (wie in release_tools.py)  # v1.03 (entfallen)
+VOLATILE_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd", "platformio.ini")        # vom Programm spaeter geaendert: nie vergleichen und nie ersetzen, nur fehlende wieder herstellen (wie in release_tools.py)  # v1.03
 EXEC_NAMES = {"mobaledlib-set-hostname"}
 MIN_FILES = 200
 MAX_ZIP_BYTES = 120 * 1024 * 1024

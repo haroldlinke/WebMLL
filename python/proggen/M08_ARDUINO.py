@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-20) - M08_ARDUINO.py
+# Datei-Version: 1.02 (2026-10-26) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.01
-# Last Update:    2026-10-20
+# Version:        1.02
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
+#   1.02  2026-10-26  Entwickler: PlatformIO (Create_PIO_Build_cmd, platformio.ini, Start_Arduino.cmd); Claude: PlatformIO auch fuer Linux, macOS und Raspberry Pi (Ordner bin statt Scripts, Find_PIO, PIO_Version), PATH nur einmal ergaenzt, verstaendliche Meldung wenn pio fehlt, platformio.ini wird beim Hochladen mit PlatformIO mit den aktuellen Einstellungen geschrieben
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -131,6 +132,8 @@ ArduName = ""
 
 import os
 import platform
+import shutil  # v1.02
+import subprocess  # v1.02
 from pathlib import Path
 
 def get_appdata_dir(appname):
@@ -405,37 +408,135 @@ def Create_Start_Sub(BoardName, ResultName, ComPort, BuildOptions, InoName, SrcD
         P01.MsgBox(M09.Get_Language_Str('Fehler beim schreiben der Datei \'') + Name + '\'', vbCritical, M09.Get_Language_Str('Fehler beim erzeugen der Arduino Start Datei'))
         return fn_return_value
 
+def Create_PIO_Build_cmd(ResultName, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType):
+    __Environment = 'nano_new'
+    OptParts = Split(BuildOptions, ' ')
+    if UBound(OptParts) >= 1:
+        if OptParts(0) == '--board':
+            BuildOptOnly = OptParts(1)
+            if InStr(BuildOptions, M02.BOARD_NANO_OLD):
+                __Environment = 'nano_old'
+            elif InStr(BuildOptions, M02.BOARD_NANO_FULL):
+                __Environment = 'nano_full'
+            elif InStr(BuildOptions, M02.BOARD_PICO):
+                __Environment = "pico"
+            elif InStr(BuildOptions, M02.BOARD_ESP32):
+                __Environment = "esp32"                
+    cmd = __Create_PIO_Build_cmd(__Environment, ResultName, ComPort, SrcDir)
+    return cmd
+    
+
+def PIO_Scripts_Dir():  # v1.02
+    # Ordner, in dem PlatformIO sein Programm pio ablegt: Windows ...\\.platformio\\penv\\Scripts, sonst ~/.platformio/penv/bin (Linux, macOS, Raspberry Pi)
+    if os.name == 'nt':  # v1.02
+        return GetShortPath(Environ(M02.Env_USERPROFILE)) + '\\.platformio\\penv\\Scripts'  # v1.02
+    return os.path.join(os.path.expanduser('~'), '.platformio', 'penv', 'bin')  # v1.02
+
+
+def Find_PIO():  # v1.02
+    # Vollstaendiger Pfad von pio (erst im Ordner von PlatformIO, dann im PATH); '' wenn PlatformIO nicht installiert ist
+    names = ('pio.exe', 'platformio.exe') if os.name == 'nt' else ('pio', 'platformio')  # v1.02
+    for name in names:  # v1.02
+        p = os.path.join(PIO_Scripts_Dir(), name)  # v1.02
+        if os.path.isfile(p):  # v1.02
+            return p  # v1.02
+    for name in ('pio', 'platformio'):  # v1.02
+        p = shutil.which(name)  # v1.02
+        if p:  # v1.02
+            return p  # v1.02
+    return ''  # v1.02
+
+
+def PIO_Version(pio=''):  # v1.02
+    # Erste Zeile der Ausgabe von "pio --version" (zum Beispiel "PlatformIO Core, version 6.1.18"); '' wenn pio fehlt oder nicht antwortet
+    pio = pio or Find_PIO()  # v1.02
+    if pio == '':  # v1.02
+        return ''  # v1.02
+    try:  # v1.02
+        res = subprocess.run([pio, '--version'], capture_output=True, text=True, timeout=30)  # v1.02
+        return ((res.stdout or res.stderr or '').strip().split('\n') or [''])[0].strip()  # v1.02
+    except Exception:  # v1.02
+        return ''  # v1.02
+
+
+def __PIO_Missing_Message():  # v1.02
+    return (M09.Get_Language_Str("PlatformIO wurde nicht gefunden.") + vbCr + vbCr +  # v1.02
+            M09.Get_Language_Str("PlatformIO ist als Entwicklungsumgebung eingestellt (Optionen, Entwicklungsumgebung), aber das Programm pio ist nicht installiert.") + vbCr + vbCr +  # v1.02
+            M09.Get_Language_Str("Installation: https://platformio.org/install/cli (zum Beispiel mit pip install platformio). Danach findet das Programm pio selbst.") + vbCr + vbCr +  # v1.02
+            M09.Get_Language_Str("Oder in den Optionen wieder die ARDUINO-IDE einstellen."))  # v1.02
+
+
+def __Create_PIO_Build_cmd(Environment, ResultName, ComPort, SrcDir):
+    # new_dir = Path(GetShortPath(Environ(M02.Env_USERPROFILE)) + '/.platformio/penv/Scripts')  # v1.02 (entfallen)
+    # os.environ["PATH"] += os.pathsep + str(new_dir)  # v1.02 (entfallen)
+    # os.environ[M02.Env_USERPROFILE] = GetShortPath(Environ(M02.Env_USERPROFILE))  # v1.02 (entfallen)
+    pio = Find_PIO()  # v1.02
+    if pio == '':  # v1.02
+        P01.MsgBox(__PIO_Missing_Message(), vbCritical, 'PlatformIO')  # v1.02
+        return ''  # v1.02
+    scripts = os.path.dirname(pio)  # v1.02
+    if scripts != '' and scripts not in os.environ.get('PATH', '').split(os.pathsep):         # nur einmal in den PATH eintragen (vorher wuchs er bei jedem Aufruf)  # v1.02
+        os.environ['PATH'] += os.pathsep + scripts  # v1.02
+    if os.name == 'nt':  # v1.02
+        os.environ[M02.Env_USERPROFILE] = GetShortPath(Environ(M02.Env_USERPROFILE))  # v1.02
+    if not __Create_PIO_Build(None, Environment, ResultName, ComPort, SrcDir):               # die Datei platformio.ini mit den aktuellen Einstellungen schreiben  # v1.02
+        return ''  # v1.02
+    cmd = 'cd .. && pio run -t upload -e ' + Environment + ' --upload-port ' + ComPort
+    return cmd
     
 def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     fn_return_value = False
     fp2 = Integer()
     #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    VBFiles.writeText(fp, '', '\n')
-    VBFiles.writeText(fp, 'set path=%path%;' + GetShortPath(Environ(M02.Env_USERPROFILE)) + '\\.platformio\\penv\\Scripts', '\n')
-    VBFiles.writeText(fp, 'set ' + M02.Env_USERPROFILE + '=' + GetShortPath(Environ(M02.Env_USERPROFILE)), '\n')
-    VBFiles.writeText(fp, 'cd ..', '\n')
-    VBFiles.writeText(fp, 'if "%1"=="rebuild" pio run -t clean -e ' + Environment, '\n')
-    VBFiles.writeText(fp, 'set flash=-t upload', '\n')
-    VBFiles.writeText(fp, 'if "%1"=="noflash" set flash=', '\n')
-    VBFiles.writeText(fp, 'pio run %flash% -e ' + Environment + ' --upload-port ' + ComPort, '\n')
-    VBFiles.writeText(fp, 'IF ERRORLEVEL 1 ECHO Start_Arduino_Result: %ERRORLEVEL% > "%~p0' + ResultName + '"', '\n')
-    VBFiles.writeText(fp, 'cd "%~p0"', '\n')
-    VBFiles.writeText(fp, '', '\n')
+    # if True:  # v1.02 (entfallen)
+    if fp is None:  # v1.02
+        pass                                                         # Hochladen mit PlatformIO: nur die Datei platformio.ini schreiben, keine Start-Datei  # v1.02
+    elif True:  # v1.02
+        VBFiles.writeText(fp, '', '\n')
+        VBFiles.writeText(fp, 'set path=%path%;' + GetShortPath(Environ(M02.Env_USERPROFILE)) + '\\.platformio\\penv\\Scripts', '\n')
+        VBFiles.writeText(fp, 'set ' + M02.Env_USERPROFILE + '=' + GetShortPath(Environ(M02.Env_USERPROFILE)), '\n')
+        VBFiles.writeText(fp, 'cd ..', '\n')
+        VBFiles.writeText(fp, 'pio run -t upload -e ' + Environment + ' --upload-port ' + ComPort, '\n')
+        VBFiles.writeText(fp, 'IF ERRORLEVEL 1 ECHO Start_Arduino_Result: %ERRORLEVEL% > "%~p0' + ResultName + '"', '\n')
+        VBFiles.writeText(fp, 'cd "%~p0"', '\n')
+        VBFiles.writeText(fp, '', '\n')
+    else:
+        VBFiles.writeText(fp, '', '\n')
+        VBFiles.writeText(fp, 'set path=%path%;' + GetShortPath(Environ(M02.Env_USERPROFILE)) + '\\.platformio\\penv\\Scripts', '\n')
+        VBFiles.writeText(fp, 'set ' + M02.Env_USERPROFILE + '=' + GetShortPath(Environ(M02.Env_USERPROFILE)), '\n')
+        VBFiles.writeText(fp, 'cd ..', '\n')
+        VBFiles.writeText(fp, 'if "%1"=="rebuild" pio run -t clean -e ' + Environment, '\n')
+        VBFiles.writeText(fp, 'set flash=-t upload', '\n')
+        VBFiles.writeText(fp, 'if "%1"=="noflash" set flash=', '\n')
+        VBFiles.writeText(fp, 'pio run %flash% -e ' + Environment + ' --upload-port ' + ComPort, '\n')
+        VBFiles.writeText(fp, 'IF ERRORLEVEL 1 ECHO Start_Arduino_Result: %ERRORLEVEL% > "%~p0' + ResultName + '"', '\n')
+        VBFiles.writeText(fp, 'cd "%~p0"', '\n')
+        VBFiles.writeText(fp, '', '\n')    
+    
     fp2 = FreeFile()
-    VBFiles.openFile(fp2, SrcDir + '..\\platformio.ini', 'w') 
+    VBFiles.openFile(fp2, SrcDir + '..//platformio.ini', 'w') 
     #Open Replace(SrcDir, "\LEDs_AutoProg\", "\platformio.inx") For Output As #fp2
+    VBFiles.writeText(fp2, '; Created by '+ PG.ThisWorkbook.Name, '\n')
     VBFiles.writeText(fp2, '[platformio]', '\n')
-    VBFiles.writeText(fp2, '; Created by '+ PG.ThisWorkbook.Name)
     VBFiles.writeText(fp2, 'src_dir = LEDs_AutoProg', '\n')
     VBFiles.writeText(fp2, '    ', '\n')
     VBFiles.writeText(fp2, '[env]', '\n')
     VBFiles.writeText(fp2, 'framework = arduino', '\n')
     VBFiles.writeText(fp2, 'build_src_flags =', '\n')   # ' 24.09.24: Hardi: Old:  "src_build_flags = "
     VBFiles.writeText(fp2, 'lib_deps =', '\n')
-    VBFiles.writeText(fp2, '    FastLED@>=3.9.13', '\n') # ' 24.04.25: Jürgen: Change minimal version to 3.9.13 - a stable version without FastLED blocks
+    VBFiles.writeText(fp2, '    FastLED@=3.9.13', '\n') # ' 24.04.25: Jürgen: Change minimal version to 3.9.13 - a stable version without FastLED blocks
     VBFiles.writeText(fp2, '    NmraDcc', '\n')         # '                  Ini syntax see: https://docs.platformio.org/en/stable/core/userguide/lib/cmd_uninstall.html
-    VBFiles.writeText(fp2, '    MobaLedLib=file://../../libraries/MobaLedLib', '\n')
+    if M02.Test_Suffix == "":    
+        #VBFiles.writeText(fp2, '    MobaLedLib=file://../../libraries/MobaLedLib@3.5.0', '\n')
+        VBFiles.writeText(fp2, '    MobaLedLib=file://libraries/MobaLedLib@3.5.0', '\n')
+    else:
+        VBFiles.writeText(fp2, '    MobaLedLib=file://libraries/MobaLedLib@3.5.0-'+ M02.Test_Suffix, '\n')
     VBFiles.writeText(fp2, '', '\n')
+    VBFiles.writeText(fp2, "build_src_filter =", '\n') #                                                   '                  See: https://docs.platformio.org/en/latest/projectconf/sections/env/options/build/build_src_filter.html
+    VBFiles.writeText(fp2, "  +<**/*.*>" , '\n') #                                                           '                  Add all files and directories
+    VBFiles.writeText(fp2, "  -<pyMobaLedLib_cc/>" , '\n') #                                                 '                  but not this directory
+    VBFiles.writeText(fp2, ""   , '\n') #  
+    
     VBFiles.writeText(fp2, '[env:esp32]', '\n')
     VBFiles.writeText(fp2, 'Platform = espressif32 @ 6.9.0', '\n')  # ' 23.12.24: Jürgen upgrade to 6.9.0
     VBFiles.writeText(fp2, 'Board = esp32dev', '\n')
@@ -450,17 +551,17 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, 'build_unflags = -Wall', '\n')
     VBFiles.writeText(fp2, '', '\n')
     
-    VBFiles.writeText(fp2, "[env:pico]")
-    VBFiles.writeText(fp2, "platform = https://github.com/maxgerhardt/platform-raspberrypi.git")
-    VBFiles.writeText(fp2, "Board = pico")
-    VBFiles.writeText(fp2, "framework = arduino")
-    VBFiles.writeText(fp2, "board_build.core = earlephilhower")
-    VBFiles.writeText(fp2, "build_src_filter = ${env.src_filter} -<pyProg_Generator_MobaLedLib/>")
-    VBFiles.writeText(fp2, "lib_ignore =")
-    VBFiles.writeText(fp2, "    FastLED")
-    VBFiles.writeText(fp2, "    U8g2")
-    VBFiles.writeText(fp2, "    ArduinoOTA")
-    VBFiles.writeText(fp2, "")
+    VBFiles.writeText(fp2, "[env:pico]", '\n') # 
+    VBFiles.writeText(fp2, "platform = https://github.com/maxgerhardt/platform-raspberrypi.git", '\n')
+    VBFiles.writeText(fp2, "Board = pico", '\n')
+    VBFiles.writeText(fp2, "framework = arduino", '\n')
+    VBFiles.writeText(fp2, "board_build.core = earlephilhower", '\n')
+    VBFiles.writeText(fp2, "build_src_filter = ${env.src_filter} -<pyProg_Generator_MobaLedLib/>", '\n') # 
+    VBFiles.writeText(fp2, "lib_ignore =", '\n') # 
+    VBFiles.writeText(fp2, "    FastLED", '\n') # )
+    VBFiles.writeText(fp2, "    U8g2", '\n') # )
+    VBFiles.writeText(fp2, "    ArduinoOTA", '\n') # )
+    VBFiles.writeText(fp2, "", '\n') # )
     
     VBFiles.writeText(fp2, '[env:nano_new]', '\n')
     VBFiles.writeText(fp2, 'Platform = atmelavr', '\n')
@@ -479,6 +580,7 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, 'upload_flags =', '\n')
     VBFiles.writeText(fp2, '    -u', '\n')
     VBFiles.writeText(fp2, '    -V', '\n')
+    
     VBFiles.writeText(fp2, '[env:nano_old]', '\n')
     VBFiles.writeText(fp2, 'Platform = atmelavr', '\n')
     VBFiles.writeText(fp2, 'Board = nanoatmega328', '\n')
@@ -497,6 +599,7 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, '    -u', '\n')
     VBFiles.writeText(fp2, '    -V', '\n')
     # 15.02.22: Hardi
+    
     VBFiles.writeText(fp2, '[env:nano_full]', '\n')
     VBFiles.writeText(fp2, 'Platform = atmelavr', '\n')
     VBFiles.writeText(fp2, 'Board = nanoatmega328full', '\n')
@@ -508,6 +611,7 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     if not M38.Write_PIO_Extension(fp2):
         VBFiles.closeFile(fp2)
         return fn_return_value
+    
     VBFiles.writeText(fp2, '', '\n')
     VBFiles.writeText(fp2, 'build_unflags = -Wall', '\n')
     VBFiles.writeText(fp2, '', '\n')
@@ -1962,12 +2066,13 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
             arduinoMonitorPage.add_text_to_textwindow("\n*****************************************************\n",highlight="Error")
             Failed = True
         return
-
-    
-    if not useARDUINO_IDE: 
-        CommandStr = '"' + Create_Cmd_file(ResFile, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType) + '"'
+    if M28.Get_Bool_Config_Var("Use_PlatformIO") == False:
+        if not useARDUINO_IDE: 
+            CommandStr = '"' + Create_Cmd_file(ResFile, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType) + '"'
+        else:
+            CommandStr = Create_ARDUINO_IDE_Cmd(ResFile, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType)
     else:
-        CommandStr = Create_ARDUINO_IDE_Cmd(ResFile, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType)
+        CommandStr = Create_PIO_Build_cmd(ResFile, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType)
     
     
     # 02.11.19: Added Quotation marks to prevent Problems with special characters in the path like '&'

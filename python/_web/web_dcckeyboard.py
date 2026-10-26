@@ -1,13 +1,14 @@
-# Datei-Version: 1.00 (2026-10-21) - web_dcckeyboard.py
+# Datei-Version: 1.01 (2026-10-23) - web_dcckeyboard.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_dcckeyboard.py
 # Path:           _web/web_dcckeyboard.py
-# Version:        1.00
-# Last Update:    2026-10-21
+# Version:        1.01
+# Last Update:    2026-10-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-21  Neu: Reiter DCC Keyboard (mlpyproggen/DCC_KeyboardPage.py ohne Tk): 32 Schalter mit rotem und gruenem Knopf, Basisadresse, Kommando @ AAA CC 01
+#   1.01  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "DCC Keyboard" (mlpyproggen/DCC_KeyboardPage.py, Klasse DCCKeyboardPage, ohne Tk).
 
@@ -25,6 +26,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
+try:  # v1.01
+    from _web.web_i18n import tr  # v1.01
+except ImportError:  # v1.01                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.01
+    def tr(text, **values):  # v1.01
+        return text.format(**values) if values else text  # v1.01
 
 logger = logging.getLogger(__name__)
 
@@ -175,7 +181,8 @@ def build(ctrl, is_active=None):
         color = "red" if channel == 0 else "green"
         button = ui.button(str(model.address(index)) if channel == 0 else "", on_click=lambda i=index, c=channel: pressed(i, c))
         button.props(f"unelevated no-caps color={color}").classes("mll-dcc-btn")
-        button.tooltip(f"Kanal {channel} ({'rot' if channel == 0 else 'grün'})")
+        # button.tooltip(f"Kanal {channel} ({'rot' if channel == 0 else 'grün'})")  # v1.01 (entfallen)
+        button.tooltip(tr('Kanal {channel} ({farbe})', channel=channel, farbe=tr('rot') if channel == 0 else tr('grün')))  # v1.01
         return button
 
     with ui.column().classes("w-full items-stretch gap-3 mll-dcc"):

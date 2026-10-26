@@ -1,9 +1,9 @@
-# Datei-Version: 1.09 (2026-10-19) - web_access.py
+# Datei-Version: 1.10 (2026-10-23) - web_access.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_access.py
 # Path:           _web/web_access.py
-# Version:        1.09
-# Last Update:    2026-10-19
+# Version:        1.10
+# Last Update:    2026-10-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.07  2026-10-18  Firewall: Fehler beim Lesen des Zustands werden angezeigt (statt keine Regel), Warten liefert ok, timeout oder unknown
 #   1.08  2026-10-19  Schalter Zugriff aus dem Netz erlauben (build_lan, on_lan, Rueckfrage nach einem Passwort, Neustart); Datei network.json ueber web_network
 #   1.09  2026-10-19  Einschalten von Zugriff aus dem Netz legt unter Windows die Firewall-Regel an (ensure_firewall_for_lan); Warnung zur Adresse des Servers nennt den Schalter statt MLL_HOST
+#   1.10  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 # ----------------------------------------------------------------------------------------------
 """Zusatzfelder der Seite Programm Einstellungen: Passwort fuer den Zugriff auf die Web-Oberflaeche aus dem Netz aendern und (nur auf
 dem Raspberry Pi mit installiertem Hilfsprogramm) den Namen des Rechners im Netz aendern.
@@ -30,6 +31,11 @@ from _web import web_dialogs as wd
 from _web import web_network  # v1.08
 from _web import web_firewall as wf  # v1.05
 from _web import web_password
+try:  # v1.10
+    from _web.web_i18n import tr  # v1.10
+except ImportError:  # v1.10                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.10
+    def tr(text, **values):  # v1.10
+        return text.format(**values) if values else text  # v1.10
 
 LOCAL_HOSTS = ("127.0.0.1", "localhost", "::1")
 HOOKS = {}                                       # "restart": Funktion zum Neustart des Programms (setzt webmobaledlib.py)  # v1.08
@@ -172,7 +178,8 @@ class WebAccess:
         port = SERVER["port"]  # v1.09
         status = await run.io_bound(wf.rule_status, port)  # v1.09
         if status.get("known", True) and status.get("rules") and not status.get("blocked"):  # v1.09
-            ui.notify(f"Die Windows-Firewall lässt den Port {port} schon zu.", type="info")  # v1.09
+            # ui.notify(f"Die Windows-Firewall lässt den Port {port} schon zu.", type="info")  # v1.10 (entfallen)
+            ui.notify(tr('Die Windows-Firewall lässt den Port {port} schon zu.', port=port), type="info")  # v1.10
         else:  # v1.09
             await self.add_firewall()  # v1.09
             status = await run.io_bound(wf.rule_status, port)  # v1.09
@@ -186,9 +193,10 @@ class WebAccess:
         from nicegui import ui  # v1.08
         with ui.dialog() as dlg, ui.card().classes("w-[560px] max-w-full"):  # v1.08
             ui.label("Zugriff aus dem Netz einschalten").classes("text-h6")  # v1.08
-            ui.label("Es ist noch kein Passwort eingerichtet. Ohne Passwort kann jeder, der dein Heimnetz erreicht, die Oberfläche benutzen und Programme "  # v1.08
-                     "auf den angeschlossenen Arduino laden. Besser jetzt ein Passwort eingeben (mindestens 4 Zeichen). Der Benutzername ist "  # v1.08
-                     f"„{web_password.username()}“. Leer lassen: ohne Passwort.").classes("text-body2")  # v1.08
+            # ui.label("Es ist noch kein Passwort eingerichtet. Ohne Passwort kann jeder, der dein Heimnetz erreicht, die Oberfläche benutzen und Programme "  # v1.10 (entfallen)
+                     # "auf den angeschlossenen Arduino laden. Besser jetzt ein Passwort eingeben (mindestens 4 Zeichen). Der Benutzername ist "  # v1.10 (entfallen)
+                     # f"„{web_password.username()}“. Leer lassen: ohne Passwort.").classes("text-body2")  # v1.10 (entfallen)
+            ui.label(tr('Es ist noch kein Passwort eingerichtet. Ohne Passwort kann jeder, der dein Heimnetz erreicht, die Oberfläche benutzen und Programme auf den angeschlossenen Arduino laden. Besser jetzt ein Passwort eingeben (mindestens 4 Zeichen). Der Benutzername ist „{benutzer}“. Leer lassen: ohne Passwort.', benutzer=web_password.username())).classes("text-body2")  # v1.10
             entry = ui.input("Passwort", password=True, password_toggle_button=True).props("dense outlined").classes("w-full")  # v1.08
             with ui.row().classes("justify-end w-full gap-2"):  # v1.08
                 ui.button("Abbrechen", on_click=lambda: dlg.submit(None)).props("flat no-caps")  # v1.08
@@ -366,8 +374,9 @@ class WebAccess:
             return
         with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[560px] max-w-full"):
             ui.label("Namen des Raspberry Pi ändern?").classes("text-h6")
-            ui.label(f"Der Raspberry Pi heißt danach „{name}“ und ist unter {self.host_url(name)} erreichbar. Die bisherige Adresse "
-                     f"({self.host_url(socket.gethostname())}) gilt dann nicht mehr: Öffne die Oberfläche künftig mit der neuen Adresse.")
+            # ui.label(f"Der Raspberry Pi heißt danach „{name}“ und ist unter {self.host_url(name)} erreichbar. Die bisherige Adresse "  # v1.10 (entfallen)
+                     # f"({self.host_url(socket.gethostname())}) gilt dann nicht mehr: Öffne die Oberfläche künftig mit der neuen Adresse.")  # v1.10 (entfallen)
+            ui.label(tr('Der Raspberry Pi heißt danach „{name}“ und ist unter {adresse} erreichbar. Die bisherige Adresse ({alte_adresse}) gilt dann nicht mehr: Öffne die Oberfläche künftig mit der neuen Adresse.', name=name, adresse=self.host_url(name), alte_adresse=self.host_url(socket.gethostname())))  # v1.10
             with ui.row().classes("justify-end w-full"):
                 ui.button("Abbrechen", on_click=lambda: dlg.submit(False)).props("flat").classes("mll-cancel")
                 ui.button("Namen ändern", on_click=lambda: dlg.submit(True)).props("color=primary").classes("mll-default")
@@ -380,7 +389,8 @@ class WebAccess:
         if not ok:
             ui.notify("Der Name konnte nicht geändert werden: " + (message or "unbekannter Fehler"), type="negative", timeout=15000)
             return
-        ui.notify(f"Der Name ist jetzt {name}.", type="positive")
+        # ui.notify(f"Der Name ist jetzt {name}.", type="positive")  # v1.10 (entfallen)
+        ui.notify(tr('Der Name ist jetzt {name}.', name=name), type="positive")  # v1.10
         self.refresh_host()
         with self.host_result:
             ui.label("Neue Adresse (in einem Lesezeichen oder dem Desktop-Symbol anpassen):").classes("text-caption")

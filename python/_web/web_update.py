@@ -1,4 +1,4 @@
-# Datei-Version: 1.05 (2026-10-23) - web_update.py
+# Datei-Version: 1.07 (2026-10-26) - web_update.py
 """Update der Web-Oberflaeche aus dem neuesten Release auf GitHub (Menue Hilfe -> Update webmobaledlib).
 
 Anders als das Update des Originals (komplettes Ueberschreiben des Programmordners, bei dem Virenscanner wegen der vielen Schreibzugriffe
@@ -49,14 +49,16 @@ MAX_DELETE = 20                                # mehr zu loeschende Dateien: das
 MIN_RATIO_KNOWN = 0.8                          # das ZIP muss mindestens so viele Dateien enthalten wie 80 Prozent der installierten  # v1.02
 
 # Nie ueberschreiben, nie loeschen (auch nicht, wenn das ZIP sie enthaelt)
-PROTECTED_DIRS = {"__pycache__", "venv", "venv_web", ".git", ".idea", ".vscode"}
+# PROTECTED_DIRS = {"__pycache__", "venv", "venv_web", ".git", ".idea", ".vscode"}  # v1.07 (entfallen)
+PROTECTED_DIRS = {"__pycache__", "venv", "venv_web", ".git", ".idea", ".vscode", ".pio"}                 # .pio: PlatformIO (Uebersetzungsergebnisse), bleibt unberuehrt  # v1.07
 PROTECTED_FILES = ("MobaLedTest_param.json", "MobaLedTest_config.json", "web_password.json", "*.log", "*.log.*", "*.autosave.json",
                    # "*.tmp", "*.update.tmp", "temp_workbook*")  # v1.03 (entfallen)
                    "*.tmp", "*.update.tmp", "temp_workbook*", ".update_*")  # v1.03
 # PROTECTED_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd")  # v1.05 (entfallen)
 # Dateien, die das Programm spaeter selbst aendert (genau diese Pfade, nicht alle .cmd-Dateien): Sie gehoeren ins Release. Fehlen sie, werden sie installiert; sind sie da,
 # werden sie NICHT ersetzt (auch wenn sie vom Release abweichen) und nie geloescht. Eine Abweichung ist kein Unterschied im Vergleich.
-VOLATILE_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd")  # v1.05
+# VOLATILE_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd")  # v1.06 (entfallen)
+VOLATILE_PATHS = ("LEDs_AutoProg/LEDs_AutoProg.h", "LEDs_AutoProg/*.cmd", "platformio.ini")  # v1.06
 EXEC_SUFFIXES = (".sh", ".command")
 EXEC_NAMES = {"mobaledlib-set-hostname"}
 

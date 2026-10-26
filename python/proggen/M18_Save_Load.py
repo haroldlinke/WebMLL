@@ -1,14 +1,16 @@
-# Datei-Version: 1.02 (2026-10-23) - M18_Save_Load.py
+# Datei-Version: 1.04 (2026-10-26) - M18_Save_Load.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M18_Save_Load.py
 # Path:           proggen/M18_Save_Load.py
-# Version:        1.02
-# Last Update:    2026-10-23
+# Version:        1.04
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-17  __Copy_and_Clear_Sheet: Vorlagenzeilen des neuen Blatts ganz loeschen (EntireRow.ClearContents); die Zeile RGB_Heartbeat(#LED) blieb in jedem beim Laden einer PGF-Datei angelegten Blatt stehen; davor Original-Port, nicht erfasst
 #   1.02  2026-10-23  Speichern im Format MLL_PGF (Optionen - Update - Datei speichern): In der Web-Oberflaeche keine Meldung 'Datei wurde geschrieben' mit dem internen Pfad mehr vor der Abfrage, wohin die Datei gespeichert werden soll
+#   1.03  2026-10-23  Beim Laden einer PGF-Datei: Token in der Spalte Typ in irgendeiner Sprache -> neutrales (deutsches) Token (M09.Token_Canonical_Any)
+#   1.04  2026-10-26  Speichern im Format MLL_PGF: Datei wird (Programm Einstellungen, Standard an) in den Windows-Zeichensatz umgeschrieben, wenn alle Zeichen Platz haben (fuer das Excel-Programm)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -421,6 +423,8 @@ def __Read_Line(line):
                 Col = Col + 1
                 # Use two lines to be able to enable both new columns separately                             '
             s = Replace(str(parts(i)), '{NewLine}', vbLf)
+            if Col == M25.Inp_Typ_Col:  # v1.03
+                s = M09.Token_Canonical_Any(s)  # v1.03  Token einer Datei in einer anderen Sprache (zum Beispiel Aan uit) -> neutrales Token
             if Left(s, 2) == '==':
                 s = '\'' + s
             if parts(i) != '':
@@ -635,6 +639,17 @@ def Get_MyExampleDir():
     fn_return_value = Dir
     return fn_return_value
 
+def Convert_to_Excel_Charset(FileName):  # v1.04
+    # Programm Einstellungen "Dateien fuer das Excel-Programm im Windows-Zeichensatz speichern" (Standard an): Die Datei wird in den Windows-Zeichensatz umgeschrieben, wenn alle Zeichen darin Platz haben
+    try:  # v1.04
+        enabled = str(PG.global_controller.getConfigData('SaveExcelCharset')).strip().lower() in ('1', 'true', 'ja', 'yes', 'an', 'ein', 'on')  # v1.04
+        if enabled:  # v1.04
+            from vb2py.vbclasses import VBFiles  # v1.04
+            Debug.Print('Convert_to_Excel_Charset(' + str(FileName) + '): ' + VBFiles.to_excel_charset(FileName))  # v1.04
+    except Exception as ex:  # v1.04
+        Debug.Print('Convert_to_Excel_Charset: ' + str(ex))  # v1.04
+
+
 def __Save_Data_to_File_CallBack(Do_Import, Import_FromAllSheets):
     global __Changed2SaveDir
     #--------------------------------------------------------------------------------------------
@@ -645,6 +660,7 @@ def __Save_Data_to_File_CallBack(Do_Import, Import_FromAllSheets):
             # In der Web-Oberflaeche (MLL_HEADLESS=1) entfaellt die Meldung: Sie nannte den internen Pfad und stand vor der Abfrage des Browsers, wohin die Datei gespeichert werden soll.
             if os.environ.get('MLL_HEADLESS') != '1':  # v1.02
                 P01.MsgBox(M09.Get_Language_Str('Die Datei wurde erfolgreich geschrieben:') + vbCr + '  \'' + __Save_Data_FileName + '\'', vbInformation, 'Datei wurde geschrieben')  # v1.02
+            Convert_to_Excel_Charset(__Save_Data_FileName)  # v1.04
 
 def __Achtivate_MyExampleDir_if_called_the_first_time():
     global __Changed2SaveDir

@@ -1,9 +1,9 @@
-# Datei-Version: 2.13 (2026-10-23) - webmobaledlib.py
+# Datei-Version: 2.18 (2026-10-26) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        2.13
-# Last Update:    2026-10-23
+# Version:        2.18
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -83,6 +83,11 @@
 #   2.11  2026-10-23  Menue Tabelle: Tabelle neu berechnen, Symbole aktualisieren und Testtasten neu aufbauen entfallen (stecken in Tabelle neu berechnen), Tabelle reparieren mit Rueckfrage
 #   2.12  2026-10-23  Mindestversion M18_Save_Load 1.02 (keine Meldung Datei wurde geschrieben beim Speichern im Format MLL_PGF)
 #   2.13  2026-10-23  Korrektur 2.10: LEDs_AutoProg.h und LEDs_AutoProg/*.cmd gehoeren ins Release, nur Abweichungen sind kein Fehler (web_update 1.05, release_tools 1.04, repair 1.02)
+#   2.14  2026-10-23  Mehrsprachigkeit: Katalog csv/Web_Languages.csv, Texte der Oberflaeche werden beim Aufbau uebersetzt (web_i18n), Sprachwechsel in den Programm Einstellungen wirkt sofort (Seite wird neu geladen); Probe: neutrale Tokens (M09.CANONICAL_TOKENS, aus)
+#   2.15  2026-10-23  Spaltenkoepfe (mit Tooltip) und Namensspalte der Datenblaetter werden in der eingestellten Sprache angezeigt (M09 1.03, headless_gridmodel 1.04)
+#   2.16  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr(...) umgestellt: uebersetzbar
+#   2.17  2026-10-23  Patterngenerator: Dateien aus dem Excel-Programm (Windows-Zeichensatz cp1252) werden gelesen (vbclasses 1.02, headless_pattgen 1.14)
+#   2.18  2026-10-26  Excel 3.5.0-K-long (bis zu 2048 Eingaenge), PlatformIO als Ersatz fuer die ARDUINO-IDE (Option Entwicklungsumgebung, Linux/macOS/Raspberry Pi), Speichern im Windows-Zeichensatz fuer das Excel-Programm
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -151,17 +156,26 @@ REQUIRED_FILES = {  # v1.75
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.02", "release_tools.py": "1.01", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.08 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.03", "release_tools.py": "1.02", "recover.py": "1.00", "repair.py": "1.00", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.10 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.04", "release_tools.py": "1.03", "recover.py": "1.00", "repair.py": "1.01", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.13 (entfallen)
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.05", "release_tools.py": "1.04", "recover.py": "1.00", "repair.py": "1.02", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.13
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.04", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.97
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.05", "release_tools.py": "1.04", "recover.py": "1.00", "repair.py": "1.02", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.15 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.18", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.05", "release_tools.py": "1.04", "recover.py": "1.00", "repair.py": "1.02", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.05", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.17 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.14", "_web/web_pattgen.py": "1.18", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.05", "release_tools.py": "1.04", "recover.py": "1.00", "repair.py": "1.02", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.05", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.18 (entfallen)
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.10", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.04", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.18 (entfallen)
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.15", "_web/web_pattgen.py": "1.18", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.07", "release_tools.py": "1.06", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.05", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.18
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.10", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.02", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.18
     # "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.98 (entfallen)
     # "proggen/M06_Write_Header.py": "1.03", "proggen/M20_PageEvents_a_Functions.py": "1.03", "proggen/M18_Save_Load.py": "1.01",  # v2.03 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.12 (entfallen)
-    "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.02",  # v2.12
+    # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.03",  # v2.18 (entfallen)
+    "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.18
     "proggen/M18a_Load_PicoConfig.py": "1.01", "proggen/M17_Import_old_Data.py": "1.01",  # v1.75
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.01", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.01", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v1.99 (entfallen)
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.02", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.00 (entfallen)
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.03", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.09 (entfallen)
-    "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.09
+    # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.14 (entfallen)
+    # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.00", "headless/headless_gridmodel.py": "1.03", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.02", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.15 (entfallen)
+    # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.01", "_web/web_params.py": "1.02", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.03", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.17 (entfallen)
+    # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.01", "vb2py/vbclasses.py": "1.02", "_web/web_params.py": "1.02", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.03", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.18 (entfallen)
+    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.02", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.04", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.02", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.03", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.18
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -251,6 +265,20 @@ if _hidden_root is None:
     no_tk.install()
 
 from nicegui import app as nicegui_app, context, run, ui               # noqa: E402
+try:                                                                     # Mehrsprachigkeit: die Texte der Elemente werden beim Aufbau uebersetzt (csv/Web_Languages.csv, _web/web_i18n.py)  # v2.14
+    from _web import web_i18n                                            # noqa: E402  # v2.14
+    web_i18n.install(ui)  # v2.14
+except Exception as _i18n_error:                                         # noqa: BLE001  ohne die Datei laeuft die Oberflaeche deutsch weiter  # v2.14
+    web_i18n = None  # v2.14
+    print(f"Hinweis: Die Mehrsprachigkeit der Oberfläche ist nicht verfügbar ({_i18n_error}).", flush=True)  # v2.14
+
+
+def tr(text, **values):  # v2.16
+    """Text in die eingestellte Sprache (siehe _web/web_i18n.py); ohne die Mehrsprachigkeit der deutsche Text. Mit values wird {name} ersetzt."""  # v2.16
+    if web_i18n is not None:  # v2.16
+        return web_i18n.tr(text, **values)  # v2.16
+    return text.format(**values) if values else text  # v2.16
+
 
 from headless.headless_app_controller import HeadlessAppController     # noqa: E402
 from headless.headless_gridmodel import build_grid, row_number_width                      # noqa: E402  # v1.96
@@ -712,7 +740,12 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "2.13 (2026-10-23)"  # v2.13
+VERSION = "2.18 (2026-10-26)"  # v2.18
+# VERSION = "2.17 (2026-10-23)"  # v2.18 (entfallen)
+# VERSION = "2.16 (2026-10-23)"  # v2.17 (entfallen)
+# VERSION = "2.15 (2026-10-23)"  # v2.16 (entfallen)
+# VERSION = "2.14 (2026-10-23)"  # v2.15 (entfallen)
+# VERSION = "2.13 (2026-10-23)"  # v2.14 (entfallen)
 # VERSION = "2.12 (2026-10-23)"  # v2.13 (entfallen)
 # VERSION = "2.11 (2026-10-23)"  # v2.12 (entfallen)
 # VERSION = "2.10 (2026-10-23)"  # v2.11 (entfallen)
@@ -1171,6 +1204,10 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     import ExcelAPI.XLA_Application as X02
     from _web import web_log as web_log_titles
     import proggen.M09_Language as M09          # wie in Prog_Generator.py (Get_Language_Str)
+    try:  # v2.14
+        lang_active = {"value": int(M09.Get_ExcelLanguage())}           # Sprache, in der die Seite gerade aufgebaut ist (Sprachwechsel in den Programm Einstellungen)  # v2.14
+    except Exception:                                                   # noqa: BLE001  # v2.14
+        lang_active = {"value": 0}  # v2.14
     import proggen.M02_Public as M02
     import proggen.M25_Columns as M25
     import proggen.M28_Diverse as M28
@@ -1210,7 +1247,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     autosave_label = ui.label("").classes("text-caption text-grey-7 mll-autosave")
     if FILE_PROBLEMS:                                   # rote Meldung oben auf der Seite  # v1.75
         with ui.column().classes("w-full gap-0 q-pa-sm").style("background:#ffebee;border:2px solid #c62828;border-radius:4px"):  # v1.75
-            ui.label(f"Nicht alle Dateien passen zur Version {VERSION}. Bitte alle Dateien dieses Stands einspielen, bis dahin kann etwas falsch aussehen oder fehlen:").style("color:#b71c1c;font-weight:600")  # v1.75
+            # ui.label(f"Nicht alle Dateien passen zur Version {VERSION}. Bitte alle Dateien dieses Stands einspielen, bis dahin kann etwas falsch aussehen oder fehlen:").style("color:#b71c1c;font-weight:600")  # v2.16 (entfallen)
+            ui.label(tr('Nicht alle Dateien passen zur Version {VERSION}. Bitte alle Dateien dieses Stands einspielen, bis dahin kann etwas falsch aussehen oder fehlen:', VERSION=VERSION)).style("color:#b71c1c;font-weight:600")  # v2.16
             for line in FILE_PROBLEMS:  # v1.75
                 ui.label(line).style("color:#b71c1c;font-size:13px")  # v1.75
 
@@ -1353,7 +1391,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ctrl.shutdown_program(save=save)
         except Exception as ex:                  # noqa: BLE001
             logger.exception("Beenden: Speichern fehlgeschlagen")
-            ui.notify(f"Fehler beim Speichern: {ex}", type="negative")
+            # ui.notify(f"Fehler beim Speichern: {ex}", type="negative")  # v2.16 (entfallen)
+            ui.notify(tr('Fehler beim Speichern: {ex}', ex=ex), type="negative")  # v2.16
             return False
         remove_autosave()                          # normal beendet: die Zwischensicherung wird nicht mehr gebraucht
         return True
@@ -1367,18 +1406,21 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ui.notify("Es läuft noch ein Vorgang - bitte warten.", type="warning")
             return
         if not await run.io_bound(sudo_allows, action):
-            ui.notify(f"Der Raspberry Pi kann nicht {what}: Dem Dienstbenutzer fehlt die sudo-Regel für 'systemctl {action}'. "
-                      "Abhilfe: im Ordner pi 'sudo bash install_pi.sh --no-check' ausführen.", type="negative", timeout=15000)
+            # ui.notify(f"Der Raspberry Pi kann nicht {what}: Dem Dienstbenutzer fehlt die sudo-Regel für 'systemctl {action}'. "  # v2.16 (entfallen)
+                      # "Abhilfe: im Ordner pi 'sudo bash install_pi.sh --no-check' ausführen.", type="negative", timeout=15000)  # v2.16 (entfallen)
+            ui.notify(tr("Der Raspberry Pi kann nicht {what}: Dem Dienstbenutzer fehlt die sudo-Regel für 'systemctl {action}'. Abhilfe: im Ordner pi 'sudo bash install_pi.sh --no-check' ausführen.", what=what, action=action), type="negative", timeout=15000)  # v2.16
             return
         with ui.dialog() as dlg, ui.card().classes("w-[560px] max-w-full"):
-            ui.label(f"Raspberry Pi {what}?").classes("text-h6")
+            # ui.label(f"Raspberry Pi {what}?").classes("text-h6")  # v2.16 (entfallen)
+            ui.label(tr('Raspberry Pi {what}?', what=what)).classes("text-h6")  # v2.16
             ui.label("Das Programm wird beendet. Mit \"Speichern\" werden vorher die Tabellen und die Konfiguration gesichert. "
                      + ("Danach startet der Raspberry Pi neu." if reboot else
                         "Danach fährt der Raspberry Pi herunter. Erst wenn die grüne LED nicht mehr blinkt, darf der Strom getrennt werden."))
             with ui.row().classes("justify-end w-full"):
                 ui.button("Abbrechen (A)", on_click=lambda: dlg.submit(None)).props("flat data-key=A").classes("mll-cancel")
                 ui.button("Ohne Speichern (O)", on_click=lambda: dlg.submit("nosave")).props("color=negative outline data-key=O")
-                ui.button(f"Speichern und {what} (S)", on_click=lambda: dlg.submit("save")).props(
+                # ui.button(f"Speichern und {what} (S)", on_click=lambda: dlg.submit("save")).props(  # v2.16 (entfallen)
+                ui.button(tr('Speichern und {what} (S)', what=what), on_click=lambda: dlg.submit("save")).props(  # v2.16
                     "color=primary data-key=S").classes("mll-default")
         choice = await dlg
         web_dialogs.safe_delete(dlg)
@@ -1607,6 +1649,16 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             logger.debug("Aktiv-Spalte nicht ermittelbar", exc_info=True)
         return None
 
+    def typ_column(ws):  # v2.14
+        """0-basierter Index der Spalte Typ (AnAus, Tast, Rot, Gruen) eines Datenblatts, sonst None (fuer die uebersetzte Anzeige der Tokens, nur mit M09.CANONICAL_TOKENS)."""  # v2.14
+        try:  # v2.14
+            if M28.Is_Data_Sheet(ws):  # v2.14
+                M25.Make_sure_that_Col_Variables_match(ws)  # v2.14
+                return int(M25.Inp_Typ_Col) - 1  # v2.14
+        except Exception:                        # noqa: BLE001  # v2.14
+            logger.debug("Spalte Typ nicht ermittelbar", exc_info=True)  # v2.14
+        return None  # v2.14
+
     def tooltip_columns(ws):
         """Beschreibung, Name und Konfiguration (G, K, L): Tooltip mit dem vollstaendigen Inhalt."""
         try:
@@ -1725,6 +1777,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                                                      check_cols={ec} if ec is not None else None,
                                                      max_col=last_column(ws), tooltip_cols=tooltip_columns(ws),
                                                      test_buttons=test_button_data(ws),  # v1.96
+                                                     display_cols=({typ_column(ws): M09.Token_Display} if M09.CANONICAL_TOKENS and typ_column(ws) is not None else None),  # v2.14
+                                                     display_cells=M09.Get_Display_Cells(ws),        # Spaltenkoepfe (mit Tooltip) und Namensspalte in der eingestellten Sprache  # v2.15
                                                      row_number_width=row_number_width(max_row_number, font_scales(ctrl)["grid"]))  # v1.96
         t_build = time.perf_counter()  # v1.49
         if SHAPES_DEBUG:  # v1.51
@@ -1956,7 +2010,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             await run_in_worker(work)
         except Exception as ex:                      # noqa: BLE001
             logger.exception("Makroauswahl fehlgeschlagen")
-            ui.notify(f"Makroauswahl: {ex}", type="negative")
+            # ui.notify(f"Makroauswahl: {ex}", type="negative")  # v2.16 (entfallen)
+            ui.notify(tr('Makroauswahl: {ex}', ex=ex), type="negative")  # v2.16
         show(ws)
 
     async def toggle_library_select(ws, r, c):
@@ -2094,10 +2149,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 if os.path.exists(path):
                     offer_download(path, name)
                 else:
-                    ui.notify(f"Die Datei {name} wurde nicht erzeugt.", type="warning")
+                    # ui.notify(f"Die Datei {name} wurde nicht erzeugt.", type="warning")  # v2.16 (entfallen)
+                    ui.notify(tr('Die Datei {name} wurde nicht erzeugt.', name=name), type="warning")  # v2.16
             except Exception as ex:                  # noqa: BLE001
                 logger.exception("Download von %s fehlgeschlagen", name)
-                ui.notify(f"Download fehlgeschlagen: {ex}", type="negative")
+                # ui.notify(f"Download fehlgeschlagen: {ex}", type="negative")  # v2.16 (entfallen)
+                ui.notify(tr('Download fehlgeschlagen: {ex}', ex=ex), type="negative")  # v2.16
 
     async def run_in_worker(fn):
         """fn im Worker-Thread ausfuehren. Dialoge (MsgBox/InputBox) erscheinen waehrenddessen im
@@ -2124,6 +2181,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         new_value = a["newValue"]
         if new_value is None:                    # Zelle im Grid geleert (null) -> wie Excel: leerer Text
             new_value = ""
+        if M09.CANONICAL_TOKENS and col - 1 == typ_column(ws):  # v2.14
+            new_value = M09.Token_Canonical(new_value)                  # in der Spalte Typ wird ein Token der Anzeigesprache als neutrales (deutsches) Token gespeichert  # v2.14
 
         def write():
             try:
@@ -2138,7 +2197,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             await run_in_worker(write)
         except Exception as ex:                  # noqa: BLE001
             logger.exception("Schreiben von %s!%s,%s fehlgeschlagen", ws.Name, row, col)
-            ui.notify(f"Fehler beim Schreiben: {ex}", type="negative")
+            # ui.notify(f"Fehler beim Schreiben: {ex}", type="negative")  # v2.16 (entfallen)
+            ui.notify(tr('Fehler beim Schreiben: {ex}', ex=ex), type="negative")  # v2.16
         show(ws)                                 # Handler koennen weitere Zellen geaendert haben
 
     grid.on("cellValueChanged", on_cell_changed)
@@ -2225,7 +2285,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             await run_in_worker(work)
         except Exception as ex:                      # noqa: BLE001
             logger.exception("Schreiben fehlgeschlagen")
-            ui.notify(f"Fehler beim Schreiben: {ex}", type="negative")
+            # ui.notify(f"Fehler beim Schreiben: {ex}", type="negative")  # v2.16 (entfallen)
+            ui.notify(tr('Fehler beim Schreiben: {ex}', ex=ex), type="negative")  # v2.16
         show(ws)
 
     async def op_clear(_=None):                      # Entf und Ausschneiden (der Text ist schon in der Zwischenablage)
@@ -2267,7 +2328,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             await run_in_worker(work)
         except Exception as ex:                      # noqa: BLE001
             logger.exception("Symbole nach dem Einfuegen nicht aktualisiert")
-            ui.notify(f"Symbole: {ex}", type="warning")
+            # ui.notify(f"Symbole: {ex}", type="warning")  # v2.16 (entfallen)
+            ui.notify(tr('Symbole: {ex}', ex=ex), type="warning")  # v2.16
         show(ws)
 
     async def op_paste_insert(e):                    # Paste (Zeilen einfuegen): neue Zeilen statt Ueberschreiben
@@ -2317,7 +2379,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 await run_in_worker(insert_rows)
             except Exception as ex:                  # noqa: BLE001
                 logger.exception("Zeilen einfuegen fehlgeschlagen")
-                ui.notify(f"Fehler beim Einfügen der Zeilen: {ex}", type="negative")
+                # ui.notify(f"Fehler beim Einfügen der Zeilen: {ex}", type="negative")  # v2.16 (entfallen)
+                ui.notify(tr('Fehler beim Einfügen der Zeilen: {ex}', ex=ex), type="negative")  # v2.16
                 show(state["ws"])
                 return
         await write_cells(items)
@@ -2467,7 +2530,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                         await run_in_worker(lambda: tb_release(name))
             except Exception as ex:                 # noqa: BLE001
                 logger.exception("Testtaste fehlgeschlagen")
-                ui.notify(f"Testtaste: {ex}", type="negative")
+                # ui.notify(f"Testtaste: {ex}", type="negative")  # v2.16 (entfallen)
+                ui.notify(tr('Testtaste: {ex}', ex=ex), type="negative")  # v2.16
 
     if hasattr(ui, "on"):
         ui.on("mll_tb", on_testbutton)             # globales Ereignis, ausgeloest per emitEvent('mll_tb', ...) im Browser
@@ -2530,8 +2594,9 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             except Exception as ex:             # noqa: BLE001
                 failed = True
                 logger.exception("Befehl '%s' fehlgeschlagen", label)
-                ui.notify(f"{label.replace(chr(13), ' ').replace(chr(10), ' ')}: Fehler {type(ex).__name__}: {ex}\n"
-                          "Einzelheiten im Protokoll (Hilfe → Logfile anzeigen).", type="negative", multi_line=True, timeout=0, close_button="OK")
+                # ui.notify(f"{label.replace(chr(13), ' ').replace(chr(10), ' ')}: Fehler {type(ex).__name__}: {ex}\n"  # v2.16 (entfallen)
+                          # "Einzelheiten im Protokoll (Hilfe → Logfile anzeigen).", type="negative", multi_line=True, timeout=0, close_button="OK")  # v2.16 (entfallen)
+                ui.notify(tr('{befehl}: Fehler {typ}: {ex}\nEinzelheiten im Protokoll (Hilfe → Logfile anzeigen).', befehl=label.replace(chr(13), ' ').replace(chr(10), ' '), typ=type(ex).__name__, ex=ex), type="negative", multi_line=True, timeout=0, close_button="OK")  # v2.16
             if weblog is not None and not failed:
                 weblog.close_later_if_ok()      # Log-Fenster (z. B. Bibliotheken installieren) nach Erfolg nach 10 s schliessen
             dismiss_move_note()
@@ -2651,7 +2716,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         work = {"tmp": None, "release": None, "plan": None}
         with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[860px] max-w-full"):
             ui.label("Update webMobaLedLib").classes("text-h6")
-            ui.label(f"Installiert: Version {VERSION}").classes("text-caption text-grey-8")
+            # ui.label(f"Installiert: Version {VERSION}").classes("text-caption text-grey-8")  # v2.16 (entfallen)
+            ui.label(tr('Installiert: Version {VERSION}', VERSION=VERSION)).classes("text-caption text-grey-8")  # v2.16
             status = ui.label("").style("white-space: pre-line")
             bar = ui.linear_progress(value=0, show_value=False).classes("w-full")
             listing = ui.scroll_area().classes("w-full").style("height: 0")
@@ -2866,7 +2932,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ui.notify("Zwischengespeichert.", type="positive")
         except Exception as ex:                                # noqa: BLE001
             logger.exception("Zwischenspeichern fehlgeschlagen")
-            ui.notify(f"Zwischenspeichern fehlgeschlagen: {ex}", type="negative")
+            # ui.notify(f"Zwischenspeichern fehlgeschlagen: {ex}", type="negative")  # v2.16 (entfallen)
+            ui.notify(tr('Zwischenspeichern fehlgeschlagen: {ex}', ex=ex), type="negative")  # v2.16
         finally:
             _AUTOSAVE["running"] = state["busy"] = False
 
@@ -2881,8 +2948,9 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         when = time.strftime("%d.%m.%Y %H:%M:%S", time.localtime(os.path.getmtime(path)))
         with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[560px] max-w-full"):
             ui.label("Zwischengespeicherter Stand gefunden").classes("text-h6")
-            ui.label(f"Das Programm wurde zuletzt nicht normal beendet. Es gibt einen automatisch gesicherten Stand "
-                     f"vom {when}, der neuer ist als der gespeicherte. Soll er wiederhergestellt werden?")
+            # ui.label(f"Das Programm wurde zuletzt nicht normal beendet. Es gibt einen automatisch gesicherten Stand "  # v2.16 (entfallen)
+                     # f"vom {when}, der neuer ist als der gespeicherte. Soll er wiederhergestellt werden?")  # v2.16 (entfallen)
+            ui.label(tr('Das Programm wurde zuletzt nicht normal beendet. Es gibt einen automatisch gesicherten Stand vom {when}, der neuer ist als der gespeicherte. Soll er wiederhergestellt werden?', when=when))  # v2.16
             with ui.row().classes("justify-end w-full"):
                 ui.button("Verwerfen (V)", on_click=lambda: dlg.submit("discard")).props("flat data-key=V").classes("mll-cancel")
                 ui.button("Wiederherstellen (W)", on_click=lambda: dlg.submit("restore")).props("color=primary data-key=W").classes("mll-default")
@@ -2977,10 +3045,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         a = e.args if isinstance(e.args, dict) else {}
         name = str(a.get("name", "?"))
         if a.get("error") == "type":
-            ui.notify(f"'{name}' ist keine MLL_PGF-Datei (*.MLL_pgf).", type="warning")
+            # ui.notify(f"'{name}' ist keine MLL_PGF-Datei (*.MLL_pgf).", type="warning")  # v2.16 (entfallen)
+            ui.notify(tr("'{name}' ist keine MLL_PGF-Datei (*.MLL_pgf).", name=name), type="warning")  # v2.16
             return
         if a.get("error"):
-            ui.notify(f"Die Datei '{name}' konnte nicht übertragen werden: {a.get('msg', '')}", type="negative")
+            # ui.notify(f"Die Datei '{name}' konnte nicht übertragen werden: {a.get('msg', '')}", type="negative")  # v2.16 (entfallen)
+            ui.notify(tr("Die Datei '{name}' konnte nicht übertragen werden: {meldung}", name=name, meldung=a.get('msg', '')), type="negative")  # v2.16
             return
         path = _DROPPED.pop(a.get("token"), None)
         if not path or not os.path.exists(path):
@@ -2994,7 +3064,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             extra = f"\n\nEs wurde nur die erste von {a['count']} Dateien übernommen." if int(a.get("count") or 1) > 1 else ""
             with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[560px] max-w-full"):
                 ui.label("PGF-Datei laden").classes("text-h6")
-                ui.label(f"Die Datei '{name}' laden?{extra}").style("white-space: pre-line")
+                # ui.label(f"Die Datei '{name}' laden?{extra}").style("white-space: pre-line")  # v2.16 (entfallen)
+                ui.label(tr("Die Datei '{name}' laden?{extra}", name=name, extra=extra)).style("white-space: pre-line")  # v2.16
                 with ui.row().classes("justify-end w-full"):
                     ui.button("Abbrechen (A)", on_click=lambda: dlg.submit(False)).props("flat data-key=A").classes("mll-cancel")
                     ui.button("Laden (J)", on_click=lambda: dlg.submit(True)).props("color=primary data-key=J").classes("mll-default")
@@ -3082,6 +3153,18 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             logger.debug("maxLEDcount nicht numerisch: %r", values.get("maxLEDcount"))
 
     def after_settings_save(values):                   # nach dem Sichern: Einstellungen in der Oberflaeche wirksam machen
+        try:                                           # Sprachwechsel: Zwischenspeicher leeren und die Seite in allen Browsern neu aufbauen (alle Texte in der neuen Sprache)  # v2.14
+            lang_now = int(M09.Get_ExcelLanguage())  # v2.14
+        except Exception:                              # noqa: BLE001  # v2.14
+            lang_now = lang_active["value"]  # v2.14
+        if lang_now != lang_active["value"]:  # v2.14
+            logger.info("Sprache gewechselt: %s -> %s", lang_active["value"], lang_now)  # v2.14
+            lang_active["value"] = lang_now  # v2.14
+            M09.Language_Changed()  # v2.14
+            if web_i18n is not None:  # v2.14
+                web_i18n.language_changed()  # v2.14
+                web_i18n.reload_all_clients()  # v2.14
+            return  # v2.14
         ctrl.show_hiddentables = str(ctrl.getConfigData("ShowHiddentables")).lower() in ("1", "true")
         apply_optional_tabs()                          # DM Servo Einstellungen anzeigen: Reiter ein- oder ausblenden, ohne Neustart  # v1.96
         rebuild_sheet_tabs()                           # versteckte Tabellen als Reiter ein-/ausblenden
@@ -3116,7 +3199,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                                                           extra=extra_cls(ctrl) if extra_cls else None)
                 settings_pages[tab] = (cfg_page, ask_title, ask_text)
             else:
-                ui.label(f"Die Seite {macro} ist in MacroDef nicht definiert.").classes("text-grey-7")
+                # ui.label(f"Die Seite {macro} ist in MacroDef nicht definiert.").classes("text-grey-7")  # v2.16 (entfallen)
+                ui.label(tr('Die Seite {macro} ist in MacroDef nicht definiert.', macro=macro)).classes("text-grey-7")  # v2.16
 
     mark("Einstellungsseiten (Behaelter)")
 
@@ -3278,7 +3362,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             settings_pages[new_tab][0].mark_saved()            # store_old_config (tabselected)
     tabs.on_value_change(on_tab)
     if start_tab != "pg" and not _web_tabs.tab_enabled(start_tab, ctrl):                       # Adresse eines ausgeschalteten Reiters (/ServoTest2)  # v1.96
-        ui.notify(f"Der Reiter {_web_tabs.TAB_TITLES.get(start_tab, start_tab)} ist ausgeschaltet. Einschalten: Programm Einstellungen, \"DM Servo Einstellungen anzeigen\".", type="warning")  # v1.96
+        # ui.notify(f"Der Reiter {_web_tabs.TAB_TITLES.get(start_tab, start_tab)} ist ausgeschaltet. Einschalten: Programm Einstellungen, \"DM Servo Einstellungen anzeigen\".", type="warning")  # v2.16 (entfallen)
+        ui.notify(tr('Der Reiter {reiter} ist ausgeschaltet. Einschalten: Programm Einstellungen, "DM Servo Einstellungen anzeigen".', reiter=_web_tabs.TAB_TITLES.get(start_tab, start_tab)), type="warning")  # v2.16
     elif start_tab != "pg":                                 # Adresse eines Reiters (zum Beispiel /Farbtest): wie ein Klick auf den Reiter  # v1.96
         tabs.set_value(start_tab)  # v1.82
     if fullscreen:                                        # Knopf und Beschriftung nach dem Aufbau der Seite angleichen  # v1.82

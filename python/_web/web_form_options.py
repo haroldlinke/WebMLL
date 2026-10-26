@@ -1,4 +1,4 @@
-# Datei-Version: 1.03 (2026-10-15) - web_form_options.py
+# Datei-Version: 1.04 (2026-10-26) - web_form_options.py
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -21,6 +21,11 @@ import sys
 import textwrap
 
 from _web import web_dialogs as wd
+try:  # v1.04
+    from _web.web_i18n import tr  # v1.04
+except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.04
+    def tr(text, **values):  # v1.04
+        return text.format(**values) if values else text  # v1.04
 
 logger = logging.getLogger(__name__)
 
@@ -140,6 +145,13 @@ async def _options_async(spec: dict, st: dict):
                                     for b in t["buttons"]:
                                         button_row(b)
                                 board_group(t["side"], tab)
+                        elif t["kind"] == "ide":  # v1.04
+                            ui.label(t["intro"]).classes("text-grey-8").style("white-space: pre-line")  # v1.04
+                            ui.radio({0: t["arduino_text"], 1: t["pio_text"]}, value=1 if vals.get("use_pio") else 0,  # v1.04
+                                     on_change=lambda e: vals.__setitem__("use_pio", bool(e.value)))  # v1.04
+                            ui.label(t["status"]).classes("text-grey-8").style("white-space: pre-line")  # v1.04
+                            for b in t["buttons"]:  # v1.04
+                                button_row(b)  # v1.04
                         else:
                             for b in t["buttons"]:
                                 button_row(b)
@@ -199,9 +211,12 @@ def make_class(Base):
                 getattr(self, PFX + "__Get_Arduino_Typ")(False)
             setattr(self, PFX + "__Disable_Set_Arduino_Typ", False)
             self.control_to_radiobutton()
+            import proggen.M28_Diverse as M28  # v1.04
             return {"L": self.rb_res["_L"].get() or None, "R": self.rb_res["_R"].get() or None,
                     "auto_L": bool(self.Autodetect_Typ_L_CheckBox_var.get()),
-                    "auto_R": bool(self.Autodetect_Typ_R_CheckBox_var.get())}
+                    # "auto_R": bool(self.Autodetect_Typ_R_CheckBox_var.get())}  # v1.04 (entfallen)
+                    "auto_R": bool(self.Autodetect_Typ_R_CheckBox_var.get()),  # v1.04
+                    "use_pio": bool(M28.Get_Bool_Config_Var("Use_PlatformIO"))}  # v1.04
 
         def _radios(self, side):
             items = []
@@ -240,6 +255,15 @@ def make_class(Base):
                 # Der Knopf des Originals "Update pyMobaLedLib" (__Update_pyMobaLedLib_Button_Click) fehlt hier absichtlich: Er laedt master.zip des
                 # Original-Repositorys und ueberschreibt den ganzen Programmordner (Tk-Version), das gibt es im Web nicht. Das Update der Web-Oberflaeche
                 # ist das Menue Hilfe -> Update webMobaLedLib (_web/web_update.py).
+                import proggen.M08_ARDUINO as M08  # v1.04
+                pio = M08.Find_PIO()  # v1.04
+                tabs.append({"name": tr("Entwicklungsumgebung"), "kind": "ide",  # v1.04
+                             "intro": tr("Womit sollen die Programme übersetzt und auf den Arduino geladen werden?"),  # v1.04
+                             "arduino_text": tr("ARDUINO-IDE (Standard)"), "pio_text": tr("PlatformIO (Ersatz für die ARDUINO-IDE)"),  # v1.04
+                             "status": (tr("PlatformIO gefunden: {pfad}", pfad=pio) if pio else  # v1.04
+                                        tr("PlatformIO wurde nicht gefunden. Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio)")),  # v1.04
+                             "buttons": [{"text": tr("PlatformIO prüfen"), "handler": "__Check_PIO_Button_Click", "disabled": False,  # v1.04
+                                          "label": tr("Zeigt, ob PlatformIO installiert ist, und seine Version")}]})  # v1.04
                 tabs.append({"name": M09.Get_Language_Str("Update"), "kind": "list", "buttons": tab_buttons(
                     buttons, ["__Update_to_Arduino_Button_Click", "__Update_Beta_Button_Click",
                               "__Show_Lib_and_Board_Page_Button_Click"]),
@@ -265,6 +289,9 @@ def make_class(Base):
             self.Autodetect_Typ_L_CheckBox_var.set(1 if vals["auto_L"] else 0)
             self.Autodetect_Typ_R_CheckBox_var.set(1 if vals["auto_R"] else 0)
             logger.info("Optionen: Zustand vorher %s, nachher %s", initial, vals)
+            if "use_pio" in vals and vals["use_pio"] != initial.get("use_pio"):  # v1.04
+                import proggen.M28_Diverse as M28  # v1.04
+                M28.Set_String_Config_Var("Use_PlatformIO", "1" if vals["use_pio"] else "0")           # Config: PlatformIO Build verwenden  # v1.04
             if vals["auto_L"] != initial["auto_L"]:
                 self._web_ensure_text(True)
                 getattr(self, PFX + "__Autodetect_Typ_L_CheckBox_Click")()     # inkl. Check_Board
@@ -275,6 +302,17 @@ def make_class(Base):
                 self.Change_Board(True, self.boardlist[self.rb_res["_L"].get()])
             if vals["R"] != initial["R"] and self.rb_res["_R"].get():
                 self.Change_Board(False, self.boardlist[self.rb_res["_R"].get()])
+
+        def _web_check_pio(self):  # v1.04
+            """Knopf PlatformIO pruefen: Ist pio installiert? Welche Version?"""  # v1.04
+            import proggen.M08_ARDUINO as M08  # v1.04
+            pio = M08.Find_PIO()  # v1.04
+            if not pio:  # v1.04
+                P01.MsgBox(tr("PlatformIO wurde nicht gefunden.") + "\n\n" +  # v1.04
+                           tr("Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio). Danach findet das Programm pio selbst."), ns["vbInformation"], "PlatformIO")  # v1.04
+                return  # v1.04
+            version = M08.PIO_Version(pio)  # v1.04
+            P01.MsgBox((version or tr("PlatformIO ist vorhanden, antwortet aber nicht.")) + "\n" + pio, ns["vbInformation"] if version else vbCritical, "PlatformIO")  # v1.04
 
         def _web_loop(self, first_page_only):
             while True:
@@ -287,6 +325,9 @@ def make_class(Base):
                 self._web_apply(vals, initial)
                 self._web_hidden = False
                 self._web_reshow = False
+                if handler == "__Check_PIO_Button_Click":                 # gibt es nur im Web (kein Knopf des Originals)  # v1.04
+                    self._web_check_pio()  # v1.04
+                    continue  # v1.04
                 try:
                     getattr(self, PFX + handler)()
                 except Exception as ex:                                  # noqa: BLE001

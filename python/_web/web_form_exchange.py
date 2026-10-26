@@ -1,13 +1,14 @@
-# Datei-Version: 1.00 (2026-10-17) - web_form_exchange.py
+# Datei-Version: 1.01 (2026-10-23) - web_form_exchange.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_exchange.py
 # Path:           _web/web_form_exchange.py
-# Version:        1.00
-# Last Update:    2026-10-17
+# Version:        1.01
+# Last Update:    2026-10-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-17  Neu: Zeilenauswahl fuer Export zu ProgGen und Import von ProgGen als Hinweisband im Reiter Programm Generator
+#   1.01  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 # ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/Select_ProgGen_Dest_Form.py und Select_ProgGen_Src_Form.py.
 
@@ -33,6 +34,11 @@ from nicegui import ui
 import ExcelAPI.XLA_Application as X02
 import proggen.Select_ProgGen_Dest_Form as D13
 import proggen.Select_ProgGen_Src_Form as D12
+try:  # v1.01
+    from _web.web_i18n import tr  # v1.01
+except ImportError:  # v1.01                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.01
+    def tr(text, **values):  # v1.01
+        return text.format(**values) if values else text  # v1.01
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +186,8 @@ class ExchangeBanner:
             await self.run_in_worker(work)
         except Exception as ex:                          # noqa: BLE001
             logger.exception("Zeilenauswahl: OK fehlgeschlagen")
-            ui.notify(f"Fehler: {ex}", type="negative")
+            # ui.notify(f"Fehler: {ex}", type="negative")  # v1.01 (entfallen)
+            ui.notify(tr('Fehler: {ex}', ex=ex), type="negative")  # v1.01
         self.refresh_pg()
         if not form.IsActive:                            # fertig (bei einer Fehlermeldung mit Wiederholen bleibt das Band stehen)
             if form.kind == "src" or form.GoBack_CheckBox.Value:

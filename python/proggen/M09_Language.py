@@ -1,14 +1,16 @@
-# Datei-Version: 1.01 (2026-10-21) - M09_Language.py
+# Datei-Version: 1.03 (2026-10-23) - M09_Language.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M09_Language.py
 # Path:           proggen/M09_Language.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.03
+# Last Update:    2026-10-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-21  Neu: Get_Language_Identifier (Sprachnummer -> DE, EN, NL, FR, IT, ES; Version K des Excel-Programms)
+#   1.02  2026-10-23  Language_Changed (Zwischenspeicher nach einem Sprachwechsel leeren); Probe neutrale Tokens: CANONICAL_TOKENS (Standard aus), Token_Display, Token_Canonical
+#   1.03  2026-10-23  Get_Display_Cells: Spaltenkoepfe (mit Tooltip aus den Zeilen Cell und Comment der Tabelle Languages) und Namensspalte (aus Lib_Macros) in der eingestellten Sprache anzeigen, ohne die Zellen zu aendern
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -47,6 +49,7 @@
 # 2021-01-07 v4.02 HL: - Else:, ByRef check done, first PoC release
 
 
+import re  # v1.03
 from vb2py.vbfunctions import *
 from vb2py.vbdebug import *
 from vb2py.vbconstants import *
@@ -763,11 +766,202 @@ def __Test_Change_Language_in_Dialog():
     ## VB2PY (CheckDirective) VB directive took path 1 on PATTERN_CONFIG_PROG
     Copy_Select_GotoAct_Form.Show()
 
+# Neutrale Speicherung der Tokens (siehe HOC_intern.md, Version 2.14): Ist CANONICAL_TOKENS an (Standard), stehen in den Zellen immer die deutschen Tokens (Rot, Gruen, AnAus, Tast);
+# die Anzeige im Raster uebersetzt (Token_Display), eine Eingabe wird zurueckuebersetzt (Token_Canonical), beim Laden einer Datei wird jede Sprache umgewandelt (Token_Canonical_Any).
+# Grund: Die Umstellung der Blaetter auf die Sprache (Update_Language_in_All_Sheets, oben mit return abgeschaltet) findet im Port nicht statt, die Zellen bleiben deutsch, der Code verglich sie
+# aber mit den Tokens der gewaehlten Sprache: bei Nederlands (und jeder Sprache ausser Deutsch) passte nichts mehr.
+CANONICAL_TOKENS = True  # v1.02
+Token_Keys = ('Rot', 'Grün', 'AnAus', 'Tast')  # v1.02
+
+
+def Token_Display(Value):  # v1.02
+    # Anzeige eines gespeicherten Tokens in der eingestellten Sprache (nur mit CANONICAL_TOKENS; sonst unveraendert)
+    if CANONICAL_TOKENS and isinstance(Value, str) and Value in Token_Keys:  # v1.02
+        return Get_Language_Str(Value)  # v1.02
+    return Value  # v1.02
+
+
+def Token_Canonical(Value):  # v1.02
+    # Eingabe oder Anzeigetext eines Tokens in einer Sprache -> das neutrale (deutsche) Token. Wie bisher zaehlt der erste Buchstabe (UCase(Left(Target, 1))). Anderer Text bleibt unveraendert.
+    if not CANONICAL_TOKENS or not isinstance(Value, str):  # v1.02
+        return Value  # v1.02
+    text = Value.strip()  # v1.02
+    if text == '' or text in Token_Keys:  # v1.02
+        return Value  # v1.02
+    shown = {key: Get_Language_Str(key) for key in Token_Keys}  # v1.02
+    for key, display in shown.items():                                     # ganzes Wort in der eingestellten Sprache (oder deutsch)  # v1.02
+        if text.upper() == display.upper() or text.upper() == key.upper():  # v1.02
+            return key  # v1.02
+    firsts = [key for key, display in shown.items() if display[:1].upper() == text[:1].upper()]  # v1.02
+    if len(firsts) == 1 and len(text) <= max(len(shown[firsts[0]]), 1):     # eindeutiger erster Buchstabe, nicht laenger als das Token  # v1.02
+        return firsts[0]  # v1.02
+    return Value  # v1.02
+
+
+DISPLAY_TRANSLATION = True      # Spaltenkoepfe und Namensspalte in der Anzeige uebersetzen (die Zellen bleiben unveraendert)  # v1.03
+__NameCache = {}  # v1.03
+__LibRowCache = {}                 # Zeile eines Makros in Lib_Macros (unabhaengig von der Sprache: bleibt beim Sprachwechsel erhalten, damit die Suche nicht noch einmal laeuft)  # v1.03
+# Zeilentypen der Tabelle Languages je Seitenart: (Zelle, Kommentar)
+__PageTypes = {'DCC': ('Cell_DCC', 'Comment_DCC'), 'LNet': ('Cell_LNET', 'Comment_LNet'), 'Selectrix': ('Cell_SX', 'Comment_SX'), 'CAN': ('Cell_CAN', 'Comment_CAN')}  # v1.03
+
+
+def __Norm(Txt):  # v1.03
+    return re.sub(r'\s+', ' ', str(Txt)).strip().lower()  # v1.03
+
+
+def __Pick(Row, Lang):  # v1.03
+    # Text einer Zeile der Tabelle Languages in der Sprache; fehlt er (oder steht ToDo darin): English, dann Deutsch. Der Anteil nach dem Kennzeichen (Paragraphenzeichen) gehoert nicht dazu.
+    for c in (Lang, 1, 0):  # v1.03
+        if c < len(Row) - 2:  # v1.03
+            txt = str(Row[2 + c]).split('§')[0]  # v1.03
+            if txt.strip() != '' and not txt.strip().lower().startswith('todo'):  # v1.03
+                return txt  # v1.03
+    return ''  # v1.03
+
+
+def __Cell_Pos(Addr):  # v1.03
+    m = re.match(r'^([A-Za-z]+)(\d+)$', str(Addr).split('§')[0].strip())  # v1.03
+    if not m:  # v1.03
+        return None  # v1.03
+    col = 0  # v1.03
+    for ch in m.group(1).upper():  # v1.03
+        col = col * 26 + ord(ch) - 64  # v1.03
+    return int(m.group(2)) - 1, col - 1  # v1.03
+
+
+def __Header_Cells(Sh, Lang):  # v1.03
+    # {(Zeile, Spalte): Text} der Kopfzeilen eines Datenblatts in der Sprache Lang (0-basiert). Nur Zellen, deren Text noch einer der Texte der Tabelle Languages ist (nicht vom Anwender geaendert).
+    result = {}  # v1.03
+    pid = str(M25.Page_ID)  # v1.03
+    cell_types = ('Cell',) + __PageTypes.get(pid, ('', ''))[:1]  # v1.03
+    comment_types = ('Comment',) + __PageTypes.get(pid, ('', ''))[1:]  # v1.03
+    rows = PG.ThisWorkbook.Sheets(M02.LANGUAGES_SH).tksheet.data  # v1.03
+    comments = {}  # v1.03
+    for row in rows[FirstLangRow - 1:]:  # v1.03
+        if len(row) > 3 and str(row[0]) in comment_types and str(row[1]).strip() != '':  # v1.03
+            comments[str(row[1]).split('§')[0].strip().upper()] = row  # v1.03
+    data = Sh.tksheet.data  # v1.03
+    for row in rows[FirstLangRow - 1:]:  # v1.03
+        if len(row) > 3 and str(row[0]) in cell_types and str(row[1]).strip() != '':  # v1.03
+            pos = __Cell_Pos(row[1])  # v1.03
+            if pos is None or pos[0] >= len(data) or pos[1] >= len(data[pos[0]]):  # v1.03
+                continue  # v1.03
+            cur = str(data[pos[0]][pos[1]])  # v1.03
+            label, _, tip = cur.partition('§')  # v1.03
+            if label.strip() == '' or __Norm(label) not in {__Norm(str(row[2 + i]).split('§')[0]) for i in range(len(row) - 2)}:  # v1.03
+                continue  # v1.03
+            new = __Pick(row, Lang)  # v1.03
+            if new == '':  # v1.03
+                continue  # v1.03
+            if '§' in cur:  # v1.03
+                crow = comments.get(str(row[1]).split('§')[0].strip().upper())  # v1.03
+                new_tip = __Pick(crow, Lang) if crow is not None else ''  # v1.03
+                new = new + '§' + (new_tip if new_tip != '' else tip)  # v1.03
+            result[pos] = new  # v1.03
+    return result  # v1.03
+
+
+def __Display_Name(Config, Lang):  # v1.03
+    key = (Config, Lang)  # v1.03
+    if key not in __NameCache:  # v1.03
+        name = ''  # v1.03
+        try:  # v1.03
+            import proggen.M09_Select_Macro as M09SM  # v1.03
+            if Config not in __LibRowCache:  # v1.03
+                __LibRowCache[Config] = M09SM.Find_Macro_in_Lib_Macros_Sheet(Config)  # v1.03
+            LibMacRow = __LibRowCache[Config]  # v1.03
+            if LibMacRow > 0:  # v1.03
+                name = M09SM.Get_Language_Text(LibMacRow, M02.SM_LName_COL, Lang)  # v1.03
+                if name == '':  # v1.03
+                    name = PG.ThisWorkbook.Sheets(M02.LIBMACROS_SH).Cells(LibMacRow, M02.SM_Name__COL)  # v1.03
+            elif str(Config).startswith('//'):  # v1.03
+                name = 'Pico Config'  # v1.03
+            elif 'Pattern' in str(Config):  # v1.03
+                name = Get_Language_Str('Muster') + ' Pattern_Configurator'  # v1.03
+        except Exception:  # v1.03
+            name = ''  # v1.03
+        __NameCache[key] = str(name) if name is not None else ''  # v1.03
+    return __NameCache[key]  # v1.03
+
+
+def Get_Display_Cells(Sh):  # v1.03
+    # Anzeige der Kopfzeilen und der Namensspalte eines Datenblatts in der eingestellten Sprache: {(Zeile, Spalte): Text} (0-basiert). Die Zellen selbst bleiben unveraendert (wie bei den Tokens).
+    # Die Namen werden aus den Makros der Spalte Config neu bestimmt (wie Update_Language_Name_Column_in_Sheet in Excel), auch in Deutsch: Ein Name kann beim Laden in einer anderen Sprache entstanden sein.
+    result = {}  # v1.03
+    if not DISPLAY_TRANSLATION:  # v1.03
+        return result  # v1.03
+    try:  # v1.03
+        import proggen.M28_Diverse as M28  # v1.03
+        if not M28.Is_Data_Sheet(Sh):  # v1.03
+            return result  # v1.03
+        M25.Make_sure_that_Col_Variables_match(Sh)  # v1.03
+        lang = Get_ExcelLanguage()  # v1.03
+        if lang != 0:  # v1.03
+            result.update(__Header_Cells(Sh, lang))  # v1.03
+        if M25.LanName_Col > 0 and M25.Config__Col > 0:  # v1.03
+            data = Sh.tksheet.data  # v1.03
+            for r in range(M02.FirstDat_Row - 1, len(data)):  # v1.03
+                row = data[r]  # v1.03
+                if M25.Config__Col - 1 < len(row) and M25.LanName_Col - 1 < len(row):  # v1.03
+                    cfg = str(row[M25.Config__Col - 1])  # v1.03
+                    if cfg.strip() != '':  # v1.03
+                        name = __Display_Name(cfg, lang)  # v1.03
+                        if name != '' and name != str(row[M25.LanName_Col - 1]):  # v1.03
+                            result[(r, M25.LanName_Col - 1)] = name  # v1.03
+    except Exception:  # v1.03
+        return {}  # v1.03
+    return result  # v1.03
+
+__AnyTokenMap = {}  # v1.02
+
+
+def Token_Canonical_Any(Value):  # v1.02
+    # Beim Laden einer Datei: ein Token in IRGENDEINER Sprache der Tabelle Languages (zum Beispiel "Aan uit" aus einer niederlaendischen Datei) -> das neutrale (deutsche) Token. Anderer Text bleibt.
+    if not CANONICAL_TOKENS or not isinstance(Value, str) or Value.strip() == '' or Value in Token_Keys:  # v1.02
+        return Value  # v1.02
+    if not __AnyTokenMap:  # v1.02
+        try:  # v1.02
+            LSh = PG.ThisWorkbook.Sheets(M02.LANGUAGES_SH)  # v1.02
+            for key in Token_Keys:  # v1.02
+                Row = Find_Language_Str_Row(key)  # v1.02
+                if Row:  # v1.02
+                    for c in range(FirstLangCol, FirstLangCol + 7):                          # die 7 Sprachen der Tabelle Languages (M30.LastUsedColumnInRow geht im Port nicht)  # v1.02
+                        txt = str(LSh.Cells(Row, c))  # v1.02
+                        if txt.strip() != '':  # v1.02
+                            __AnyTokenMap.setdefault(txt.strip().upper(), key)  # v1.02
+                __AnyTokenMap.setdefault(key.upper(), key)  # v1.02
+        except Exception:  # v1.02
+            return Value  # v1.02
+    return __AnyTokenMap.get(Value.strip().upper(), Value)  # v1.02
+
+
+def Language_Changed():  # v1.02
+    # Nach einem Wechsel der Sprache (Programm Einstellungen): die von der Sprache abhaengigen Zwischenspeicher leeren
+    global Red_T, Green_T, OnOff_T, Tast_T  # v1.02
+    Red_T = Green_T = OnOff_T = Tast_T = r''                               # Set_Tast_Txt_Var bestimmt sie neu  # v1.02
+    __AnyTokenMap.clear()  # v1.02
+    __NameCache.clear()  # v1.03
+    try:  # v1.02
+        for Sh in PG.ThisWorkbook.sheets:  # v1.02
+            if getattr(Sh, 'searchcache', None) is not None:  # v1.02
+                Sh.searchcache = {}                                        # Suchergebnisse der Tabelle Languages usw.  # v1.02
+    except Exception:  # v1.02
+        pass  # v1.02
+    try:  # v1.02
+        import proggen.M10_Par_Description as M10  # v1.02
+        M10.Reset_Par_Prefix_Cache()  # v1.02
+    except Exception:  # v1.02
+        pass  # v1.02
+
+
 def Set_Tast_Txt_Var(ForceUpdate=False):
     #-----------------------------------------------------------
     global Red_T,Green_T,OnOff_T,Tast_T
     
     if ForceUpdate or Red_T == r'':
+        if CANONICAL_TOKENS:  # v1.02
+            Red_T, Green_T, OnOff_T, Tast_T = r'Rot', r'Grün', r'AnAus', r'Tast'  # v1.02
+            return  # v1.02
         Red_T = Get_Language_Str(r'Rot')
         Green_T = Get_Language_Str(r'Grün')
         OnOff_T = Get_Language_Str(r'AnAus')

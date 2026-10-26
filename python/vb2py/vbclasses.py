@@ -1,5 +1,18 @@
+# Datei-Version: 1.03 (2026-10-26) - vbclasses.py
 # -*- coding: utf -*-
-# Datei-Version: 1.01 (2026-10-15) - vbclasses.py (Collection.__delitem__: der echte Schluessel wird geloescht, nicht die Position)
+# ----------------------------------------------------------------------------------------------
+# Name:           vbclasses.py
+# Path:           vb2py/vbclasses.py
+# Version:        1.03
+# Last Update:    2026-10-26
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-15  Collection.__delitem__: der echte Schluessel wird geloescht, nicht die Position
+#   1.02  2026-10-23  VBFiles.openFile: Dateien zum Lesen werden als UTF-8 (auch mit Kennzeichen) oder, wenn das nicht passt, als Windows-Zeichensatz cp1252 (Dateien aus dem Excel-Programm, zum Beispiel .MLL_pcf) gelesen statt immer als UTF-8; geschrieben wird weiter UTF-8
+#   1.03  2026-10-26  VBFiles.to_excel_charset: Datei in den Windows-Zeichensatz (cp1252) umschreiben, wenn alle Zeichen darin Platz haben (fuer das Excel-Programm), sonst UTF-8 lassen
+# ----------------------------------------------------------------------------------------------
 
 """
 Classes which mimic the behaviour of VB classes
@@ -371,6 +384,65 @@ class _VBFiles:
         self._channels = {}
         self._lock = threading.Lock()
 
+    @staticmethod  # v1.02
+    def _encoding_for(filename, mode):  # v1.02
+        """Zeichensatz zum Oeffnen: Geschrieben wird immer UTF-8. Beim Lesen hat eine Datei aus dem Excel-Programm den Windows-Zeichensatz (cp1252, zum Beispiel
+        .MLL_pcf mit dem Trennzeichen Chr(175)), eine vom Web-Programm geschriebene ist UTF-8 (auch mit Kennzeichen am Anfang): erst UTF-8 versuchen, sonst cp1252, sonst latin-1."""
+        if "r" not in mode or "w" in mode or "a" in mode or "+" in mode or not os.path.isfile(filename):  # v1.02
+            return "utf-8"  # v1.02
+        try:  # v1.02
+            with open(filename, "rb") as fh:  # v1.02
+                raw = fh.read()  # v1.02
+        except OSError:  # v1.02
+            return "utf-8"  # v1.02
+        if raw.startswith(b"\xef\xbb\xbf"):  # v1.02
+            return "utf-8-sig"  # v1.02
+        for encoding in ("utf-8", "cp1252"):  # v1.02
+            try:  # v1.02
+                raw.decode(encoding)  # v1.02
+                return encoding  # v1.02
+            except UnicodeDecodeError:  # v1.02
+                continue  # v1.02
+        return "latin-1"  # v1.02
+
+    @staticmethod  # v1.03
+    def to_excel_charset(filename):  # v1.03
+        """Datei fuer das Excel-Programm: eine mit UTF-8 geschriebene Datei wird in den Windows-Zeichensatz (cp1252) umgeschrieben, wenn alle Zeichen darin Platz haben
+        (das Excel-Programm liest sie nur so richtig: Umlaute und das Trennzeichen Chr(175) der .MLL_pcf). Sonst bleibt die Datei UTF-8.
+        Rueckgabe: 'cp1252' (umgeschrieben oder schon so), 'ascii' (nichts zu aendern), 'utf-8' (Zeichen ausserhalb von cp1252: unveraendert) oder '' (nicht lesbar)."""
+        try:  # v1.03
+            with open(filename, "rb") as fh:  # v1.03
+                raw = fh.read()  # v1.03
+        except OSError:  # v1.03
+            return ""  # v1.03
+        try:  # v1.03
+            text = raw.decode("utf-8-sig")                              # ein UTF-8-Kennzeichen am Anfang entfaellt dabei  # v1.03
+        except UnicodeDecodeError:  # v1.03
+            return "cp1252"                                             # schon im Windows-Zeichensatz (oder unbekannt): nichts tun  # v1.03
+        if text.isascii():  # v1.03
+            return "ascii" if not raw.startswith(b"\xef\xbb\xbf") else ("cp1252" if VBFiles._write_bytes(filename, text.encode("ascii")) else "ascii")  # v1.03
+        try:  # v1.03
+            data = text.encode("cp1252")  # v1.03
+        except UnicodeEncodeError:  # v1.03
+            return "utf-8"  # v1.03
+        return "cp1252" if VBFiles._write_bytes(filename, data) else "utf-8"  # v1.03
+
+    @staticmethod  # v1.03
+    def _write_bytes(filename, data):  # v1.03
+        """Datei sicher ersetzen (erst eine Hilfsdatei schreiben, dann umbenennen)"""  # v1.03
+        tmp = filename + ".tmp"  # v1.03
+        try:  # v1.03
+            with open(tmp, "wb") as fh:  # v1.03
+                fh.write(data)  # v1.03
+            os.replace(tmp, filename)  # v1.03
+            return True  # v1.03
+        except OSError:  # v1.03
+            try:  # v1.03
+                os.remove(tmp)  # v1.03
+            except OSError:  # v1.03
+                pass  # v1.03
+            return False  # v1.03
+
     def openFile(self, channelid, filename, mode):
         """Open a file
 
@@ -391,7 +463,8 @@ class _VBFiles:
             else:
                 old_file.close()
             #
-            self._channels[channelid] = open(filename, mode,newline="\r\n", encoding="utf-8")
+            # self._channels[channelid] = open(filename, mode,newline="\r\n", encoding="utf-8")  # v1.02 (entfallen)
+            self._channels[channelid] = open(filename, mode,newline="\r\n", encoding=self._encoding_for(filename, mode))  # v1.02
             #self._channels[channelid] = open(filename, mode,newline="\r\n", encoding="latin-1")
             
         finally:

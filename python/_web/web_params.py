@@ -1,4 +1,4 @@
-# Datei-Version: 1.01 (2026-10-15) - web_params.py
+# Datei-Version: 1.02 (2026-10-23) - web_params.py
 """Web-Version von create_macroparam_frame/create_macroparam_content (pyMobaLedLib.py) fuer die Einstellungsseiten.
 
 Die Einstellungsseiten (ConfigurationPage "Programm Einstellungen", ProgGenConfigPage, ARDUINOConfigPage) sind nicht von
@@ -17,6 +17,11 @@ from __future__ import annotations
 import os
 import logging
 import types
+try:  # v1.02
+    from _web.web_i18n import tr  # v1.02
+except ImportError:  # v1.02                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.02
+    def tr(text, **values):  # v1.02
+        return text.format(**values) if values else text  # v1.02
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +152,8 @@ class ParamPanel:
         if ptype == "ChooseColor":
             return ui.color_input(label=label, value=str(default) or "#FFFFFF").props("dense outlined").classes("w-full")
         logger.info("Parametertyp %r (%s) wird in der Web-Oberflaeche nicht unterstuetzt", ptype, key)
-        return ui.label(f"(Typ {ptype!r} wird im Web noch nicht unterstützt)").classes("text-grey-6")
+        # return ui.label(f"(Typ {ptype!r} wird im Web noch nicht unterstützt)").classes("text-grey-6")  # v1.02 (entfallen)
+        return ui.label(tr('(Typ {ptype!r} wird im Web noch nicht unterstützt)', ptype=ptype)).classes("text-grey-6")  # v1.02
 
     @staticmethod
     def _num(v):
@@ -215,7 +221,8 @@ class ParamPanel:
             f()
         else:
             from nicegui import ui
-            ui.notify(f"Die Funktion '{func}' gibt es in der Web-Oberfläche noch nicht.", type="info")
+            # ui.notify(f"Die Funktion '{func}' gibt es in der Web-Oberfläche noch nicht.", type="info")  # v1.02 (entfallen)
+            ui.notify(tr("Die Funktion '{func}' gibt es in der Web-Oberfläche noch nicht.", func=func), type="info")  # v1.02
 
     # ------------------------------------------------------------------ Werte
     def config_key(self, item: ParamItem) -> str:

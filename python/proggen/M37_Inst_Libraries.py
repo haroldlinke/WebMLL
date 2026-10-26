@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-10-21) - M37_Inst_Libraries.py
+# Datei-Version: 1.05 (2026-10-26) - M37_Inst_Libraries.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M37_Inst_Libraries.py
 # Path:           proggen/M37_Inst_Libraries.py
-# Version:        1.04
-# Last Update:    2026-10-21
+# Version:        1.05
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.02  2026-10-20  Linux: Platinen bekommen alle URLs der Paketindizes (wie im VBA-Code) statt der i-ten URL; Wiederholung nur fuer das Fehlende (Keep_Only_Missing_Selected); keine weitere Wiederholung ohne Fortschritt
 #   1.03  2026-10-20  Select_Missing: esp32:esp32 wird auf Linux mit 64-Bit-ARM (Raspberry Pi) nicht ausgewaehlt (keine Werkzeuge fuer ESP32 1.0.4), sonst scheitert die Installation bei jedem Start
 #   1.04  2026-10-21  Norm_Path: Pfade und Namen aus der Tabelle Libraries mit / lesen (die Excel-Datei 3.5.0K schreibt Backslash: ATTinyCore\\src\\ATTinyCore.h, esp32:tools\\esptool_py); Is_Lib_Installed, Get_Lib_Version, Get_Required_Version vergleichen mit normierten Namen
+#   1.05  2026-10-26  Nach dem Laden der Bibliothek von GitHub wird ein Ordner mit dem Zusatz -longInpAddresses umbenannt (Excel 3.5.0-K-long; Aenderung des Entwicklers, vorher mit der Marke V2.18)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -626,6 +627,10 @@ def Proc_UnzipList():
                 # 19.11.21 Juergen support of BETA update directly from github
                 # VB2PY (UntranslatedCode) On Error GoTo RenameErr
                 os.rename(LibName_with_path + '-beta', LibName_with_path)
+            elif os.path.isdir(LibName_with_path + '-longInpAddresses'): # Dir(LibName_with_path + '-longInpAddresses', vbDirectory) != '': # v1.05
+                # 19.11.21 Juergen support of longInpAddresses update directly from github
+                # VB2PY (UntranslatedCode) On Error GoTo RenameErr
+                os.rename(LibName_with_path + '-longInpAddresses', LibName_with_path) # v1.05
             else:
                 P01.MsgBox(Replace(M09.Get_Language_Str('Fehler: Das Verzeichnis \'#1#\' wurde nicht erzeugt beim entzippen von:'), "#1#", Libname_master + "-" + Libname_master_lower) + vbCr + '  \'' + LibName_with_path + '.zip', vbCritical, M09.Get_Language_Str('Fehler beim entzippen'))
             # VB2PY (UntranslatedCode) On Error Resume Next

@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 2.69 (2026-10-23), gilt für webMobaLedLib 2.13*
+*Datei-Version: 2.76 (2026-10-26), gilt für webMobaLedLib 2.18*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -91,7 +91,7 @@ legen im Projektordner die Python-Umgebung `venv_web` bzw. `venv` an.
 ### 2.2 Die ARDUINO IDE: Version 1.8.19, nicht 2.x
 
 Das Programm benutzt die **ARDUINO IDE 1.8.19** zum Kompilieren und Hochladen. Die neue **IDE 2.x wird nicht unterstützt.** Sie steht auf der Startseite
-von arduino.cc und wird deshalb oft aus Versehen installiert. Eine vorhandene IDE 2.x stört nicht, es wird zusätzlich die Version 1.8.19 gebraucht.
+von arduino.cc und wird deshalb oft aus Versehen installiert. Eine vorhandene IDE 2.x stört nicht, es wird zusätzlich die Version 1.8.19 gebraucht. Statt der ARDUINO IDE kann auch **PlatformIO** benutzt werden (Abschnitt 2.16).
 
 **Am einfachsten installiert sie das Installationsskript** mit der passenden Option:
 
@@ -357,6 +357,8 @@ das Senden an ein Modul (damit auch das Blinken der LED bei RGB Modul Nr), die W
   In dieser Tabelle lassen sich die Spalten nicht von Hand verstellen, weil die Balken an den Spaltenbreiten hängen.
 - **Daten:** Die Blätter werden beim Beenden im Datenordner gesichert (`temp_workbook.table_PatternWorkbook.json`) und beim nächsten Start geladen.
 
+**Dateien aus dem Excel-Programm laden:** Dateien im Format `.MLL_pcf` und `.MLL_pgf`, die mit dem Excel-Programm gespeichert wurden, haben den Windows-Zeichensatz (cp1252; als Trennzeichen im Patterngenerator dient das Zeichen `¯`). Das Programm erkennt den Zeichensatz beim Laden selbst: Dateien in **UTF-8** (vom Web-Programm gespeichert, auch mit Kennzeichen am Anfang) und im **Windows-Zeichensatz** lassen sich beide laden, mit Umlauten und Sonderzeichen. Früher kam bei einer Datei aus Excel die Meldung „'utf-8' codec can't decode byte 0xaf …“. Beim **Speichern** schreibt das Programm die Dateien (`.MLL_pcf` und `.MLL_pgf`) ebenfalls im **Windows-Zeichensatz**, damit auch das Excel-Programm sie lesen kann (sonst stimmen Trennzeichen und Umlaute dort nicht). Das lässt sich in den **Programm Einstellungen** mit der Option **Dateien für das Excel-Programm speichern** abschalten (Standard: an). Enthält eine Datei Zeichen, die im Windows-Zeichensatz keinen Platz haben (zum Beispiel ein polnisches „ł“), bleibt sie UTF-8; das Excel-Programm kann sie dann nicht richtig lesen. Das Laden geht immer mit beiden.
+
 ### 2.11 Vollbild und Adressen der Reiter
 
 - **Verbindung zum Arduino:** In der Kopfzeile, links neben **Vollbild**, steht für **alle Reiter** der Knopf **Mit ARDUINO verbinden**. Er ist **rot**, solange keine Verbindung besteht, und **grün** („Mit ARDUINO verbunden“), wenn die Verbindung steht (auch wenn man im Menü ARDUINO → Verbinden oder Trennen wählt). Ein Klick auf den grünen Knopf bewirkt nichts; getrennt wird im Menü ARDUINO → Trennen. Nach dem Verbinden startet ein offener Reiter mit Direktmodus (Servo Einstellungen, DM Servo Einstellungen, Sound Test) den Direktmodus neu.
@@ -418,6 +420,38 @@ Der Reiter **Z21 Simulator** (`/Z21Simulator`) gibt sich gegenüber Modellbahn-S
 - **Firewall und Netz:** Das Steuerprogramm muss den **UDP-Port 21105** erreichen. **Windows** fragt beim ersten Start nach der Freigabe für Python: **Private Netzwerke** erlauben. **Linux** mit `ufw`: `sudo ufw allow 21105/udp`. Auf dem **Raspberry Pi** ist der Port normalerweise frei, der Simulator läuft dann dauerhaft auf dem Pi. Ist der Port schon belegt (andere Z21-Software, zweiter Simulator), erscheint eine Meldung.
 - **Rückmeldung (RMBUS):** Hat das Steuerprogramm die Rückmeldung angemeldet (Broadcast-Flag „R-Bus“, so tun es zum Beispiel Rocrail und iTrain für die Rückmelder), fragt der Simulator den Arduino alle 100 ms nach dem Stand der Taster und Eingänge und meldet **Änderungen** an das Steuerprogramm (je Gruppe von 10 Modulen). Im Fenster erscheint nur eine Zeile, wenn sich etwas ändert; die Statuszeile nennt, für wie viele Programme die Rückmeldung läuft. Das Intervall steht in der (versteckten) Einstellung `RMbusTimer` (× 100 ms; 0 oder leer = 100 ms).
 - **Noch nicht umgesetzt:** Die **Port-Liste** (bis zu drei Arduinos mit eigenen DCC-Adressbereichen); es wird der eine mit dem Programm verbundene Arduino benutzt.
+
+### 2.15 Sprache der Oberfläche
+
+In den **Programm Einstellungen** wählt man unter **Sprache**: Auto (die Sprache des Rechners, auf dem das Programm läuft), Deutsch, English, Nederlands, French, Italian, Spanish oder Denmark. Nach dem **Speichern** wirkt die Auswahl **sofort**:
+Die Seite wird in allen Browsern neu geladen, und alle Texte erscheinen in der neuen Sprache. Ein Neustart ist nicht nötig.
+
+- **Was übersetzt wird:** die Texte der Oberfläche (Menüs, Reiter, Knöpfe, Hinweise; Datei `python/csv/Web_Languages.csv`), die Meldungen und Texte der Programm Generator-Formulare (Tabellenblatt Languages und Par_Description der Excel-Datei)
+  und die Anzeige der **Typen** in der Tabelle (zum Beispiel `AnAus` als `OnOff`, `Rot` als `Red`).
+- **Gespeichert wird immer deutsch:** In den Zellen, in den Dateien (`.MLL_pgf`) und im erzeugten Arduino-Programm stehen die deutschen Begriffe. Ein Sprachwechsel **ändert keine Daten**; Dateien lassen sich auch in einer anderen Sprache lesen.
+  Eine Datei mit den Begriffen einer anderen Sprache (zum Beispiel aus dem Excel-Programm mit niederländischer Oberfläche) wird beim Laden in die deutschen Begriffe umgewandelt. In der Spalte Typ darf man die Begriffe oder ihren
+  ersten Buchstaben in der eingestellten Sprache eintippen.
+- **Spaltenköpfe und Namensspalte:** Die Köpfe der Datenblätter (Zeile 2, mit ihrem Hinweistext beim Daraufzeigen) und die **Namensspalte** (der Name des Makros, zum Beispiel „Belebtes Haus“ / „Busy house“ / „Druk huis“) erscheinen in der gewählten Sprache.
+  Auch das nur in der Anzeige: Die Zellen bleiben unverändert. Ein Kopf, den man selbst geändert hat, bleibt, wie er ist. Der Name wird wie in Excel aus der Tabelle Lib_Macros bestimmt (Spalte Name der Sprache, sonst der Name ohne Sprache), auch auf Deutsch:
+  Ein Name, der beim Laden einer Datei in einer anderen Sprache entstanden ist, wird dadurch ersetzt.
+- **Meldungen mit eingesetzten Werten** („Fehler beim Speichern: …“, „Die Datei … laden?“, „2 Seite(n) gelöscht“) werden ebenfalls übersetzt; die eingesetzten Werte (Dateinamen, Zahlen, Fehlertexte des Systems) bleiben, wie sie sind.
+- **Noch nicht übersetzt** (erscheinen auf Deutsch): einige weitere Meldungen, die an anderer Stelle zusammengesetzt werden (zum Beispiel Meldungen des Updates), die Beschreibungen in den Beispielblättern und die Anleitung.
+- **Fehlende Übersetzungen:** Fehlt ein Text in der gewählten Sprache, erscheint der englische, fehlt auch der, der deutsche. Stand: English (Entwurf) für alle 267 Texte der Oberfläche; Nederlands, French, Italian, Spanish und Denmark folgen.
+  Wie man mitübersetzt, steht in `install/UEBERSETZEN.md`.
+
+### 2.16 Entwicklungsumgebung: ARDUINO IDE oder PlatformIO
+
+Programme werden mit der **ARDUINO IDE** (Standard, Abschnitt 2.2) oder mit **PlatformIO** übersetzt und auf den Arduino, Pico oder ESP32 geladen. PlatformIO ist ein Ersatz für die ARDUINO IDE; man braucht dafür nur das Kommandozeilenprogramm `pio`, nicht die IDE.
+
+- **Umschalten:** Menü **Optionen → Optionen und spezielle Funktionen**, Reiter **Entwicklungsumgebung**: *ARDUINO-IDE (Standard)* oder *PlatformIO (Ersatz für die ARDUINO-IDE)*. Die Auswahl wird beim Schließen des Dialogs übernommen. Darunter steht, ob PlatformIO gefunden wurde; der Knopf **PlatformIO prüfen** zeigt die Version.
+- **Installieren:** PlatformIO muss einmal installiert werden, zum Beispiel mit `pip install platformio` oder mit der PlatformIO-Erweiterung von Visual Studio Code (Anleitung: https://platformio.org/install/cli). Das Programm findet `pio` selbst, im Ordner von PlatformIO (**Windows:** `%USERPROFILE%\.platformio\penv\Scripts`; **Linux, macOS und Raspberry Pi:** `~/.platformio/penv/bin`) oder im Pfad (PATH). Fehlt es, erscheint beim Hochladen eine Meldung mit dem Installationshinweis; man kann dann in den Optionen wieder die ARDUINO IDE einstellen.
+- **Ablauf:** Beim Hochladen schreibt das Programm die Datei `platformio.ini` (im Ordner `python`) mit den aktuellen Einstellungen (Boards `nano_new`, `nano_old`, `nano_full`, `pico`, `esp32`; die Bibliothek MobaLedLib kommt aus dem Ordner `libraries`) und startet `pio run -t upload`. Beim ersten Mal lädt PlatformIO die Werkzeuge für das Board aus dem Internet; das kann einige Minuten dauern.
+- **Ordner `.pio`:** PlatformIO legt im Ordner `python` den Ordner `.pio` an (Übersetzungsergebnisse und geladene Bibliotheken, **mehrere hundert MB**). Er gehört nicht ins Release (`zip_erstellen.bat` lässt ihn weg), Update und Reparatur fassen ihn nicht an. Man kann ihn jederzeit löschen, um Platz zu schaffen; beim nächsten Hochladen wird er neu aufgebaut (das dauert dann länger).
+- **Hinweis:** PlatformIO ist neu im Programm. Rückmeldungen, vor allem von Linux, macOS und dem Raspberry Pi, sind willkommen.
+
+### 2.17 Anzahl der Eingänge (Excel-Programm 3.5.0-K-long)
+
+Das Programm beruht auf dem Excel-Programm **3.5.0-K-long** der MobaLedLib. Es erlaubt je nach Board unterschiedlich viele Eingänge (Variablen): **Arduino Nano und Uno bis 250**, **ESP32 und Pico bis 2048** (Tabelle Platform_Parameters, Zeile MaxInput). Sind es zu viele, meldet das Programm beim Erzeugen „Die Anzahl der verwendeten Eingangskanäle ist zu groß“ mit der erlaubten Zahl. Dazu gehört die Bibliothek MobaLedLib in der Version **3.5.0-K-long** (Optionen → Optionen und spezielle Funktionen → Update); ein beim Laden von GitHub entstandener Ordner mit dem Zusatz `-longInpAddresses` wird dabei automatisch umbenannt.
 
 ## 3. Windows
 
@@ -703,7 +737,7 @@ und zeigt, was sich ändert: neue, geänderte und zu löschende Dateien, mit Ver
   im Datenordner). Beim **ersten Update** einer Installation gibt es diese Liste noch nicht: Dann wird nichts gelöscht. Eigene Dateien im Projektordner
   bleiben immer erhalten.
 - **Nie angefasst** werden die Python-Umgebung (`venv`, `venv_web`), `.git`, `__pycache__`, Protokolle, Konfiguration, Passwort-Datei und die Sicherungen der
-  Tabellen, auch wenn ein ZIP solche Dateien enthalten sollte. Eine Ausnahme sind die Dateien, die das Programm **später selbst ändert**: `LEDs_AutoProg.h` und die `.cmd`-Dateien im Ordner `LEDs_AutoProg` (`Start_Arduino.cmd`, `Start_ESP32_Sub.cmd`, `Start_PICO_Sub.cmd`, `fastBuild.cmd`, `fastBuild2.cmd`).
+  Tabellen, auch wenn ein ZIP solche Dateien enthalten sollte. Eine Ausnahme sind die Dateien, die das Programm **später selbst ändert**: `LEDs_AutoProg.h` und die `.cmd`-Dateien im Ordner `LEDs_AutoProg` (`Start_Arduino.cmd`, `Start_ESP32_Sub.cmd`, `Start_PICO_Sub.cmd`, `fastBuild.cmd`, `fastBuild2.cmd`) und die Datei `platformio.ini` im Ordner `python` (sie wird beim Hochladen mit PlatformIO geschrieben, Abschnitt 2.16).
   Sie **gehören zum Release**: Fehlt eine, installiert das Update sie. Ist sie da, ersetzt das Update sie **nicht**, auch wenn sie vom Release abweicht, und es meldet die Abweichung nicht als Unterschied oder Fehler;
   ebenso die Prüfung beim Start und die Reparatur (die nur fehlende Dateien wieder herstellt). Gelöscht werden sie nie. (Andere `.cmd`-Dateien, zum Beispiel `Restart_ProgGen.cmd` und die in `hex-files`, werden wie alle Dateien behandelt.)
 - **Sicherung:** Ersetzte und gelöschte Dateien liegen vorher im Datenordner unter `update_backup/<Datum-Uhrzeit>/` (die letzten 5). Zum Zurückholen die

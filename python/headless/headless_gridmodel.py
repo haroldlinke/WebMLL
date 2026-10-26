@@ -1,14 +1,16 @@
-# Datei-Version: 1.02 (2026-10-21) - headless_gridmodel.py
+# Datei-Version: 1.04 (2026-10-23) - headless_gridmodel.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_gridmodel.py
 # Path:           headless/headless_gridmodel.py
-# Version:        1.02
-# Last Update:    2026-10-21
+# Version:        1.04
+# Last Update:    2026-10-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-17  build_grid: data_header (Kopfzeilenlogik abschaltbar) und tooltips_in_cells (Beschriftung§Tooltip in jeder Zelle) fuer den Patterngenerator; davor 1.00 (2026-10-12), nicht erfasst
 #   1.02  2026-10-21  row_number_width: Breite der Spalte Zeilennummer passend zur groessten Zeilennummer (Programmgenerator); ohne Angabe bleibt sie 76 (Patterngenerator)
+#   1.03  2026-10-23  build_grid: Parameter display_cols (uebersetzte Anzeige einzelner Spalten, gespeichert bleibt der neutrale Wert)
+#   1.04  2026-10-23  build_grid: Parameter display_cells (einzelne Zellen uebersetzt anzeigen)
 # ----------------------------------------------------------------------------------------------
 """Uebersetzt ein HeadlessSheet in Spalten- und Zeilendaten fuer AG Grid (ohne NiceGUI-Import,
 daher einzeln testbar)."""
@@ -55,7 +57,11 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
                check_cols: set | None = None, max_col: int | None = None,
                tooltip_cols: set | None = None, test_buttons: dict | None = None,  # v1.01
                data_header: bool = True, tooltips_in_cells: bool = False,  # v1.02
-               row_number_width: int | None = None  # Breite der Spalte Zeilennummer; None: feste Breite (76) wie bisher  # v1.02
+               # row_number_width: int | None = None  # Breite der Spalte Zeilennummer; None: feste Breite (76) wie bisher  # v1.03 (entfallen)
+               row_number_width: int | None = None,  # Breite der Spalte Zeilennummer; None: feste Breite (76) wie bisher  # v1.02  # v1.03
+               # display_cols: dict | None = None  # {Spaltenindex: Funktion Wert -> Anzeigetext}: die Zelle wird uebersetzt angezeigt, gespeichert bleibt der Wert (neutrale Tokens)  # v1.04 (entfallen)
+               display_cols: dict | None = None,  # {Spaltenindex: Funktion Wert -> Anzeigetext}: die Zelle wird uebersetzt angezeigt, gespeichert bleibt der Wert (neutrale Tokens)  # v1.04
+               display_cells: dict | None = None  # {(Zeile, Spalte): Anzeigetext} (0-basiert): einzelne Zellen uebersetzt anzeigen (Spaltenkoepfe mit Tooltip, Namensspalte)  # v1.04
                ) -> tuple[list[dict], list[dict], list[dict], dict]:
     """Liefert (columnDefs, rowData, pinnedTopRowData, info).
 
@@ -67,6 +73,8 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
     no_edit_cols = no_edit_cols or set()
     check_cols = check_cols or set()
     tooltip_cols = tooltip_cols or set()
+    display_cols = display_cols or {}  # v1.03
+    display_cells = display_cells or {}  # v1.04
     test_buttons = test_buttons or {}
     data = sheet.data
     ncols = sheet.get_total_columns()
@@ -129,6 +137,10 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
         rh = row_hl.get(r)
         for c in range(ncols):
             v = _json_value(raw[c]) if c < len(raw) else ""
+            if (r, c) in display_cells:  # v1.04
+                v = display_cells[(r, c)]                                  # uebersetzte Anzeige (Kopfzeile, Name)  # v1.04
+            if c in display_cols and isinstance(v, str) and v != "":  # v1.03
+                v = display_cols[c](v)                                       # uebersetzte Anzeige (zum Beispiel AnAus -> OnOff)  # v1.03
             if r == 1 and header_rows and isinstance(v, str) and "§" in v:
                 v, tip = v.split("§", 1)
                 tt[f"c{c}"] = tip

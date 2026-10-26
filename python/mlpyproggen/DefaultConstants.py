@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-26) - DefaultConstants.py
+# ----------------------------------------------------------------------------------------------
+# Name:           DefaultConstants.py
+# Path:           mlpyproggen/DefaultConstants.py
+# Version:        1.01
+# Last Update:    2026-10-26
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-26  Neue Einstellung SaveExcelCharset (Standard 1): Dateien fuer das Excel-Programm im Windows-Zeichensatz speichern
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         MobaLedCheckColors: Color checker for WS2812 and WS2811 based MobaLedLib
@@ -639,6 +651,7 @@ DEFAULT_CONFIG = {
                     "ShowProgramGenerator": 1,
                     "ShowPatternGenerator": 0,
                     "ShowZ21Simulator": 0,
+                    "SaveExcelCharset": 1,  # v1.01
                     "ShowHiddentables": 0,
                     "PGIconSize": 100, 
                     "AutoLoadWorkbooks":1,

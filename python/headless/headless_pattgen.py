@@ -1,9 +1,9 @@
-# Datei-Version: 1.13 (2026-10-19) - headless_pattgen.py
+# Datei-Version: 1.15 (2026-10-26) - headless_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_pattgen.py
 # Path:           headless/headless_pattgen.py
-# Version:        1.13
-# Last Update:    2026-10-19
+# Version:        1.15
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -22,6 +22,8 @@
 #   1.11  2026-10-19  led_row_count: Zahl der LED-Zeilen der Tabelle (fuer die Rahmen)
 #   1.12  2026-10-19  restore_dynamic_rows: nach dem Neustart Goto- und Spezial-Mode-Zeilen neu bestimmen (Hide_Show_*_If_Enabled)
 #   1.13  2026-10-19  restore_dynamic_rows: auch die Zeile Goto Aktivierung (Zeile 13) neu bestimmen (Hide_Show_Check_Goto_Activation); die Vorlage versteckt sie, nach dem Neustart fehlte sie
+#   1.14  2026-10-23  Dateien im Pattern-Format aus dem Excel-Programm (cp1252) werden auch von sheet_names_in_file und object_lines_in_file richtig gelesen (Blattnamen, Textfelder und Formularknoepfe), nicht nur von Load_Sheets
+#   1.15  2026-10-26  Speichern im Pattern-Format: Datei wird (Programm Einstellungen, Standard an) in den Windows-Zeichensatz umgeschrieben, wenn alle Zeichen Platz haben (fuer das Excel-Programm)
 # ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Pattern_GeneratorPage: baut die Arbeitsmappe "PatternWorkbook" des Patterngenerators.
 
@@ -562,10 +564,20 @@ class HeadlessPatternGeneratorPage:
         return sheets[0] if sheets else self.find_sheet(M01.MAIN_SH)  # v1.06
 
     @staticmethod  # v1.06
+    def file_encoding(path):  # v1.14
+        """Zeichensatz einer Datei im Pattern-Format: UTF-8 (vom Web-Programm geschrieben) oder cp1252 (aus dem Excel-Programm, Trennzeichen Chr(175)); wie VBFiles.openFile"""  # v1.14
+        try:  # v1.14
+            from vb2py.vbclasses import VBFiles  # v1.14
+            return VBFiles._encoding_for(path, "r")  # v1.14
+        except Exception:                                                  # noqa: BLE001  aeltere vbclasses.py ohne _encoding_for  # v1.14
+            return "utf-8"  # v1.14
+
+    @staticmethod  # v1.14
     def sheet_names_in_file(path):  # v1.06
         """Namen der Blaetter in einer Datei im Pattern-Format (Zeilen SheetName)"""  # v1.06
         names = []  # v1.06
-        with open(path, encoding="utf-8", errors="replace") as fh:  # v1.06
+        # with open(path, encoding="utf-8", errors="replace") as fh:  # v1.14 (entfallen)
+        with open(path, encoding=HeadlessPatternGeneratorPage.file_encoding(path), errors="replace") as fh:  # v1.14
             for line in fh:  # v1.06
                 tokens = line.rstrip("\r\n").replace("\t", chr(M01.pcfSep)).split(chr(M01.pcfSep))  # v1.06
                 if tokens[0] == "SheetName" and len(tokens) > 1:  # v1.06
@@ -579,7 +591,8 @@ class HeadlessPatternGeneratorPage:
         Speichern wieder geschrieben, damit die Datei fuer die Excel-Version vollstaendig bleibt."""
         sep = chr(M01.pcfSep)  # v1.06
         result, seen, current, sheet = {}, set(), None, None  # v1.06
-        with open(path, encoding="utf-8", errors="replace") as fh:  # v1.06
+        # with open(path, encoding="utf-8", errors="replace") as fh:  # v1.14 (entfallen)
+        with open(path, encoding=HeadlessPatternGeneratorPage.file_encoding(path), errors="replace") as fh:  # v1.14
             for line in fh:  # v1.06
                 line = line.rstrip("\r\n")  # v1.06
                 tokens = line.replace("\t", sep).split(sep)  # v1.06
@@ -677,6 +690,12 @@ class HeadlessPatternGeneratorPage:
                 if lines:                                                              # die beim Laden gemerkten Textfelder und Formularknoepfe  # v1.06
                     with open(pcf, "a", encoding="utf-8") as fh:  # v1.06
                         fh.write("\n".join(lines) + "\n")  # v1.06
+        if str(self.controller.getConfigData("SaveExcelCharset")).strip().lower() in ("1", "true", "ja", "yes", "an", "ein", "on"):   # Programm Einstellungen: fuer das Excel-Programm  # v1.15
+            try:  # v1.15
+                from vb2py.vbclasses import VBFiles  # v1.15
+                logger.info("Datei %s: %s", os.path.basename(pcf), VBFiles.to_excel_charset(pcf))  # v1.15
+            except Exception:                                                  # noqa: BLE001  # v1.15
+                logger.exception("Umschreiben in den Windows-Zeichensatz fehlgeschlagen")  # v1.15
         extras = [f for f in sorted(os.listdir(folder)) if f != base + ".MLL_pcf"]  # v1.06
         if not extras:  # v1.06
             return pcf, base + ".MLL_pcf"  # v1.06
