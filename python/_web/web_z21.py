@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-21) - web_z21.py
+# Datei-Version: 1.02 (2026-10-26) - web_z21.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_z21.py
 # Path:           _web/web_z21.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.02
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-21  Neu: Reiter Z21 Simulator (mlpyproggen/Z21MonitorPage.py ohne Tk), Phase 1: Z21-Protokoll ueber UDP 21105 mit einem Arduino (Start, Stop, Taster-Adressen, Protokollfenster)
 #   1.01  2026-10-21  Phase 2: Rueckmeldung (RMBUS) vom Arduino an die Z21-Clients (Zuhoerer fuer die Zeilen JSON:{RMBUS}, zyklische Abfrage ?*, notifyZ21_RMBUS_DATA), LAN_RMBUS_GETDATA antwortet dem Anfragenden, Status mit der Zahl der Clients
+#   1.02  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Z21 Simulator" (mlpyproggen/Z21MonitorPage.py, Klasse Z21MonitorPage, ohne Tk).
 
@@ -44,6 +45,11 @@ import socket
 import threading
 import time
 from datetime import datetime
+try:  # v1.02
+    from _web.web_i18n import tr  # v1.02
+except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.02
+    def tr(text, **values):  # v1.02
+        return text.format(**values) if values else text  # v1.02
 
 logger = logging.getLogger(__name__)
 
@@ -401,7 +407,8 @@ class Z21Simulator:
             sock.sendto(data, client)
             logger.debug("Z21 gesendet %s an %s", binascii.hexlify(data), client)
         except OSError as e:
-            self.emit(f"Fehler beim Senden an {client}: {e}")
+            # self.emit(f"Fehler beim Senden an {client}: {e}")  # v1.02 (entfallen)
+            self.emit(tr('Fehler beim Senden an {client}: {e}', client=client, e=e))  # v1.02
 
     def _connected(self):
         try:
@@ -412,7 +419,8 @@ class Z21Simulator:
     def _send_arduino(self, dccaddress, channel, activate):
         command = "@ {:03} {:02} {:02}".format(dccaddress, channel, activate)
         if not self._connected():
-            self._fragments.append(f" [nicht mit dem ARDUINO verbunden: {command} nicht gesendet]")
+            # self._fragments.append(f" [nicht mit dem ARDUINO verbunden: {command} nicht gesendet]")  # v1.02 (entfallen)
+            self._fragments.append(tr(' [nicht mit dem ARDUINO verbunden: {command} nicht gesendet]', command=command))  # v1.02
             return
         self.ctrl.send_to_ARDUINO(command + "\n")
         self._fragments.append(" -> ARDUINO: " + command)
@@ -429,7 +437,8 @@ class Z21Simulator:
             self.core.slicePacket(client, data)
         except Exception as e:                                       # noqa: BLE001
             logger.warning("Z21-Paket nicht bearbeitet", exc_info=True)
-            self._fragments.append(f" - Fehler: {type(e).__name__}: {e}")
+            # self._fragments.append(f" - Fehler: {type(e).__name__}: {e}")  # v1.02 (entfallen)
+            self._fragments.append(tr(' - Fehler: {typ}: {e}', typ=type(e).__name__, e=e))  # v1.02
         self.emit(head + "".join(self._fragments))
 
     # ---- Rueckmeldung vom Arduino
@@ -491,7 +500,8 @@ class Z21Simulator:
         except OSError as e:
             sock.close()
             text = f"Der UDP-Port {self.port} ist nicht frei ({e}). Läuft schon ein anderer Z21-Simulator oder eine Z21-Software?"
-            self.emit("Fehler: " + text)
+            # self.emit("Fehler: " + text)  # v1.02 (entfallen)
+            self.emit(tr('Fehler: ') + text)  # v1.02
             return False, text
         self.ip = self.ip_func()
         self.sock = sock
@@ -595,7 +605,8 @@ def read_key_addresses():
         with open(filepath, "r", encoding="utf-8", errors="replace") as fh:
             data = fh.readlines()
     except OSError:
-        return [], "Datei: " + filepath + " nicht gefunden"
+        # return [], "Datei: " + filepath + " nicht gefunden"  # v1.02 (entfallen)
+        return [], tr('Datei: ') + filepath + tr(' nicht gefunden')  # v1.02
     return key_address_lines(data), ""
 
 
@@ -645,9 +656,10 @@ def build(ctrl, is_active=None, simulator=None):
         running = sim.running
         # refs["status"].set_text("Z21 Simulator läuft" if running else "Z21 Simulator gestoppt")  # v1.01 (entfallen)
         n_rm = sim.rmbus_clients() if running else 0  # v1.01
-        refs["status"].set_text(("Z21 Simulator läuft" + (f", Rückmeldung für {n_rm} Programm{'e' if n_rm != 1 else ''}" if n_rm else "")) if running else "Z21 Simulator gestoppt")  # v1.01
+        refs["status"].set_text((tr("Z21 Simulator läuft") + (tr(", Rückmeldung für {n_rm} Programm(e)", n_rm=n_rm) if n_rm else "")) if running else tr("Z21 Simulator gestoppt"))  # v1.02
         refs["status"].style("color: #2e7d32; font-weight: 600" if running else "color: #c62828; font-weight: 600")
-        refs["address"].set_text(f"Im Steuerprogramm eintragen: IP-Adresse {sim.ip}, Port {sim.port} (UDP)" if running else "")
+        # refs["address"].set_text(f"Im Steuerprogramm eintragen: IP-Adresse {sim.ip}, Port {sim.port} (UDP)" if running else "")  # v1.02 (entfallen)
+        refs["address"].set_text(tr('Im Steuerprogramm eintragen: IP-Adresse {ip}, Port {port} (UDP)', ip=sim.ip, port=sim.port) if running else "")  # v1.02
         refs["start"].set_enabled(not running)
         refs["stop"].set_enabled(running)
         seq, lines = sim.lines_since(refs["seen"])

@@ -1,5 +1,5 @@
 @echo off
-REM Datei-Version: 1.06 (2026-10-26) - zip_erstellen.bat
+REM Datei-Version: 1.07 (2026-10-27) - zip_erstellen.bat
 REM Erstellt webmobaledlib.zip aus dem Ordner python. Dieses Skript liegt im Ordner NEBEN dem Ordner python
 REM (also im Ordner, der python enthaelt) und wird dort gestartet (Doppelklick). Vorher werden alle
 REM __pycache__-Ordner im Ordner python geloescht. Die ZIP-Datei bekommt denselben Platz wie das Skript;
@@ -10,6 +10,8 @@ REM Sicherungen und Einstellungen (zum Beispiel MobaLedTest_param.json aus frueh
 REM Die Web-Version legt solche Dateien nicht im Ordner python ab, sondern im Datenordner; die Liste ist eine Sicherheit,
 REM damit nie persoenliche Dateien bei Betatestern landen.
 REM Weitere Dateien: unten bei SKIP_FILES oder SKIP_DIRS eintragen.
+REM Seit 1.07 baut Python das ZIP (release_tools.py zip), nicht mehr tar oder PowerShell: Dateinamen mit Umlauten (zum Beispiel vorsignal_grün.png) bekommen dabei das
+REM UTF-8-Kennzeichen. Ohne es entpackte der Raspberry Pi diese Dateien mit falschem Namen, und das Programm meldete beim Start fehlende Dateien.
 REM Seit 1.06 nicht im ZIP: der Ordner .pio (PlatformIO legt ihn im Ordner python an, mehrere hundert MB).
 REM
 REM Seit 1.03: Vor dem Packen wird die Pruefliste release_manifest.json (Version, Art "full", SHA-256 jeder Datei) in die Dateien fuer das ZIP geschrieben, nach dem
@@ -64,16 +66,8 @@ if exist "%ZIP%" del /q "%ZIP%"
 if exist "%ZIP%" goto :zip_gesperrt
 if exist "webmobaledlib_FEHLERHAFT.zip" del /q "webmobaledlib_FEHLERHAFT.zip"
 
-echo [3/3] %ZIP% erstellen ...
-where tar >nul 2>&1
-if errorlevel 1 goto :mit_powershell
-tar -a -c -f "%ZIP%" -C "%STAGE%" "%SRC%"
-if errorlevel 1 goto :fehler
-goto :geprueft
-
-:mit_powershell
-echo       (tar nicht gefunden, es wird PowerShell benutzt)
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory((Resolve-Path '%STAGE%\%SRC%').Path, (Join-Path (Get-Location) '%ZIP%'), [System.IO.Compression.CompressionLevel]::Optimal, $true)"
+echo [3/3] %ZIP% erstellen (mit Python, Umlaute in Dateinamen als UTF-8) ...
+%PY% "%SRC%\release_tools.py" zip "%STAGE%\%SRC%" "%ZIP%"
 if errorlevel 1 goto :fehler
 
 :geprueft

@@ -1,9 +1,9 @@
-# Datei-Version: 1.18 (2026-10-23) - web_pattgen.py
+# Datei-Version: 1.19 (2026-10-26) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
-# Version:        1.18
-# Last Update:    2026-10-23
+# Version:        1.19
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -27,6 +27,7 @@
 #   1.16  2026-10-20  Knopf Vollbild in der Werkzeugleiste des Patterngenerators (web_fullscreen)
 #   1.17  2026-10-20  Knopf Vollbild entfaellt hier: Er steht jetzt einmal in der Kopfzeile (webmobaledlib)
 #   1.18  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
+#   1.19  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 
@@ -455,7 +456,8 @@ class PatternView:
         if not count:  # v1.12
             ui.notify("Auf dieser Seite sind keine Bilder.", type="warning")  # v1.12
             return  # v1.12
-        if not await self.confirm(f"Alle {count} Bilder der Seite {self.ws.Name} entfernen?\nDie Bilddateien selbst bleiben erhalten.", yes="Entfernen"):  # v1.12
+        # if not await self.confirm(f"Alle {count} Bilder der Seite {self.ws.Name} entfernen?\nDie Bilddateien selbst bleiben erhalten.", yes="Entfernen"):  # v1.19 (entfallen)
+        if not await self.confirm(tr('Alle {count} Bilder der Seite {blatt} entfernen?\nDie Bilddateien selbst bleiben erhalten.', count=count, blatt=self.ws.Name), yes="Entfernen"):  # v1.19
             return  # v1.12
         dlg.close()  # v1.12
         result = {}  # v1.12
@@ -545,7 +547,8 @@ class PatternView:
         added, skipped = result["r"]  # v1.07
         if added:  # v1.07
             await self.goto_sheet(self.page.find_sheet(added[0]))  # v1.07
-        text = f"{len(added)} Seiten geladen" + (f", {len(skipped)} schon vorhanden (nicht noch einmal geladen)" if skipped else "")  # v1.07
+        # text = f"{len(added)} Seiten geladen" + (f", {len(skipped)} schon vorhanden (nicht noch einmal geladen)" if skipped else "")  # v1.19 (entfallen)
+        text = f"{len(added)} Seiten geladen" + (tr(', {anzahl} schon vorhanden (nicht noch einmal geladen)', anzahl=len(skipped)) if skipped else "")  # v1.19
         ui.notify(text, type="positive" if added else "warning")  # v1.07
 
     async def load_selected(self, names, dlg):  # v1.07
@@ -597,13 +600,15 @@ class PatternView:
             if not count:  # v1.07
                 ui.notify("Es gibt keine Seiten zum Löschen.", type="warning")  # v1.07
                 return  # v1.07
-            text = (f"Alle {count} Seiten (alle außer Main) löschen?\nDas kann nicht rückgängig gemacht werden. "  # v1.07
-                    "Vorher kann man sie mit „Alle Seiten speichern“ sichern.")  # v1.07
+            # text = (f"Alle {count} Seiten (alle außer Main) löschen?\nDas kann nicht rückgängig gemacht werden. "  # v1.19 (entfallen)
+                    # "Vorher kann man sie mit „Alle Seiten speichern“ sichern.")  # v1.19 (entfallen)
+            text = (tr('Alle {count} Seiten (alle außer Main) löschen?\nDas kann nicht rückgängig gemacht werden. Vorher kann man sie mit „Alle Seiten speichern“ sichern.', count=count))  # v1.19
         else:  # v1.07
             if not self.page.is_data_sheet(self.ws):  # v1.07
                 ui.notify("Main und die Hilfsseiten können nicht gelöscht werden.", type="warning")  # v1.07
                 return  # v1.07
-            text = f"Die Seite {self.ws.Name} löschen?\nDas kann nicht rückgängig gemacht werden."  # v1.07
+            # text = f"Die Seite {self.ws.Name} löschen?\nDas kann nicht rückgängig gemacht werden."  # v1.19 (entfallen)
+            text = tr('Die Seite {blatt} löschen?\nDas kann nicht rückgängig gemacht werden.', blatt=self.ws.Name)  # v1.19
         if not await self.confirm(text):  # v1.07
             return  # v1.07
         dlg.close()  # v1.07

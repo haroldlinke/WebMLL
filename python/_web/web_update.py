@@ -1,4 +1,4 @@
-# Datei-Version: 1.07 (2026-10-26) - web_update.py
+# Datei-Version: 1.08 (2026-10-26) - web_update.py
 """Update der Web-Oberflaeche aus dem neuesten Release auf GitHub (Menue Hilfe -> Update webmobaledlib).
 
 Anders als das Update des Originals (komplettes Ueberschreiben des Programmordners, bei dem Virenscanner wegen der vielen Schreibzugriffe
@@ -36,6 +36,11 @@ from dataclasses import dataclass, field
 import recover  # v1.03
 import release_tools  # v1.02
 import userdata
+try:  # v1.08
+    from _web.web_i18n import tr  # v1.08
+except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.08
+    def tr(text, **values):  # v1.08
+        return text.format(**values) if values else text  # v1.08
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +189,8 @@ def download(url: str, dest: str, progress=None, timeout: float = 30.0) -> str:
         with urllib.request.urlopen(request, timeout=timeout) as resp, open(dest, "wb") as out:
             total = int(resp.headers.get("Content-Length") or 0)
             if total > MAX_ZIP_BYTES:
-                raise UpdateError(f"Das ZIP ist mit {total // 1048576} MB ungewoehnlich gross (Grenze {MAX_ZIP_BYTES // 1048576} MB).")
+                # raise UpdateError(f"Das ZIP ist mit {total // 1048576} MB ungewoehnlich gross (Grenze {MAX_ZIP_BYTES // 1048576} MB).")  # v1.08 (entfallen)
+                raise UpdateError(tr('Das ZIP ist mit {groesse} MB ungewoehnlich gross (Grenze {grenze} MB).', groesse=total // 1048576, grenze=MAX_ZIP_BYTES // 1048576))  # v1.08
             done = 0
             while True:
                 chunk = resp.read(65536)
@@ -199,7 +205,8 @@ def download(url: str, dest: str, progress=None, timeout: float = 30.0) -> str:
     except UpdateError:
         raise
     except Exception as ex:                                  # noqa: BLE001  (Netz, DNS, HTTP-Fehler, Zeitueberschreitung ...)
-        raise UpdateError(f"Das Update konnte nicht geladen werden: {ex}") from ex
+        # raise UpdateError(f"Das Update konnte nicht geladen werden: {ex}") from ex  # v1.08 (entfallen)
+        raise UpdateError(tr('Das Update konnte nicht geladen werden: {ex}', ex=ex)) from ex  # v1.08
     return dest
 
 
@@ -208,10 +215,12 @@ def _clean_name(name: str) -> str:
     """Name im ZIP pruefen: nur relative Pfade ohne '..', ohne Laufwerk, ohne Verknuepfungen"""
     norm = name.replace("\\", "/")
     if norm.startswith("/") or re.match(r"^[A-Za-z]:", norm) or "\x00" in norm:
-        raise UpdateError(f"Unzulaessiger Pfad im ZIP: {name}")
+        # raise UpdateError(f"Unzulaessiger Pfad im ZIP: {name}")  # v1.08 (entfallen)
+        raise UpdateError(tr('Unzulaessiger Pfad im ZIP: {name}', name=name))  # v1.08
     parts = [p for p in norm.split("/") if p not in ("", ".")]
     if any(p == ".." for p in parts):
-        raise UpdateError(f"Unzulaessiger Pfad im ZIP: {name}")
+        # raise UpdateError(f"Unzulaessiger Pfad im ZIP: {name}")  # v1.08 (entfallen)
+        raise UpdateError(tr('Unzulaessiger Pfad im ZIP: {name}', name=name))  # v1.08
     return "/".join(parts)
 
 
@@ -228,9 +237,11 @@ def open_release(zip_path: str) -> Release:
         names = {}
         for info in infos:
             if (info.external_attr >> 28) == 0xA:                      # Verknuepfung (Unix)
-                raise UpdateError(f"Verknuepfungen im ZIP sind nicht erlaubt: {info.filename}")
+                # raise UpdateError(f"Verknuepfungen im ZIP sind nicht erlaubt: {info.filename}")  # v1.08 (entfallen)
+                raise UpdateError(tr('Verknuepfungen im ZIP sind nicht erlaubt: {datei}', datei=info.filename))  # v1.08
             if info.file_size > MAX_FILE_BYTES:
-                raise UpdateError(f"Eine Datei im ZIP ist zu gross: {info.filename}")
+                # raise UpdateError(f"Eine Datei im ZIP ist zu gross: {info.filename}")  # v1.08 (entfallen)
+                raise UpdateError(tr('Eine Datei im ZIP ist zu gross: {datei}', datei=info.filename))  # v1.08
             names[_clean_name(info.filename)] = info.filename
         prefix = "python/" if all(n.startswith("python/") for n in names) else ""
         for clean, original in names.items():
@@ -267,18 +278,22 @@ def _check_manifest(zf, rel: Release) -> None:  # v1.02
     try:  # v1.02
         manifest = release_tools.parse_manifest(zf.read(rel.entries[name]))  # v1.02
     except ValueError as ex:  # v1.02
-        raise UpdateError(f"{ex} Es wurde nichts verändert.") from ex  # v1.02
+        # raise UpdateError(f"{ex} Es wurde nichts verändert.") from ex  # v1.08 (entfallen)
+        raise UpdateError(tr('{ex} Es wurde nichts verändert.', ex=ex)) from ex  # v1.08
     listed = set(manifest["files"])  # v1.02
     present = set(rel.entries) - {name}  # v1.02
     missing, extra = sorted(listed - present), sorted(present - listed)  # v1.02
     differs = sorted(r for r in listed & present if rel.hashes.get(r) != manifest["files"][r].get("sha256"))  # v1.02
     if missing or extra or differs:  # v1.02
-        parts = [f"fehlt: {r}" for r in missing[:3]] + [f"weicht ab: {r}" for r in differs[:3]] + [f"nicht in der Prüfliste: {r}" for r in extra[:3]]  # v1.02
+        # parts = [f"fehlt: {r}" for r in missing[:3]] + [f"weicht ab: {r}" for r in differs[:3]] + [f"nicht in der Prüfliste: {r}" for r in extra[:3]]  # v1.08 (entfallen)
+        parts = [f"fehlt: {r}" for r in missing[:3]] + [f"weicht ab: {r}" for r in differs[:3]] + [tr('nicht in der Prüfliste: {r}', r=r) for r in extra[:3]]  # v1.08
         examples = "; ".join(parts)  # v1.02
-        raise UpdateError(f"Das ZIP stimmt nicht mit seiner Prüfliste überein ({len(missing)} fehlen, {len(differs)} weichen ab, {len(extra)} zusätzlich): {examples}. "  # v1.02
-                          "Es ist unvollständig oder beschädigt. Es wurde nichts verändert.")  # v1.02
+        # raise UpdateError(f"Das ZIP stimmt nicht mit seiner Prüfliste überein ({len(missing)} fehlen, {len(differs)} weichen ab, {len(extra)} zusätzlich): {examples}. "  # v1.08 (entfallen)
+                          # "Es ist unvollständig oder beschädigt. Es wurde nichts verändert.")  # v1.08 (entfallen)
+        raise UpdateError(tr('Das ZIP stimmt nicht mit seiner Prüfliste überein ({fehlen} fehlen, {abweichend} weichen ab, {zusaetzlich} zusätzlich): {examples}. Es ist unvollständig oder beschädigt. Es wurde nichts verändert.', fehlen=len(missing), abweichend=len(differs), zusaetzlich=len(extra), examples=examples))  # v1.08
     if manifest.get("version") != rel.version:  # v1.02
-        raise UpdateError(f"Die Version der Prüfliste ({manifest.get('version')}) und die von webmobaledlib.py ({rel.version}) sind verschieden. Es wurde nichts verändert.")  # v1.02
+        # raise UpdateError(f"Die Version der Prüfliste ({manifest.get('version')}) und die von webmobaledlib.py ({rel.version}) sind verschieden. Es wurde nichts verändert.")  # v1.08 (entfallen)
+        raise UpdateError(tr('Die Version der Prüfliste ({pruefliste}) und die von webmobaledlib.py ({version}) sind verschieden. Es wurde nichts verändert.', pruefliste=manifest.get('version'), version=rel.version))  # v1.08
     rel.manifest = manifest  # v1.02
 
 
@@ -313,11 +328,13 @@ def make_plan(project_dir: str, release: Release, version_old: str, manifest: di
             plan.delete.append(relpath)
     if known:                                                                      # Schutz vor einem unvollstaendigen oder falschen ZIP  # v1.02
         if len(release.entries) < MIN_RATIO_KNOWN * len(known):  # v1.02
-            raise UpdateError(f"Das ZIP enthält nur {len(release.entries)} Dateien, die installierte Version hat {len(known)}. Es ist unvollständig oder gehört nicht zu diesem Programm. "  # v1.02
-                              "Es wurde nichts verändert.")  # v1.02
+            # raise UpdateError(f"Das ZIP enthält nur {len(release.entries)} Dateien, die installierte Version hat {len(known)}. Es ist unvollständig oder gehört nicht zu diesem Programm. "  # v1.08 (entfallen)
+                              # "Es wurde nichts verändert.")  # v1.08 (entfallen)
+            raise UpdateError(tr('Das ZIP enthält nur {anzahl} Dateien, die installierte Version hat {installiert}. Es ist unvollständig oder gehört nicht zu diesem Programm. Es wurde nichts verändert.', anzahl=len(release.entries), installiert=len(known)))  # v1.08
         if len(plan.delete) > MAX_DELETE:  # v1.02
-            raise UpdateError(f"Das Update würde {len(plan.delete)} Dateien löschen (mehr als {MAX_DELETE}): Das ZIP ist vermutlich unvollständig oder gehört zu einer anderen "  # v1.02
-                              "Version. Es wurde nichts verändert.")  # v1.02
+            # raise UpdateError(f"Das Update würde {len(plan.delete)} Dateien löschen (mehr als {MAX_DELETE}): Das ZIP ist vermutlich unvollständig oder gehört zu einer anderen "  # v1.08 (entfallen)
+                              # "Version. Es wurde nichts verändert.")  # v1.08 (entfallen)
+            raise UpdateError(tr('Das Update würde {anzahl} Dateien löschen (mehr als {grenze}): Das ZIP ist vermutlich unvollständig oder gehört zu einer anderen Version. Es wurde nichts verändert.', anzahl=len(plan.delete), grenze=MAX_DELETE))  # v1.08
     changed_all = set(plan.new) | set(plan.changed)
     plan.requirements_changed = bool(changed_all & {"install/requirements-web.txt", "pi/requirements-pi.txt"})
     plan.pi_changed = any(r.startswith("pi/") for r in changed_all | set(plan.delete))
@@ -433,9 +450,11 @@ def apply(project_dir: str, release: Release, plan: Plan, progress=None, allow_d
     Sicherung wiederhergestellt (UpdateError). Bricht der Prozess mittendrin ab, macht recover.py beim naechsten Start das Update rueckgaengig.
     Ein ZIP mit aelterer Version wird nur mit allow_downgrade=True installiert (ausdrueckliche Bestaetigung des Anwenders)."""
     if plan.downgrade and not allow_downgrade:  # v1.02
-        raise UpdateError(f"Das ZIP hat die ältere Version {plan.version_new} (installiert: {plan.version_old}). Ohne ausdrückliche Bestätigung wird nichts verändert.")  # v1.02
+        # raise UpdateError(f"Das ZIP hat die ältere Version {plan.version_new} (installiert: {plan.version_old}). Ohne ausdrückliche Bestätigung wird nichts verändert.")  # v1.08 (entfallen)
+        raise UpdateError(tr('Das ZIP hat die ältere Version {neue_version} (installiert: {installierte_version}). Ohne ausdrückliche Bestätigung wird nichts verändert.', neue_version=plan.version_new, installierte_version=plan.version_old))  # v1.08
     if len(plan.delete) > MAX_DELETE:  # v1.02
-        raise UpdateError(f"Das Update würde {len(plan.delete)} Dateien löschen (mehr als {MAX_DELETE}). Es wurde nichts verändert.")  # v1.02
+        # raise UpdateError(f"Das Update würde {len(plan.delete)} Dateien löschen (mehr als {MAX_DELETE}). Es wurde nichts verändert.")  # v1.08 (entfallen)
+        raise UpdateError(tr('Das Update würde {anzahl} Dateien löschen (mehr als {grenze}). Es wurde nichts verändert.', anzahl=len(plan.delete), grenze=MAX_DELETE))  # v1.08
     result = Result()
     # todo = len(plan.new) + len(plan.changed) + len(plan.delete)  # v1.03 (entfallen)
     new_set = set(plan.new)  # v1.03
@@ -453,7 +472,8 @@ def apply(project_dir: str, release: Release, plan: Plan, progress=None, allow_d
                 os.makedirs(os.path.dirname(target), exist_ok=True)
                 shutil.copy2(source, target)
             except OSError as ex:
-                raise UpdateError(f"Die Sicherung von {relpath} ist fehlgeschlagen ({ex}). Es wurde nichts veraendert.") from ex
+                # raise UpdateError(f"Die Sicherung von {relpath} ist fehlgeschlagen ({ex}). Es wurde nichts veraendert.") from ex  # v1.08 (entfallen)
+                raise UpdateError(tr('Die Sicherung von {relpath} ist fehlgeschlagen ({ex}). Es wurde nichts veraendert.', relpath=relpath, ex=ex)) from ex  # v1.08
     # with zipfile.ZipFile(release.path) as zf:  # v1.03 (entfallen)
         # for relpath in plan.new + plan.changed:  # v1.03 (entfallen)
             # local = os.path.join(project_dir, *relpath.split("/"))  # v1.03 (entfallen)
@@ -501,7 +521,8 @@ def apply(project_dir: str, release: Release, plan: Plan, progress=None, allow_d
             # progress(done, todo, relpath)  # v1.03 (entfallen)
     # failed_paths = {p for p, _ in result.failed}  # v1.03 (entfallen)
     # write_manifest(release.version, {r: h for r, h in release.hashes.items() if r not in failed_paths})  # v1.03 (entfallen)
-            raise UpdateError(f"Das Journal des Updates konnte nicht geschrieben werden ({ex}). Es wurde nichts veraendert.") from ex  # v1.03
+            # raise UpdateError(f"Das Journal des Updates konnte nicht geschrieben werden ({ex}). Es wurde nichts veraendert.") from ex  # v1.08 (entfallen)
+            raise UpdateError(tr('Das Journal des Updates konnte nicht geschrieben werden ({ex}). Es wurde nichts veraendert.', ex=ex)) from ex  # v1.08
         try:  # v1.03
             with zipfile.ZipFile(release.path) as zf:  # v1.03
                 for relpath in first:  # v1.03
@@ -528,10 +549,12 @@ def apply(project_dir: str, release: Release, plan: Plan, progress=None, allow_d
             restored, problems = recover.rollback(project_dir, journal)  # v1.03
             if not problems:  # v1.03
                 recover.clear_journal(project_dir)  # v1.03
-                raise UpdateError(f"Das Update ist fehlgeschlagen ({ex.relpath}: {ex.message}). Der vorherige Stand wurde automatisch wiederhergestellt ({restored} Dateien), "  # v1.03
-                                  "es ist nichts verändert. Bitte das Programm beenden, was die Datei sperrt (Sicherungs- oder Virenprogramm), und das Update wiederholen.") from ex  # v1.03
-            raise UpdateError(f"Das Update ist fehlgeschlagen ({ex.relpath}: {ex.message}), und das Zurücksetzen war nicht vollständig ({'; '.join(problems[:3])}). "  # v1.03
-                              "Beim nächsten Start versucht das Programm es erneut. Hilft das nicht: repair.py ausführen (Anleitung, Abschnitt 9.6).") from ex  # v1.03
+                # raise UpdateError(f"Das Update ist fehlgeschlagen ({ex.relpath}: {ex.message}). Der vorherige Stand wurde automatisch wiederhergestellt ({restored} Dateien), "  # v1.08 (entfallen)
+                                  # "es ist nichts verändert. Bitte das Programm beenden, was die Datei sperrt (Sicherungs- oder Virenprogramm), und das Update wiederholen.") from ex  # v1.08 (entfallen)
+            # raise UpdateError(f"Das Update ist fehlgeschlagen ({ex.relpath}: {ex.message}), und das Zurücksetzen war nicht vollständig ({'; '.join(problems[:3])}). "  # v1.08 (entfallen)
+                              # "Beim nächsten Start versucht das Programm es erneut. Hilft das nicht: repair.py ausführen (Anleitung, Abschnitt 9.6).") from ex  # v1.08 (entfallen)
+                raise UpdateError(tr('Das Update ist fehlgeschlagen ({datei}: {meldung}). Der vorherige Stand wurde automatisch wiederhergestellt ({restored} Dateien), es ist nichts verändert. Bitte das Programm beenden, was die Datei sperrt (Sicherungs- oder Virenprogramm), und das Update wiederholen.', datei=ex.relpath, meldung=ex.message, restored=restored)) from ex  # v1.08
+            raise UpdateError(tr('Das Update ist fehlgeschlagen ({datei}: {meldung}), und das Zurücksetzen war nicht vollständig ({probleme}). Beim nächsten Start versucht das Programm es erneut. Hilft das nicht: repair.py ausführen (Anleitung, Abschnitt 9.6).', datei=ex.relpath, meldung=ex.message, probleme='; '.join(problems[:3]))) from ex  # v1.08
         except BaseException:                                  # unerwarteter Fehler oder Abbruch: den alten Stand wiederherstellen und den Fehler weitergeben  # v1.03
             _, problems = recover.rollback(project_dir, journal)  # v1.03
             if not problems:  # v1.03
@@ -619,5 +642,6 @@ def describe(plan: Plan, limit: int = 40) -> list:
             lines.append(f"{title} ({len(items)}):")
             lines += [f"    {i}" for i in items[:limit]]
             if len(items) > limit:
-                lines.append(f"    ... und {len(items) - limit} weitere")
+                # lines.append(f"    ... und {len(items) - limit} weitere")  # v1.08 (entfallen)
+                lines.append(tr('    ... und {anzahl} weitere', anzahl=len(items) - limit))  # v1.08
     return lines

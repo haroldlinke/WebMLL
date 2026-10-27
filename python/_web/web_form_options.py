@@ -1,4 +1,4 @@
-# Datei-Version: 1.04 (2026-10-26) - web_form_options.py
+# Datei-Version: 1.05 (2026-10-26) - web_form_options.py
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -261,9 +261,14 @@ def make_class(Base):
                              "intro": tr("Womit sollen die Programme übersetzt und auf den Arduino geladen werden?"),  # v1.04
                              "arduino_text": tr("ARDUINO-IDE (Standard)"), "pio_text": tr("PlatformIO (Ersatz für die ARDUINO-IDE)"),  # v1.04
                              "status": (tr("PlatformIO gefunden: {pfad}", pfad=pio) if pio else  # v1.04
-                                        tr("PlatformIO wurde nicht gefunden. Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio)")),  # v1.04
+                                        # tr("PlatformIO wurde nicht gefunden. Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio)")),  # v1.05 (entfallen)
+                                        tr("PlatformIO wurde nicht gefunden. Installation: {hinweis}", hinweis=tr(M08.PIO_Install_Hint()))),  # v1.05
                              "buttons": [{"text": tr("PlatformIO prüfen"), "handler": "__Check_PIO_Button_Click", "disabled": False,  # v1.04
-                                          "label": tr("Zeigt, ob PlatformIO installiert ist, und seine Version")}]})  # v1.04
+                                          # "label": tr("Zeigt, ob PlatformIO installiert ist, und seine Version")}]})  # v1.05 (entfallen)
+                                          "label": tr("Zeigt, ob PlatformIO installiert ist, und seine Version")}] +  # v1.05
+                                        ([{"text": tr("USB-Zugriff für den Pico einrichten"), "handler": "__Pico_Udev_Button_Click", "disabled": False,  # v1.05
+                                           "label": tr("Linux: richtet einmalig die Regel ein, mit der PlatformIO den Pico im BOOTSEL-Modus ansprechen darf (fragt nach dem Passwort). Ohne sie meldet das Hochladen: picotool was unable to connect.")}]  # v1.05
+                                         if sys.platform.startswith("linux") else [])})  # v1.05
                 tabs.append({"name": M09.Get_Language_Str("Update"), "kind": "list", "buttons": tab_buttons(
                     buttons, ["__Update_to_Arduino_Button_Click", "__Update_Beta_Button_Click",
                               "__Show_Lib_and_Board_Page_Button_Click"]),
@@ -309,10 +314,23 @@ def make_class(Base):
             pio = M08.Find_PIO()  # v1.04
             if not pio:  # v1.04
                 P01.MsgBox(tr("PlatformIO wurde nicht gefunden.") + "\n\n" +  # v1.04
-                           tr("Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio). Danach findet das Programm pio selbst."), ns["vbInformation"], "PlatformIO")  # v1.04
+                           # tr("Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio). Danach findet das Programm pio selbst."), ns["vbInformation"], "PlatformIO")  # v1.05 (entfallen)
+                           tr("Installation: {hinweis}. Danach findet das Programm pio selbst.", hinweis=tr(M08.PIO_Install_Hint())), ns["vbInformation"], "PlatformIO")  # v1.05
                 return  # v1.04
             version = M08.PIO_Version(pio)  # v1.04
             P01.MsgBox((version or tr("PlatformIO ist vorhanden, antwortet aber nicht.")) + "\n" + pio, ns["vbInformation"] if version else vbCritical, "PlatformIO")  # v1.04
+
+        def _web_pico_udev(self):  # v1.05
+            """Knopf USB-Zugriff fuer den Pico einrichten (Linux): udev-Regel mit pkexec einrichten (install/install_pico_udev.sh)"""  # v1.05
+            import proggen.M08_ARDUINO as M08  # v1.05
+            if M08.Pico_Udev_Ok():  # v1.05
+                P01.MsgBox(tr("Es gibt schon eine Regel für den USB-Zugriff auf den Raspberry Pi Pico."), ns["vbInformation"], "PlatformIO")  # v1.05
+                return  # v1.05
+            ok, text = M08.Setup_Pico_Udev()  # v1.05
+            if ok:  # v1.05
+                P01.MsgBox(tr("Die Regel für den USB-Zugriff auf den Pico ist eingerichtet. Bitte den Pico neu anstecken (BOOTSEL-Taste gedrückt halten) und das Hochladen wiederholen. Nach dem nächsten An- und Abmelden gilt es auch für Programme außerhalb dieser Sitzung."), ns["vbInformation"], "PlatformIO")  # v1.05
+            else:  # v1.05
+                P01.MsgBox(tr("Die Regel konnte nicht eingerichtet werden.") + "\n\n" + text, vbCritical, "PlatformIO")  # v1.05
 
         def _web_loop(self, first_page_only):
             while True:
@@ -327,6 +345,9 @@ def make_class(Base):
                 self._web_reshow = False
                 if handler == "__Check_PIO_Button_Click":                 # gibt es nur im Web (kein Knopf des Originals)  # v1.04
                     self._web_check_pio()  # v1.04
+                    continue  # v1.05
+                if handler == "__Pico_Udev_Button_Click":                 # gibt es nur im Web, nur unter Linux  # v1.05
+                    self._web_pico_udev()  # v1.05
                     continue  # v1.04
                 try:
                     getattr(self, PFX + handler)()

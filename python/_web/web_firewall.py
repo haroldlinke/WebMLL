@@ -1,15 +1,16 @@
-# Datei-Version: 1.02 (2026-10-18) - web_firewall.py
+# Datei-Version: 1.03 (2026-10-26) - web_firewall.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_firewall.py
 # Path:           _web/web_firewall.py
-# Version:        1.02
-# Last Update:    2026-10-18
+# Version:        1.03
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-18  neu: Windows-Firewall: Regel fuer den Zugriff aus dem Netz einrichten, entfernen und pruefen (Knoepfe auf der Seite Programm Einstellungen)
 #   1.01  2026-10-18  Status nach Wirkung (Port, eingehend, zulassen, aktiv) statt nach dem Namen der Regel, Name mit Port, Entfernen und Einrichten ersetzen alle Regeln webMobaLedLib*, Blockierregeln und Netzwerkprofil in einem PowerShell-Aufruf; netsh entfaellt
 #   1.02  2026-10-18  Status lesen ohne Administratorrechte auf zwei Wegen (Get-NetFirewall*-Cmdlets und HNetCfg.FwPolicy2), Fehler werden gemeldet statt als keine Regel gewertet, Protokoll, BOM
+#   1.03  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 # ----------------------------------------------------------------------------------------------
 """Windows-Firewall fuer den Zugriff auf die Oberflaeche von anderen Rechnern im Netz.
 
@@ -24,6 +25,11 @@ import logging
 import platform
 import re
 import subprocess
+try:  # v1.03
+    from _web.web_i18n import tr  # v1.03
+except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.03
+    def tr(text, **values):  # v1.03
+        return text.format(**values) if values else text  # v1.03
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +142,8 @@ def rule_status(port: int) -> dict:  # v1.01
         res = _run(["powershell", "-NoProfile", "-NonInteractive", "-Command", status_script(port)], timeout=40.0)  # v1.02
     except (OSError, subprocess.SubprocessError) as ex:  # v1.02
         logger.warning("Firewall-Status: PowerShell nicht startbar: %s", ex)  # v1.02
-        return _unknown(f"PowerShell nicht startbar ({ex})")  # v1.02
+        # return _unknown(f"PowerShell nicht startbar ({ex})")  # v1.03 (entfallen)
+        return _unknown(tr('PowerShell nicht startbar ({ex})', ex=ex))  # v1.03
     out = res.stdout.decode("utf-8", "replace")  # v1.02
     status = parse_status(out, port)  # v1.02
     err = res.stderr.decode("utf-8", "replace").strip()  # v1.02
@@ -144,7 +151,8 @@ def rule_status(port: int) -> dict:  # v1.01
                 len(status["rules"]), ", ".join(r["name"] for r in status["rules"]) or "-", len(status["blocks"]), status["networks"] or "-", status["errors"] or "-",  # v1.02
                 f", stderr: {err[:200]}" if err else "")  # v1.02
     if not status["known"] and not status["errors"]:  # v1.02
-        status["errors"].append("keine Antwort von PowerShell" + (f": {err[:200]}" if err else ""))  # v1.02
+        # status["errors"].append("keine Antwort von PowerShell" + (f": {err[:200]}" if err else ""))  # v1.03 (entfallen)
+        status["errors"].append(tr('keine Antwort von PowerShell') + (f": {err[:200]}" if err else ""))  # v1.03
     return status  # v1.02
 
 
@@ -161,7 +169,8 @@ def _elevated(program: str, arguments: str) -> tuple:
     if code <= 32:
         if code == 5:
             return False, "Die Administratorrechte wurden nicht erteilt."
-        return False, f"Der Befehl konnte nicht gestartet werden (Fehler {code})."
+        # return False, f"Der Befehl konnte nicht gestartet werden (Fehler {code})."  # v1.03 (entfallen)
+        return False, tr('Der Befehl konnte nicht gestartet werden (Fehler {code}).', code=code)  # v1.03
     return True, ""
 
 

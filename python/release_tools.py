@@ -1,8 +1,8 @@
-# Datei-Version: 1.06 (2026-10-26) - release_tools.py
+# Datei-Version: 1.07 (2026-10-26) - release_tools.py
 # ----------------------------------------------------------------------------------------------
 # Name:           release_tools.py
 # Path:           release_tools.py
-# Version:        1.06
+# Version:        1.07
 # Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -14,11 +14,13 @@
 #   1.04  2026-10-23  Korrektur: LEDs_AutoProg/LEDs_AutoProg.h und LEDs_AutoProg/*.cmd gehoeren ins Release und in die Pruefliste (VOLATILE_PATHS, is_volatile); nur Abweichungen sind kein Fehler und werden beim Pruefen der Installation uebersprungen
 #   1.05  2026-10-26  platformio.ini im Ordner python (wird beim Hochladen mit PlatformIO neu geschrieben) zaehlt wie LEDs_AutoProg.h zu den vom Programm geaenderten Dateien (VOLATILE_PATHS)
 #   1.06  2026-10-26  Ordner .pio (PlatformIO, mehrere hundert MB) gehoert nicht ins Release (SKIP_DIRS); Warnung, wenn das ZIP entpackt ungewoehnlich gross ist (BIG_UNPACKED_MB)
+#   1.07  2026-10-26  Neu: Befehl zip (ZIP mit UTF-8-Kennzeichen fuer Umlaute) und Pruefung, dass Dateinamen mit Umlauten das UTF-8-Kennzeichen haben (tar von Windows schreibt es nicht: Pi entpackt falsch)
 # ----------------------------------------------------------------------------------------------
 """Pruefliste (Manifest) und Pruefungen fuer das Release von webMobaLedLib. Nur Standardbibliothek: laeuft auch, wenn das Programm selbst nicht mehr startet.
 
 Aufruf:
   python release_tools.py make  <Ordner python>             schreibt release_manifest.json in den Ordner (beim Bauen der ZIP, siehe zip_erstellen.bat)
+  python release_tools.py zip   <Ordner python> <webmobaledlib.zip>   baut die ZIP (Umlaute in Dateinamen mit UTF-8-Kennzeichen; tar von Windows schreibt es nicht)  # v1.07
   python release_tools.py check <webmobaledlib.zip> [--previous <alte ZIP>]
                                                            prueft die fertige ZIP vor dem Hochladen auf GitHub; Ergebnis 0 = in Ordnung
   python release_tools.py quick <Ordner python>             vergleicht eine Installation schnell (vorhanden, Groesse) mit ihrer Pruefliste
@@ -212,14 +214,21 @@ def verify_zip(zip_path: str, previous: str = "") -> Report:
             rep.errors.append(f"Beschaedigte Datei im ZIP: {bad}")
             return rep
         names = {}
+        no_utf8 = []                                                                           # Namen mit Umlauten ohne UTF-8-Kennzeichen (Windows tar): unter Linux falsch entpackt  # v1.07
         for info in zf.infolist():
             if info.is_dir():
                 continue
+            if any(ord(ch) > 127 for ch in info.filename) and not (info.flag_bits & 0x800):  # v1.07
+                no_utf8.append(info.filename)  # v1.07
             norm = info.filename.replace("\\", "/")
             if norm.startswith("/") or ".." in norm.split("/") or re.match(r"^[A-Za-z]:", norm):
                 rep.errors.append(f"Unzulaessiger Pfad im ZIP: {info.filename}")
                 continue
             names[norm] = info.filename
+        if no_utf8:  # v1.07
+            rep.errors.append(f"{len(no_utf8)} Dateinamen mit Umlauten oder Sonderzeichen ohne UTF-8-Kennzeichen im ZIP (zum Beispiel {', '.join(no_utf8[:2])}): Unter Linux und auf dem Raspberry Pi "  # v1.07
+                              "entstehen beim Entpacken falsche Dateinamen, das Programm meldet danach fehlende Dateien. Das ZIP bitte mit zip_erstellen.bat (Version 1.07 oder neuer) bauen "  # v1.07
+                              "(release_tools.py zip), nicht mit tar oder dem Explorer.")  # v1.07
         if not names:
             rep.errors.append("Das ZIP ist leer.")
             return rep
@@ -397,16 +406,45 @@ def _print_report(rep: Report) -> int:
     return 0 if rep.ok else 1
 
 
+def build_zip(folder: str, zip_path: str) -> int:  # v1.07
+    """ZIP aus dem Ordner python bauen (Aufbau python/...): Dateinamen mit Umlauten bekommen das UTF-8-Kennzeichen (Python setzt es selbst), Skripte (.sh, .command) die Rechte 755.
+    Gebraucht von zip_erstellen.bat: tar und der Explorer von Windows schreiben Umlaute ohne dieses Kennzeichen, dann entpackt Linux falsch (zum Beispiel Pattern_Config_Examples/vorsignal_grün.png)."""
+    folder = os.path.abspath(folder)  # v1.07
+    prefix = os.path.basename(folder)  # v1.07
+    rels = list(iter_files(folder))  # v1.07
+    if os.path.isfile(os.path.join(folder, MANIFEST_NAME)):  # v1.07
+        rels.append(MANIFEST_NAME)  # v1.07
+    if os.path.exists(zip_path):  # v1.07
+        os.remove(zip_path)  # v1.07
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:  # v1.07
+        for rel in sorted(set(rels)):  # v1.07
+            path = os.path.join(folder, *rel.split("/"))  # v1.07
+            info = zipfile.ZipInfo.from_file(path, prefix + "/" + rel)  # v1.07
+            info.compress_type = zipfile.ZIP_DEFLATED  # v1.07
+            info.create_system = 3                                                              # Unix: die Rechte unten gelten beim Entpacken  # v1.07
+            info.external_attr = (0o100755 if rel.endswith((".sh", ".command")) else 0o100644) << 16  # v1.07
+            with open(path, "rb") as fh:  # v1.07
+                zf.writestr(info, fh.read())  # v1.07
+    print(f"ZIP geschrieben: {zip_path} ({len(set(rels))} Dateien)")  # v1.07
+    return 0  # v1.07
+
+
 def main(argv) -> int:
     for stream in (sys.stdout, sys.stderr):
         try:
             stream.reconfigure(errors="replace")                     # Konsolen mit anderer Zeichentabelle (cmd.exe) sollen bei Umlauten und fremden Dateinamen nicht abbrechen
         except (AttributeError, ValueError):
             pass
-    if len(argv) < 3 or argv[1] not in ("make", "check", "quick", "full"):
+    # if len(argv) < 3 or argv[1] not in ("make", "check", "quick", "full"):  # v1.07 (entfallen)
+    if len(argv) < 3 or argv[1] not in ("make", "check", "quick", "full", "zip"):  # v1.07
         print(__doc__)
         return 2
     command, target = argv[1], argv[2]
+    if command == "zip":  # v1.07
+        if len(argv) < 4:  # v1.07
+            print("Aufruf: release_tools.py zip <Ordner python> <ZIP-Datei>")  # v1.07
+            return 2  # v1.07
+        return build_zip(target, argv[3])  # v1.07
     if command == "make":
         path = write_manifest(target)
         data = json.load(open(path, encoding="utf-8"))

@@ -1,9 +1,9 @@
-# Datei-Version: 1.10 (2026-10-23) - web_access.py
+# Datei-Version: 1.11 (2026-10-26) - web_access.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_access.py
 # Path:           _web/web_access.py
-# Version:        1.10
-# Last Update:    2026-10-23
+# Version:        1.11
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,7 @@
 #   1.08  2026-10-19  Schalter Zugriff aus dem Netz erlauben (build_lan, on_lan, Rueckfrage nach einem Passwort, Neustart); Datei network.json ueber web_network
 #   1.09  2026-10-19  Einschalten von Zugriff aus dem Netz legt unter Windows die Firewall-Regel an (ensure_firewall_for_lan); Warnung zur Adresse des Servers nennt den Schalter statt MLL_HOST
 #   1.10  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
+#   1.11  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 # ----------------------------------------------------------------------------------------------
 """Zusatzfelder der Seite Programm Einstellungen: Passwort fuer den Zugriff auf die Web-Oberflaeche aus dem Netz aendern und (nur auf
 dem Raspberry Pi mit installiertem Hilfsprogramm) den Namen des Rechners im Netz aendern.
@@ -261,18 +262,23 @@ class WebAccess:
     def firewall_text(self, status: dict, port: int) -> str:  # v1.06
         if not status.get("known", True):  # v1.06
             reason = "; ".join(status.get("errors") or []) or "keine Antwort"  # v1.07
-            return f"Der Zustand der Firewall konnte nicht gelesen werden ({reason}). Ob der Port {port} freigegeben ist, lässt sich hier nicht sagen: vom anderen Rechner ausprobieren."  # v1.07
+            # return f"Der Zustand der Firewall konnte nicht gelesen werden ({reason}). Ob der Port {port} freigegeben ist, lässt sich hier nicht sagen: vom anderen Rechner ausprobieren."  # v1.11 (entfallen)
+            return tr('Der Zustand der Firewall konnte nicht gelesen werden ({reason}). Ob der Port {port} freigegeben ist, lässt sich hier nicht sagen: vom anderen Rechner ausprobieren.', reason=reason, port=port)  # v1.11
         ours = [r for r in status["rules"] if r["ours"]]  # v1.06
         others = [r for r in status["rules"] if not r["ours"]]  # v1.06
         describe = lambda rules: ", ".join(f"„{r['name']}“ ({self.profile_text(r['profile'])})" for r in rules)  # v1.06
         if ours:  # v1.06
-            text = f"Der Port {port} ist freigegeben, Regel {describe(ours)}."  # v1.06
+            # text = f"Der Port {port} ist freigegeben, Regel {describe(ours)}."  # v1.11 (entfallen)
+            text = tr('Der Port {port} ist freigegeben, Regel {regel}.', port=port, regel=describe(ours))  # v1.11
             if others:  # v1.06
-                text += f" Weitere Regeln, die ihn zulassen und nicht verändert werden: {describe(others)}."  # v1.06
+                # text += f" Weitere Regeln, die ihn zulassen und nicht verändert werden: {describe(others)}."  # v1.11 (entfallen)
+                text += tr(' Weitere Regeln, die ihn zulassen und nicht verändert werden: {regeln}.', regeln=describe(others))  # v1.11
             return text  # v1.06
         if others:  # v1.06
-            return f"Der Port {port} ist durch Regeln freigegeben, die dieses Programm nicht angelegt hat und nicht verändert: {describe(others)}."  # v1.06
-        return f"Es gibt noch keine Regel für den Port {port}: Andere Rechner im Netz können die Oberfläche nicht erreichen."  # v1.06
+            # return f"Der Port {port} ist durch Regeln freigegeben, die dieses Programm nicht angelegt hat und nicht verändert: {describe(others)}."  # v1.11 (entfallen)
+        # return f"Es gibt noch keine Regel für den Port {port}: Andere Rechner im Netz können die Oberfläche nicht erreichen."  # v1.11 (entfallen)
+            return tr('Der Port {port} ist durch Regeln freigegeben, die dieses Programm nicht angelegt hat und nicht verändert: {regeln}.', port=port, regeln=describe(others))  # v1.11
+        return tr('Es gibt noch keine Regel für den Port {port}: Andere Rechner im Netz können die Oberfläche nicht erreichen.', port=port)  # v1.11
 
     async def update_firewall(self):  # v1.05
         from nicegui import run  # v1.05
@@ -281,11 +287,13 @@ class WebAccess:
         warnings = []  # v1.05
         if status.get("blocked"):  # v1.06
             names = ", ".join(f"„{r['name']}“" for r in status["blocks"])  # v1.06
-            warnings.append(f"Eine Blockierregel verhindert den Zugriff: {names}. Eine Blockierregel gewinnt gegen jede Zulassungsregel. Sie muss in der "  # v1.06
-                            "Windows-Firewall gelöscht werden (Anleitung, Kapitel 8).")  # v1.06
+            # warnings.append(f"Eine Blockierregel verhindert den Zugriff: {names}. Eine Blockierregel gewinnt gegen jede Zulassungsregel. Sie muss in der "  # v1.11 (entfallen)
+                            # "Windows-Firewall gelöscht werden (Anleitung, Kapitel 8).")  # v1.11 (entfallen)
+            warnings.append(tr('Eine Blockierregel verhindert den Zugriff: {names}. Eine Blockierregel gewinnt gegen jede Zulassungsregel. Sie muss in der Windows-Firewall gelöscht werden (Anleitung, Kapitel 8).', names=names))  # v1.11
         if SERVER["host"] in LOCAL_HOSTS:  # v1.05
             if web_network.SOURCE["name"] in ("cli", "env"):  # v1.09
-                warnings.append(f"Der Server lauscht nur auf diesem Rechner: Die Adresse {SERVER['host']} ist fest vorgegeben (Startparameter --host oder Umgebungsvariable MLL_HOST).")  # v1.09
+                # warnings.append(f"Der Server lauscht nur auf diesem Rechner: Die Adresse {SERVER['host']} ist fest vorgegeben (Startparameter --host oder Umgebungsvariable MLL_HOST).")  # v1.11 (entfallen)
+                warnings.append(tr('Der Server lauscht nur auf diesem Rechner: Die Adresse {adresse} ist fest vorgegeben (Startparameter --host oder Umgebungsvariable MLL_HOST).', adresse=SERVER['host']))  # v1.11
             elif web_network.lan_access():  # v1.09
                 warnings.append("Der Zugriff aus dem Netz ist eingeschaltet, der Server lauscht aber noch nur auf diesem Rechner: Das Programm neu starten (Knopf „Jetzt neu starten“ oben).")  # v1.09
             else:  # v1.09
@@ -331,7 +339,8 @@ class WebAccess:
         await self.update_firewall()  # v1.05
         if result == "ok":  # v1.07
             url = self.lan_url()  # v1.05
-            ui.notify("Die Freigabe ist eingerichtet." + (f" Andere Rechner erreichen die Oberfläche unter {url}" if url else ""), type="positive", timeout=15000)  # v1.05
+            # ui.notify("Die Freigabe ist eingerichtet." + (f" Andere Rechner erreichen die Oberfläche unter {url}" if url else ""), type="positive", timeout=15000)  # v1.11 (entfallen)
+            ui.notify("Die Freigabe ist eingerichtet." + (tr(' Andere Rechner erreichen die Oberfläche unter {url}', url=url) if url else ""), type="positive", timeout=15000)  # v1.11
         elif result == "unknown":  # v1.07
             ui.notify("Die Freigabe wurde an Windows übergeben. Ob die Regel besteht, lässt sich hier nicht lesen: bitte vom anderen Rechner ausprobieren.", type="info", timeout=15000)  # v1.07
         else:  # v1.05
@@ -360,7 +369,8 @@ class WebAccess:
 
     def refresh_host(self):
         name = socket.gethostname()
-        self.host_status.set_text(f"Aktueller Name: {name}   (Adresse im Netz: {self.host_url(name)})")
+        # self.host_status.set_text(f"Aktueller Name: {name}   (Adresse im Netz: {self.host_url(name)})")  # v1.11 (entfallen)
+        self.host_status.set_text(tr('Aktueller Name: {name}   (Adresse im Netz: {adresse})', name=name, adresse=self.host_url(name)))  # v1.11
 
     async def change_host(self):
         from nicegui import run, ui
@@ -387,7 +397,8 @@ class WebAccess:
         ok, message = await run.io_bound(run_hostname_helper, name)
         self.host_result.clear()
         if not ok:
-            ui.notify("Der Name konnte nicht geändert werden: " + (message or "unbekannter Fehler"), type="negative", timeout=15000)
+            # ui.notify("Der Name konnte nicht geändert werden: " + (message or "unbekannter Fehler"), type="negative", timeout=15000)  # v1.11 (entfallen)
+            ui.notify(tr('Der Name konnte nicht geändert werden: ') + (message or tr('unbekannter Fehler')), type="negative", timeout=15000)  # v1.11
             return
         # ui.notify(f"Der Name ist jetzt {name}.", type="positive")  # v1.10 (entfallen)
         ui.notify(tr('Der Name ist jetzt {name}.', name=name), type="positive")  # v1.10
@@ -399,11 +410,14 @@ class WebAccess:
     def refresh(self):
         user = web_password.username()
         if web_password.has_stored():
-            text = f"Benutzername: {user}. Ein eigenes Passwort ist gesetzt."
+            # text = f"Benutzername: {user}. Ein eigenes Passwort ist gesetzt."  # v1.11 (entfallen)
+            text = tr('Benutzername: {user}. Ein eigenes Passwort ist gesetzt.', user=user)  # v1.11
         elif web_password.uses_default_password():
-            text = f"Benutzername: {user}. Es gilt das Standardpasswort „{web_password.DEFAULT_PASSWORD}“."
+            # text = f"Benutzername: {user}. Es gilt das Standardpasswort „{web_password.DEFAULT_PASSWORD}“."  # v1.11 (entfallen)
+            text = tr('Benutzername: {user}. Es gilt das Standardpasswort „{passwort}“.', user=user, passwort=web_password.DEFAULT_PASSWORD)  # v1.11
         elif web_password.env_password():
-            text = f"Benutzername: {user}. Es gilt das Passwort aus der Einstellungsdatei des Dienstes (MLL_PASSWORD)."
+            # text = f"Benutzername: {user}. Es gilt das Passwort aus der Einstellungsdatei des Dienstes (MLL_PASSWORD)."  # v1.11 (entfallen)
+            text = tr('Benutzername: {user}. Es gilt das Passwort aus der Einstellungsdatei des Dienstes (MLL_PASSWORD).', user=user)  # v1.11
         else:
             text = "Es ist kein Passwort eingerichtet: Wer das Netz erreicht, kann die Oberfläche benutzen."
         self.status.set_text(text)

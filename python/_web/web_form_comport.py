@@ -1,14 +1,15 @@
-# Datei-Version: 1.03 (2026-10-21) - web_form_comport.py
+# Datei-Version: 1.04 (2026-10-26) - web_form_comport.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_comport.py
 # Path:           _web/web_form_comport.py
-# Version:        1.03
-# Last Update:    2026-10-21
+# Version:        1.04
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.02  2026-10-15  Web-Ersatz fuer Select_COM_Port_Userform (Original, nicht erfasst)
 #   1.03  2026-10-21  Update_SpinButton: ohne offenen Dialog den Zeitgeber der blinkenden LEDs beenden (stand 10 Minuten lang auf COM6 und blockierte esptool)
+#   1.04  2026-10-26  Unbekannte Ports anzeigen ist unter Linux und macOS nur noch an, wenn kein bekannter Anschluss (zum Beispiel ttyUSB0) gefunden wird
 # ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/Select_COM_Port_Userform.py (Auswahl des Arduino/Pico-Ports).
 
@@ -124,6 +125,18 @@ def make_class(Base):
         _old_spin = -1
         _show_unknown = False
 
+        def _initial_show_unknown(self, windows):  # v1.04
+            """Vorgabe fuer "Unbekannte Ports anzeigen": Windows aus; Linux und macOS nur dann an, wenn kein bekannter Anschluss gefunden wird (sonst standen unter Linux
+            immer alle Anschluesse in der Liste und der letzte wurde vorgeschlagen, zum Beispiel ttyS31 statt ttyUSB0)"""
+            if windows:  # v1.04
+                return False  # v1.04
+            try:  # v1.04
+                known, _names = M07.EnumComPorts(False, [], PrintDebug=False)  # v1.04
+                return len(known) == 0  # v1.04
+            except Exception:                                              # noqa: BLE001  # v1.04
+                logger.debug("Anschluesse konnten nicht gelesen werden", exc_info=True)  # v1.04
+                return True  # v1.04
+
         # ------------------------------------------------------------ Aktualisierung (auch aus dem Zeitgeber-Thread)
         def _compute(self, DefaultPort):
             LocalComPorts, PortNames = M07.EnumComPorts(self._show_unknown, ns["PortNames"], PrintDebug=ns["LocalPrintDebug"])
@@ -213,7 +226,8 @@ def make_class(Base):
                            "separated by ';'" + vbCr + "Wrong: '" + Buttons + "'", vbCritical, "Internal Error")
                 M30.EndProg()
             windows = P01.checkplatform("Windows") is True
-            self._show_unknown = not windows
+            # self._show_unknown = not windows  # v1.04 (entfallen)
+            self._show_unknown = self._initial_show_unknown(windows)  # v1.04
             hints = info["hints"]
             hint = ""
             if Show_ComPort and hints:

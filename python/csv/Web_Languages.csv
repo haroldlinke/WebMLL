@@ -1,272 +1,1008 @@
 ﻿Deutsch;English;Nederlands;Francais;Italiano;Espanol;Dansk
-'{name}' ist keine MLL_PGF-Datei (*.MLL_pgf).;'{name}' is not an MLL_PGF file (*.MLL_pgf).;;;;;
-(Typ {ptype!r} wird im Web noch nicht unterstützt);(type {ptype!r} is not supported in the web interface yet);;;;;
+"
+
+Datenordner (Konfiguration, Sicherungen, Protokolle):
+";"
+
+Data folder (configuration, backups, logs):
+";Gegevensmap (configuratie, back-ups, logbestanden):;;;;
+"
+
+Es wurde nur die erste von {anzahl} Dateien übernommen.";"
+
+Only the first of {anzahl} files was taken over.";Alleen het eerste van {anzahl} bestanden is overgenomen.;;;;
+"
+Ein Rücksprung auf eine ältere Version ist nur sinnvoll, wenn Sie ihn wollen (zum Beispiel nach einem Fehler in der neuen Version). Wurde versehentlich ein altes ZIP bereitgestellt: Abbrechen.";"
+A rollback to an older version only makes sense if you want it (for example after an error in the new version). If an old ZIP was provided by mistake: cancel.";Een terugkeer naar een oudere versie is alleen zinvol als je dat wilt (bijvoorbeeld na een fout in de nieuwe versie). Is per ongeluk een oud ZIP-bestand gekozen: annuleer.;;;;
+"
+Web-Oberfläche: webMobaLedLib ";"
+Web interface: webMobaLedLib ";Webinterface: webMobaLedLib;;;;
+    ... und {anzahl} weitere;    ... and {anzahl} more;... en nog {anzahl};;;;
+ - Fehler: {typ}: {e}; - Error: {typ}: {e};- Fout: {typ}: {e};;;;
+ [nicht mit dem ARDUINO verbunden: {command} nicht gesendet]; [not connected to the ARDUINO: {command} not sent];[niet verbonden met de ARDUINO: {command} niet verzonden];;;;
+ Andere Rechner erreichen die Oberfläche unter {url}; Other computers reach the interface at {url};Andere computers bereiken de interface via {url};;;;
+ enthält nicht genau 12 Werte; does not contain exactly 12 values;bevat niet precies 12 waarden;;;;
+ nicht gefunden; not found;;;;;
+ Python MobaLedLib wurde aktualisiert. Soll neu gestartet werden?; Python MobaLedLib has been updated. Should it be restarted?;Python MobaLedLib is bijgewerkt. Opnieuw starten?;;;;
+ von {kb} KB; of {kb} KB;van {kb} KB;;;;
+ Weitere Regeln, die ihn zulassen und nicht verändert werden: {regeln}.; Further rules that allow it and are not changed: {regeln}.;Verdere regels die het toestaan en niet worden gewijzigd: {regeln}.;;;;
+ werden verwendet; are used;worden gebruikt;;;;
+ werden?;?;?;;;;
+' darf nicht leer sein.;' must not be empty.;' mag niet leeg zijn.;;;;
+' ersetzt werden?;'?;'?;;;;
+' existiert nicht in dem Verzeichnis:;' does not exist in the folder:;' bestaat niet in de map:;;;;
+' existiert nicht in folgenen Verzeichnissen:;' does not exist in the following folders:;' bestaat niet in de volgende mappen:;;;;
+' ist unbekannt;' is unknown;' is onbekend;;;;
+'{name}' ist keine MLL_PGF-Datei (*.MLL_pgf).;'{name}' is not an MLL_PGF file (*.MLL_pgf).;'{name}' is geen MLL_PGF-bestand (*.MLL_pgf).;;;;
+'{name}' ist keine Zahl.;'{name}' is not a number.;'{name}' is geen getal.;;;;
+'{name}' muss eine ganze Zahl zwischen {lo} und {hi} sein.;'{name}' must be a whole number between {lo} and {hi}.;'{name}' moet een geheel getal zijn tussen {lo} en {hi}.;;;;
+'{raum}' belegt den Einzelkanal {ch}. Er kann nur durch einen Effekt mit demselben Einzelkanal {old} ersetzt werden, sonst würde eine andere LED angesprochen. Sonst bitte 'Einfügen' wählen.;'{raum}' occupies the single channel {ch}. It can only be replaced by an effect with the same single channel {old}, otherwise another LED would be addressed. Otherwise please choose 'Insert'.;'{raum}' gebruikt het afzonderlijke kanaal {ch}. Het kan alleen worden vervangen door een effect met hetzelfde afzonderlijke kanaal {old}, anders zou een andere LED worden aangestuurd. Kies anders 'Invoegen'.;;;;
+'{raum}' belegt eine ganze RGB-LED (alle 3 Kanäle). Er kann nur durch einen Effekt ersetzt werden, der ebenfalls eine RGB-LED belegt. Sonst bitte 'Einfügen' wählen.;'{raum}' occupies a whole RGB LED (all 3 channels). It can only be replaced by an effect that also occupies an RGB LED. Otherwise please choose 'Insert'.;'{raum}' gebruikt een hele RGB-LED (alle 3 kanalen). Het kan alleen worden vervangen door een effect dat ook een RGB-LED gebruikt. Kies anders 'Invoegen'.;;;;
+(Gültiger Bereich: 1..63);(Valid range: 1..63);(Geldig bereik: 1..63);;;;
+(Typ {ptype!r} wird im Web noch nicht unterstützt);(type {ptype!r} is not supported in the web interface yet);(type {ptype!r} wordt nog niet ondersteund in de webinterface);;;;
+). Maximal 148 Abschnitte sind möglich.;). A maximum of 148 sections is possible.;). Maximaal 148 segmenten zijn mogelijk.;;;;
+"* = Unveränderbare Farben
+      Alle anderen Farben können mit dem Set_ColTab Befehl
+      und dem Farbtest Programm angepasst werden.
+      Die Candle Farben werden über Set_CandleTab angepasst.";"* = Unchangeable colours
+      All other colours can be adjusted with the Set_ColTab command
+      and the colour test program.
+      The candle colours are adjusted with Set_CandleTab.";"* = Onveranderlijke kleuren
+      Alle andere kleuren kunnen worden aangepast met de opdracht Set_ColTab
+      en het kleurtestprogramma.
+      De kaarskleuren worden aangepast met Set_CandleTab.";;;;
+"* Da ist was schief gegangen ;-(            *";"* Something went wrong ;-(                *";"* Er is iets misgegaan ;-(                *";;;;
+, Rückmeldung für {n_rm} Programm(e);, feedback for {n_rm} program(s);, terugmelding voor {n_rm} programma('s);;;;
+, {anzahl} schon vorhanden (nicht noch einmal geladen);, {anzahl} already present (not loaded again);, {anzahl} al aanwezig (niet opnieuw geladen);;;;
+. Danach findet das Programm pio selbst.;. After that the program finds pio by itself.;. Daarna vindt het programma pio zelf.;;;;
+0 = aus (es wird nichts gesendet);0 = off (nothing is sent);0 = uit (er wordt niets verzonden);;;;
+6 = Servo zurücksetzen;6 = reset servo;6 = servo resetten;;;;
+8 = Letzte Position zurücksetzen;8 = reset last position;8 = laatste positie resetten;;;;
 Abbrechen;Cancel;;;;;
-Abbrechen (A);Cancel (A);;;;;
-Aktualisieren;Update;;;;;
-aktuelle Farbe in Palette übernehmen;Copy the current colour into the palette;;;;;
-Aktuelle Seite löschen;Delete current page;;;;;
-Aktuelle Seite speichern;Save current page;;;;;
+Abbrechen (A);Cancel (A);Annuleren (A);;;;
+Abhilfe: Menü Hilfe → Update webMobaLedLib … (stellt die Dateien wieder her), oder die Anleitung, Kapitel „Wenn nichts mehr geht“.;Remedy: menu Help → Update webMobaLedLib … (restores the files), or the manual, chapter “When nothing works any more”.;Oplossing: menu Help → Update webMobaLedLib … (herstelt de bestanden), of de handleiding, hoofdstuk „Als niets meer werkt”.;;;;
+Abschnitt oder Schlüssel zum Lesen Nicht angegeben !!!;Section or key for reading not specified !!!;Sectie of sleutel voor lezen niet opgegeven !!!;;;;
+Abschnitt oder Schlüssel zum Schreiben nicht angegeben !!!;Section or key for writing not specified !!!;Sectie of sleutel voor schrijven niet opgegeven !!!;;;;
+Achtung die Darstellung der Spaltenbreite wurde begrenzt;Attention: the displayed column width was limited;Let op: de weergegeven kolombreedte is beperkt;;;;
+Achtung die folgenden Zeichen existieren nicht im Morse Alphabet:;Attention: the following characters do not exist in the Morse alphabet:;Let op: de volgende tekens bestaan niet in het morsealfabet:;;;;
+"ACHTUNG: Beim LINUX/MAC funktioniert die automatische ARDUINO Erkennung nicht. Bitte unbedingt den richtigen ARDUINO Typ in den Optionen einstellen!
+Ein anderer COM Port kann über die Pfeiltasten ausgewählt werden.
+Der Arduino kann auch nachträglich angesteckt werden.";"ATTENTION: The automatic ARDUINO detection does not work on LINUX/MAC. Please be sure to set the correct ARDUINO type in the options!
+Another COM port can be selected with the arrow keys.
+The Arduino can also be plugged in afterwards.";"LET OP: Op LINUX/MAC werkt de automatische ARDUINO-herkenning niet. Stel absoluut het juiste ARDUINO-type in bij de opties!
+Een andere COM-poort kan met de pijltjestoetsen worden gekozen.
+De Arduino kan ook achteraf worden aangesloten.";;;;
+"ACHTUNG: Die Python-Pakete konnten nicht aktualisiert werden:
+";"ATTENTION: The Python packages could not be updated:
+";LET OP: De Python-pakketten konden niet worden bijgewerkt:;;;;
+Achtung: Diese Meldung wird nur ein mal angezeigt;Attention: This message is only shown once;Let op: Deze melding wordt maar één keer getoond;;;;
+"ACHTUNG: Dieses ZIP hat eine ÄLTERE Version als die installierte!
+";"ATTENTION: This ZIP has an OLDER version than the installed one!
+";LET OP: Dit ZIP-bestand heeft een OUDERE versie dan de geïnstalleerde!;;;;
+Achtung: Soll die Seite ';Attention: Should the page ';Let op: Moet de pagina ';;;;
+Adresse der Status LED beim Programmieren des Attinys (0=blaue LED auf der Platine);Address of the status LED while programming the ATtiny (0=blue LED on the board);Adres van de status-LED bij het programmeren van de ATtiny (0=blauwe LED op de print);;;;
+Adresse des Soundmoduls;Address of the sound module;Adres van de geluidsmodule;;;;
+Adresse für andere Rechner;Address for other computers;Adres voor andere computers;;;;
+Adresse nach dem Neustart;Address after the restart;Adres na het herstarten;;;;
+Aktualisieren;Update;Update;;;;
+Aktualisieren der Python MobaLedLib;Updating the Python MobaLedLib;De Python MobaLedLib wordt bijgewerkt;;;;
+Aktualisiert pyMobaLedLib auf die neueste Version.;Updates pyMobaLedLib to the latest version.;Werkt pyMobaLedLib bij naar de nieuwste versie.;;;;
+aktuelle Farbe in Palette übernehmen;Copy the current colour into the palette;Huidige kleur in het palet kopiëren;;;;
+Aktuelle Seite löschen;Delete current page;Huidige pagina verwijderen;;;;
+Aktuelle Seite speichern;Save current page;Huidige pagina opslaan;;;;
+Aktueller Name: {name}   (Adresse im Netz: {adresse});Current name: {name}   (address on the network: {adresse});Huidige naam: {name}   (adres in het netwerk: {adresse});;;;
 "Alle
 Spalten";"All
-columns";;;;;
-Alle Beispiele;All examples;;;;;
-Alle Beispiele löschen;Delete all examples;;;;;
-Alle LED aus;All LEDs off;;;;;
-Alle Seiten speichern;Save all pages;;;;;
-Anschließend zurück zum Patterngenerator;Then back to the Pattern Generator;;;;;
-Antippen zum Auf- und Zuklappen;Tap to expand or collapse;;;;;
-Anzahl;Count;;;;;
-Anzeige leeren;Clear display;;;;;
-ARDUINO Einstellungen;ARDUINO settings;;;;;
-ARDUINO-IDE (Standard);ARDUINO IDE (default);;;;;
-Auch die Spalten hinter Q anzeigen (zum Beispiel die LED-Zahlen der Kanäle 1 bis 9 in Zeile 1);Also show the columns after Q (for example the LED counts of channels 1 to 9 in row 1);;;;;
-Auf dieser Seite sind keine Bilder.;There are no pictures on this page.;;;;;
+columns";"Alle
+kolommen";;;;
+Alle Anschlüsse zeigen;Show all ports;Alle poorten tonen;;;;
+Alle Beispiele;All examples;Alle voorbeelden;;;;
+Alle Beispiele löschen;Delete all examples;Alle voorbeelden verwijderen;;;;
+Alle gefundenen Anschlüsse werden angezeigt;All ports found are shown;Alle gevonden poorten worden getoond;;;;
+Alle LED aus;All LEDs off;Alle LED's uit;;;;
+Alle Multiplexer löschen ...;Delete all multiplexers ...;Alle multiplexers verwijderen ...;;;;
+Alle Seiten speichern;Save all pages;Alle pagina's opslaan;;;;
+"Alle {count} Bilder der Seite {blatt} entfernen?
+Die Bilddateien selbst bleiben erhalten.";"Remove all {count} pictures of the page {blatt}?
+The picture files themselves are kept.";"Alle {count} afbeeldingen van de pagina {blatt} verwijderen?
+De afbeeldingsbestanden zelf blijven bewaard.";;;;
+"Alle {count} Seiten (alle außer Main) löschen?
+Das kann nicht rückgängig gemacht werden. Vorher kann man sie mit „Alle Seiten speichern“ sichern.";"Delete all {count} pages (all except Main)?
+This cannot be undone. Before that you can save them with “Save all pages”.";"Alle {count} pagina's verwijderen (alle behalve Main)?
+Dit kan niet ongedaan worden gemaakt. Je kunt ze eerst opslaan met „Alle pagina's opslaan”.";;;;
+Alle Änderungen werden ignoriert!;All changes are ignored!;Alle wijzigingen worden genegeerd!;;;;
+Als Zeilen einfügen;Insert as rows;Als regels invoegen;;;;
+Analyse der Programmzeilen;Analysis of the program lines;Analyse van de programmaregels;;;;
+Anschließend zurück zum Patterngenerator;Then back to the Pattern Generator;Daarna terug naar de Patterngenerator;;;;
+Anschluss des Servos (RGB-Nummer des Anschlusses);Connector of the servo (RGB number of the connector);Aansluiting van de servo (RGB-nummer van de aansluiting);;;;
+Anschluss des Sound-Moduls;Connector of the sound module;Aansluiting van de geluidsmodule;;;;
+Anschluss, an den der ARDUINO angeschlossen ist;Port the ARDUINO is connected to;Poort waarop de ARDUINO is aangesloten;;;;
+Antippen zum Auf- und Zuklappen;Tap to expand or collapse;Tik om uit of in te klappen;;;;
+Anzahl;Count;Aantal;;;;
+Anzahl der binären Zustände ungültig;Number of binary states invalid;Aantal binaire toestanden ongeldig;;;;
+Anzahl der Schritte, um welche die Lautstärke verringert/erhöht werden soll;Number of steps by which the volume is decreased/increased;Aantal stappen waarmee het volume wordt verlaagd/verhoogd;;;;
+Anzeige leeren;Clear display;Weergave wissen;;;;
+"ARDUINO blinkt, wenn er ausgewählt wird. 
+ACHTUNG: Die Reaktionszeit der Benutzeroberfläche wird dadurch langsamer";"The ARDUINO blinks when it is selected. 
+ATTENTION: This slows down the response time of the user interface";"De ARDUINO knippert wanneer hij wordt gekozen. 
+LET OP: Hierdoor reageert de gebruikersinterface trager";;;;
+ARDUINO Einstellungen;ARDUINO settings;ARDUINO-instellingen;;;;
+ARDUINO IDE nicht gefunden;ARDUINO IDE not found;ARDUINO IDE niet gevonden;;;;
+ARDUINO-IDE (Standard);ARDUINO IDE (default);ARDUINO IDE (standaard);;;;
+Auch die Spalten hinter Q anzeigen (zum Beispiel die LED-Zahlen der Kanäle 1 bis 9 in Zeile 1);Also show the columns after Q (for example the LED counts of channels 1 to 9 in row 1);Toon ook de kolommen na Q (bijvoorbeeld de LED-aantallen van kanaal 1 tot 9 in regel 1);;;;
+Auf dieser Seite sind keine Bilder.;There are no pictures on this page.;Er zijn geen afbeeldingen op deze pagina.;;;;
+"Aus- oder
+Einblenden";"Hide or
+show";"Verbergen of
+tonen";;;;
+Ausführliche Beschreibung;Detailed description;Uitgebreide beschrijving;;;;
+Ausgeschaltet. Das gilt nach einem Neustart des Programms.;Switched off. This applies after the program is restarted.;Uitgeschakeld. Dit geldt na het herstarten van het programma.;;;;
+Ausgeschaltet: Das Programm ist nur auf diesem Rechner erreichbar.;Switched off: The program is only reachable on this computer.;Uitgeschakeld: Het programma is alleen bereikbaar op deze computer.;;;;
 Ausgewählt: 0;Selected: 0;;;;;
-Ausgewählte Beispiele laden;Load selected examples;;;;;
+Ausgewählte Beispiele laden;Load selected examples;Gekozen voorbeelden laden;;;;
 Auswahl;Selection;;;;;
+Auswahl der Beispiele;Selection of the examples;Keuze van de voorbeelden;;;;
+Auswahl der Goto Aktivierung;Select the goto activation;Goto-activering kiezen;;;;
+Auswahl der LED Zuordnung;Selection of the LED assignment;Keuze van de LED-toewijzing;;;;
+Auswahl der mDNS-IP Adresse;Select the mDNS IP address;mDNS-IP-adres kiezen;;;;
+Auswahl der Spezial Modes;Selection of the special modes;Keuze van de speciale modi;;;;
+Auswahl der Start Nummer:;Select the start number:;Startnummer kiezen:;;;;
 Auswahl des Makros;Select the macro;;;;;
-Bedienung der Tabelle;Operating the table;;;;;
-Beenden;Quit;;;;;
-Beenden ...;Quit ...;;;;;
-Beenden ohne Speichern (O);Quit without saving (O);;;;;
-Beim Einschalten von „Zugriff aus dem Netz erlauben“ (oben) wird diese Regel automatisch angelegt.;This rule is created automatically when “Allow access from the network” (above) is switched on.;;;;;
-Beim Speichern werden die Tabellen und die Konfiguration wie beim Beenden der Tk-Version gesichert.;When saving, the tables and the configuration are backed up as when quitting the Tk version.;;;;;
-Beispiele laden;Load examples;;;;;
-Beispiele laden, Seiten speichern und löschen;Load examples, save and delete pages;;;;;
+Automatisch (kompakt, wenn das Browserfenster niedriger als 800 Pixel ist);Automatic (compact when the browser window is lower than 800 pixels);Automatisch (compact als het browservenster lager is dan 800 pixels);;;;
+Automatisch übernehmen;Apply automatically;Automatisch overnemen;;;;
+Basisadresse des DCC-Keyboards;Base address of the DCC keyboard;Basisadres van het DCC-toetsenbord;;;;
+Baudrate des angeschlossenen ARDUINOs;Baud rate of the connected ARDUINO;Baudrate van de aangesloten ARDUINO;;;;
+Bedienung der Tabelle;Operating the table;De tabel bedienen;;;;
+Bedingungen für Zeilenfarben;Conditions for row colours;Voorwaarden voor regelkleuren;;;;
+Beenden;Quit;Afsluiten;;;;
+Beenden ...;Quit ...;Afsluiten ...;;;;
+Beenden ohne Speichern (O);Quit without saving (O);Afsluiten zonder opslaan (O);;;;
+Beim Einbinden eines Blattes wurde ein Zirkelbezug festgestellt. Der Blattname lautet: ';A circular reference was detected while including a sheet. The sheet name is: ';Bij het invoegen van een blad is een kringverwijzing gevonden. De bladnaam is: ';;;;
+Beim Einschalten von „Zugriff aus dem Netz erlauben“ (oben) wird diese Regel automatisch angelegt.;This rule is created automatically when “Allow access from the network” (above) is switched on.;Deze regel wordt automatisch aangemaakt als „Toegang vanuit het netwerk toestaan” (hierboven) is ingeschakeld.;;;;
+Beim Speichern werden die Tabellen und die Konfiguration wie beim Beenden der Tk-Version gesichert.;When saving, the tables and the configuration are backed up as when quitting the Tk version.;Bij het opslaan worden de tabellen en de configuratie veiliggesteld zoals bij het afsluiten van de Tk-versie.;;;;
+Beim Start werden die letzten Workbooks automatisch geladen;The last workbooks are loaded automatically at startup;De laatste werkmappen worden bij het starten automatisch geladen;;;;
+Beispiel wurde erfolgreich gespeichert;Example was saved successfully;Voorbeeld is succesvol opgeslagen;;;;
+Beispiele laden;Load examples;Voorbeelden laden;;;;
+Beispiele laden, Seiten speichern und löschen;Load examples, save and delete pages;Voorbeelden laden, pagina's opslaan en verwijderen;;;;
+Benutzername: {user}. Ein eigenes Passwort ist gesetzt.;User name: {user}. Your own password is set.;Gebruikersnaam: {user}. Je eigen wachtwoord is ingesteld.;;;;
+Benutzername: {user}. Es gilt das Passwort aus der Einstellungsdatei des Dienstes (MLL_PASSWORD).;User name: {user}. The password from the settings file of the service (MLL_PASSWORD) applies.;Gebruikersnaam: {user}. Het wachtwoord uit het instellingenbestand van de service (MLL_PASSWORD) geldt.;;;;
+Benutzername: {user}. Es gilt das Standardpasswort „{passwort}“.;User name: {user}. The default password “{passwort}” applies.;Gebruikersnaam: {user}. Het standaardwachtwoord „{passwort}” geldt.;;;;
 Beschreibung;Description;;;;;
-Betriebsart des Servos: 1 Normal, 2 und 3 Training, 4 Max Speed, 5 Invers, 6 Servo zurücksetzen, 7 Werkseinstellung, 8 letzte Position zurücksetzen, 9 Oszillator trimmen;Servo operating mode: 1 normal, 2 and 3 training, 4 max speed, 5 inverse, 6 reset servo, 7 factory settings, 8 reset last position, 9 trim oscillator;;;;;
-Bild einfügen;Insert picture;;;;;
-Bilder dieser Seite entfernen;Remove the pictures of this page;;;;;
-Bitte das Programm beenden (Knopf BEENDEN) und neu starten.;Please quit the program (QUIT button) and start it again.;;;;;
-Bitte ein Makro auswählen.;Please select a macro.;;;;;
-Bitte mindestens ein Beispiel auswählen.;Please select at least one example.;;;;;
-Blinken Ein/Aus;Blinking on/off;;;;;
-COM Port;COM port;;;;;
-"Damit ein anderer Rechner im Heimnetz die Oberfläche erreicht, muss die Windows-Firewall den Port zulassen. Der Knopf richtet dafür die Regel „webMobaLedLib <Port>“ ein (TCP, nur für Privatnetzwerke); eine ältere Regel mit diesem Namen wird dabei ersetzt. Windows fragt dabei nach Administratorrechten: mit „Ja“ bestätigen.";"For another computer in the home network to reach the interface, the Windows firewall must allow the port. The button creates the rule “webMobaLedLib <port>” for this (TCP, private networks only); an older rule with this name is replaced. Windows asks for administrator rights: confirm with “Yes”.";;;;;
-Darstellung auf kleinen Bildschirmen;Display on small screens;;;;;
-Das Bild {name} ist unter der Tabelle eingefügt.;The picture {name} has been inserted below the table.;;;;;
-Das eigene Passwort ist entfernt. Es gilt wieder die Voreinstellung.;Your own password has been removed. The default applies again.;;;;;
-Das Entfernen wurde an Windows übergeben. Ob die Regeln weg sind, lässt sich hier nicht lesen.;The removal was handed over to Windows. Whether the rules are gone cannot be read here.;;;;;
-Das kompakte Layout schafft Platz für die Tabelle: Menü, Titel und Beenden stehen in einer Zeile, die Symbole der Funktionsknöpfe werden durch ihren Text ersetzt, Leerzeilen und Abstände entfallen. Die Auswahl wirkt sofort, gesichert wird sie mit „Speichern“. Zusätzlich schaffen Vollbild (F11) und der Browser-Zoom (Strg und Minus) Platz.;The compact layout makes room for the table: menu, title and Quit share one line, the icons of the function buttons are replaced by their text, blank lines and gaps are removed. The choice takes effect immediately and is saved with “Save”. Full screen (F11) and the browser zoom (Ctrl and minus) also make room.;;;;;
-Das Netzwerk ist als „Öffentlich“ eingestuft, die Regel gilt aber nur für Privatnetzwerke: Einstellungen → Netzwerk und Internet → (WLAN oder Ethernet) → Eigenschaften → Netzwerkprofil „Privat“.;The network is classified as “Public”, but the rule only applies to private networks: Settings → Network and Internet → (Wi-Fi or Ethernet) → Properties → Network profile “Private”.;;;;;
-Das Passwort ist gesetzt.;The password has been set.;;;;;
-Das Programm wurde zuletzt nicht normal beendet. Es gibt einen automatisch gesicherten Stand vom {when}, der neuer ist als der gespeicherte. Soll er wiederhergestellt werden?;The program was not shut down normally the last time. There is an automatically saved state from {when} that is newer than the saved one. Do you want to restore it?;;;;;
-Das Speichern ist fehlgeschlagen: kein Neustart. Bitte das Programm von Hand beenden und neu starten.;Saving failed: no restart. Please quit the program by hand and start it again.;;;;;
-Datei;File;;;;;
-Datei .MLL_pcf oder .zip (mit Bildern) hochladen;Upload a .MLL_pcf or .zip file (with pictures);;;;;
-Datei bereit;File ready;;;;;
-Datei laden ...;Load file ...;;;;;
-Dateien für das Excel-Programm speichern;Save files for the Excel program;;;;;
-DCC Keyboard;DCC keyboard;;;;;
-Der Name ist jetzt {name}.;The name is now {name}.;;;;;
-Der Neustart ist fehlgeschlagen. Bitte das Programm von Hand starten.;The restart failed. Please start the program by hand.;;;;;
-Der Patterngenerator konnte nicht aufgebaut werden. Einzelheiten stehen im Protokoll (Hilfe → Logfile anzeigen).;The Pattern Generator could not be built. Details are in the log (Help → Show log file).;;;;;
-Der Raspberry Pi hat diesen Namen schon.;The Raspberry Pi already has this name.;;;;;
-Der Raspberry Pi heißt danach „{name}“ und ist unter {adresse} erreichbar. Die bisherige Adresse ({alte_adresse}) gilt dann nicht mehr: Öffne die Oberfläche künftig mit der neuen Adresse.;The Raspberry Pi will then be called “{name}” and can be reached at {adresse}. The previous address ({alte_adresse}) will no longer work: open the interface with the new address from now on.;;;;;
-Der Raspberry Pi kann nicht {what}: Dem Dienstbenutzer fehlt die sudo-Regel für 'systemctl {action}'. Abhilfe: im Ordner pi 'sudo bash install_pi.sh --no-check' ausführen.;The Raspberry Pi cannot {what}: the service user lacks the sudo rule for 'systemctl {action}'. Remedy: run 'sudo bash install_pi.sh --no-check' in the folder pi.;;;;;
-Der Reiter DM Servo Einstellungen (Servos im Direct Mode) wird angezeigt;The tab DM servo settings (servos in direct mode) is shown;;;;;
-Der Reiter Z21 Simulator wird angezeigt (sofort nach dem Speichern, ohne Neustart);The tab Z21 simulator is shown (immediately after saving, without a restart);;;;;
-"Der Reiter {reiter} ist ausgeschaltet. Einschalten: Programm Einstellungen, ""DM Servo Einstellungen anzeigen"".";"The tab {reiter} is switched off. To switch it on: Program settings, ""Show DM servo settings"".";;;;;
-Die Datei '{name}' konnte nicht übertragen werden: {meldung};The file '{name}' could not be transferred: {meldung};;;;;
-Die Datei '{name}' laden?{extra};Load the file '{name}'?{extra};;;;;
-Die Datei wurde nicht gefunden. Bitte noch einmal ziehen.;The file was not found. Please drag it again.;;;;;
-Die Datei {name} wurde nicht erzeugt.;The file {name} was not created.;;;;;
-Die Freigabe ist entfernt.;The release has been removed.;;;;;
-Die Freigabe wurde an Windows übergeben. Ob die Regel besteht, lässt sich hier nicht lesen: bitte vom anderen Rechner ausprobieren.;The release was handed over to Windows. Whether the rule exists cannot be read here: please try it from the other computer.;;;;;
-Die Funktion '{func}' gibt es in der Web-Oberfläche noch nicht.;The function '{func}' does not exist in the web interface yet.;;;;;
-Die Funktion möchte diese Seite öffnen:;The function wants to open this page:;;;;;
-Die Palette wurde nicht an ein Makro übergeben: Der Farbtester wurde nicht aus dem Parameterformular von SetColTab geöffnet.;The palette was not passed to a macro: the colour tester was not opened from the parameter form of SetColTab.;;;;;
-Die Regel wurde nicht angelegt (Abfrage abgebrochen?). Bitte noch einmal versuchen oder die Schritte in der Anleitung ausführen (Kapitel 8).;The rule was not created (prompt cancelled?). Please try again or follow the steps in the manual (chapter 8).;;;;;
-Die Regeln wurden nicht entfernt (Abfrage abgebrochen?).;The rules were not removed (prompt cancelled?).;;;;;
-Die Seite wird aufgebaut ...;The page is being built ...;;;;;
-Die Seite {blatt} ist keine Musterseite und kann nicht gespeichert werden.;The page {blatt} is not a pattern page and cannot be saved.;;;;;
-Die Seite {macro} ist in MacroDef nicht definiert.;The page {macro} is not defined in MacroDef.;;;;;
-Die Windows-Firewall lässt den Port {port} schon zu.;The Windows firewall already allows port {port}.;;;;;
-Die Zwischenablage enthält keine ganze Zeile. Zuerst Zeile(n) über die Zeilennummer kopieren.;The clipboard does not contain a whole row. First copy row(s) using the row number.;;;;;
-DM Servo Einstellungen;DM servo settings;;;;;
-Doppelklick auf Name und Beleuchtung öffnet die Makroauswahl;Double-click on name and lighting opens the macro selection;;;;;
-Download fehlgeschlagen: {ex};Download failed: {ex};;;;;
-Eigene Dateien;My files;;;;;
-Eigenes Passwort entfernen;Remove own password;;;;;
-Ein Klick auf das Symbol öffnet die Makroauswahl immer. Wie in Excel kann auch ein Doppelklick auf die Spalten Name und Beleuchtung sie öffnen. Dann bearbeitet man diese Zellen von Hand mit F2, Enter oder dem Kontextmenü „Zelle bearbeiten“. Aus (Standard): Ein Doppelklick bearbeitet die Zelle.;A click on the icon always opens the macro selection. As in Excel, a double-click on the columns Name and Lighting can also open it. These cells are then edited by hand with F2, Enter or the context menu “Edit cell”. Off (default): a double-click edits the cell.;;;;;
-Eingabe;Input;;;;;
-Eingeschaltet können andere Rechner im Heimnetz die Oberfläche in ihrem Browser öffnen. Das gilt nach einem Neustart des Programms. Ohne Passwort kann dann jeder im Netz die Oberfläche benutzen und Programme auf den angeschlossenen Arduino laden: Bitte unten ein Passwort setzen.;When switched on, other computers in the home network can open the interface in their browser. This takes effect after the program is restarted. Without a password anyone on the network can then use the interface and load programs onto the connected Arduino: please set a password below.;;;;;
-Einschalten;Switch on;;;;;
-Einstellungen gespeichert.;Settings saved.;;;;;
-ENTER: gedrückt halten. In den Betriebsarten 2 und 3 zweimal drücken (2nd Step);ENTER: hold pressed. In operating modes 2 and 3 press twice (2nd step);;;;;
-Entwicklungsumgebung;Development environment;;;;;
-Ersetzen: der markierte Raum wird durch den gewählten Typ ersetzt (nur bei gleichem LED-Kanal).;Replace: the selected room is replaced by the chosen type (only with the same LED channel).;;;;;
-Es gibt keine Protokolldatei.;There is no log file.;;;;;
-Es gibt keine Seiten zum Löschen.;There are no pages to delete.;;;;;
-Es gibt keine Seiten zum Speichern.;There are no pages to save.;;;;;
-Es ist noch kein Passwort eingerichtet. Ohne Passwort kann jeder, der dein Heimnetz erreicht, die Oberfläche benutzen und Programme auf den angeschlossenen Arduino laden. Besser jetzt ein Passwort eingeben (mindestens 4 Zeichen). Der Benutzername ist „{benutzer}“. Leer lassen: ohne Passwort.;No password has been set up yet. Without a password anyone who can reach your home network can use the interface and load programs onto the connected Arduino. It is better to enter a password now (at least 4 characters). The user name is “{benutzer}”. Leave empty: no password.;;;;;
-Es laeuft noch ein Vorgang - bitte warten.;An operation is still running - please wait.;;;;;
-Es läuft noch ein Vorgang - bitte warten.;An operation is still running - please wait.;;;;;
-Export zu ProgGen;Export to ProgGen;;;;;
-Farb Test;Colour test;;;;;
-Farbtemperatur;Colour temperature;;;;;
-Fehler beim Einfügen der Zeilen: {ex};Error while inserting the rows: {ex};;;;;
-Fehler beim Schreiben: {ex};Error while writing: {ex};;;;;
-Fehler beim Speichern: {ex};Error while saving: {ex};;;;;
-Fehler: {ex};Error: {ex};;;;;
+Betriebsart des Servos;Operating mode of the servo;Bedrijfsmodus van de servo;;;;
+Betriebsart des Servos (1=Normal, 2=std training, 3=wide training, 4=max speed, 5=toogle invers, 6=reset servo, 7=Factory reset, 8=Reset last mem pos), 9=trim OSCCAL;Operating mode of the servo (1=Normal, 2=std training, 3=wide training, 4=max speed, 5=toggle inverse, 6=reset servo, 7=Factory reset, 8=Reset last mem pos), 9=trim OSCCAL;Bedrijfsmodus van de servo (1=Normaal, 2=std training, 3=wide training, 4=max speed, 5=toggle inverse, 6=reset servo, 7=Factory reset, 8=Reset last mem pos), 9=trim OSCCAL;;;;
+Betriebsart des Servos: 1 Normal, 2 und 3 Training, 4 Max Speed, 5 Invers, 6 Servo zurücksetzen, 7 Werkseinstellung, 8 letzte Position zurücksetzen, 9 Oszillator trimmen;Servo operating mode: 1 normal, 2 and 3 training, 4 max speed, 5 inverse, 6 reset servo, 7 factory settings, 8 reset last position, 9 trim oscillator;Bedrijfsmodus servo: 1 normaal, 2 en 3 training, 4 maximale snelheid, 5 omgekeerd, 6 servo resetten, 7 fabrieksinstellingen, 8 laatste positie resetten, 9 oscillator afstemmen;;;;
+Bibliotheken und Boards pruefen;Checking libraries and boards;Bibliotheken en boards controleren;;;;
+Bild einfügen;Insert picture;Afbeelding invoegen;;;;
+Bild einfügen (PNG oder JPG);Insert picture (PNG or JPG);Afbeelding invoegen (PNG of JPG);;;;
+Bild ist bereits im Beispiel Verzeichnis vorhanden;Picture already exists in the example folder;De afbeelding bestaat al in de voorbeeldmap;;;;
+Bild nicht gefunden;Picture not found;Afbeelding niet gevonden;;;;
+Bilder dieser Seite entfernen;Remove the pictures of this page;De afbeeldingen van deze pagina verwijderen;;;;
+Bitte das Programm beenden (Knopf BEENDEN) und neu starten.;Please quit the program (QUIT button) and start it again.;Sluit het programma af (knop AFSLUITEN) en start het opnieuw.;;;;
+Bitte das Protokoll pruefen (Hilfe -> Logfile anzeigen).;Please check the log (Help -> Show log file).;Controleer het logbestand (Help -> Logbestand tonen).;;;;
+Bitte ein eigenes Passwort setzen: Das Standardpasswort ist allgemein bekannt.;Please set your own password: the default password is generally known.;Stel een eigen wachtwoord in: het standaardwachtwoord is algemeen bekend.;;;;
+Bitte ein Makro auswählen.;Please select a macro.;Kies een macro.;;;;
+Bitte mindestens ein Beispiel auswählen.;Please select at least one example.;Kies minstens één voorbeeld.;;;;
+Bitte wählen die mindestens einen Raumtyp aus;Please select at least one room type;Kies minstens één ruimtetype;;;;
+Bleibt es bei 'Connecting....' stehen: am ESP32 die Taste BOOT;If it stays at 'Connecting....': hold the BOOT button on the ESP32;Blijft het bij 'Connecting....' hangen: houd op de ESP32 de BOOT-knop ingedrukt;;;;
+Blinken Ein/Aus;Blinking on/off;Knipperen aan/uit;;;;
+Board-Typ des angeschlossenen ARDUINOs;Board type of the connected ARDUINO;Boardtype van de aangesloten ARDUINO;;;;
+COM Port;COM port;COM-poort;;;;
+COM-Port mit COM-Port UserForm abfragen und nicht ARDUINO-Einstellungen-Seite verwenden;Ask for the COM port with the COM port dialog instead of using the ARDUINO settings page;COM-poort opvragen met het COM-poortvenster en niet de pagina ARDUINO-instellingen gebruiken;;;;
+Cursor außerhalb der Tabelle;Cursor outside the table;Cursor buiten de tabel;;;;
+"Dadurch dass die Verteilerplatinen kaskadiert werden können kann es schnell passieren, dass man den Überblick verliert. Darum ist eine ausführliche Dokumentation besonders wichtig.
+
+";"Because the distribution boards can be cascaded, it is easy to lose track. A detailed documentation is therefore particularly important.
+
+";Doordat de verdeelprints in cascade kunnen worden geschakeld, raak je snel het overzicht kwijt. Een uitgebreide documentatie is daarom bijzonder belangrijk.;;;;
+"Damit ein anderer Rechner im Heimnetz die Oberfläche erreicht, muss die Windows-Firewall den Port zulassen. Der Knopf richtet dafür die Regel „webMobaLedLib <Port>“ ein (TCP, nur für Privatnetzwerke); eine ältere Regel mit diesem Namen wird dabei ersetzt. Windows fragt dabei nach Administratorrechten: mit „Ja“ bestätigen.";"For another computer in the home network to reach the interface, the Windows firewall must allow the port. The button creates the rule “webMobaLedLib <port>” for this (TCP, private networks only); an older rule with this name is replaced. Windows asks for administrator rights: confirm with “Yes”.";"Opdat een andere computer in het thuisnetwerk de interface kan bereiken, moet de Windows-firewall de poort toestaan. De knop maakt hiervoor de regel „webMobaLedLib <port>” aan (TCP, alleen privénetwerken); een oudere regel met deze naam wordt vervangen. Windows vraagt om beheerdersrechten: bevestig met „Ja”.";;;;
+"Damit kann man später leichter nachvollziehen an welcher Stelle innerhalb der LED Kette ein Objekt angeschlossen ist.
+
+";"This makes it easier to see later at which position in the LED chain an object is connected.
+
+";Zo kun je later makkelijker nagaan op welke plaats in de LED-keten een object is aangesloten.;;;;
+Danach den Pico neu anstecken (BOOTSEL-Taste gedrückt halten).;Afterwards plug the Pico in again (hold the BOOTSEL button).;Steek de Pico daarna opnieuw aan (houd de BOOTSEL-knop ingedrukt).;;;;
+Danach fährt der Raspberry Pi herunter. Erst wenn die grüne LED nicht mehr blinkt, darf der Strom getrennt werden.;Afterwards the Raspberry Pi shuts down. Only when the green LED has stopped blinking may the power be disconnected.;Daarna schakelt de Raspberry Pi uit. Pas als de groene LED niet meer knippert, mag de stroom worden losgekoppeld.;;;;
+Danach startet der Raspberry Pi neu.;Afterwards the Raspberry Pi restarts.;Daarna start de Raspberry Pi opnieuw op.;;;;
+Darstellung auf kleinen Bildschirmen;Display on small screens;Weergave op kleine schermen;;;;
+Das Bild {name} ist unter der Tabelle eingefügt.;The picture {name} has been inserted below the table.;De afbeelding {name} is onder de tabel ingevoegd.;;;;
+Das eigene Passwort ist entfernt. Es gilt wieder die Voreinstellung.;Your own password has been removed. The default applies again.;Je eigen wachtwoord is verwijderd. Het standaardwachtwoord geldt weer.;;;;
+Das Entfernen wurde an Windows übergeben. Ob die Regeln weg sind, lässt sich hier nicht lesen.;The removal was handed over to Windows. Whether the rules are gone cannot be read here.;Het verwijderen is aan Windows overgedragen. Of de regels weg zijn, kan hier niet worden uitgelezen.;;;;
+Das gibt es nur unter Linux.;This exists only under Linux.;Dit bestaat alleen onder Linux.;;;;
+Das Haus enthält noch keine Räume;The house does not contain any rooms yet;Het huis bevat nog geen ruimtes;;;;
+Das Journal des Updates konnte nicht geschrieben werden ({ex}). Es wurde nichts veraendert.;The journal of the update could not be written ({ex}). Nothing was changed.;Het journaal van de update kon niet worden geschreven ({ex}). Er is niets gewijzigd.;;;;
+Das kompakte Layout schafft Platz für die Tabelle: Menü, Titel und Beenden stehen in einer Zeile, die Symbole der Funktionsknöpfe werden durch ihren Text ersetzt, Leerzeilen und Abstände entfallen. Die Auswahl wirkt sofort, gesichert wird sie mit „Speichern“. Zusätzlich schaffen Vollbild (F11) und der Browser-Zoom (Strg und Minus) Platz.;The compact layout makes room for the table: menu, title and Quit share one line, the icons of the function buttons are replaced by their text, blank lines and gaps are removed. The choice takes effect immediately and is saved with “Save”. Full screen (F11) and the browser zoom (Ctrl and minus) also make room.;De compacte weergave maakt ruimte voor de tabel: menu, titel en Afsluiten delen één regel, de pictogrammen van de functieknoppen worden vervangen door hun tekst, lege regels en tussenruimtes verdwijnen. De keuze werkt direct en wordt opgeslagen met „Opslaan”. Volledig scherm (F11) en de browserzoom (Ctrl en min) maken ook ruimte.;;;;
+Das Netzwerk ist als „Öffentlich“ eingestuft, die Regel gilt aber nur für Privatnetzwerke: Einstellungen → Netzwerk und Internet → (WLAN oder Ethernet) → Eigenschaften → Netzwerkprofil „Privat“.;The network is classified as “Public”, but the rule only applies to private networks: Settings → Network and Internet → (Wi-Fi or Ethernet) → Properties → Network profile “Private”.;Het netwerk is ingedeeld als „Openbaar”, maar de regel geldt alleen voor privénetwerken: Instellingen → Netwerk en internet → (Wi-Fi of Ethernet) → Eigenschappen → Netwerkprofiel „Privé”.;;;;
+Das Netzwerk ist als „Öffentlich“ eingestuft, die Regel gilt aber nur für Privatnetzwerke: Einstellungen → Netzwerk und Internet → Eigenschaften → Netzwerkprofil „Privat“.;The network is classified as “Public”, but the rule only applies to private networks: Settings → Network and Internet → Properties → Network profile “Private”;Het netwerk is ingedeeld als „Openbaar”, maar de regel geldt alleen voor privénetwerken: Instellingen → Netwerk en internet → Eigenschappen → Netwerkprofiel „Privé”;;;;
+Das Passwort darf nicht mit einem Leerzeichen beginnen oder enden.;The password must not start or end with a space.;Het wachtwoord mag niet met een spatie beginnen of eindigen.;;;;
+Das Passwort ist gesetzt.;The password has been set.;Het wachtwoord is ingesteld.;;;;
+Das Pattern ist kein korrektes Muster für den Multiplexer!;The pattern is not a correct pattern for the multiplexer!;Het patroon is geen correct patroon voor de multiplexer!;;;;
+Das Programm webMobaLedLib selbst aktualisieren: Menü Hilfe → Update webMobaLedLib …;Update the webMobaLedLib program itself: menu Help → Update webMobaLedLib …;Het programma webMobaLedLib zelf bijwerken: menu Help → Update webMobaLedLib …;;;;
+"Das Programm wird beendet. Mit ""Speichern"" werden vorher die Tabellen und die Konfiguration gesichert. ";"The program is closing. With ""Save"" the tables and the configuration are backed up first. ";Het programma wordt afgesloten. Bij „Opslaan” worden eerst de tabellen en de configuratie veiliggesteld.;;;;
+Das Programm wird neu gestartet. Diese Seite lädt sich selbst neu, sobald es wieder läuft (kann bis zu einer Minute dauern) ...;The program is restarting. This page reloads by itself as soon as it is running again (can take up to a minute) ...;Het programma wordt opnieuw gestart. Deze pagina laadt zichzelf opnieuw zodra het weer draait (kan tot een minuut duren) ...;;;;
+Das Programm wurde zuletzt nicht normal beendet. Es gibt einen automatisch gesicherten Stand vom {when}, der neuer ist als der gespeicherte. Soll er wiederhergestellt werden?;The program was not shut down normally the last time. There is an automatically saved state from {when} that is newer than the saved one. Do you want to restore it?;Het programma is de vorige keer niet normaal afgesloten. Er is een automatisch opgeslagen stand van {when} die nieuwer is dan de opgeslagen stand. Wil je die herstellen?;;;;
+Das Sheet 'Main' kann nicht gelöscht werden;The sheet 'Main' cannot be deleted;Het blad 'Main' kan niet worden verwijderd;;;;
+Das Speichern ist fehlgeschlagen: kein Neustart. Bitte das Programm von Hand beenden und neu starten.;Saving failed: no restart. Please quit the program by hand and start it again.;Opslaan mislukt: geen herstart. Sluit het programma zelf af en start het opnieuw.;;;;
+"Das Update auf Version {new_v} ist abgebrochen oder fehlgeschlagen. Das Programm ist automatisch zur vorherigen Version {old_v} zurückgegangen ({wiederhergestellt} Dateien wiederhergestellt, {zeit}). Bitte das Update später noch einmal versuchen. Ein Sicherungs- oder Virenprogramm kann Dateien sperren; hilft es nicht, bitte melden.";"The update to version {new_v} was cancelled or failed. The program automatically went back to the previous version {old_v} ({wiederhergestellt} files restored, {zeit}). Please try the update again later. A backup or antivirus program can lock files; if that does not help, please report it.";"De update naar versie {new_v} is afgebroken of mislukt. Het programma is automatisch teruggegaan naar de vorige versie {old_v} ({wiederhergestellt} bestanden hersteld, {zeit}). Probeer de update later opnieuw. Een back-up- of antivirusprogramma kan bestanden vergrendelen; helpt dat niet, meld het dan.";;;;
+Das Update auf Version {new_v} ist abgebrochen, und das automatische Zurückgehen war nicht vollständig ({probleme}). Bitte die Installation reparieren: Hilfe → Update webMobaLedLib … oder repair_windows.bat / repair_linux.sh / repair_mac.command (Anleitung, Abschnitt 9.6).;The update to version {new_v} was cancelled, and the automatic rollback was not complete ({probleme}). Please repair the installation: Help → Update webMobaLedLib … or repair_windows.bat / repair_linux.sh / repair_mac.command (manual, section 9.6).;De update naar versie {new_v} is afgebroken en de automatische terugkeer was niet volledig ({probleme}). Herstel de installatie: Help → Update webMobaLedLib … of repair_windows.bat / repair_linux.sh / repair_mac.command (handleiding, paragraaf 9.6).;;;;
+Das Update ist fehlgeschlagen ({datei}: {meldung}), und das Zurücksetzen war nicht vollständig ({probleme}). Beim nächsten Start versucht das Programm es erneut. Hilft das nicht: repair.py ausführen (Anleitung, Abschnitt 9.6).;The update failed ({datei}: {meldung}), and the rollback was not complete ({probleme}). At the next start the program tries again. If that does not help: run repair.py (manual, section 9.6).;De update is mislukt ({datei}: {meldung}) en de terugkeer was niet volledig ({probleme}). Bij de volgende start probeert het programma het opnieuw. Helpt dat niet: voer repair.py uit (handleiding, paragraaf 9.6).;;;;
+Das Update ist fehlgeschlagen ({datei}: {meldung}). Der vorherige Stand wurde automatisch wiederhergestellt ({restored} Dateien), es ist nichts verändert. Bitte das Programm beenden, was die Datei sperrt (Sicherungs- oder Virenprogramm), und das Update wiederholen.;The update failed ({datei}: {meldung}). The previous state was restored automatically ({restored} files), nothing is changed. Please close the program that locks the file (backup or antivirus program) and repeat the update.;De update is mislukt ({datei}: {meldung}). De vorige toestand is automatisch hersteld ({restored} bestanden), er is niets gewijzigd. Sluit het programma dat het bestand vergrendelt (back-up- of antivirusprogramma) en herhaal de update.;;;;
+Das Update ist fehlgeschlagen: {ex};The update failed: {ex};De update is mislukt: {ex};;;;
+Das Update konnte nicht geladen werden: {ex};The update could not be loaded: {ex};De update kon niet worden geladen: {ex};;;;
+Das Update würde {anzahl} Dateien löschen (mehr als {grenze}). Es wurde nichts verändert.;The update would delete {anzahl} files (more than {grenze}). Nothing was changed.;De update zou {anzahl} bestanden verwijderen (meer dan {grenze}). Er is niets gewijzigd.;;;;
+Das Update würde {anzahl} Dateien löschen (mehr als {grenze}): Das ZIP ist vermutlich unvollständig oder gehört zu einer anderen Version. Es wurde nichts verändert.;The update would delete {anzahl} files (more than {grenze}): the ZIP is probably incomplete or belongs to another version. Nothing was changed.;De update zou {anzahl} bestanden verwijderen (meer dan {grenze}): het ZIP-bestand is waarschijnlijk onvolledig of hoort bij een andere versie. Er is niets gewijzigd.;;;;
+Das Verzeichnis muss von Hand gelöscht werden;The folder must be deleted by hand;De map moet met de hand worden verwijderd;;;;
+Das ZIP enthält nur {anzahl} Dateien, die installierte Version hat {installiert}. Es ist unvollständig oder gehört nicht zu diesem Programm. Es wurde nichts verändert.;The ZIP contains only {anzahl} files, the installed version has {installiert}. It is incomplete or does not belong to this program. Nothing was changed.;Het ZIP-bestand bevat slechts {anzahl} bestanden, de geïnstalleerde versie heeft er {installiert}. Het is onvolledig of hoort niet bij dit programma. Er is niets gewijzigd.;;;;
+Das ZIP hat die ältere Version {neue_version} (installiert: {installierte_version}). Ohne ausdrückliche Bestätigung wird nichts verändert.;The ZIP has the older version {neue_version} (installed: {installierte_version}). Without explicit confirmation nothing is changed.;Het ZIP-bestand heeft de oudere versie {neue_version} (geïnstalleerd: {installierte_version}). Zonder uitdrukkelijke bevestiging wordt niets gewijzigd.;;;;
+Das ZIP ist mit {groesse} MB ungewoehnlich gross (Grenze {grenze} MB).;The ZIP is unusually large with {groesse} MB (limit {grenze} MB).;Het ZIP-bestand is met {groesse} MB ongebruikelijk groot (grens {grenze} MB).;;;;
+Das ZIP stimmt nicht mit seiner Prüfliste überein ({fehlen} fehlen, {abweichend} weichen ab, {zusaetzlich} zusätzlich): {examples}. Es ist unvollständig oder beschädigt. Es wurde nichts verändert.;The ZIP does not match its check list ({fehlen} missing, {abweichend} differ, {zusaetzlich} additional): {examples}. It is incomplete or damaged. Nothing was changed.;Het ZIP-bestand komt niet overeen met de controlelijst ({fehlen} ontbreken, {abweichend} wijken af, {zusaetzlich} extra): {examples}. Het is onvolledig of beschadigd. Er is niets gewijzigd.;;;;
+Datei;File;Bestand;;;;
+Datei .MLL_pcf oder .zip (mit Bildern) hochladen;Upload a .MLL_pcf or .zip file (with pictures);Een .MLL_pcf- of .zip-bestand uploaden (met afbeeldingen);;;;
+Datei bereit;File ready;Bestand klaar;;;;
+Datei hierher ziehen oder zum Auswählen klicken;Drag the file here or click to select;Sleep het bestand hierheen of klik om te kiezen;;;;
+Datei laden ...;Load file ...;Bestand laden ...;;;;
+Datei: ;File: ;Bestand:;;;;
+Datei: {LOGFILE}   ({size:.0f} KB, Stufe {stufe}). Angezeigt: die letzten {anzahl} Zeilen.;File: {LOGFILE}   ({size:.0f} KB, level {stufe}). Shown: the last {anzahl} lines.;Bestand: {LOGFILE}   ({size:.0f} KB, niveau {stufe}). Getoond: de laatste {anzahl} regels.;;;;
+Dateien für das Excel-Programm speichern;Save files for the Excel program;Bestanden voor het Excel-programma opslaan;;;;
+Daten des ARDUINO werden automatisch übernommen;The data of the ARDUINO is applied automatically;De gegevens van de ARDUINO worden automatisch overgenomen;;;;
+Daten in aktuelles oder neues Blatt einfügen;Insert data into the current or a new sheet;Gegevens invoegen in het huidige of een nieuw blad;;;;
+Datenübertragungsfehler;Data transfer error;Fout bij de gegevensoverdracht;;;;
+DCC Keyboard;DCC keyboard;DCC-toetsenbord;;;;
+Definiert die Wartezeit zwischen zwei Abfragen der Taster am ARDUINO (x 100ms) - Standard = 1 entspricht 100ms;Defines the waiting time between two polls of the buttons on the ARDUINO (x 100ms) - default = 1 corresponds to 100ms;Bepaalt de wachttijd tussen twee afvragen van de toetsen op de ARDUINO (x 100 ms) - standaard = 1 komt overeen met 100 ms;;;;
+Defintion der Icomgröße im PG in % (100% = Normal) - (nach Neustart);Definition of the icon size in the PG in % (100% = normal) - (after restart);Definitie van de pictogramgrootte in de PG in % (100% = normaal) - (na herstart);;;;
+Der angegebene Blattname existiert nicht: ';The specified sheet name does not exist: ';De opgegeven bladnaam bestaat niet: ';;;;
+Der Befehl konnte nicht gestartet werden (Fehler {code}).;The command could not be started (error {code}).;De opdracht kon niet worden gestart (fout {code}).;;;;
+"Der Dialog muss dazu nicht beendet werden.
+Zusätzliche Zeilen können mit der Schaltfläche ""Zeile einfügen"" hinzugefügt werden. 
+Wenn die Zeile bereits Daten enthält, dann werden diese ab der ausgewählten Position vervollständigt.";"The dialog does not have to be closed for this.
+Additional rows can be added with the button ""Insert row"". 
+If the row already contains data, it is completed from the selected position.";"Het dialoogvenster hoeft hiervoor niet te worden gesloten.
+Met de knop „Regel invoegen” kunnen extra regels worden toegevoegd. 
+Bevat de regel al gegevens, dan wordt hij aangevuld vanaf de gekozen positie.";;;;
+Der gewünschte WLAN-Pico kann ausgewählt werden. Der Pico kann auch nachträglich angesteckt werden.;The desired WLAN Pico can be selected. The Pico can also be plugged in afterwards.;De gewenste WLAN-Pico kan worden gekozen. De Pico kan ook achteraf worden aangesloten.;;;;
+Der Morsecode ist zu lang (;The Morse code is too long (;De morsecode is te lang (;;;;
+Der Multiplexer kann nicht gespeichert werden, da Fehler erkannt wurden!;The multiplexer cannot be saved because errors were detected!;De multiplexer kan niet worden opgeslagen, omdat fouten zijn herkend!;;;;
+Der Multiplexername ist ungültig! Dies sollte mit 'Multiplexer_' beginnen.;The multiplexer name is invalid! It should start with 'Multiplexer_'.;De naam van de multiplexer is ongeldig! Hij moet met 'Multiplexer_' beginnen.;;;;
+Der Name ist jetzt {name}.;The name is now {name}.;De naam is nu {name}.;;;;
+Der Name konnte nicht geändert werden: ;The name could not be changed: ;De naam kon niet worden gewijzigd:;;;;
+Der Neustart ist fehlgeschlagen. Bitte das Programm von Hand starten.;The restart failed. Please start the program by hand.;De herstart is mislukt. Start het programma met de hand.;;;;
+Der Parameter '{parameter}' darf nicht leer sein.;The parameter '{parameter}' must not be empty.;De parameter '{parameter}' mag niet leeg zijn.;;;;
+"Der Parameter '{parameter}' ist ungültig.
+Bitte eine Zeit zwischen {low} ms und {high} ms eingeben, zum Beispiel 30 Sek, 5 Min oder 500 ms.";"The parameter '{parameter}' is invalid.
+Please enter a time between {low} ms and {high} ms, for example 30 Sek, 5 Min or 500 ms.";"De parameter '{parameter}' is ongeldig.
+Voer een tijd in tussen {low} ms en {high} ms, bijvoorbeeld 30 Sek, 5 Min of 500 ms.";;;;
+Der Patterngenerator konnte nicht aufgebaut werden. Einzelheiten stehen im Protokoll (Hilfe → Logfile anzeigen).;The Pattern Generator could not be built. Details are in the log (Help → Show log file).;De Patterngenerator kon niet worden opgebouwd. Details staan in het logbestand (Help → Logbestand tonen).;;;;
+Der Port {port} ist durch Regeln freigegeben, die dieses Programm nicht angelegt hat und nicht verändert: {regeln}.;Port {port} is opened by rules that this program did not create and does not change: {regeln}.;Poort {port} wordt geopend door regels die dit programma niet heeft aangemaakt en niet wijzigt: {regeln}.;;;;
+Der Port {port} ist freigegeben, Regel {regel}.;Port {port} is open, rule {regel}.;Poort {port} is open, regel {regel}.;;;;
+Der Port {} konnte nicht geöffnet werden.;The port {} could not be opened.;De poort {} kon niet worden geopend.;;;;
+Der Raspberry Pi hat diesen Namen schon.;The Raspberry Pi already has this name.;De Raspberry Pi heet al zo.;;;;
+Der Raspberry Pi hat seine Geschwindigkeit gedrosselt (zu heiß oder zu wenig Strom). Bitte für Kühlung sorgen und das Netzteil prüfen.;The Raspberry Pi has reduced its speed (too hot or not enough power). Please provide cooling and check the power supply.;;;;;
+Der Raspberry Pi heißt danach „{name}“ und ist unter {adresse} erreichbar. Die bisherige Adresse ({alte_adresse}) gilt dann nicht mehr: Öffne die Oberfläche künftig mit der neuen Adresse.;The Raspberry Pi will then be called “{name}” and can be reached at {adresse}. The previous address ({alte_adresse}) will no longer work: open the interface with the new address from now on.;De Raspberry Pi heet daarna „{name}” en is bereikbaar via {adresse}. Het vorige adres ({alte_adresse}) werkt dan niet meer: open de interface voortaan met het nieuwe adres.;;;;
+Der Raspberry Pi kann nicht {what}: Dem Dienstbenutzer fehlt die sudo-Regel für 'systemctl {action}'. Abhilfe: im Ordner pi 'sudo bash install_pi.sh --no-check' ausführen.;The Raspberry Pi cannot {what}: the service user lacks the sudo rule for 'systemctl {action}'. Remedy: run 'sudo bash install_pi.sh --no-check' in the folder pi.;De Raspberry Pi kan niet {what}: de servicegebruiker mist de sudo-regel voor 'systemctl {action}'. Oplossing: voer 'sudo bash install_pi.sh --no-check' uit in de map pi.;;;;
+Der Raspberry Pi meldet Unterspannung: Das Netzteil oder die Stromversorgung der USB-Geräte reicht nicht. Das kann zu Abstürzen und Hängern führen. Bitte das offizielle Netzteil benutzen (Pi 400: 5 V, 3 A) und stromhungrige Geräte (USB-Festplatte oder SSD, Arduino mit vielen LEDs) getrennt versorgen.;The Raspberry Pi reports under-voltage: the power supply or the power for the USB devices is not sufficient. This can lead to crashes and freezes. Please use the official power supply (Pi 400: 5 V, 3 A) and power devices with a high current demand (USB hard disk or SSD, Arduino with many LEDs) separately.;;;;;
+Der Raspberry Pi wird heruntergefahren;The Raspberry Pi is shutting down;De Raspberry Pi wordt uitgeschakeld;;;;
+Der Reiter DM Servo Einstellungen (Servos im Direct Mode) wird angezeigt;The tab DM servo settings (servos in direct mode) is shown;Het tabblad DM-servo-instellingen (servo's in directe modus) wordt getoond;;;;
+Der Reiter Z21 Simulator wird angezeigt (sofort nach dem Speichern, ohne Neustart);The tab Z21 simulator is shown (immediately after saving, without a restart);Het tabblad Z21-simulator wordt getoond (direct na het opslaan, zonder herstart);;;;
+"Der Reiter {reiter} ist ausgeschaltet. Einschalten: Programm Einstellungen, ""DM Servo Einstellungen anzeigen"".";"The tab {reiter} is switched off. To switch it on: Program settings, ""Show DM servo settings"".";Het tabblad {reiter} is uitgeschakeld. Inschakelen: Programma-instellingen, „DM-servo-instellingen tonen”.;;;;
+Der Server lauscht nur auf diesem Rechner. Oben „Zugriff aus dem Netz erlauben“ einschalten und das Programm neu starten.;The server only listens on this computer. Switch on “Allow access from the network” above and restart the program.;De server luistert alleen op deze computer. Schakel hierboven „Toegang vanuit het netwerk toestaan” in en start het programma opnieuw.;;;;
+Der Server lauscht nur auf diesem Rechner: Die Adresse {adresse} ist fest vorgegeben (Startparameter --host oder Umgebungsvariable MLL_HOST).;The server only listens on this computer: the address {adresse} is fixed (start parameter --host or environment variable MLL_HOST).;De server luistert alleen op deze computer: het adres {adresse} ligt vast (startparameter --host of omgevingsvariabele MLL_HOST).;;;;
+Der Z21 Simulator läuft schon.;The Z21 simulator is already running.;De Z21-simulator draait al.;;;;
+Der Zugriff aus dem Netz ist eingeschaltet, der Server lauscht aber noch nur auf diesem Rechner: Das Programm neu starten (Knopf „Jetzt neu starten“ oben).;Access from the network is switched on, but the server still only listens on this computer: restart the program (button “Restart now” above).;Toegang vanuit het netwerk is ingeschakeld, maar de server luistert nog alleen op deze computer: start het programma opnieuw (knop „Nu herstarten” hierboven).;;;;
+Der Zustand der Firewall konnte nicht gelesen werden ({reason}). Ob der Port {port} freigegeben ist, lässt sich hier nicht sagen: vom anderen Rechner ausprobieren.;The state of the firewall could not be read ({reason}). Whether port {port} is open cannot be determined here: try it from the other computer.;De status van de firewall kon niet worden gelezen ({reason}). Of poort {port} open is, kan hier niet worden vastgesteld: probeer het vanaf de andere computer.;;;;
+Details dazu findet man auch in der Dokumentation.;Details can also be found in the documentation.;Details staan ook in de documentatie.;;;;
+Die 'Multiplexer' wurde noch nicht gespeichert. Willst du das noch machen?;The 'Multiplexer' has not been saved yet. Do you want to do that now?;De 'Multiplexer' is nog niet opgeslagen. Wil je dat nu nog doen?;;;;
+Die Administratorrechte wurden nicht erteilt.;The administrator rights were not granted.;De beheerdersrechten zijn niet verleend.;;;;
+Die Adresse ist fest vorgegeben ({what} = {running_host}). Der Schalter hat dann keine Wirkung.;The address is fixed ({what} = {running_host}). The switch then has no effect.;Het adres ligt vast ({what} = {running_host}). De schakelaar heeft dan geen effect.;;;;
+Die aktuelle Palette wird an Set_ColTab übergeben und der Farbtester beendet;The current palette is passed to Set_ColTab and the colour tester is closed;Het huidige palet wordt aan Set_ColTab doorgegeven en de kleurtester wordt gesloten;;;;
+Die ARDUINO Einstellungen wurden verändert. Sollen die geänderten ARDUINO Einstellungen gesichert werden?;The ARDUINO settings have been changed. Should the changed ARDUINO settings be saved?;De ARDUINO-instellingen zijn gewijzigd. Moeten de gewijzigde ARDUINO-instellingen worden opgeslagen?;;;;
+Die ARDUINO IDE wurde nicht gefunden. Entweder wurde ARDUINO noch nicht installiert (Windows) oder das ARDUINO-Verzeichnis wurde noch nicht eingegeben (LINUX/Mac);The ARDUINO IDE was not found. Either ARDUINO has not been installed yet (Windows) or the ARDUINO folder has not been entered yet (LINUX/Mac);De ARDUINO IDE is niet gevonden. Of ARDUINO is nog niet geïnstalleerd (Windows), of de ARDUINO-map is nog niet ingevoerd (LINUX/Mac);;;;
+Die beiden Eingaben sind nicht gleich.;The two entries are not the same.;De beide invoeren zijn niet gelijk.;;;;
+Die Datei #1# konnte nicht gelöscht werden';The file #1# could not be deleted;Het bestand #1# kon niet worden verwijderd;;;;
+Die Datei '{name}' konnte nicht übertragen werden: {meldung};The file '{name}' could not be transferred: {meldung};Het bestand '{name}' kon niet worden overgedragen: {meldung};;;;
+Die Datei '{name}' laden?{extra};Load the file '{name}'?{extra};Het bestand '{name}' laden?{extra};;;;
+Die Datei install_pico_udev.sh wurde nicht gefunden:;The file install_pico_udev.sh was not found:;Het bestand install_pico_udev.sh is niet gevonden:;;;;
+Die Datei ist vorhanden;The file exists;Het bestand is aanwezig;;;;
+Die Datei wurde nicht gefunden. Bitte noch einmal ziehen.;The file was not found. Please drag it again.;Het bestand is niet gevonden. Sleep het opnieuw.;;;;
+Die Datei {name} wurde nicht erzeugt.;The file {name} was not created.;Het bestand {name} is niet aangemaakt.;;;;
+Die Dateien werden mit dem installierten Stand verglichen ...;The files are being compared with the installed state ...;De bestanden worden vergeleken met de geïnstalleerde stand ...;;;;
+Die Einrichtung wurde abgebrochen oder ist nicht erlaubt. Bitte im Terminal ausführen:;The setup was cancelled or is not allowed. Please run in the terminal:;De installatie is afgebroken of is niet toegestaan. Voer het uit in de terminal:;;;;
+Die Einstellungen wurden verändert. Sollen die geänderten Einstellungen gesichert werden?;The settings have been changed. Should the changed settings be saved?;De instellingen zijn gewijzigd. Moeten de gewijzigde instellingen worden opgeslagen?;;;;
+Die Freigabe ist eingerichtet.;The release has been set up.;De vrijgave is ingesteld.;;;;
+Die Freigabe ist entfernt.;The release has been removed.;De vrijgave is verwijderd.;;;;
+Die Freigabe wurde an Windows übergeben. Ob die Regel besteht, lässt sich hier nicht lesen: bitte vom anderen Rechner ausprobieren.;The release was handed over to Windows. Whether the rule exists cannot be read here: please try it from the other computer.;De vrijgave is aan Windows overgedragen. Of de regel bestaat, kan hier niet worden gelezen: probeer het vanaf de andere computer.;;;;
+Die Funktion '{func}' gibt es in der Web-Oberfläche noch nicht.;The function '{func}' does not exist in the web interface yet.;De functie '{func}' bestaat nog niet in de webinterface.;;;;
+Die Funktion möchte diese Seite öffnen:;The function wants to open this page:;De functie wil deze pagina openen:;;;;
+Die Helligkeit ist eine Zahl zwischen 0 und 255.;The brightness is a number between 0 and 255.;De helderheid is een getal tussen 0 en 255.;;;;
+Die Installation wurde repariert (Version {new_v}, {anzahl} Dateien geschrieben, {zeit}). Bitte das Programm neu starten, falls noch nicht geschehen.;The installation was repaired (version {new_v}, {anzahl} files written, {zeit}). Please restart the program if that has not happened yet.;De installatie is hersteld (versie {new_v}, {anzahl} bestanden geschreven, {zeit}). Start het programma opnieuw als dat nog niet is gebeurd.;;;;
+Die LED Tabelle ist leer. Bitte die Felder mit einem 'x' markieren in denen die LEDs leuchten sein sollen;The LED table is empty. Please mark the fields in which the LEDs should light up with an 'x';De LED-tabel is leeg. Markeer de velden waarin de LED's moeten branden met een 'x';;;;
+"Die LEDs werden über ihre Position in der Kette adressiert. Die erste LED in der Kette bekommt die Nummer 0. Die Zweite die Nummer 1...
+
+";"The LEDs are addressed by their position in the chain. The first LED in the chain gets the number 0. The second one the number 1...
+
+";De LED's worden aangesproken via hun positie in de keten. De eerste LED in de keten krijgt het nummer 0. De tweede het nummer 1...;;;;
+Die Modul Nummer muss zwischen 0 und ;The module number must be between 0 and ;Het modulenummer moet tussen 0 en;;;;
+Die Palette wurde nicht an ein Makro übergeben: Der Farbtester wurde nicht aus dem Parameterformular von SetColTab geöffnet.;The palette was not passed to a macro: the colour tester was not opened from the parameter form of SetColTab.;Het palet is niet aan een macro doorgegeven: de kleurtester is niet geopend vanuit het parameterformulier van SetColTab.;;;;
+Die Patterngenerator-Seite wird nach Neustart angezeigt;The Pattern Generator page is shown after a restart;De pagina Patterngenerator wordt na een herstart getoond;;;;
+Die ProgrammGenerator-Seite wird nach Neustart angezeigt;The Program Generator page is shown after a restart;De pagina Programmagenerator wordt na een herstart getoond;;;;
+Die Protokolldatei ist leer oder nicht lesbar.;The log file is empty or not readable.;Het logbestand is leeg of niet leesbaar.;;;;
+Die Prüfung ist fehlgeschlagen: {ex};The check failed: {ex};De controle is mislukt: {ex};;;;
+Die Python-Pakete werden aktualisiert (das kann einige Minuten dauern) ...;The Python packages are being updated (this can take a few minutes) ...;De Python-pakketten worden bijgewerkt (dit kan enkele minuten duren) ...;;;;
+Die Regel für den USB-Zugriff auf den Pico ist eingerichtet. Bitte den Pico neu anstecken (BOOTSEL-Taste gedrückt halten) und das Hochladen wiederholen. Nach dem nächsten An- und Abmelden gilt es auch für Programme außerhalb dieser Sitzung.;The rule for USB access to the Pico has been set up. Please plug the Pico in again (hold the BOOTSEL button) and repeat the upload. After the next log out and log in it also applies to programs outside this session.;De regel voor USB-toegang tot de Pico is ingesteld. Steek de Pico opnieuw aan (houd de BOOTSEL-knop ingedrukt) en herhaal het uploaden. Na de volgende afmelding en aanmelding geldt dit ook voor programma's buiten deze sessie.;;;;
+Die Regel konnte nicht eingerichtet werden.;The rule could not be set up.;De regel kon niet worden ingesteld.;;;;
+Die Regel wurde nicht angelegt (Abfrage abgebrochen?). Bitte noch einmal versuchen oder die Schritte in der Anleitung ausführen (Kapitel 8).;The rule was not created (prompt cancelled?). Please try again or follow the steps in the manual (chapter 8).;De regel is niet aangemaakt (venster geannuleerd?). Probeer het opnieuw of volg de stappen in de handleiding (hoofdstuk 8).;;;;
+Die Regeln wurden nicht entfernt (Abfrage abgebrochen?).;The rules were not removed (prompt cancelled?).;De regels zijn niet verwijderd (venster geannuleerd?).;;;;
+Die Rückmelder Adresse #1# ist nicht ungültig;The feedback address #1# is invalid;Het terugmeldadres #1# is ongeldig;;;;
+Die schnelle Bootloader kann nur von einer DCC, LNet oder Selectrix Seite aus installiert werden.;The fast bootloader can only be installed from a DCC, LNet or Selectrix page.;De snelle bootloader kan alleen vanaf een DCC-, LNet- of Selectrix-pagina worden geïnstalleerd.;;;;
+Die Seite wird aufgebaut ...;The page is being built ...;De pagina wordt opgebouwd ...;;;;
+Die Seite {blatt} ist keine Musterseite und kann nicht gespeichert werden.;The page {blatt} is not a pattern page and cannot be saved.;De pagina {blatt} is geen patroonpagina en kan niet worden opgeslagen.;;;;
+"Die Seite {blatt} löschen?
+Das kann nicht rückgängig gemacht werden.";"Delete the page {blatt}?
+This cannot be undone.";"Pagina {blatt} verwijderen?
+Dit kan niet ongedaan worden gemaakt.";;;;
+Die Seite {macro} ist in MacroDef nicht definiert.;The page {macro} is not defined in MacroDef.;De pagina {macro} is niet gedefinieerd in MacroDef.;;;;
+Die Sicherung von {relpath} ist fehlgeschlagen ({ex}). Es wurde nichts veraendert.;The backup of {relpath} failed ({ex}). Nothing was changed.;De back-up van {relpath} is mislukt ({ex}). Er is niets gewijzigd.;;;;
+Die Suche läuft (bis zu 12 Sekunden) ...;Searching (up to 12 seconds) ...;Zoeken (maximaal 12 seconden) ...;;;;
+Die Tabellen werden gesichert und die Dateien ersetzt ...;The tables are being backed up and the files replaced ...;De tabellen worden veiliggesteld en de bestanden vervangen ...;;;;
+Die Version der Prüfliste ({pruefliste}) und die von webmobaledlib.py ({version}) sind verschieden. Es wurde nichts verändert.;The version of the check list ({pruefliste}) and that of webmobaledlib.py ({version}) differ. Nothing was changed.;De versie van de controlelijst ({pruefliste}) en die van webmobaledlib.py ({version}) verschillen. Er is niets gewijzigd.;;;;
+Die versteckten Tabellen werden im ProgrammGenerator angezeigt;The hidden tables are shown in the Program Generator;De verborgen tabellen worden getoond in de Programmagenerator;;;;
+Die Verwendung des LNet Protokoll basiert auf der 'LocoNet Personal Edition' und ist vom Lizenzinhaber Digitrax ausschließlich für die private, nicht-kommerzielle Nutzung erlaubt. Die Lizenzbestimmungen sind hier nachzulesen:;The use of the LNet protocol is based on the 'LocoNet Personal Edition' and is permitted by the licence holder Digitrax exclusively for private, non-commercial use. The licence terms can be read here:;Het gebruik van het LNet-protocol is gebaseerd op de 'LocoNet Personal Edition' en door de licentiehouder Digitrax uitsluitend toegestaan voor privé, niet-commercieel gebruik. De licentievoorwaarden zijn hier na te lezen:;;;;
+Die Windows-Firewall lässt den Port {port} schon zu.;The Windows firewall already allows port {port}.;De Windows-firewall staat poort {port} al toe.;;;;
+Die Z21-Simulator-Seite wird nach Neustart angezeigt;The Z21 simulator page is shown after a restart;De pagina Z21-simulator wordt na een herstart getoond;;;;
+Die Zuordnung der Charlieplexing LEDs ist von Hersteller zu Hersteller unterschiedlich. Mit diesem Dialog kann die passende Zuordnung der Muster Zeilen zu den LEDs gewählt werden.;The assignment of the Charlieplexing LEDs differs from manufacturer to manufacturer. With this dialog the matching assignment of the pattern rows to the LEDs can be selected.;De toewijzing van de Charlieplexing-LED's verschilt van fabrikant tot fabrikant. Met dit venster kan de passende toewijzing van de patroonregels aan de LED's worden gekozen.;;;;
+Die Zwischenablage enthält keine ganze Zeile. Zuerst Zeile(n) über die Zeilennummer kopieren.;The clipboard does not contain a whole row. First copy row(s) using the row number.;Het klembord bevat geen hele regel. Kopieer eerst regel(s) via het regelnummer.;;;;
+"Diese Konfiguration hat verschiedene Startpunkte.
+Sie sind in der 'Goto Tabelle' über ein 'S' markiert und werden, wenn die 'Grafische Anzeige' aktiviert ist mit einem Pfeil und der Startnummer angezeigt.";"This configuration has different start points.
+They are marked with an 'S' in the 'Goto table' and, if the 'Graphical display' is activated, are shown with an arrow and the start number.";"Deze configuratie heeft verschillende startpunten.
+Ze zijn in de 'Goto-tabel' gemarkeerd met een 'S' en worden, als de 'Grafische weergave' is geactiveerd, getoond met een pijl en het startnummer.";;;;
+Diese Seite lädt sich neu, sobald das Programm wieder erreichbar ist (etwa eine Minute).;This page reloads as soon as the program is reachable again (about one minute).;Deze pagina laadt opnieuw zodra het programma weer bereikbaar is (ongeveer een minuut).;;;;
+Dieses Fenster schließt sich in {seconds} Sekunden.;This window closes in {seconds} seconds.;Dit venster sluit over {seconds} seconden.;;;;
+Digitalsystem, mit dem die MobaLedLib gesteuert wird;Digital system that controls the MobaLedLib;Digitaal systeem waarmee de MobaLedLib wordt bestuurd;;;;
+DM Servo Einstellungen;DM servo settings;DM-servo-instellingen;;;;
+Doppelklick auf Name und Beleuchtung öffnet die Makroauswahl;Double-click on name and lighting opens the macro selection;Dubbelklikken op naam en verlichting opent de macrokeuze;;;;
+Download fehlgeschlagen: {ex};Download failed: {ex};Download mislukt: {ex};;;;
+Drücken Sie dann die Taste 'SELECT'.;Then press the 'SELECT' key.;Druk daarna op de toets 'SELECT'.;;;;
+ECHO Hochladen Hexfile fuer den ATTiny;ECHO Uploading hex file for the ATTiny;ECHO Hexbestand voor de ATTiny uploaden;;;;
+Eigene Dateien;My files;Mijn bestanden;;;;
+Eigenes Passwort entfernen;Remove own password;Eigen wachtwoord verwijderen;;;;
+Ein Goto-Muster wurde ausgewählt. Es wird vom Multiplexer nicht unterstützt!;A goto pattern was selected. It is not supported by the multiplexer!;Er is een goto-patroon gekozen. Het wordt door de multiplexer niet ondersteund!;;;;
+Ein Klick auf das Symbol öffnet die Makroauswahl immer. Wie in Excel kann auch ein Doppelklick auf die Spalten Name und Beleuchtung sie öffnen. Dann bearbeitet man diese Zellen von Hand mit F2, Enter oder dem Kontextmenü „Zelle bearbeiten“. Aus (Standard): Ein Doppelklick bearbeitet die Zelle.;A click on the icon always opens the macro selection. As in Excel, a double-click on the columns Name and Lighting can also open it. These cells are then edited by hand with F2, Enter or the context menu “Edit cell”. Off (default): a double-click edits the cell.;Een klik op het pictogram opent altijd de macrokeuze. Zoals in Excel kan ook een dubbelklik op de kolommen Naam en Verlichting deze openen. Die cellen worden dan met de hand bewerkt met F2, Enter of het contextmenu „Cel bewerken”. Uit (standaard): een dubbelklik bewerkt de cel.;;;;
+Ein oder mehrere Modes: CM_NORMAL, CF_INV_INPUT, CF_INV_ENABLE, CF_BINARY, CF_RESET_LONG, CF_UP_DOWN, CF_ROTATE, CF_PINGPONG, CF_SKIP0, CF_RANDOM, CF_LOCAL_VAR, CF_ONLY_LOCALVAR  getrennt über '|';One or more modes: CM_NORMAL, CF_INV_INPUT, CF_INV_ENABLE, CF_BINARY, CF_RESET_LONG, CF_UP_DOWN, CF_ROTATE, CF_PINGPONG, CF_SKIP0, CF_RANDOM, CF_LOCAL_VAR, CF_ONLY_LOCALVAR  separated by '|';Een of meer modi: CM_NORMAL, CF_INV_INPUT, CF_INV_ENABLE, CF_BINARY, CF_RESET_LONG, CF_UP_DOWN, CF_ROTATE, CF_PINGPONG, CF_SKIP0, CF_RANDOM, CF_LOCAL_VAR, CF_ONLY_LOCALVAR  gescheiden door '|';;;;
+"Ein Steuereingang von der Zentrale kann entweder als
+Ein- / Ausschalter oder als Taster (Rot/Grün) interpretiert werden.
+
+* Ein- / Ausschalter verwendet man z.B. bei Häusern.
+* Taster werden Beispielsweise bei Sounds eingesetzt.
+
+Wenn die Taster Funktion aktiviert ist, dann wird bei jeder Änderung des entsprechenden Bits ein Tastendruck generiert.";"A control input from the central station can be interpreted either as an
+on/off switch or as a button (red/green).
+
+* On/off switches are used e.g. for houses.
+* Buttons are used for example for sounds.
+
+If the button function is activated, a key press is generated with every change of the corresponding bit.";"Een stuuringang van de centrale kan worden opgevat als een
+aan/uit-schakelaar of als een toets (rood/groen).
+
+* Aan/uit-schakelaars worden bijvoorbeeld voor huizen gebruikt.
+* Toetsen worden bijvoorbeeld voor geluiden gebruikt.
+
+Is de toetsfunctie geactiveerd, dan wordt bij elke wijziging van het bijbehorende bit een toetsdruk gegenereerd.";;;;
+"Ein Steuereingang von der Zentrale kann entweder als 
+Ein- / Ausschalter oder als Taster (Rot/Grün) interpretiert werden.
+
+* Ein- / Ausschalter verwendet man z.B. bei Häusern. 
+* Taster werden Beispielsweise bei Sounds eingesetzt.
+
+Beim Taster können zwei verschiedene Aktionen über einer Adresse ausgelöst werden.
+Anstelle von ""Rot"" und ""Grün"" kann je nach Zentrale auch ""Abbiegen"" oder ""Gerade"",0 oder 1 angezeigt werden.";"A control input from the central station can be interpreted either as an 
+on/off switch or as a button (red/green).
+
+* On/off switches are used e.g. for houses. 
+* Buttons are used for example for sounds.
+
+With a button two different actions can be triggered via one address.
+Instead of ""red"" and ""green"", depending on the central station, ""turn"" or ""straight"", 0 or 1 may be displayed.";"Een stuuringang van de centrale kan worden opgevat als een 
+aan/uit-schakelaar of als een toets (rood/groen).
+
+* Aan/uit-schakelaars worden bijvoorbeeld voor huizen gebruikt. 
+* Toetsen worden bijvoorbeeld voor geluiden gebruikt.
+
+Met een toets kunnen via één adres twee verschillende acties worden geactiveerd.
+In plaats van „rood” en „groen” kunnen, afhankelijk van de centrale, „afbuigend” en „rechtdoor”, 0 of 1 worden getoond.";;;;
+Einbaurichtung der LEDs?;Mounting direction of the LEDs?;Inbouwrichting van de LED's?;;;;
+Eine Blockierregel verhindert den Zugriff: {names}. Eine Blockierregel gewinnt gegen jede Zulassungsregel. Sie muss in der Windows-Firewall gelöscht werden (Anleitung, Kapitel 8).;A blocking rule prevents access: {names}. A blocking rule wins over every allowing rule. It must be deleted in the Windows firewall (manual, chapter 8).;Een blokkerende regel verhindert de toegang: {names}. Een blokkerende regel wint van elke toestaande regel. Hij moet in de Windows-firewall worden verwijderd (handleiding, hoofdstuk 8).;;;;
+Eine Datei im ZIP ist zu gross: {datei};A file in the ZIP is too large: {datei};Een bestand in het ZIP-bestand is te groot: {datei};;;;
+Eine neue 'Multiplexer.ini' wird erstellt.;A new 'Multiplexer.ini' is created.;Er wordt een nieuwe 'Multiplexer.ini' aangemaakt.;;;;
+Eine neue 'Multiplexer.ini' wird erstellt. Vergessen Sie nicht, Ihre Änderungen zu speichern!;A new 'Multiplexer.ini' is created. Do not forget to save your changes!;Er wordt een nieuwe 'Multiplexer.ini' aangemaakt. Vergeet niet je wijzigingen op te slaan!;;;;
+Eingabe;Input;Invoer;;;;
+Eingabe eines Kommandos für den ARDUINO;Enter a command for the ARDUINO;Een opdracht voor de ARDUINO invoeren;;;;
+Eingeschaltet können andere Rechner im Heimnetz die Oberfläche in ihrem Browser öffnen. Das gilt nach einem Neustart des Programms. Ohne Passwort kann dann jeder im Netz die Oberfläche benutzen und Programme auf den angeschlossenen Arduino laden: Bitte unten ein Passwort setzen.;When switched on, other computers in the home network can open the interface in their browser. This takes effect after the program is restarted. Without a password anyone on the network can then use the interface and load programs onto the connected Arduino: please set a password below.;Als dit is ingeschakeld, kunnen andere computers in het thuisnetwerk de interface in hun browser openen. Dit werkt na een herstart van het programma. Zonder wachtwoord kan dan iedereen in het netwerk de interface gebruiken en programma's naar de aangesloten Arduino laden: stel hieronder een wachtwoord in.;;;;
+Eingeschaltet. Das gilt nach einem Neustart des Programms.;Switched on. This applies after the program is restarted.;Ingeschakeld. Dit geldt na het herstarten van het programma.;;;;
+Eingeschaltet: Das Programm ist im Netz erreichbar.;Switched on: The program is reachable on the network.;Ingeschakeld: Het programma is bereikbaar in het netwerk.;;;;
+Einrichten: Optionen, Entwicklungsumgebung, USB-Zugriff für den Pico einrichten, oder im Terminal:;Set up: Options, Development environment, Set up USB access for the Pico, or in the terminal:;Instellen: Opties, Ontwikkelomgeving, USB-toegang voor de Pico instellen, of in de terminal:;;;;
+Einschalten;Switch on;Inschakelen;;;;
+Einstellungen gespeichert.;Settings saved.;Instellingen opgeslagen.;;;;
+Ende des DCC-Adressbereichs, den der ARDUINO abdecken soll;End of the DCC address range the ARDUINO should cover;Einde van het DCC-adresbereik dat de ARDUINO moet afdekken;;;;
+ENTER: gedrückt halten. In den Betriebsarten 2 und 3 zweimal drücken (2nd Step);ENTER: hold pressed. In operating modes 2 and 3 press twice (2nd step);ENTER: ingedrukt houden. In bedrijfsmodi 2 en 3 twee keer drukken (2e stap);;;;
+Entwicklungsumgebung;Development environment;Ontwikkelomgeving;;;;
+Erlaubt sind Buchstaben, Ziffern und Bindestrich (nicht am Anfang oder Ende), höchstens 31 Zeichen, keine Leerzeichen und Umlaute.;Allowed are letters, digits and hyphen (not at the start or end), at most 31 characters, no spaces or umlauts.;Toegestaan zijn letters, cijfers en een koppelteken (niet aan het begin of einde), hoogstens 31 tekens, geen spaties en geen umlauts.;;;;
+Ersetzen: der markierte Raum wird durch den gewählten Typ ersetzt (nur bei gleichem LED-Kanal).;Replace: the selected room is replaced by the chosen type (only with the same LED channel).;Vervangen: de gekozen ruimte wordt vervangen door het gekozen type (alleen met hetzelfde LED-kanaal).;;;;
+Erstes Update dieser Installation: Dateien, die im neuen Release fehlen, werden diesmal nicht gelöscht.;First update of this installation: files that are missing in the new release are not deleted this time.;Eerste update van deze installatie: bestanden die in de nieuwe release ontbreken, worden deze keer niet verwijderd.;;;;
+Es gibt keine Protokolldatei.;There is no log file.;Er is geen logbestand.;;;;
+Es gibt keine Seiten zum Löschen.;There are no pages to delete.;Er zijn geen pagina's om te verwijderen.;;;;
+Es gibt keine Seiten zum Speichern.;There are no pages to save.;Er zijn geen pagina's om op te slaan.;;;;
+Es gibt noch keine Regel für den Port {port}: Andere Rechner im Netz können die Oberfläche nicht erreichen.;There is no rule for port {port} yet: other computers on the network cannot reach the interface.;Voor poort {port} bestaat nog geen regel: andere computers in het netwerk kunnen de interface niet bereiken.;;;;
+Es gibt schon eine Regel für den USB-Zugriff auf den Raspberry Pi Pico.;There is already a rule for USB access to the Raspberry Pi Pico.;Er is al een regel voor USB-toegang tot de Raspberry Pi Pico.;;;;
+Es ist kein Passwort eingerichtet: Wer das Netz erreicht, kann die Oberfläche benutzen.;No password has been set up: anyone who can reach the network can use the interface.;Er is geen wachtwoord ingesteld: iedereen die het netwerk kan bereiken, kan de interface gebruiken.;;;;
+Es ist kein Port ausgewählt.;No port is selected.;Er is geen poort gekozen.;;;;
+Es ist keine Hilfeseite eingetragen.;No help page has been entered.;Er is geen helppagina ingevoerd.;;;;
+Es ist noch kein Passwort eingerichtet. Ohne Passwort kann jeder, der dein Heimnetz erreicht, die Oberfläche benutzen und Programme auf den angeschlossenen Arduino laden. Besser jetzt ein Passwort eingeben (mindestens 4 Zeichen). Der Benutzername ist „{benutzer}“. Leer lassen: ohne Passwort.;No password has been set up yet. Without a password anyone who can reach your home network can use the interface and load programs onto the connected Arduino. It is better to enter a password now (at least 4 characters). The user name is “{benutzer}”. Leave empty: no password.;Er is nog geen wachtwoord ingesteld. Zonder wachtwoord kan iedereen die je thuisnetwerk kan bereiken de interface gebruiken en programma's naar de aangesloten Arduino laden. Het is beter nu een wachtwoord in te voeren (minstens 4 tekens). De gebruikersnaam is „{benutzer}”. Leeg laten: geen wachtwoord.;;;;
+Es laeuft noch ein Vorgang - bitte warten.;An operation is still running - please wait.;Er loopt nog een bewerking - even wachten.;;;;
+Es läuft noch ein Vorgang - bitte warten.;An operation is still running - please wait.;Er loopt nog een bewerking - even wachten.;;;;
+Es werden alle mDNS-IP Adressen gesucht mit denen sich ein MLL-Gerät meldet.;All mDNS IP addresses are searched with which an MLL device reports.;Er wordt gezocht naar alle mDNS-IP-adressen waarmee een MLL-apparaat zich meldt.;;;;
+Es wird automatisch eine Verbindung zum ARDUINO aufgebaut;A connection to the ARDUINO is established automatically;Er wordt automatisch een verbinding met de ARDUINO opgebouwd;;;;
+Es wurde kein Pattern Makro gefunden!;No pattern macro was found!;Er is geen patroonmacro gevonden!;;;;
+Es wurde keine ARDUINO IDE 1.8 gefunden (gesucht: übliche Orte, Home-Ordner, /opt, /usr/local, /usr/share bis vier Ebenen tief). Die IDE 1.8.19 von arduino.cc laden („Legacy IDE“) und entpacken, am besten nach ~/arduino-1.8.19, oder den Pfad von Hand eintragen.;No ARDUINO IDE 1.8 was found (searched: usual locations, home folder, /opt, /usr/local, /usr/share up to four levels deep). Download the IDE 1.8.19 from arduino.cc (“Legacy IDE”) and unpack it, preferably to ~/arduino-1.8.19, or enter the path by hand.;Er is geen ARDUINO IDE 1.8 gevonden (gezocht in: gebruikelijke locaties, homemap, /opt, /usr/local, /usr/share tot vier niveaus diep). Download de IDE 1.8.19 van arduino.cc („Legacy IDE”) en pak hem uit, bij voorkeur naar ~/arduino-1.8.19, of voer het pad zelf in.;;;;
+Es wurde nicht gespeichert.;It was not saved.;Het is niet opgeslagen.;;;;
+"Es wurde noch kein Makroname eingegeben ;-(";"No macro name has been entered yet ;-(";"Er is nog geen macronaam ingevoerd ;-(";;;;
+Es wurden zu viele analoge Schwellen angegeben. Nur die ersten ;Too many analogue thresholds were specified. Only the first ;Er zijn te veel analoge drempels opgegeven. Alleen de eerste;;;;
+existiert nicht.;does not exist.;bestaat niet.;;;;
+Export zu ProgGen;Export to ProgGen;Exporteren naar ProgGen;;;;
+Falsche oder fehlende Nummer in Spalte gefunden: ;Wrong or missing number found in column: ;Verkeerd of ontbrekend nummer gevonden in kolom:;;;;
+"Falsche oder keine Antwort vom ARDUINO.
+
+Prüfe, ob das richtige MobaLedLib-Programm auf den Arduino geladen ist. Es muss mit dem Compilerschalter
+  #define RECEIVE_LED_COLOR_PER_RS232
+übersetzt sein. Das Programm kann mit dem Knopf 'Z. Arduino schicken' geladen werden.";"Wrong or no answer from the ARDUINO.
+
+Check whether the correct MobaLedLib program is loaded on the Arduino. It must have been compiled with the compiler switch
+  #define RECEIVE_LED_COLOR_PER_RS232
+. The program can be loaded with the button 'Z. Send to Arduino'.";"Verkeerd antwoord of geen antwoord van de ARDUINO.
+
+Controleer of het juiste MobaLedLib-programma op de Arduino is geladen. Het moet zijn gecompileerd met de compilerschakelaar
+  #define RECEIVE_LED_COLOR_PER_RS232
+. Het programma kan worden geladen met de knop 'Z. Naar Arduino sturen'.";;;;
+Falsches Programm auf dem Arduino installiert;Wrong program installed on the Arduino;Verkeerd programma op de Arduino geïnstalleerd;;;;
+Farb Test;Colour test;Kleurtest;;;;
+Farbtemperatur;Colour temperature;Kleurtemperatuur;;;;
+Fehler #1# beim Ausführen des Update Programms '#2#';Error #1# while running the update program '#2#';Fout #1# bij het uitvoeren van het updateprogramma '#2#';;;;
+Fehler bei der Datenübertragung zum ATTiny;Error during data transfer to the ATTiny;Fout bij de gegevensoverdracht naar de ATTiny;;;;
+Fehler bei der Überprüfung des angeschlossenen Arduinos;Error while checking the connected Arduino;Fout bij het controleren van de aangesloten Arduino;;;;
+Fehler beim aktivieren der Update Zeile;Error while activating the update line;Fout bij het activeren van de updateregel;;;;
+Fehler beim anlegen einer Datei;Error while creating a file;Fout bij het aanmaken van een bestand;;;;
+Fehler beim Dekodieren des Makros;Error while decoding the macro;Fout bij het decoderen van de macro;;;;
+Fehler beim Download oder Installieren!;Error during download or installation!;Fout bij het downloaden of installeren!;;;;
+Fehler beim Download oder Installieren?;Error during download or installation?;Fout bij het downloaden of installeren?;;;;
+Fehler beim Einfügen der Zeilen: {ex};Error while inserting the rows: {ex};Fout bij het invoegen van de regels: {ex};;;;
+Fehler beim entpacken der ZIP-Datei:;Error while unpacking the ZIP file:;Fout bij het uitpakken van het ZIP-bestand:;;;;
+Fehler beim erzeugen der 'Create_Inp_Prtx' Datei;Error while creating the 'Create_Inp_Prtx' file;Fout bij het aanmaken van het bestand 'Create_Inp_Prtx';;;;
+Fehler beim erzeugen der cmd Datei;Error while creating the cmd file;Fout bij het aanmaken van het cmd-bestand;;;;
+Fehler beim erzeugen der Compile und Flash Datei;Error while creating the compile and flash file;Fout bij het aanmaken van het compileer- en flashbestand;;;;
+Fehler beim erzeugen der Datei;Error while creating the file;Fout bij het aanmaken van het bestand;;;;
+Fehler beim erzeugen der Datei:;Error while creating the file:;Fout bij het aanmaken van het bestand:;;;;
+Fehler beim erzeugen der Konfigurationsdatei:;Error while creating the configuration file:;Fout bij het aanmaken van het configuratiebestand:;;;;
+Fehler beim erzeugen der Programm Generator Konfigurationsdatei:;Error while creating the Program Generator configuration file:;Fout bij het aanmaken van het configuratiebestand van de Programmagenerator:;;;;
+Fehler beim laden der Konfiguration: Die Zelle '#1#' existiert nicht. Der Eintrag wird ignoriert.;Error while loading the configuration: The cell '#1#' does not exist. The entry is ignored.;Fout bij het laden van de configuratie: De cel '#1#' bestaat niet. De invoer wordt genegeerd.;;;;
+Fehler beim laden des Bildes: ;Error while loading the picture: ;Fout bij het laden van de afbeelding:;;;;
+Fehler beim Lesen der Antwort des ARDUINO;Error while reading the answer of the ARDUINO;Fout bij het lezen van het antwoord van de ARDUINO;;;;
+Fehler beim lesen des Verzeichnisses:;Error while reading the folder:;Fout bij het lezen van de map:;;;;
+Fehler beim Löschen;Error while deleting;Fout bij het verwijderen;;;;
+Fehler beim löschen der Datei;Error while deleting the file;Fout bij het verwijderen van het bestand;;;;
+Fehler beim löschen des temporären version alten Programm Generators;Error while deleting the temporary old-version Program Generator;Fout bij het verwijderen van de tijdelijke oude versie van de Programmagenerator;;;;
+Fehler beim Schreiben: {ex};Error while writing: {ex};Fout bij het schrijven: {ex};;;;
+Fehler beim Senden an {client}: {e};Error while sending to {client}: {e};Fout bij het verzenden naar {client}: {e};;;;
+Fehler beim Speichern: {ex};Error while saving: {ex};Fout bij het opslaan: {ex};;;;
+Fehler beim umbenennen des temporären Verzeichnisses:;Error while renaming the temporary folder:;Fout bij het hernoemen van de tijdelijke map:;;;;
+Fehler beim verbinden mit dem Arduino über COM;Error while connecting to the Arduino via COM;Fout bij het verbinden met de Arduino via COM;;;;
+Fehler beim zugriff auf den Arduino an COM;Error while accessing the Arduino on COM;Fout bij de toegang tot de Arduino op COM;;;;
+Fehler beim öffnen des COM Ports;Error while opening the COM port;Fout bij het openen van de COM-poort;;;;
+Fehler beim Öffnen des Ports;Error while opening the port;Fout bij het openen van de poort;;;;
+Fehler das Program ;Error: the program ;Fout: het programma;;;;
+Fehler die 'Multiplexer.ini' Datei existiert nicht:;Error: the 'Multiplexer.ini' file does not exist:;Fout: het bestand 'Multiplexer.ini' bestaat niet:;;;;
+Fehler die Bilder wurden nicht geladen. Bitte sicherstellen, dass sie in der 'MLL_pcf' Datei VOR dem Button (msoFormControl) stehen.;Error: the pictures were not loaded. Please make sure that they are in the 'MLL_pcf' file BEFORE the button (msoFormControl).;Fout: de afbeeldingen zijn niet geladen. Zorg ervoor dat ze in het bestand 'MLL_pcf' VÓÓR de knop (msoFormControl) staan.;;;;
+Fehler die Datei existiert nicht:;Error: the file does not exist:;Fout: het bestand bestaat niet:;;;;
+Fehler in 'Dauer' Tabelle;Error in 'Duration' table;Fout in de tabel 'Duur';;;;
+Fehler in Beispiel Datei;Error in example file;Fout in voorbeeldbestand;;;;
+Fehler in Makro Zeile: Klammer zu fehlt;Error in macro line: closing bracket missing;Fout in macroregel: sluitende haak ontbreekt;;;;
+Fehler schreiben der Fuses;Error while writing the fuses;Fout bij het schrijven van de fuses;;;;
+Fehler: ;Error: ;Fout:;;;;
+Fehler: Anzahl der binären Zustände ungültig. Die Anzahl muss zwischen 1 und 63 liegen;Error: Number of binary states invalid. The number must be between 1 and 63;Fout: Aantal binaire toestanden ongeldig. Het aantal moet tussen 1 en 63 liggen;;;;
+Fehler: Anzahl der Eingänge zu groß;Error: Number of inputs too large;Fout: Aantal ingangen te groot;;;;
+Fehler: beim lesen des 'sketchbook.path' in '#1#';Error: while reading the 'sketchbook.path' in '#1#';Fout: bij het lezen van het 'sketchbook.path' in '#1#';;;;
+Fehler: Das Bild ';Error: The picture ';Fout: De afbeelding ';;;;
+Fehler: Das Verzeichnis '#1#' wurde nicht gefunden;Error: The folder '#1#' was not found;Fout: De map '#1#' is niet gevonden;;;;
+"Fehler: Datei wurde nicht gefunden ;-(";"Error: File was not found ;-(";"Fout: Bestand is niet gevonden ;-(";;;;
+Fehler: Der Adruino reagiert nicht;Error: The Arduino does not respond;Fout: De Arduino reageert niet;;;;
+Fehler: Der Arduino 'sketchbook.path' darf kein Netzlaufwerk sein:;Error: The Arduino 'sketchbook.path' must not be a network drive:;Fout: Het Arduino-'sketchbook.path' mag geen netwerkstation zijn:;;;;
+Fehler: Der Bereich '#1#' wurde nicht im Blatt '#2#' gefunden;Error: The range '#1#' was not found in the sheet '#2#';Fout: Het bereik '#1#' is niet gevonden in het blad '#2#';;;;
+Fehler: Der Eintrag ';Error: The entry ';Fout: De invoer ';;;;
+"Fehler: Der Parameter ""#2#"" für die Plattform ""#1#"" hat keinen gültigen Wert.";"Error: The parameter ""#2#"" for the platform ""#1#"" has no valid value.";"Fout: De parameter ""#2#"" voor het platform ""#1#"" heeft geen geldige waarde.";;;;
+"Fehler: Der Parameter ""#2#"" ist für die Plattform ""#1#"" nicht definiert.";"Error: The parameter ""#2#"" is not defined for the platform ""#1#"".";"Fout: De parameter ""#2#"" is niet gedefinieerd voor het platform ""#1#"".";;;;
+Fehler: Der Parameter Name ';Error: The parameter name ';Fout: De parameternaam ';;;;
+Fehler: Die Anzahl der zu speichernden Eingänge in Zeile #1# ist zu groß (> 63);Error: The number of inputs to be stored in line #1# is too large (> 63);Fout: Het aantal op te slaan ingangen in regel #1# is te groot (> 63);;;;
+Fehler: Die Anzahl Einträge (;Error: The number of entries (;Fout: Het aantal invoeren (;;;;
+Fehler: die Build Optionen für den ESP32 sind ungültig:;Error: the build options for the ESP32 are invalid:;Fout: de buildopties voor de ESP32 zijn ongeldig:;;;;
+Fehler: Die Datei ';Error: The file ';Fout: Het bestand ';;;;
+Fehler: Die LED Zuordnung ';Error: The LED assignment ';Fout: De LED-toewijzing ';;;;
+Fehler: Die LED Zuordnung in Sheet ';Error: The LED assignment in sheet ';Fout: De LED-toewijzing in blad ';;;;
+Fehler: Die PGF Datei enthält keine Daten:;Error: The PGF file contains no data:;Fout: Het PGF-bestand bevat geen gegevens:;;;;
+"Fehler: Die Plattform ""#1#"" ist nicht definiert.";"Error: The platform ""#1#"" is not defined.";"Fout: Het platform ""#1#"" is niet gedefinieerd.";;;;
+Fehler: Es ist kein Gerät mit der IP Adresse #1# angeschlossen.;Error: No device with the IP address #1# is connected.;Fout: Er is geen apparaat met het IP-adres #1# aangesloten.;;;;
+Fehler: Es können maximal 12 LEDs mit dem Charlieplexing Modul angesteuert werden;Error: A maximum of 12 LEDs can be controlled with the Charlieplexing module;Fout: Met de Charlieplexing-module kunnen maximaal 12 LED's worden aangestuurd;;;;
+Fehler: Falsche RGB LED Modul Nummer: ;Error: Wrong RGB LED module number: ;Fout: Verkeerd RGB-LED-modulenummer:;;;;
+Fehler: Logic() in Zeile #1# hat zuviele Bedinugnen;Error: Logic() in line #1# has too many conditions;Fout: Logic() in regel #1# heeft te veel voorwaarden;;;;
+Fehler: Unbekannter Pattern Name ';Error: Unknown pattern name ';Fout: Onbekende patroonnaam ';;;;
+Fehler: Unbekannter Pattern Typ ';Error: Unknown pattern type ';Fout: Onbekend patroontype ';;;;
+Fehler: Ungültige analoge Schwelle ';Error: Invalid analogue threshold ';Fout: Ongeldige analoge drempel ';;;;
+Fehler: Zu viele LED Kanäle benutzt;Error: Too many LED channels used;Fout: Te veel LED-kanalen gebruikt;;;;
+Fehler: Zu viele Zeiten benutzt;Error: Too many times used;Fout: Te veel tijden gebruikt;;;;
+Fehler: {ex};Error: {ex};Fout: {ex};;;;
+Fertig: {geschrieben} Dateien geschrieben, {geloescht} gelöscht.;Done: {geschrieben} files written, {geloescht} deleted.;Klaar: {geschrieben} bestanden geschreven, {geloescht} verwijderd.;;;;
 Filter;Filter;;;;;
-Firewall;Firewall;;;;;
-Formeln neu berechnen;Recalculate formulas;;;;;
-Freigabe entfernen;Remove release;;;;;
-Ganze Datei herunterladen;Download whole file;;;;;
-Gespeichert. Es gilt nach einem Neustart des Programms (Knopf „Jetzt neu starten“).;Saved. It takes effect after the program is restarted (button “Restart now”).;;;;;
-Gespeicherte Dateien (.MLL_pcf und .MLL_pgf) werden im Windows-Zeichensatz geschrieben, damit das Excel-Programm sie lesen kann (Umlaute und Trennzeichen). Enthält eine Datei Zeichen, die dort keinen Platz haben, bleibt sie UTF-8. Das Laden geht mit beiden.;Saved files (.MLL_pcf and .MLL_pgf) are written in the Windows character set so that the Excel program can read them (umlauts and separator). If a file contains characters that do not fit there, it stays UTF-8. Loading works with both.;;;;;
+Firewall;Firewall;Firewall;;;;
+Formeln neu berechnen;Recalculate formulas;Formules herberekenen;;;;
+Freigabe entfernen;Remove release;Vrijgave verwijderen;;;;
+Für den Raspberry Pi Pico braucht Linux einmalig eine Regel für den USB-Zugriff (udev), sonst meldet PlatformIO: picotool was unable to connect.;For the Raspberry Pi Pico, Linux needs a rule for USB access (udev) once, otherwise PlatformIO reports: picotool was unable to connect.;Voor de Raspberry Pi Pico heeft Linux eenmalig een regel voor USB-toegang (udev) nodig, anders meldt PlatformIO: picotool was unable to connect.;;;;
+Ganze Datei herunterladen;Download whole file;Heel bestand downloaden;;;;
+Ganze Zeile färben;Colour the whole row;Hele regel kleuren;;;;
+Geben Sie zuerst die Anzahl der LEDs und den LED-Typ ein, bevor Sie ein Muster hinzufügen!;First enter the number of LEDs and the LED type before adding a pattern!;Voer eerst het aantal LED's en het LED-type in voordat je een patroon toevoegt!;;;;
+gefundene Geräte;devices found;apparaten gevonden;;;;
+gelöscht;deleted;verwijderd worden;;;;
+Gesichert (zum Zurückholen): {sicherung};Backed up (to restore): {sicherung};Veiliggesteld (om te herstellen): {sicherung};;;;
+Gespeichert. Es gilt nach einem Neustart des Programms (Knopf „Jetzt neu starten“).;Saved. It takes effect after the program is restarted (button “Restart now”).;Opgeslagen. Het werkt na een herstart van het programma (knop „Nu herstarten”).;;;;
+Gespeicherte Dateien (.MLL_pcf und .MLL_pgf) werden im Windows-Zeichensatz geschrieben, damit das Excel-Programm sie lesen kann (Umlaute und Trennzeichen). Enthält eine Datei Zeichen, die dort keinen Platz haben, bleibt sie UTF-8. Das Laden geht mit beiden.;Saved files (.MLL_pcf and .MLL_pgf) are written in the Windows character set so that the Excel program can read them (umlauts and separator). If a file contains characters that do not fit there, it stays UTF-8. Loading works with both.;Opgeslagen bestanden (.MLL_pcf en .MLL_pgf) worden in de Windows-tekenset geschreven, zodat het Excel-programma ze kan lezen (umlauts en scheidingsteken). Bevat een bestand tekens die daar niet in passen, dan blijft het UTF-8. Laden werkt met beide.;;;;
 gleich zum Arduino schicken;Send to the Arduino immediately;;;;;
-Grafik (Balken) neu aufbauen;Rebuild graphic (bars);;;;;
+Goto Aktivierung auswählen:;Select goto activation:;Goto-activering kiezen:;;;;
+Grafik (Balken) neu aufbauen;Rebuild graphic (bars);Grafiek opnieuw opbouwen (balken);;;;
+Große Schrift;Large font;Groot lettertype;;;;
 grün;green;;;;;
-HEXA;HEXA;;;;;
-Hilfe;Help;;;;;
-Hilfe öffnen;Open help;;;;;
-Hintergrundfarbe der Zelle;Background colour of the cell;;;;;
-IDE suchen;Find IDE;;;;;
-Import von ProgGen;Import from ProgGen;;;;;
-In den Downloads-Ordner;To the downloads folder;;;;;
-Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio). Danach findet das Programm pio selbst.;Installation: https://platformio.org/install/cli (for example with: pip install platformio). After that the program finds pio by itself.;;;;;
-Installiert: Version {VERSION};Installed: version {VERSION};;;;;
+HEXA;HEXA;HEXA;;;;
+Hilfe;Help;Help;;;;
+Hilfe öffnen;Open help;Help openen;;;;
+Hintergrundfarbe der Zelle;Background colour of the cell;Achtergrondkleur van de cel;;;;
+Hinweis: Die Rückmeldung (RMBUS) vom Arduino ist mit dieser Version der seriellen Schicht nicht verfügbar (web_serial.py aktualisieren).;Note: The feedback (RMBUS) from the Arduino is not available with this version of the serial layer (update web_serial.py).;Opmerking: De terugmelding (RMBUS) van de Arduino is met deze versie van de seriële laag niet beschikbaar (web_serial.py bijwerken).;;;;
+Hinweis: keine Verbindung zum ARDUINO. Die Befehle werden erst gesendet, wenn „Mit ARDUINO verbinden“ (Kopfzeile) gelungen ist.;Note: no connection to the ARDUINO. The commands are only sent once “Connect to ARDUINO” (header) has succeeded.;Opmerking: geen verbinding met de ARDUINO. De opdrachten worden pas verzonden als „Met ARDUINO verbinden” (kopregel) is gelukt.;;;;
+"https://platformio.org/install/cli (Linux, macOS: pipx install platformio, danach pipx ensurepath und neu anmelden; Debian, Ubuntu, Raspberry Pi OS: vorher sudo apt install pipx)";"https://platformio.org/install/cli (Linux, macOS: pipx install platformio, then pipx ensurepath and log in again; Debian, Ubuntu, Raspberry Pi OS: first sudo apt install pipx)";"https://platformio.org/install/cli (Linux, macOS: pipx install platformio, daarna pipx ensurepath en opnieuw aanmelden; Debian, Ubuntu, Raspberry Pi OS: eerst sudo apt install pipx)";;;;
+https://platformio.org/install/cli (zum Beispiel mit: pip install platformio);https://platformio.org/install/cli (for example with: pip install platformio);https://platformio.org/install/cli (bijvoorbeeld met: pip install platformio);;;;
+Icon Größe (%);Icon size (%);Pictogramgrootte (%);;;;
+IDE suchen;Find IDE;IDE zoeken;;;;
+Im Steuerprogramm eintragen: IP-Adresse {ip}, Port {port} (UDP);Enter in the control program: IP address {ip}, port {port} (UDP);In het besturingsprogramma invoeren: IP-adres {ip}, poort {port} (UDP);;;;
+Import von ProgGen;Import from ProgGen;Importeren uit ProgGen;;;;
+Importieren Sie das gewünschte Pattern für das Makro : ;Import the desired pattern for the macro : ;Importeer het gewenste patroon voor de macro :;;;;
+Impulslänge;Pulse length;Pulsduur;;;;
+IN ACHT NEHMEN! Wählen Sie nur Patronen aus, die für die richtige Anzahl von LEDs geeignet sind!;CAUTION! Only select patterns that are suitable for the correct number of LEDs!;LET OP! Kies alleen patronen die geschikt zijn voor het juiste aantal LED's!;;;;
+In den Downloads-Ordner;To the downloads folder;Naar de map Downloads;;;;
+Installation der Boards und Bibliotheken;Installation of the boards and libraries;Installatie van de boards en bibliotheken;;;;
+Installation: ;Installation: ;Installatie:;;;;
+Installation: https://platformio.org/install/cli (zum Beispiel mit pip install platformio). Danach findet das Programm pio selbst.;Installation: https://platformio.org/install/cli (for example with pip install platformio). After that the program finds pio by itself.;Installatie: https://platformio.org/install/cli (bijvoorbeeld met pip install platformio). Daarna vindt het programma pio zelf.;;;;
+Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio). Danach findet das Programm pio selbst.;Installation: https://platformio.org/install/cli (for example with: pip install platformio). After that the program finds pio by itself.;Installatie: https://platformio.org/install/cli (bijvoorbeeld met: pip install platformio). Daarna vindt het programma pio zelf.;;;;
+Installation: {hinweis}. Danach findet das Programm pio selbst.;Installation: {hinweis}. After that the program finds pio by itself.;Installatie: {hinweis}. Daarna vindt het programma pio zelf.;;;;
+Installiert die Korrekturversion der MobaLedLib Bibliothek. Bitte vorher prüfen, ob es eine neue Korrektur gibt!;Installs the correction version of the MobaLedLib library. Please check beforehand whether there is a new correction!;Installeert de correctieversie van de MobaLedLib-bibliotheek. Controleer vooraf of er een nieuwe correctie is!;;;;
+Installiert: Version {VERSION};Installed: version {VERSION};Geïnstalleerd: versie {VERSION};;;;
+Interne Fehler beim importieren des Macros;Internal error while importing the macro;Interne fout bij het importeren van de macro;;;;
+Interner Fehler: Die Event Routinen wurden nicht gefunden;Internal error: The event routines were not found;Interne fout: De eventroutines zijn niet gevonden;;;;
+Interner Macro Fehler;Internal macro error;Interne macrofout;;;;
 Ja;Yes;;;;;
-Ja (J);Yes (J);;;;;
-Jetzt neu starten;Restart now;;;;;
-Jetzt zwischenspeichern;Cache now;;;;;
-Kanal {channel} ({farbe});Channel {channel} ({farbe});;;;;
-Kompaktes Layout;Compact layout;;;;;
-Kopie des aktuellen Blatts anlegen;Create a copy of the current sheet;;;;;
-Laden (J);Load (J);;;;;
-LED Adresse;LED address;;;;;
+Ja (J);Yes (J);Ja (J);;;;
+Jetzt neu starten;Restart now;Nu herstarten;;;;
+Jetzt zwischenspeichern;Cache now;Nu in het cachegeheugen opslaan;;;;
+Kanal {channel} ({farbe});Channel {channel} ({farbe});Kanaal {channel} ({farbe});;;;
+Kanalnummer, an die die LEDs-Geräte angeschlossen sind, die bearbeitet werden sollen;Channel number the LED devices to be edited are connected to;Kanaalnummer waarop de LED-apparaten zijn aangesloten die moeten worden bewerkt;;;;
+Kein Multiplexername hinzugefügt!;No multiplexer name added!;Geen multiplexernaam toegevoegd!;;;;
+Kein Pfad eingetragen, und die automatische Suche hat keine IDE gefunden.;No path entered, and the automatic search found no IDE.;Geen pad ingevoerd, en de automatische zoekactie heeft geen IDE gevonden.;;;;
+Kein Pfad eingetragen. Automatisch gefunden: {found};No path entered. Found automatically: {found};Geen pad ingevoerd. Automatisch gevonden: {found};;;;
+Kein Tab mit einem ausgewählten Muster !!!;No tab with a selected pattern !!!;Geen tabblad met een gekozen patroon !!!;;;;
+keine Antwort von PowerShell;no answer from PowerShell;geen antwoord van PowerShell;;;;
+Keine Einträge, {zeilen} Zeilen;No entries, {zeilen} rows;Geen invoeren, {zeilen} regels;;;;
+"Klicken Sie in die Zeile aus der das Muster gelesen werden soll und betätigen dann den 'OK' Knopf.
+Wenn bereits die richtige Zeile aktiviert ist, dann kann dieser Dialog direkt mit 'Enter' geschlossen werden.
+
+Achtung: Es können nur Zeilen importiert werden welche den 'Pattern' Befehl enthalten.";"Click in the row from which the pattern is to be read and then press the 'OK' button.
+If the correct row is already active, this dialog can be closed directly with 'Enter'.
+
+Attention: Only rows that contain the 'Pattern' command can be imported.";"Klik in de regel waaruit het patroon moet worden gelezen en druk dan op de knop 'OK'.
+Is de juiste regel al actief, dan kan dit venster direct met 'Enter' worden gesloten.
+
+Let op: Alleen regels die de opdracht 'Pattern' bevatten, kunnen worden geïmporteerd.";;;;
+"Klicken Sie in die Zeile in der das Muster eingetragen werden soll und betätigen dann den 'OK' Knopf.
+Wenn bereits die richtige Zeile aktiviert ist, dann kann dieser Dialog direkt mit 'Enter' geschlossen werden.
+
+Achtung: Bereits existierende Einträge in der Spalte 'Beleuchtung, Sound, oder andere Effekte' werden überschrieben.";"Click in the row in which the pattern is to be entered and then press the 'OK' button.
+If the correct row is already active, this dialog can be closed directly with 'Enter'.
+
+Attention: Existing entries in the column 'Lighting, sound, or other effects' will be overwritten.";"Klik in de regel waarin het patroon moet worden ingevoerd en druk dan op de knop 'OK'.
+Is de juiste regel al actief, dan kan dit venster direct met 'Enter' worden gesloten.
+
+Let op: Bestaande invoeren in de kolom 'Verlichting, geluid of andere effecten' worden overschreven.";;;;
+Klicken Sie in die Zeile und betätigen dann den 'OK' Knopf.;Click in the row and then press the 'OK' button.;Klik in de regel en druk dan op de knop 'OK'.;;;;
+Kombinationen von Einzel- und RGB-LEDs werden vom Multiplexer nicht unterstützt !!!;Combinations of single and RGB LEDs are not supported by the multiplexer !!!;Combinaties van enkele en RGB-LED's worden door de multiplexer niet ondersteund !!!;;;;
+Kompaktes Layout;Compact layout;Compacte weergave;;;;
+Kompilieren und Hochladen;Compile and upload;Compileren en uploaden;;;;
+"Konfiguration der Geschwindigkeit
+
+Mit den Pfeiltasten wird die Geschwindigkeit eingestellt. Durch Halten der Tasten wird die Geschwindigkeit schneller verändert";"Speed configuration
+
+The speed is set with the arrow keys. Holding the keys changes the speed faster";"Snelheidsconfiguratie
+
+Met de pijltjestoetsen wordt de snelheid ingesteld. Door de toetsen ingedrukt te houden verandert de snelheid sneller";;;;
+"Konfiguration der Maximalposition
+
+";"Configuration of the maximum position
+
+";Configuratie van de maximumpositie;;;;
+"Konfiguration der Minimalposition
+
+";"Configuration of the minimum position
+
+";Configuratie van de minimumpositie;;;;
+Konfiguration passt nicht in EEPROM;Configuration does not fit into the EEPROM;De configuratie past niet in het EEPROM;;;;
+Kopie des aktuellen Blatts anlegen;Create a copy of the current sheet;Een kopie van het huidige blad maken;;;;
+Kopieren des Python MobaLedLib Programm;Copy the Python MobaLedLib program;Het Python MobaLedLib-programma kopiëren;;;;
+Korrektur der SMD WS2811 Pins?;Correction of the SMD WS2811 pins?;Correctie van de SMD-WS2811-pinnen?;;;;
+Korrekturversion der MobaLedLib installieren?;Install the correction version of the MobaLedLib?;De correctieversie van de MobaLedLib installeren?;;;;
+Laden (J);Load (J);Laden (J);;;;
+LED Adresse;LED address;LED-adres;;;;
 Led Kanal;LED channel;;;;;
+LED Kanal an dem die Servoplatine angeschlossen ist;LED channel the servo board is connected to;LED-kanaal waarop de servoprint is aangesloten;;;;
+LED Kanal an dem die Soundplatine angeschlossen ist;LED channel the sound board is connected to;LED-kanaal waarop de geluidsprint is aangesloten;;;;
 LED Kanal Auswahl;LED channel selection;;;;;
-Link öffnen;Open link;;;;;
-Logfile anzeigen;Show log file;;;;;
-Löschen;Delete;;;;;
-Main und die Hilfsseiten können nicht gelöscht werden.;Main and the helper pages cannot be deleted.;;;;;
-Makro aus einer Zeile des Programm Generators einlesen;Read a macro from a row of the Program Generator;;;;;
-Makro in eine Zeile des Programm Generators eintragen;Enter a macro into a row of the Program Generator;;;;;
-Makroauswahl: {ex};Macro selection: {ex};;;;;
+Leerer Optionsname oder leeres Optionsmuster gefunden!;Empty option name or empty option pattern found!;Lege optienaam of leeg optiepatroon gevonden!;;;;
+Level für Logging-Ausgaben;Level for logging output;Niveau voor logmeldingen;;;;
+Link öffnen;Open link;Link openen;;;;
+Linux: Auf dem Raspberry Pi ist normalerweise keine Firewall aktiv. Läuft ufw, den Port freigeben: sudo ufw allow 8080/tcp (bei einem anderen Port die Nummer ersetzen).;Linux: On the Raspberry Pi normally no firewall is active. If ufw is running, open the port: sudo ufw allow 8080/tcp (replace the number for a different port).;Linux: Op de Raspberry Pi is normaal geen firewall actief. Draait ufw, geef dan de poort vrij: sudo ufw allow 8080/tcp (bij een andere poort het nummer vervangen).;;;;
+Linux: richtet einmalig die Regel ein, mit der PlatformIO den Pico im BOOTSEL-Modus ansprechen darf (fragt nach dem Passwort). Ohne sie meldet das Hochladen: picotool was unable to connect.;Linux: sets up once the rule that allows PlatformIO to access the Pico in BOOTSEL mode (asks for the password). Without it the upload reports: picotool was unable to connect.;Linux: stelt eenmalig de regel in waarmee PlatformIO de Pico in BOOTSEL-modus mag aanspreken (vraagt om het wachtwoord). Zonder deze regel meldt het uploaden: picotool was unable to connect.;;;;
+Logfile anzeigen;Show log file;Logbestand tonen;;;;
+Länge des Impulses;Length of the pulse;Lengte van de puls;;;;
+Löschen;Delete;Verwijderen;;;;
+Lücke in der Dauer Tabelle entdeckt;Gap found in the duration table;Hiaat gevonden in de duurtabel;;;;
+macOS: Die Firewall ist normalerweise ausgeschaltet. Ist sie eingeschaltet und fragt beim Start, ob Python eingehende Verbindungen annehmen darf, mit „Erlauben“ antworten (Systemeinstellungen → Netzwerk → Firewall → Optionen).;macOS: The firewall is normally switched off. If it is on and asks at startup whether Python may accept incoming connections, answer “Allow”;macOS: De firewall is normaal uitgeschakeld. Is hij ingeschakeld en vraagt hij bij het starten of Python inkomende verbindingen mag accepteren, antwoord dan met „Toestaan”;;;;
+Macros und Effekte:;Macros and effects:;Macro's en effecten:;;;;
+Main und die Hilfsseiten können nicht gelöscht werden.;Main and the helper pages cannot be deleted.;Main en de hulppagina's kunnen niet worden verwijderd.;;;;
+Makro aus einer Zeile des Programm Generators einlesen;Read a macro from a row of the Program Generator;Een macro uit een regel van de Programmagenerator lezen;;;;
+Makro in eine Zeile des Programm Generators eintragen;Enter a macro into a row of the Program Generator;Een macro in een regel van de Programmagenerator invoeren;;;;
+Makroauswahl: {ex};Macro selection: {ex};Macrokeuze: {ex};;;;
+Makrobeschreibung ist leer!;Macro description is empty!;Macrobeschrijving is leeg!;;;;
+Maximale Helligkeit der LEDs;Maximum brightness of the LEDs;Maximale helderheid van de LED's;;;;
 Maximale Raumanzahl erreicht;Maximum number of rooms reached;;;;;
-Mit ARDUINO verbinden;Connect to ARDUINO;;;;;
-Name des Raspberry Pi im Netz;Name of the Raspberry Pi on the network;;;;;
-Namen des Raspberry Pi ändern?;Change the name of the Raspberry Pi?;;;;;
-Namen ändern;Change name;;;;;
+Maximaler zufälliger Grünanteil;Maximum random green component;Maximaal willekeurig groenaandeel;;;;
+Meldungen beim Start des Programms;Messages at program start;Meldingen bij het starten van het programma;;;;
+Minimaler zufälliger Grünanteil;Minimum random green component;Minimaal willekeurig groenaandeel;;;;
+Mit 'Nein' wird die Meldung ignoriert und versucht den Arduino trotzdem zu programmieren.;With 'No' the message is ignored and an attempt is made to program the Arduino anyway.;Met 'Nee' wordt de melding genegeerd en wordt toch geprobeerd de Arduino te programmeren.;;;;
+Mit ARDUINO verbinden;Connect to ARDUINO;Met ARDUINO verbinden;;;;
+"Mit dem Dialog Knopf ist die Eingabe einer Konfigurationszeile ganz einfach. Das Programm zeigt zu jedem Schritt die wichtigsten Informationen. 
+Die Eingaben können aber auch jederzeit direkt in der Tabelle gemacht werden.
+
+Zunächst muss die Zeile in der Tabelle ausgewählt werden. Die Reihenfolge der Zeilen muss der LEDs Anordnung entsprechen. Die erste Zeile in der Tabelle steuert die erste LED Gruppe auf der Anlage. Mit der zweiten Zeile wird die zweite Gruppe konfiguriert... 
+Eine Gruppe kann wie bei einem Haus aus mehreren LEDs oder nur aus einer einzigen LED bestehen. Anstelle von LEDs können auch andere Effekte wie Sound, Servos, ... angesteuert werden. Hier wird immer der Begriff LED verwendet. 
+Falls die Reihenfolge nicht stimmt können die Zeilen nachträglich verschoben werde.
+";"With the dialog button entering a configuration row is very easy. The program shows the most important information for each step. 
+The entries can also be made directly in the table at any time.
+
+First the row in the table must be selected. The order of the rows must correspond to the arrangement of the LEDs. The first row in the table controls the first LED group on the layout. The second row configures the second group... 
+A group can consist of several LEDs, as with a house, or of only a single LED. Instead of LEDs, other effects such as sound, servos, ... can also be controlled. The term LED is always used here. 
+If the order is not right, the rows can be moved afterwards.
+";"Met de dialoogknop is het invoeren van een configuratieregel heel eenvoudig. Het programma toont bij elke stap de belangrijkste informatie. 
+De invoer kan op elk moment ook direct in de tabel worden gedaan.
+
+Eerst moet de regel in de tabel worden gekozen. De volgorde van de regels moet overeenkomen met de rangschikking van de LED's. De eerste regel in de tabel stuurt de eerste LED-groep op de baan aan. De tweede regel configureert de tweede groep... 
+Een groep kan uit meerdere LED's bestaan, zoals bij een huis, of uit slechts één LED. In plaats van LED's kunnen ook andere effecten zoals geluid, servo's, ... worden aangestuurd. Hier wordt steeds de term LED gebruikt. 
+Klopt de volgorde niet, dan kunnen de regels achteraf worden verplaatst.";;;;
+Mit den Knöpfen links können die Daten der aktuellen Seite gespeichert und wieder geladen werden.;With the buttons on the left the data of the current page can be saved and loaded again.;Met de knoppen links kunnen de gegevens van de huidige pagina worden opgeslagen en weer geladen.;;;;
+Mit den Pfeiltasten wird die Position eingestellt. Durch Halten der Tasten wird die Position schneller verändert;The position is set with the arrow keys. Holding the keys changes the position faster;Met de pijltjestoetsen wordt de positie ingesteld. Door de toetsen ingedrukt te houden verandert de positie sneller;;;;
+MobaLedLib LED-Servotester für Direct Mode Servos;MobaLedLib LED servo tester for direct mode servos;MobaLedLib-LED-servotester voor servo's in directe modus;;;;
+Moduladresse des Servos (LED-Nummer des Anschlusses);Module address of the servo (LED number of the connector);Moduleadres van de servo (LED-nummer van de aansluiting);;;;
+Multiplexer Datei nicht gefunden!;Multiplexer file not found!;Multiplexerbestand niet gevonden!;;;;
+Multiplexer Datei nicht vorhanden;Multiplexer file does not exist;Multiplexerbestand bestaat niet;;;;
+Multiplexer Verzeichnis nicht vorhanden;Multiplexer folder does not exist;Multiplexermap bestaat niet;;;;
+Muster mit falscher Anzahl von LEDs gewählt!;Pattern with the wrong number of LEDs selected!;Patroon met het verkeerde aantal LED's gekozen!;;;;
+Möchten Sie das Multiplexer-Makro wirklich entfernen? ;Do you really want to remove the multiplexer macro? ;Wil je de multiplexermacro echt verwijderen?;;;;
+Möchten Sie die Datei Multiplexer wirklich überschreiben?;Do you really want to overwrite the multiplexer file?;Wil je het multiplexerbestand echt overschrijven?;;;;
+Möchten Sie wirklich alle Multiplexer Makros löschen?;Do you really want to delete all multiplexer macros?;Wil je echt alle multiplexermacro's verwijderen?;;;;
+Nach dem Erstellen vorführen;Demonstrate after creation;Na het aanmaken demonstreren;;;;
+Name des Bildes Eingeben (Gleichen Namen verwenden bei identischen Bildern);Enter the name of the picture (use the same name for identical pictures);Voer de naam van de afbeelding in (gebruik dezelfde naam voor identieke afbeeldingen);;;;
+Name des neuen Blattes?;Name of the new sheet?;Naam van het nieuwe blad?;;;;
+Name des Raspberry Pi im Netz;Name of the Raspberry Pi on the network;Naam van de Raspberry Pi in het netwerk;;;;
+Name muss mit 'multiplexer_' beginnen' !;Name must start with 'multiplexer_' !;Naam moet met 'multiplexer_' beginnen !;;;;
+Namen des Raspberry Pi ändern?;Change the name of the Raspberry Pi?;De naam van de Raspberry Pi wijzigen?;;;;
+Namen ändern;Change name;Naam wijzigen;;;;
 Nein;No;;;;;
-Nein (N);No (N);;;;;
-Neu berechnen;Recalculate;;;;;
-Neue Adresse (in einem Lesezeichen oder dem Desktop-Symbol anpassen):;New address (adapt it in a bookmark or the desktop icon):;;;;;
-Neuer Name;New name;;;;;
-Neues Blatt;New sheet;;;;;
-Neues Passwort;New password;;;;;
-Neues Passwort wiederholen;Repeat new password;;;;;
-Nicht alle Dateien passen zur Version {VERSION}. Bitte alle Dateien dieses Stands einspielen, bis dahin kann etwas falsch aussehen oder fehlen:;"Not all files match version {VERSION}. Please install all files of this version; until then something may look wrong or be missing:";;;;;
-Nicht mit dem ARDUINO verbunden (ARDUINO → Verbinden).;Not connected to the ARDUINO (ARDUINO → Connect).;;;;;
+Nein (N);No (N);Nee (N);;;;
+Neu berechnen;Recalculate;Herberekenen;;;;
+Neue Adresse (in einem Lesezeichen oder dem Desktop-Symbol anpassen):;New address (adapt it in a bookmark or the desktop icon):;Nieuw adres (pas het aan in een bladwijzer of het bureaubladpictogram):;;;;
+Neue Tabelle einfügen;Insert new table;Nieuwe tabel invoegen;;;;
+"Neue Version: {neue_version}   (installiert: {VERSION})
+{neu} neue und {geaendert} geänderte Dateien werden geschrieben, {anzahl} Dateien werden gelöscht, {same} Dateien sind unverändert und werden nicht angefasst.";"New version: {neue_version}   (installed: {VERSION})
+{neu} new and {geaendert} changed files are written, {anzahl} files are deleted, {same} files are unchanged and are not touched.";"Nieuwe versie: {neue_version}   (geïnstalleerd: {VERSION})
+{neu} nieuwe en {geaendert} gewijzigde bestanden worden geschreven, {anzahl} bestanden worden verwijderd, {same} bestanden zijn ongewijzigd en worden niet aangeraakt.";;;;
+Neuer Name;New name;Nieuwe naam;;;;
+Neues Blatt;New sheet;Nieuw blad;;;;
+Neues Passwort;New password;Nieuw wachtwoord;;;;
+Neues Passwort wiederholen;Repeat new password;Nieuw wachtwoord herhalen;;;;
+Nicht alle Dateien passen zur Version {VERSION}. Bitte alle Dateien dieses Stands einspielen, bis dahin kann etwas falsch aussehen oder fehlen:;"Not all files match version {VERSION}. Please install all files of this version; until then something may look wrong or be missing:";"Niet alle bestanden komen overeen met versie {VERSION}. Installeer alle bestanden van deze versie; tot dan kan iets er verkeerd uitzien of ontbreken:";;;;
+"Nicht ersetzt (meist von einem anderen Programm gesperrt):
+";"Not replaced (usually locked by another program):
+";Niet vervangen (meestal vergrendeld door een ander programma):;;;;
+nicht in der Prüfliste: {r};not in the check list: {r};niet in de controlelijst: {r};;;;
+Nicht mit dem ARDUINO verbunden (ARDUINO → Verbinden).;Not connected to the ARDUINO (ARDUINO → Connect).;Niet verbonden met de ARDUINO (ARDUINO → Verbinden).;;;;
 Nicht speichern;Do not save;;;;;
-Nicht verbunden. Bitte zuerst verbinden.;Not connected. Please connect first.;;;;;
-Oberhalb der ersten Datenzeile kann nichts eingefügt werden.;Nothing can be inserted above the first data row.;;;;;
-Ohne Speichern (O);Without saving (O);;;;;
+Nicht verbunden. Bitte zuerst verbinden.;Not connected. Please connect first.;Niet verbonden. Maak eerst verbinding.;;;;
+Nummer der RGB LED am Modul (0 ist die erste LED).;Number of the RGB LED on the module (0 is the first LED).;Nummer van de RGB-LED op de module (0 is de eerste LED).;;;;
+Nur die Spalten bis Q anzeigen;Show only the columns up to Q;Alleen de kolommen tot en met Q tonen;;;;
+Oberhalb der ersten Datenzeile kann nichts eingefügt werden.;Nothing can be inserted above the first data row.;Boven de eerste gegevensregel kan niets worden ingevoegd.;;;;
+Oder in den Optionen wieder die ARDUINO-IDE einstellen.;Or select the ARDUINO IDE again in the options.;Of kies in de opties weer de ARDUINO IDE.;;;;
+Ohne Speichern (O);Without saving (O);Zonder opslaan (O);;;;
 Ok;OK;;;;;
 OK;OK;;;;;
 Optionen;Options;;;;;
-Palettenfarbe auf Standard zurücksetzen;Reset palette colour to default;;;;;
-Palettenfarbe zur aktuellen Farbe machen;Make the palette colour the current colour;;;;;
-Passwort;Password;;;;;
-Passwort geändert. Von einem anderen Rechner fragt der Browser beim nächsten Aufruf nach dem neuen Passwort.;Password changed. From another computer the browser asks for the new password on the next call.;;;;;
-Passwort ändern;Change password;;;;;
-Patch;Patch;;;;;
-Pattern Configurator: Optionen;Pattern Configurator: options;;;;;
-Patterngenerator;Pattern Generator;;;;;
-Pfad der Startdatei „arduino“ der ARDUINO IDE 1.8.x auf dem Rechner, auf dem das Programm läuft (zum Beispiel /home/name/arduino-1.8.19/arduino). Ein Dateiauswahlfenster gibt es nicht: Der Browser sieht die Dateien dieses Rechners nicht. Ohne Eintrag sucht das Programm selbst, die Schaltfläche „IDE suchen“ zeigt, was es findet.;"Path of the start file “arduino” of the ARDUINO IDE 1.8.x on the computer on which the program runs (for example /home/name/arduino-1.8.19/arduino). There is no file selection window: the browser cannot see the files of this computer. Without an entry the program searches by itself; the button “Find IDE” shows what it finds.";;;;;
-Pfad übernommen. Zum Sichern die Einstellungen speichern.;Path accepted. Save the settings to keep it.;;;;;
-Pfeil nach links: ein Klick auf ein Palettenfeld macht dessen Farbe zur aktuellen Farbe.;Arrow to the left: a click on a palette field makes its colour the current colour.;;;;;
-PGF lesen;Read PGF;;;;;
-PGF speichern;Save PGF;;;;;
-PGF-Datei laden;Load PGF file;;;;;
-PlatformIO (Ersatz für die ARDUINO-IDE);PlatformIO (replacement for the ARDUINO IDE);;;;;
-PlatformIO gefunden: {pfad};PlatformIO found: {pfad};;;;;
-PlatformIO ist vorhanden, antwortet aber nicht.;PlatformIO is present but does not respond.;;;;;
-PlatformIO prüfen;Check PlatformIO;;;;;
-PlatformIO wurde nicht gefunden.;PlatformIO was not found.;;;;;
-PlatformIO wurde nicht gefunden. Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio);PlatformIO was not found. Installation: https://platformio.org/install/cli (for example with: pip install platformio);;;;;
-PNG- oder JPG-Bild unter der Tabelle einfügen;Insert a PNG or JPG picture below the table;;;;;
-Port (COM…, /dev/tty… oder IP:…);Port (COM…, /dev/tty… or IP:…);;;;;
-Portliste aktualisieren;Refresh port list;;;;;
-Pos 0;Pos 0;;;;;
-Pos 255;Pos 255;;;;;
-Position 1 (wie im Original);Position 1 (as in the original);;;;;
-Position des Servos 0..255. Mit den Pfeiltasten Schritt für Schritt, Pos1 und Ende springen an den Anfang und das Ende.;"Servo position 0..255. Step by step with the arrow keys; Home and End jump to the start and the end.";;;;;
-Position des Servos 10..210. Mit den Pfeiltasten Schritt für Schritt, Pos1 und Ende springen an den Anfang und das Ende.;"Servo position 10..210. Step by step with the arrow keys; Home and End jump to the start and the end.";;;;;
-Position um 1 erhöhen;Increase position by 1;;;;;
-Position um 1 verringern;Decrease position by 1;;;;;
-ProgGenerator Einstellungen;ProgGenerator settings;;;;;
-Programm beenden?;Quit the program?;;;;;
-Programm Einstellungen;Program settings;;;;;
-Programm Generator;Program Generator;;;;;
-ProgrammGenerator-Workbook speichern als;Save ProgramGenerator workbook as;;;;;
-ProgrammGenerator-Workbook von Datei lesen;Read ProgramGenerator workbook from file;;;;;
-ProgrammGenerator: PGF-Datei lesen;ProgramGenerator: read PGF file;;;;;
-ProgrammGenerator: PGF-Datei speichern;ProgramGenerator: save PGF file;;;;;
-Protokoll (letzte Zeilen);Log (last lines);;;;;
-Raspberry Pi {what}?;{what} the Raspberry Pi?;;;;;
-RGB LED;RGB LED;;;;;
+Optionen und spezielle Funktionien;Options and special functions;Opties en speciale functies;;;;
+Palette an SetColTab übergeben;Pass the palette to SetColTab;Palet aan SetColTab doorgeven;;;;
+Palette an SetColTab-Macro übergeben und Farbtester beenden;Pass the palette to the SetColTab macro and close the colour tester;Palet aan de macro SetColTab doorgeven en de kleurtester sluiten;;;;
+Palettenfarbe auf Standard zurücksetzen;Reset palette colour to default;Paletkleur terugzetten naar standaard;;;;
+Palettenfarbe zur aktuellen Farbe machen;Make the palette colour the current colour;De paletkleur de huidige kleur maken;;;;
+Parameter der Startdatei;Parameters of the start file;Parameters van het startbestand;;;;
+Parameter-Beschriftung Schriftgröße in Punkten;Parameter label font size in points;Lettergrootte van het parameterlabel in punten;;;;
+Passwort;Password;Wachtwoord;;;;
+Passwort geändert. Von einem anderen Rechner fragt der Browser beim nächsten Aufruf nach dem neuen Passwort.;Password changed. From another computer the browser asks for the new password on the next call.;Wachtwoord gewijzigd. Vanaf een andere computer vraagt de browser bij de volgende oproep om het nieuwe wachtwoord.;;;;
+Passwort ändern;Change password;Wachtwoord wijzigen;;;;
+Patch;Patch;Patch;;;;
+Pattern Configurator: Optionen;Pattern Configurator: options;Patternconfigurator: opties;;;;
+Patterngenerator;Pattern Generator;Patterngenerator;;;;
+Persönliche Dateien im ZIP werden ignoriert: ;Personal files in the ZIP are ignored: ;Persoonlijke bestanden in het ZIP-bestand worden genegeerd:;;;;
+Pfad der Startdatei „arduino“ der ARDUINO IDE 1.8.x auf dem Rechner, auf dem das Programm läuft (zum Beispiel /home/name/arduino-1.8.19/arduino). Ein Dateiauswahlfenster gibt es nicht: Der Browser sieht die Dateien dieses Rechners nicht. Ohne Eintrag sucht das Programm selbst, die Schaltfläche „IDE suchen“ zeigt, was es findet.;"Path of the start file “arduino” of the ARDUINO IDE 1.8.x on the computer on which the program runs (for example /home/name/arduino-1.8.19/arduino). There is no file selection window: the browser cannot see the files of this computer. Without an entry the program searches by itself; the button “Find IDE” shows what it finds.";"Pad van het startbestand „arduino” van de ARDUINO IDE 1.8.x op de computer waarop het programma draait (bijvoorbeeld /home/naam/arduino-1.8.19/arduino). Er is geen bestandskeuzevenster: de browser kan de bestanden van deze computer niet zien. Zonder invoer zoekt het programma zelf; de knop „IDE zoeken” toont wat het vindt.";;;;
+Pfad übernommen. Zum Sichern die Einstellungen speichern.;Path accepted. Save the settings to keep it.;Pad geaccepteerd. Sla de instellingen op om het te bewaren.;;;;
+Pfeil nach links: ein Klick auf ein Palettenfeld macht dessen Farbe zur aktuellen Farbe.;Arrow to the left: a click on a palette field makes its colour the current colour.;Pijl naar links: een klik op een paletveld maakt zijn kleur de huidige kleur.;;;;
+Pfeil nach rechts: ein Klick auf ein Palettenfeld übernimmt die aktuelle Farbe in dieses Feld.;Arrow to the right: a click on a palette field copies the current colour into this field.;Pijl naar rechts: een klik op een paletveld kopieert de huidige kleur naar dit veld.;;;;
+PGF lesen;Read PGF;PGF lezen;;;;
+PGF speichern;Save PGF;PGF opslaan;;;;
+PGF-Datei laden;Load PGF file;PGF-bestand laden;;;;
+"PICO im Bootmodus gefunden
+Soll der PICO mit einer Start-Firmware initialisiert werden?";"PICO found in boot mode
+Should the PICO be initialised with a start firmware?";"PICO in bootmodus gevonden
+Moet de PICO met een startfirmware worden geïnitialiseerd?";;;;
+pkexec ist nicht installiert. Bitte im Terminal ausführen:;pkexec is not installed. Please run in the terminal:;pkexec is niet geïnstalleerd. Voer het uit in de terminal:;;;;
+PlatformIO (Ersatz für die ARDUINO-IDE);PlatformIO (replacement for the ARDUINO IDE);PlatformIO (vervanging voor de ARDUINO IDE);;;;
+PlatformIO gefunden: {pfad};PlatformIO found: {pfad};PlatformIO gevonden: {pfad};;;;
+PlatformIO ist als Entwicklungsumgebung eingestellt (Optionen, Entwicklungsumgebung), aber das Programm pio ist nicht installiert.;PlatformIO is selected as the development environment (Options, Development environment), but the program pio is not installed.;PlatformIO is als ontwikkelomgeving ingesteld (Opties, Ontwikkelomgeving), maar het programma pio is niet geïnstalleerd.;;;;
+PlatformIO ist vorhanden, antwortet aber nicht.;PlatformIO is present but does not respond.;PlatformIO is aanwezig maar reageert niet.;;;;
+PlatformIO prüfen;Check PlatformIO;PlatformIO controleren;;;;
+PlatformIO wurde nicht gefunden.;PlatformIO was not found.;PlatformIO is niet gevonden.;;;;
+PlatformIO wurde nicht gefunden. Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio);PlatformIO was not found. Installation: https://platformio.org/install/cli (for example with: pip install platformio);PlatformIO is niet gevonden. Installatie: https://platformio.org/install/cli (bijvoorbeeld met: pip install platformio);;;;
+PlatformIO wurde nicht gefunden. Installation: {hinweis};PlatformIO was not found. Installation: {hinweis};PlatformIO is niet gevonden. Installatie: {hinweis};;;;
+PNG- oder JPG-Bild unter der Tabelle einfügen;Insert a PNG or JPG picture below the table;Een PNG- of JPG-afbeelding onder de tabel invoegen;;;;
+Port (COM…, /dev/tty… oder IP:…);Port (COM…, /dev/tty… or IP:…);Poort (COM…, /dev/tty… of IP:…);;;;
+Port Daten für Z21;Port data for Z21;Poortgegevens voor Z21;;;;
+Port-Daten für Z21;Port data for Z21;Poortgegevens voor Z21;;;;
+Portliste aktualisieren;Refresh port list;Poortlijst vernieuwen;;;;
+Pos 0;Pos 0;Pos 0;;;;
+Pos 255;Pos 255;Pos 255;;;;
+Position 1 (wie im Original);Position 1 (as in the original);Positie 1 (zoals in het origineel);;;;
+Position des Servos 0..255. Mit den Pfeiltasten Schritt für Schritt, Pos1 und Ende springen an den Anfang und das Ende.;"Servo position 0..255. Step by step with the arrow keys; Home and End jump to the start and the end.";"Servopositie 0..255. Stap voor stap met de pijltjestoetsen; Home en End springen naar het begin en het einde.";;;;
+Position des Servos 10..210. Mit den Pfeiltasten Schritt für Schritt, Pos1 und Ende springen an den Anfang und das Ende.;"Servo position 10..210. Step by step with the arrow keys; Home and End jump to the start and the end.";"Servopositie 10..210. Stap voor stap met de pijltjestoetsen; Home en End springen naar het begin en het einde.";;;;
+Position um 1 erhöhen;Increase position by 1;Positie met 1 verhogen;;;;
+Position um 1 verringern;Decrease position by 1;Positie met 1 verlagen;;;;
+PowerShell nicht startbar ({ex});PowerShell cannot be started ({ex});PowerShell kan niet worden gestart ({ex});;;;
+ProgGen/PattGen DefaultFont (nur nach Neustart sichtbar);ProgGen/PattGen default font (visible only after a restart);Standaardlettertype ProgGen/PattGen (pas zichtbaar na een herstart);;;;
+ProgGenerator Einstellungen;ProgGenerator settings;ProgGenerator-instellingen;;;;
+Programm beenden?;Quit the program?;Het programma afsluiten?;;;;
+Programm Einstellungen;Program settings;Programma-instellingen;;;;
+Programm erfolgreich hochgeladen. Konfig erstellen und Hochladen dauerte ;Program uploaded successfully. Creating the configuration and uploading took ;Programma succesvol geüpload. Het aanmaken van de configuratie en het uploaden duurde;;;;
+Programm erfolgreich zum ATTiny übertragen;Program successfully transferred to the ATTiny;Programma succesvol naar de ATTiny overgebracht;;;;
+Programm Generator;Program Generator;Programmagenerator;;;;
+ProgrammGenerator-Workbook speichern als;Save ProgramGenerator workbook as;Werkmap van de ProgramGenerator opslaan als;;;;
+ProgrammGenerator-Workbook von Datei lesen;Read ProgramGenerator workbook from file;Werkmap van de ProgramGenerator uit bestand lezen;;;;
+ProgrammGenerator: PGF-Datei lesen;ProgramGenerator: read PGF file;ProgramGenerator: PGF-bestand lezen;;;;
+ProgrammGenerator: PGF-Datei speichern;ProgramGenerator: save PGF file;ProgramGenerator: PGF-bestand opslaan;;;;
+Protokoll (letzte Zeilen);Log (last lines);Log (laatste regels);;;;
+Quellzeile im Prog_Generator auswählen aus der das LED Muster gelesen werden soll.;Select the source row in the Prog_Generator from which the LED pattern is to be read.;Kies de bronregel in de Prog_Generator waaruit het LED-patroon moet worden gelezen.;;;;
+Raspberry Pi {what}?;{what} the Raspberry Pi?;{what} de Raspberry Pi?;;;;
+Refresh auf 40ms setzen (nur für Experten);Set refresh to 40ms (experts only);Verversing op 40 ms zetten (alleen voor experts);;;;
+RGB LED;RGB LED;RGB-LED;;;;
+RGB LED Nummer des Moduls ist falsch;RGB LED number of the module is wrong;RGB-LED-nummer van de module is verkeerd;;;;
 rot;red;;;;;
+Scale-Schriftgröße in Punkten;Scale font size in points;Lettergrootte van de schuifregelaar in punten;;;;
 Schließen;Close;;;;;
-Seiten, die es schon gibt, werden nicht noch einmal geladen.;Pages that already exist are not loaded again.;;;;;
-Serial Monitor;Serial monitor;;;;;
-Servo Einstellungen;Servo settings;;;;;
+Schließen 'Multiplexer'…;Closing 'Multiplexer'…;'Multiplexer' wordt gesloten…;;;;
+Schrifteinstellungen (nur nach Neustart sichtbar);Font settings (visible only after a restart);Lettertype-instellingen (pas zichtbaar na een herstart);;;;
+Schriftgröße anpassen;Adjust font size;Lettergrootte aanpassen;;;;
+Schriftgröße für große Schrift in Punkten;Font size for large font in points;Lettergrootte voor groot lettertype in punten;;;;
+Schriftgröße für kleine Schrift in Punkten;Font size for small font in points;Lettergrootte voor klein lettertype in punten;;;;
+Schriftgröße für normale Schrift in Punkten;Font size for normal font in points;Lettergrootte voor normaal lettertype in punten;;;;
+Seite auswählen, die als Startseite gezeigt werden soll;Select the page to be shown as the start page;Kies de pagina die als startpagina moet worden getoond;;;;
+Seiten, die es schon gibt, werden nicht noch einmal geladen.;Pages that already exist are not loaded again.;Pagina's die al bestaan, worden niet opnieuw geladen.;;;;
+Serial Monitor;Serial monitor;Seriële monitor;;;;
+Servo Einstellungen;Servo settings;Servo-instellingen;;;;
 Servo Modul Auswahl;Servo module selection;;;;;
 Servo Test und Einstellung;Servo test and setup;;;;;
-Sound Test;Sound test;;;;;
-Sound-Auswahl;Sound selection;;;;;
-Spalte entfernen (die markierte);Remove column (the selected one);;;;;
-Spalte hinzufuegen (nach der markierten Zelle);Add column (after the selected cell);;;;;
-Speichern und beenden (S);Save and quit (S);;;;;
-Speichern und {what} (S);Save and {what} (S);;;;;
-Speichern unter ...;Save as ...;;;;;
-Speichern unter ... fragt nach dem Speicherort (Edge, Chrome). Sonst landet die Datei im Downloads-Ordner.;Save as ... asks for the location (Edge, Chrome). Otherwise the file ends up in the downloads folder.;;;;;
-Symbole: {ex};Icons: {ex};;;;;
-Tabelle neu berechnen;Recalculate table;;;;;
-Tabelle reparieren;Repair table;;;;;
-Tabelle reparieren (Symbole und Testtasten neu aufbauen) ...;Repair table (rebuild icons and test buttons) ...;;;;;
-Testtaste: {ex};Test button: {ex};;;;;
-Trennen;Disconnect;;;;;
-Unter diesem Namen ist der Raspberry Pi im Netz erreichbar (zum Beispiel http://NAME.local:8080), ohne dass man seine IP-Adresse kennen muss. Erlaubt sind Buchstaben, Ziffern und Bindestrich, höchstens 31 Zeichen.;The Raspberry Pi can be reached on the network under this name (for example http://NAME.local:8080) without knowing its IP address. Letters, digits and hyphen are allowed, at most 31 characters.;;;;;
-Unter Windows findet das Programm die IDE selbst (Program Files). Dieser Pfad wird nur benutzt, wenn der Haken gesetzt ist.;Under Windows the program finds the IDE itself (Program Files). This path is only used if the box is ticked.;;;;;
-Update webMobaLedLib;Update webMobaLedLib;;;;;
-Update webMobaLedLib ...;Update webMobaLedLib ...;;;;;
-Verbinden;Connect;;;;;
-Verbindung zum Arduino herstellen (wie ARDUINO → Verbinden). Rot: keine Verbindung, grün: verbunden. Trennen: Menü ARDUINO → Trennen;Connect to the Arduino (like ARDUINO → Connect). Red: not connected, green: connected. Disconnect: menu ARDUINO → Disconnect;;;;;
-Verschieben abgebrochen;Move cancelled;;;;;
-Verwerfen;Discard;;;;;
-Verwerfen (V);Discard (V);;;;;
-Vollbild;Full screen;;;;;
-Vollbild ein oder aus: Titel, Menü und Reiter werden ausgeblendet (zum Beispiel für das Smartphone);Full screen on or off: title, menu and tabs are hidden (for example for the smartphone);;;;;
-Vorgang abbrechen;Cancel operation;;;;;
-Wert {pfeil}, danach {schritt:+d} je 100 ms;Value {pfeil}, then {schritt:+d} per 100 ms;;;;;
-Wiederherstellen (W);Restore (W);;;;;
-Windows fragt jetzt nach Administratorrechten (Benutzerkontensteuerung). Bitte mit „Ja“ bestätigen.;Windows now asks for administrator rights (User Account Control). Please confirm with “Yes”.;;;;;
-Wird die Oberfläche von einem anderen Rechner im Netz aufgerufen (zum Beispiel beim Raspberry Pi), fragt der Browser nach Benutzername und Passwort. Auf dem Rechner, auf dem das Programm läuft, ist kein Passwort nötig.;If the interface is called from another computer on the network (for example with the Raspberry Pi), the browser asks for user name and password. On the computer on which the program runs no password is needed.;;;;;
-Wird geprüft ...;Checking ...;;;;;
-Womit sollen die Programme übersetzt und auf den Arduino geladen werden?;What should be used to compile the programs and load them onto the Arduino?;;;;;
-Workbook lesen;Read workbook;;;;;
-Workbook speichern;Save workbook;;;;;
-Z21 Simulator;Z21 simulator;;;;;
-Zeigt, ob PlatformIO installiert ist, und seine Version;Shows whether PlatformIO is installed and its version;;;;;
-Zeilen einfügen geht nur über die Zeilennummer: Rechtsklick auf die Nummer der Zeile, über der eingefügt werden soll.;Rows can only be inserted via the row number: right-click on the number of the row above which to insert.;;;;;
-Zeilen verschoben;Rows moved;;;;;
-Zugriff aus dem Netz einschalten;Switch on access from the network;;;;;
-Zugriff aus dem Netz erlauben;Allow access from the network;;;;;
-Zugriff aus dem Netz freigeben;Release access from the network;;;;;
-Zugriff über das Netz (Web-Oberfläche);Access over the network (web interface);;;;;
-Zum Ersetzen zuerst einen Raum in der Liste markieren.;To replace, first select a room in the list.;;;;;
-Zwischengespeichert.;Cached.;;;;;
-Zwischengespeicherter Stand gefunden;Cached state found;;;;;
-Zwischenspeichern fehlgeschlagen: {ex};Caching failed: {ex};;;;;
-{anzahl} Bild(er) entfernt;{anzahl} picture(s) removed;;;;;
-{anzahl} Seite(n) gelöscht;{anzahl} page(s) deleted;;;;;
+Sie haben bereits die aktuelle Version ({neue_version}). Es ist keine Datei zu ersetzen.;You already have the current version ({neue_version}). There is no file to replace.;Je hebt al de actuele versie ({neue_version}). Er is geen bestand om te vervangen.;;;;
+Sie verlassen die ARDUINO Einstellungen;You are leaving the ARDUINO settings;Je verlaat de ARDUINO-instellingen;;;;
+Sie verlassen die Einstellungen;You are leaving the settings;Je verlaat de instellingen;;;;
+Simmulation der Konfiguration am PC;Simulation of the configuration on the PC;Simulatie van de configuratie op de pc;;;;
+Simulation von Meldungen des ARDUINOs;Simulation of messages from the ARDUINO;Simulatie van meldingen van de ARDUINO;;;;
+Soll die bestehende Beschreibung durch;Should the existing description be replaced by;Moet de bestaande beschrijving worden vervangen door;;;;
+Soll die Datei mit Beispiel Daten generiert werden?;Should the file be generated with example data?;Moet het bestand met voorbeeldgegevens worden aangemaakt?;;;;
+Soll die Farbbearbeitung beendet und zurück zur Tabelle gewechselt werden?;Should the colour editing be finished and switched back to the table?;Moet het bewerken van de kleuren worden beëindigd en teruggeschakeld naar de tabel?;;;;
+Soll die Korrekturversion der MobaLedLib installiert werden?;Should the correction version of the MobaLedLib be installed?;Moet de correctieversie van de MobaLedLib worden geïnstalleerd?;;;;
+Soll die Python MobaLedLib aktualisiert werden?;Should the Python MobaLedLib be updated?;Moet de Python MobaLedLib worden bijgewerkt?;;;;
+Sollen die Einstellungen des aktuellen Blatts übernommen werden?;Should the settings of the current sheet be applied?;Moeten de instellingen van het huidige blad worden overgenomen?;;;;
+Sound Test;Sound test;Geluidstest;;;;
+Sound-Auswahl;Sound selection;Geluidskeuze;;;;
+Spalte entfernen (die markierte);Remove column (the selected one);Kolom verwijderen (de gekozen kolom);;;;
+Spalte hinzufuegen (nach der markierten Zelle);Add column (after the selected cell);Kolom toevoegen (na de gekozen cel);;;;
+Spalte in Tabelle einfügen;Insert column in table;Kolom in tabel invoegen;;;;
+Spalte in Tabelle löschen;Delete column in table;Kolom in tabel verwijderen;;;;
+Speichern lädt die Datei über den Browser herunter, Laden öffnet einen Upload-Dialog.;Save downloads the file via the browser, Load opens an upload dialog.;Opslaan downloadt het bestand via de browser, Laden opent een uploadvenster.;;;;
+Speichern Sie die Datei Multiplexer ...;Save the multiplexer file ...;Het multiplexerbestand opslaan ...;;;;
+Speichern und beenden (S);Save and quit (S);Opslaan en afsluiten (S);;;;
+Speichern und {what} (S);Save and {what} (S);Opslaan en {what} (S);;;;
+Speichern unter ...;Save as ...;Opslaan als ...;;;;
+Speichern unter ... fragt nach dem Speicherort (Edge, Chrome). Sonst landet die Datei im Downloads-Ordner.;Save as ... asks for the location (Edge, Chrome). Otherwise the file ends up in the downloads folder.;Opslaan als ... vraagt om de opslaglocatie (Edge, Chrome). Anders komt het bestand in de map Downloads terecht.;;;;
+SpinBox-Schriftgröße in Punkten;Spinbox font size in points;Lettergrootte van het draaiveld in punten;;;;
+Sprache der Benutzeroberfläche (Auto=Windows-Einstellung);Language of the user interface (Auto = Windows setting);Taal van de gebruikersinterface (Auto = Windows-instelling);;;;
+Start des DCC-Adressbereichs, den der ARDUINO abdecken soll;Start of the DCC address range the ARDUINO should cover;Begin van het DCC-adresbereik dat de ARDUINO moet afdekken;;;;
+Stellt die Verbindung zum ausgewählten ARDUINO her und testet, ob die MobaLedLib richtig antwortet. Wenn alles ok ist, wird unten im Statusfeld <Verbunden> angezeigt;Connects to the selected ARDUINO and tests whether the MobaLedLib answers correctly. If everything is ok, <Connected> is shown in the status field below;Maakt verbinding met de gekozen ARDUINO en test of de MobaLedLib correct antwoordt. Als alles in orde is, wordt onderaan in het statusveld <Verbonden> getoond;;;;
+Suche nach der neuesten Version ...;Searching for the latest version ...;Zoeken naar de nieuwste versie ...;;;;
+"Symbole und Testtasten aller Datenblätter werden gelöscht und aus dem Tabelleninhalt neu angelegt. Bei großen Tabellen kann das einige Sekunden dauern.
+
+Das ist nur nötig, wenn Symbole oder Testtasten fehlen oder an der falschen Zeile stehen. Sonst genügt ""Tabelle neu berechnen"".
+
+Jetzt reparieren?";"Icons and test buttons of all data sheets are deleted and created anew from the table content. For large tables this can take a few seconds.
+
+This is only necessary if icons or test buttons are missing or in the wrong row. Otherwise ""Recalculate table"" is enough.
+
+Repair now?";"Pictogrammen en testknoppen van alle gegevensbladen worden verwijderd en opnieuw opgebouwd uit de inhoud van de tabel. Bij grote tabellen kan dit enkele seconden duren.
+
+Dit is alleen nodig als pictogrammen of testknoppen ontbreken of in de verkeerde regel staan. Anders volstaat „Tabel herberekenen”.
+
+Nu herstellen?";;;;
+Symbole: {ex};Icons: {ex};Pictogrammen: {ex};;;;
+Tabelle neu berechnen;Recalculate table;Tabel herberekenen;;;;
+Tabelle reparieren;Repair table;Tabel herstellen;;;;
+Tabelle reparieren (Symbole und Testtasten neu aufbauen) ...;Repair table (rebuild icons and test buttons) ...;Tabel herstellen (pictogrammen en testknoppen opnieuw opbouwen) ...;;;;
+Taster mit Status Anzeige;Button with status display;Toets met statusweergave;;;;
+Temporäres Verzeichnis konnte nicht umbenannt werden;Temporary folder could not be renamed;Tijdelijke map kon niet worden hernoemd;;;;
+Testen und Konfigurieren von Servos basierend auf der Direct Mode Variante von Eckhart;Testing and configuring servos based on the direct mode variant by Eckhart;Servo's testen en configureren op basis van de directe-modusvariant van Eckhart;;;;
+Testen, ob die Bedingungen erfüllt sind …;Testing whether the conditions are met …;Controleren of aan de voorwaarden is voldaan …;;;;
+Testen, ob die Multiplexer-Gruppe eingestellt ist …;Testing whether the multiplexer group is set …;Controleren of de multiplexergroep is ingesteld …;;;;
+Testtaste: {ex};Test button: {ex};Testknop: {ex};;;;
+Titel-Schriftgröße in Punkten;Title font size in points;Lettergrootte van de titel in punten;;;;
+Trennen;Disconnect;Verbinding verbreken;;;;
+Trotzdem auf Version {neue_version} zurückgehen;Go back to version {neue_version} anyway;Toch teruggaan naar versie {neue_version};;;;
+Trotzdem hochladen?;Upload anyway?;Toch uploaden?;;;;
+unbekannter Fehler;unknown error;onbekende fout;;;;
+Unbekannter Fehler in der 'Dauer' Spalte;Unknown error in the 'Duration' column;Onbekende fout in de kolom 'Duur';;;;
+und die Multiplexer Datei neu laden?;and reload the multiplexer file?;en het multiplexerbestand opnieuw laden?;;;;
+Ungültige analoge Schwelle;Invalid analogue threshold;Ongeldige analoge drempel;;;;
+Ungültige Build Optionen;Invalid build options;Ongeldige buildopties;;;;
+Ungültige Eingabe;Invalid input;Ongeldige invoer;;;;
+Ungültiger Arduino 'sketchbook.path';Invalid Arduino 'sketchbook.path';Ongeldig Arduino-'sketchbook.path';;;;
+Ungültiger Eintrag in 'Charliplexing LED Zuordnung';Invalid entry in 'Charlieplexing LED assignment';Ongeldige invoer in 'Charlieplexing-LED-toewijzing';;;;
+Unter diesem Namen ist der Raspberry Pi im Netz erreichbar (zum Beispiel http://NAME.local:8080), ohne dass man seine IP-Adresse kennen muss. Erlaubt sind Buchstaben, Ziffern und Bindestrich, höchstens 31 Zeichen.;The Raspberry Pi can be reached on the network under this name (for example http://NAME.local:8080) without knowing its IP address. Letters, digits and hyphen are allowed, at most 31 characters.;De Raspberry Pi is in het netwerk bereikbaar onder deze naam (bijvoorbeeld http://NAAM.local:8080) zonder dat het IP-adres bekend hoeft te zijn. Toegestaan zijn letters, cijfers en een koppelteken, hoogstens 31 tekens.;;;;
+Unter diesem Pfad gibt es keine Datei (Groß-/Kleinschreibung und Schrägstriche prüfen).;There is no file at this path (check upper/lower case and slashes).;Onder dit pad staat geen bestand (controleer hoofdletters/kleine letters en schuine strepen).;;;;
+Unter Windows findet das Programm die IDE selbst (Program Files). Dieser Pfad wird nur benutzt, wenn der Haken gesetzt ist.;Under Windows the program finds the IDE itself (Program Files). This path is only used if the box is ticked.;Onder Windows vindt het programma de IDE zelf (Program Files). Dit pad wordt alleen gebruikt als het vakje is aangevinkt.;;;;
+Unzulaessiger Pfad im ZIP: {name};Invalid path in the ZIP: {name};Ongeldig pad in het ZIP-bestand: {name};;;;
+Update webMobaLedLib;Update webMobaLedLib;webMobaLedLib bijwerken;;;;
+Update webMobaLedLib ...;Update webMobaLedLib ...;webMobaLedLib bijwerken ...;;;;
+USB-Zugriff für den Pico einrichten;Set up USB access for the Pico;USB-toegang voor de Pico instellen;;;;
+Verbinden;Connect;Verbinden;;;;
+Verbinden mit LED-ARDUINO;Connect to LED ARDUINO;Met LED-ARDUINO verbinden;;;;
+Verbindung zum Arduino herstellen (wie ARDUINO → Verbinden). Rot: keine Verbindung, grün: verbunden. Trennen: Menü ARDUINO → Trennen;Connect to the Arduino (like ARDUINO → Connect). Red: not connected, green: connected. Disconnect: menu ARDUINO → Disconnect;Verbinding maken met de Arduino (zoals ARDUINO → Verbinden). Rood: niet verbonden, groen: verbonden. Verbreken: menu ARDUINO → Verbinding verbreken;;;;
+Verbunden mit ;Connected to ;Verbonden met;;;;
+Verknuepfungen im ZIP sind nicht erlaubt: {datei};Links in the ZIP are not allowed: {datei};Koppelingen in het ZIP-bestand zijn niet toegestaan: {datei};;;;
+Verknüpfung;Link;Koppeling;;;;
+Verknüpfung mit der nächsten Zeile mit: UND, ODER - Die Farbe der nächsten Zeile wird übernommen;Link with the next row with: AND, OR - the colour of the next row is taken over;Koppeling met de volgende regel met: EN, OF - de kleur van de volgende regel wordt overgenomen;;;;
+Verschieben abgebrochen;Move cancelled;Verplaatsen geannuleerd;;;;
+Versuch sich mit dem ARDUINO am Port ;Trying to connect to the ARDUINO on port ;Er wordt geprobeerd verbinding te maken met de ARDUINO op poort;;;;
+Versuch sich mit dem PICO- IP: ;Trying to connect to the PICO- IP: ;Er wordt geprobeerd verbinding te maken met het PICO-IP:;;;;
+Verwerfen;Discard;Verwerpen;;;;
+Verwerfen (V);Discard (V);Verwerpen (V);;;;
+Verzeichnis nicht gefunden;Folder not found;Map niet gevonden;;;;
+Vollbild;Full screen;Volledig scherm;;;;
+Vollbild ein oder aus: Titel, Menü und Reiter werden ausgeblendet (zum Beispiel für das Smartphone);Full screen on or off: title, menu and tabs are hidden (for example for the smartphone);Volledig scherm aan of uit: titel, menu en tabbladen worden verborgen (bijvoorbeeld voor de smartphone);;;;
+Von Ihnen veränderte Dateien werden ersetzt (die alte Fassung wird vorher gesichert): ;Files you have changed are replaced (the old version is backed up first): ;Bestanden die je hebt gewijzigd, worden vervangen (de oude versie wordt eerst veiliggesteld):;;;;
+Vor dem Ersetzen werden die Tabellen gesichert. Konfiguration, Passwort und Protokolle bleiben unverändert.;Before replacing, the tables are backed up. Configuration, password and logs remain unchanged.;Vóór het vervangen worden de tabellen veiliggesteld. Configuratie, wachtwoord en logbestanden blijven ongewijzigd.;;;;
+Vorgang abbrechen;Cancel operation;Bewerking annuleren;;;;
+Warte, bis die grüne LED am Raspberry Pi nicht mehr blinkt (etwa 10 Sekunden), dann kannst du den Strom trennen.;Wait until the green LED on the Raspberry Pi stops blinking (about 10 seconds), then you can disconnect the power.;Wacht tot de groene LED op de Raspberry Pi niet meer knippert (ongeveer 10 seconden), dan kun je de stroom loskoppelen.;;;;
+Wenn diese Option gesetzt wird, verwendet der Z21-Simulator die Eintragungen in der nachfolgenden Tabelle (für Experten);If this option is set, the Z21 simulator uses the entries in the following table (for experts);Is deze optie ingesteld, dan gebruikt de Z21-simulator de invoeren in de volgende tabel (voor experts);;;;
+Wenn dieser Multiplexer-Gruppe bereits ein Muster zugewiesen wurde, dürfen die Multiplexer-Gruppenparameter nicht mehr geändert werden!;If a pattern has already been assigned to this multiplexer group, the multiplexer group parameters must not be changed anymore!;Is aan deze multiplexergroep al een patroon toegewezen, dan mogen de parameters van de multiplexergroep niet meer worden gewijzigd!;;;;
+Wert {pfeil}, danach {schritt:+d} je 100 ms;Value {pfeil}, then {schritt:+d} per 100 ms;Waarde {pfeil}, daarna {schritt:+d} per 100 ms;;;;
+Wiederherstellen (W);Restore (W);Herstellen (W);;;;
+Windows fragt jetzt nach Administratorrechten (Benutzerkontensteuerung). Bitte mit „Ja“ bestätigen.;Windows now asks for administrator rights (User Account Control). Please confirm with “Yes”.;Windows vraagt nu om beheerdersrechten (Gebruikersaccountbeheer). Bevestig met „Ja”.;;;;
+Wird die Oberfläche von einem anderen Rechner im Netz aufgerufen (zum Beispiel beim Raspberry Pi), fragt der Browser nach Benutzername und Passwort. Auf dem Rechner, auf dem das Programm läuft, ist kein Passwort nötig.;If the interface is called from another computer on the network (for example with the Raspberry Pi), the browser asks for user name and password. On the computer on which the program runs no password is needed.;Wordt de interface vanaf een andere computer in het netwerk opgeroepen (bijvoorbeeld bij de Raspberry Pi), dan vraagt de browser om gebruikersnaam en wachtwoord. Op de computer waarop het programma draait, is geen wachtwoord nodig.;;;;
+Wird gelöscht (nicht mehr im Release);Will be deleted (no longer in the release);Wordt verwijderd (niet meer in de release);;;;
+Wird geprüft ...;Checking ...;Controleren ...;;;;
+"Wollen Sie  diese Seite komplett löschen?
+ja - die Seite wird entfernt
+nein - nur der Inhalt der Seite wird gelöscht
+Abbrechen - es wird nichts gelöscht ";"Do you want to delete this page completely?
+yes - the page is removed
+no - only the content of the page is deleted
+Cancel - nothing is deleted ";"Wil je deze pagina helemaal verwijderen?
+ja - de pagina wordt verwijderd
+nee - alleen de inhoud van de pagina wordt verwijderd
+Annuleren - er wordt niets verwijderd";;;;
+Wollen sie es noch mal mit einem anderen Arduino oder einer anderen IP-Adresse versuchen?;Do you want to try again with another Arduino or another IP address?;Wil je het nog een keer proberen met een andere Arduino of een ander IP-adres?;;;;
+Womit sollen die Programme übersetzt und auf den Arduino geladen werden?;What should be used to compile the programs and load them onto the Arduino?;Waarmee moeten de programma's worden gecompileerd en naar de Arduino worden geladen?;;;;
+Workbook lesen;Read workbook;Werkmap lezen;;;;
+Workbook speichern;Save workbook;Werkmap opslaan;;;;
+Wählen Sie im Pattern_Configurator die Arbeitsblatt mit dem gewünschten Muster.;In the Pattern_Configurator select the worksheet with the desired pattern.;Kies in de Pattern_Configurator het werkblad met het gewenste patroon.;;;;
+Wählen Sie Muster für ;Select patterns for ;Patronen kiezen voor;;;;
+"Wählen sie zuerst die Adresse des Servos.
+Mit dem Schieberegler wird die Position eingestellt.
+
+Mit den Knöpfen unten wird der aktuelle Servo konfiguriert.";"First select the address of the servo.
+The position is set with the slider.
+
+The current servo is configured with the buttons below.";"Kies eerst het adres van de servo.
+Met de schuifregelaar wordt de positie ingesteld.
+
+Met de knoppen hieronder wordt de huidige servo geconfigureerd.";;;;
+Z21 Simulator;Z21 simulator;Z21-simulator;;;;
+Z21 Simulator gestoppt;Z21 simulator stopped;Z21-simulator gestopt;;;;
+Z21 Simulator läuft;Z21 simulator is running;Z21-simulator draait;;;;
+Zeigt alle angeschlossenen Geräte an - bei Original-Arduinos erscheint der Name, z.B. ARDUINO NANO. Clones werden mit dem verbauten Chip aufgeführt, z.B. CH340 oder ähnlich;Shows all connected devices - for original Arduinos the name appears, e.g. ARDUINO NANO. Clones are listed with the chip installed, e.g. CH340 or similar;Toont alle aangesloten apparaten - bij originele Arduino's verschijnt de naam, bijvoorbeeld ARDUINO NANO. Klonen worden met de ingebouwde chip vermeld, bijvoorbeeld CH340 of iets dergelijks;;;;
+Zeigt den Status der ARDUINO-Erkennung an.;Shows the status of the ARDUINO detection.;Toont de status van de ARDUINO-herkenning.;;;;
+Zeigt die angeschlossenen ARDUINOs an;Shows the connected ARDUINOs;Toont de aangesloten ARDUINO's;;;;
+Zeigt, ob PlatformIO installiert ist, und seine Version;Shows whether PlatformIO is installed and its version;Toont of PlatformIO is geïnstalleerd en zijn versie;;;;
+Zeile im Programm Generator auswählen.;Select a row in the Program Generator.;Kies een regel in de Programmagenerator.;;;;
+Zeile {zeile} letzte benutzte Zeile von {zeilen} Zeilen;Row {zeile} last used row of {zeilen} rows;Regel {zeile} laatst gebruikte regel van {zeilen} regels;;;;
+Zeilen einfügen geht nur über die Zeilennummer: Rechtsklick auf die Nummer der Zeile, über der eingefügt werden soll.;Rows can only be inserted via the row number: right-click on the number of the row above which to insert.;Regels kunnen alleen via het regelnummer worden ingevoegd: klik met de rechtermuisknop op het nummer van de regel waarboven je wilt invoegen.;;;;
+Zeilen entsprechend den ProgrammGenerator-Einstellungen einfärben;Colour rows according to the ProgramGenerator settings;Regels kleuren volgens de instellingen van de ProgramGenerator;;;;
+Zeilen verschieben: Bitte die Zielzeile anklicken. Mit Esc abbrechen.;Move rows: Please click the target row. Cancel with Esc.;Regels verplaatsen: Klik op de doelregel. Annuleren met Esc.;;;;
+Zeilen verschoben;Rows moved;Regels verplaatst;;;;
+Zielzeile für das neu erzeugte LED Muster im Prog_Generator auswählen.;Select the destination row for the newly created LED pattern in the Prog_Generator.;Kies de doelregel voor het nieuw gemaakte LED-patroon in de Prog_Generator.;;;;
+"Zu jeder Zeile sollte eine aussagekräftige Beschreibung eingegeben werden damit man später noch versteht was die Funktion macht und welches Haus oder andere Objekt von der Zeile gesteuert wird. Die Beschreibung kann beliebig lang sein. Es können auch mehrere Zeilen verwendet werden. 
+
+Mögliche Angaben:
+* Beschreibung des Objekts (z.B.: Hauptbahnhof)
+* Angaben zur Funktion (z.B: Wird automatisch bei Dunkelheit aktiviert)
+* ...";"Enter a meaningful description for each row so that you can later still understand what the function does and which house or other object is controlled by the row. The description can be of any length. Several lines can also be used. 
+
+Possible entries:
+* Description of the object (e.g.: main station)
+* Information about the function (e.g.: Is activated automatically when it gets dark)
+* ...";"Voer bij elke regel een duidelijke beschrijving in, zodat je later nog begrijpt wat de functie doet en welk huis of ander object door de regel wordt aangestuurd. De beschrijving mag van elke lengte zijn. Er kunnen ook meerdere regels worden gebruikt. 
+
+Mogelijke invoeren:
+* Beschrijving van het object (bijv.: hoofdstation)
+* Informatie over de functie (bijv.: Wordt automatisch geactiveerd als het donker wordt)
+* ...";;;;
+Zugriff aus dem Netz einschalten;Switch on access from the network;Toegang vanuit het netwerk inschakelen;;;;
+Zugriff aus dem Netz erlauben;Allow access from the network;Toegang vanuit het netwerk toestaan;;;;
+Zugriff aus dem Netz freigeben;Release access from the network;Toegang vanuit het netwerk vrijgeven;;;;
+Zugriff über das Netz (Web-Oberfläche);Access over the network (web interface);Toegang via het netwerk (webinterface);;;;
+Zum einfügen oder löschen von Spalten muss sich aktuelle Zelle innerhalb der Tabelle befinden.;To insert or delete columns, the current cell must be inside the table.;Om kolommen in te voegen of te verwijderen, moet de huidige cel zich binnen de tabel bevinden.;;;;
+Zum Ersetzen zuerst einen Raum in der Liste markieren.;To replace, first select a room in the list.;Kies om te vervangen eerst een ruimte in de lijst.;;;;
+"Zur Dokumentation des benutzten Anschlusses können eine Beschreibung der Verteilerplatine (Ort/Nummer/...) und die Nummer des benutzten Steckplatzes in die Tabelle eingetragen werden.
+
+";"To document the connector used, a description of the distribution board (location/number/...) and the number of the slot used can be entered in the table.
+
+";Om de gebruikte aansluiting te documenteren, kunnen een beschrijving van de verdeelprint (plaats/nummer/...) en het nummer van de gebruikte aansluitplaats in de tabel worden ingevoerd.;;;;
+"Zur Identifikation des Arduinos blinken die LEDs des ausgewählten Arduinos schnell.
+Ein anderer COM Port kann über die Pfeiltasten ausgewählt werden.
+Der Arduino kann auch nachträglich angesteckt werden.";"To identify the Arduino, the LEDs of the selected Arduino blink quickly.
+Another COM port can be selected with the arrow keys.
+The Arduino can also be plugged in afterwards.";"Om de Arduino te identificeren, knipperen de LED's van de gekozen Arduino snel.
+Een andere COM-poort kan met de pijltjestoetsen worden gekozen.
+De Arduino kan ook achteraf worden aangesloten.";;;;
+Zwischengespeichert.;Cached.;Opgeslagen in het cachegeheugen.;;;;
+Zwischengespeicherter Stand gefunden;Cached state found;Opgeslagen stand gevonden;;;;
+Zwischenspeichern fehlgeschlagen: {ex};Caching failed: {ex};Opslaan in het cachegeheugen mislukt: {ex};;;;
+{anzahl} Bild(er) entfernt;{anzahl} picture(s) removed;{anzahl} afbeelding(en) verwijderd;;;;
+{anzahl} Dateien fehlen oder haben eine andere Größe als in der Prüfliste des Releases (unterbrochenes Update oder beschädigte Dateien?):;{anzahl} files are missing or have a different size than in the check list of the release (interrupted update or damaged files?):;{anzahl} bestanden ontbreken of hebben een andere grootte dan in de controlelijst van de release (onderbroken update of beschadigde bestanden?):;;;;
+{anzahl} Seite(n) gelöscht;{anzahl} page(s) deleted;{anzahl} pagina('s) verwijderd;;;;
+{anzahl} Treffer. Zum Übernehmen anklicken:;{anzahl} hits. Click to apply:;{anzahl} treffers. Klik om toe te passen:;;;;
 "{befehl}: Fehler {typ}: {ex}
 Einzelheiten im Protokoll (Hilfe → Logfile anzeigen).";"{befehl}: error {typ}: {ex}
-Details are in the log (Help → Show log file).";;;;;
-Über;About;;;;;
-Über ...;About ...;;;;;
+Details are in the log (Help → Show log file).";"{befehl}: fout {typ}: {ex}
+Details staan in het logbestand (Help → Logbestand tonen).";;;;
+{ex} Es wurde nichts verändert.;{ex} Nothing was changed.;{ex} Er is niets gewijzigd.;;;;
+{rel}: Datei fehlt (verlangt wird mindestens Version {wanted});{rel}: file missing (at least version {wanted} is required);{rel}: bestand ontbreekt (minstens versie {wanted} is vereist);;;;
+{rel}: keine Versionsangabe (verlangt wird mindestens Version {wanted});{rel}: no version information (at least version {wanted} is required);{rel}: geen versie-informatie (minstens versie {wanted} is vereist);;;;
+{rel}: Version {major}.{minor}, verlangt wird mindestens {wanted};{rel}: version {major}.{minor}, at least {wanted} is required;{rel}: versie {major}.{minor}, minstens {wanted} is vereist;;;;
+öffentliche Netzwerke;public networks;openbare netwerken;;;;
+Öffne Verbindung...;Opening connection...;Verbinding wordt geopend...;;;;
+Öffnet die Konfigurationswebseite des WLAN-Picos;Opens the configuration web page of the WLAN Pico;Opent de configuratiewebpagina van de WLAN-Pico;;;;
+Über;About;Info;;;;
+Über ...;About ...;Info ...;;;;
+Überprüfen, ob der Multiplexername gültig ist ...;Checking whether the multiplexer name is valid ...;Controleren of de multiplexernaam geldig is ...;;;;
+Überprüfen, ob die Muster gültig ist ...;Checking whether the pattern is valid ...;Controleren of het patroon geldig is ...;;;;
+Überprüfung des mDNS-Gerät;Check of the mDNS device;Controle van het mDNS-apparaat;;;;
+übersetzt;translated;vertaald worden;;;;

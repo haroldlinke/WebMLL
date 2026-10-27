@@ -1,9 +1,9 @@
-# Datei-Version: 1.03 (2026-10-21) - web_serial.py
+# Datei-Version: 1.04 (2026-10-26) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.03
-# Last Update:    2026-10-21
+# Version:        1.04
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.01  2026-10-20  send_to_ARDUINO_servo (Seite Servo Test 1): eigene Pause je Zeichen, Sendeschleife kennt eine Pause je Nachricht
 #   1.02  2026-10-20  tx_idle (Keep-Alive der Seite Servo Test nur bei leerer Sendewarteschlange)
 #   1.03  2026-10-21  rx_listeners: Funktionen, die jede Zeile vom Arduino bekommen (Rueckmeldung des Z21 Simulators)
+#   1.04  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 # ----------------------------------------------------------------------------------------------
 """Serielle Verbindung zum Arduino/Pico ohne Tk (Mixin fuer HeadlessAppController).
 
@@ -37,6 +38,11 @@ import socket
 import threading
 import time
 from collections import deque
+try:  # v1.04
+    from _web.web_i18n import tr  # v1.04
+except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.04
+    def tr(text, **values):  # v1.04
+        return text.format(**values) if values else text  # v1.04
 
 logger = logging.getLogger(__name__)
 
@@ -509,7 +515,8 @@ class SerialMixin:
         if port == "" or port.upper() == "NO DEVICE":
             self._msg("Es ist kein Port ausgewählt.", "Verbinden")
             return self._fail_connect()
-        self._set_connect_status("Versuch sich mit dem ARDUINO am Port " + port + " zu verbinden ...", "red")
+        # self._set_connect_status("Versuch sich mit dem ARDUINO am Port " + port + " zu verbinden ...", "red")  # v1.04 (entfallen)
+        self._set_connect_status(tr('Versuch sich mit dem ARDUINO am Port ') + port + " zu verbinden ...", "red")  # v1.04
         try:
             import serial
             self.ARDUINO_status = "Connecting"
@@ -578,7 +585,8 @@ class SerialMixin:
             return self._fail_connect()
         self.ARDUINO_current_portname = port
         self.ARDUINO_status = "Connected"
-        self._set_connect_status("Verbunden mit " + port + " - EFFECT Mode", "green")
+        # self._set_connect_status("Verbunden mit " + port + " - EFFECT Mode", "green")  # v1.04 (entfallen)
+        self._set_connect_status(tr('Verbunden mit ') + port + " - EFFECT Mode", "green")  # v1.04
         self._start_reader()
         return True
 
@@ -586,7 +594,8 @@ class SerialMixin:
         """Verbindung zu einem WLAN-Pico (Telnet-Port 23)."""
         if not IPAdresse:
             return False
-        self._set_connect_status("Versuch sich mit dem PICO- IP: " + IPAdresse + " zu verbinden ...", "red")
+        # self._set_connect_status("Versuch sich mit dem PICO- IP: " + IPAdresse + " zu verbinden ...", "red")  # v1.04 (entfallen)
+        self._set_connect_status(tr('Versuch sich mit dem PICO- IP: ') + IPAdresse + " zu verbinden ...", "red")  # v1.04
         t1 = _const("SerialIF_teststring1", "#?LEDs_AutoProg")
         t3 = _const("SerialIF_teststring3", "#?LEDs_AutoProg3")
         try:
@@ -610,7 +619,8 @@ class SerialMixin:
             self.determine_ARDUINO_Properties_from_Startmessage(txt)
             self.ARDUINO_current_portname = IPAdresse
             self.ARDUINO_status = "Connected"
-            self._set_connect_status("Verbunden mit " + IPAdresse + " - EFFECT Mode", "green")
+            # self._set_connect_status("Verbunden mit " + IPAdresse + " - EFFECT Mode", "green")  # v1.04 (entfallen)
+            self._set_connect_status(tr('Verbunden mit ') + IPAdresse + " - EFFECT Mode", "green")  # v1.04
             self._start_reader()
             self.send_to_ARDUINO("#X\r\n")
             return True

@@ -1,9 +1,9 @@
-# Datei-Version: 2.18 (2026-10-26) - webmobaledlib.py
+# Datei-Version: 2.22 (2026-10-27) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        2.18
-# Last Update:    2026-10-26
+# Version:        2.22
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -88,6 +88,10 @@
 #   2.16  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr(...) umgestellt: uebersetzbar
 #   2.17  2026-10-23  Patterngenerator: Dateien aus dem Excel-Programm (Windows-Zeichensatz cp1252) werden gelesen (vbclasses 1.02, headless_pattgen 1.14)
 #   2.18  2026-10-26  Excel 3.5.0-K-long (bis zu 2048 Eingaenge), PlatformIO als Ersatz fuer die ARDUINO-IDE (Option Entwicklungsumgebung, Linux/macOS/Raspberry Pi), Speichern im Windows-Zeichensatz fuer das Excel-Programm
+#   2.19  2026-10-26  Mehrsprachigkeit vervollstaendigt: Texte der Formulare und Optionen aus der Tabelle Languages, Katalog als Rueckfall in Get_Language_Str, 389 neue englische Texte (web_i18n 1.05, M09_Language 1.04)
+#   2.20  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht; neue Mindestversionen
+#   2.21  2026-10-26  Linux: Anschlussliste ohne die Platzhalter ttyS0 bis ttyS31, unbekannte Ports nur wenn kein bekannter Anschluss da ist; PlatformIO ueber pipx; udev-Regel fuer den Raspberry Pi Pico
+#   2.22  2026-10-27  ZIP mit UTF-8-Kennzeichen fuer Umlaute (release_tools zip), Reihenfolge der Sprachen (Tabelle vor English), Raspberry Pi: Unterspannung, Temperatur und Speicher im Protokoll und Warnung
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -160,8 +164,10 @@ REQUIRED_FILES = {  # v1.75
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.18", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.05", "release_tools.py": "1.04", "recover.py": "1.00", "repair.py": "1.02", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.05", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.17 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.14", "_web/web_pattgen.py": "1.18", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.05", "release_tools.py": "1.04", "recover.py": "1.00", "repair.py": "1.02", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.05", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.18 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.10", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.04", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.18 (entfallen)
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.15", "_web/web_pattgen.py": "1.18", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.07", "release_tools.py": "1.06", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.05", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.18
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.10", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.02", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.18
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.19", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.06", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.22 (entfallen)
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.19", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.22
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.02", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.21 (entfallen)
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.03", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.03", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.21
     # "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.98 (entfallen)
     # "proggen/M06_Write_Header.py": "1.03", "proggen/M20_PageEvents_a_Functions.py": "1.03", "proggen/M18_Save_Load.py": "1.01",  # v2.03 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.12 (entfallen)
@@ -175,7 +181,10 @@ REQUIRED_FILES = {  # v1.75
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.00", "headless/headless_gridmodel.py": "1.03", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.02", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.15 (entfallen)
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.01", "_web/web_params.py": "1.02", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.03", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.17 (entfallen)
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.01", "vb2py/vbclasses.py": "1.02", "_web/web_params.py": "1.02", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.03", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.18 (entfallen)
-    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.02", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.04", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.02", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.03", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.18
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.02", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.04", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.02", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.03", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.19 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.04", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.21 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.05", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.03", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.22 (entfallen)
+    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.05", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.03", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.22
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -189,13 +198,16 @@ def check_file_versions(base=None):  # v1.75
             with open(os.path.join(base, *rel.split("/")), "r", encoding="utf-8", errors="replace") as fh:  # v1.75
                 head = "".join(fh.readline() for _ in range(8))  # v1.75
         except OSError:  # v1.75
-            problems.append(f"{rel}: Datei fehlt (verlangt wird mindestens Version {wanted})")  # v1.75
+            # problems.append(f"{rel}: Datei fehlt (verlangt wird mindestens Version {wanted})")  # v2.20 (entfallen)
+            problems.append(tr('{rel}: Datei fehlt (verlangt wird mindestens Version {wanted})', rel=rel, wanted=wanted))  # v2.20
             continue  # v1.75
         found = re.search(r"Datei-Version:\s*(\d+)\.(\d+)", head)  # v1.75
         if not found:  # v1.75
-            problems.append(f"{rel}: keine Versionsangabe (verlangt wird mindestens Version {wanted})")  # v1.75
+            # problems.append(f"{rel}: keine Versionsangabe (verlangt wird mindestens Version {wanted})")  # v2.20 (entfallen)
+            problems.append(tr('{rel}: keine Versionsangabe (verlangt wird mindestens Version {wanted})', rel=rel, wanted=wanted))  # v2.20
         elif (int(found.group(1)), int(found.group(2))) < tuple(int(x) for x in wanted.split(".")):  # v1.75
-            problems.append(f"{rel}: Version {found.group(1)}.{found.group(2)}, verlangt wird mindestens {wanted}")  # v1.75
+            # problems.append(f"{rel}: Version {found.group(1)}.{found.group(2)}, verlangt wird mindestens {wanted}")  # v2.20 (entfallen)
+            problems.append(tr('{rel}: Version {major}.{minor}, verlangt wird mindestens {wanted}', rel=rel, major=found.group(1), minor=found.group(2), wanted=wanted))  # v2.20
     return problems  # v1.75
 
 def update_notice(base=None):  # v2.08
@@ -211,14 +223,17 @@ def update_notice(base=None):  # v2.08
         return None  # v2.08
     kind, old_v, new_v = notice.get("kind"), notice.get("version_old", "?"), notice.get("version_new", "?")  # v2.08
     if kind == "rolled_back":  # v2.08
-        return kind, (f"Das Update auf Version {new_v} ist abgebrochen oder fehlgeschlagen. Das Programm ist automatisch zur vorherigen Version {old_v} zurückgegangen "  # v2.08
-                      f"({notice.get('restored', 0)} Dateien wiederhergestellt, {notice.get('time', '')}). Bitte das Update später noch einmal versuchen. "  # v2.08
-                      "Ein Sicherungs- oder Virenprogramm kann Dateien sperren; hilft es nicht, bitte melden.")  # v2.08
+        # return kind, (f"Das Update auf Version {new_v} ist abgebrochen oder fehlgeschlagen. Das Programm ist automatisch zur vorherigen Version {old_v} zurückgegangen "  # v2.20 (entfallen)
+                      # f"({notice.get('restored', 0)} Dateien wiederhergestellt, {notice.get('time', '')}). Bitte das Update später noch einmal versuchen. "  # v2.20 (entfallen)
+                      # "Ein Sicherungs- oder Virenprogramm kann Dateien sperren; hilft es nicht, bitte melden.")  # v2.20 (entfallen)
+        return kind, (tr('Das Update auf Version {new_v} ist abgebrochen oder fehlgeschlagen. Das Programm ist automatisch zur vorherigen Version {old_v} zurückgegangen ({wiederhergestellt} Dateien wiederhergestellt, {zeit}). Bitte das Update später noch einmal versuchen. Ein Sicherungs- oder Virenprogramm kann Dateien sperren; hilft es nicht, bitte melden.', new_v=new_v, old_v=old_v, wiederhergestellt=notice.get('restored', 0), zeit=notice.get('time', '')))  # v2.20
     if kind == "failed":  # v2.08
-        return kind, (f"Das Update auf Version {new_v} ist abgebrochen, und das automatische Zurückgehen war nicht vollständig ({'; '.join(notice.get('problems', [])[:3])}). "  # v2.08
-                      "Bitte die Installation reparieren: Hilfe → Update webMobaLedLib … oder repair_windows.bat / repair_linux.sh / repair_mac.command (Anleitung, Abschnitt 9.6).")  # v2.08
+        # return kind, (f"Das Update auf Version {new_v} ist abgebrochen, und das automatische Zurückgehen war nicht vollständig ({'; '.join(notice.get('problems', [])[:3])}). "  # v2.20 (entfallen)
+                      # "Bitte die Installation reparieren: Hilfe → Update webMobaLedLib … oder repair_windows.bat / repair_linux.sh / repair_mac.command (Anleitung, Abschnitt 9.6).")  # v2.20 (entfallen)
+        return kind, (tr('Das Update auf Version {new_v} ist abgebrochen, und das automatische Zurückgehen war nicht vollständig ({probleme}). Bitte die Installation reparieren: Hilfe → Update webMobaLedLib … oder repair_windows.bat / repair_linux.sh / repair_mac.command (Anleitung, Abschnitt 9.6).', new_v=new_v, probleme='; '.join(notice.get('problems', [])[:3])))  # v2.20
     if kind == "repaired":  # v2.08
-        return kind, f"Die Installation wurde repariert (Version {new_v}, {notice.get('written', 0)} Dateien geschrieben, {notice.get('time', '')}). Bitte das Programm neu starten, falls noch nicht geschehen."  # v2.08
+        # return kind, f"Die Installation wurde repariert (Version {new_v}, {notice.get('written', 0)} Dateien geschrieben, {notice.get('time', '')}). Bitte das Programm neu starten, falls noch nicht geschehen."  # v2.20 (entfallen)
+        return kind, tr('Die Installation wurde repariert (Version {new_v}, {anzahl} Dateien geschrieben, {zeit}). Bitte das Programm neu starten, falls noch nicht geschehen.', new_v=new_v, anzahl=notice.get('written', 0), zeit=notice.get('time', ''))  # v2.20
     return None  # v2.08
 
 
@@ -238,10 +253,12 @@ def installation_problems(base=None):  # v2.07
         return []  # v2.07
     if not problems:  # v2.07
         return []  # v2.07
-    lines = [f"{len(problems)} Dateien fehlen oder haben eine andere Größe als in der Prüfliste des Releases (unterbrochenes Update oder beschädigte Dateien?):"]  # v2.07
+    # lines = [f"{len(problems)} Dateien fehlen oder haben eine andere Größe als in der Prüfliste des Releases (unterbrochenes Update oder beschädigte Dateien?):"]  # v2.20 (entfallen)
+    lines = [tr('{anzahl} Dateien fehlen oder haben eine andere Größe als in der Prüfliste des Releases (unterbrochenes Update oder beschädigte Dateien?):', anzahl=len(problems))]  # v2.20
     lines += ["    " + p for p in problems[:8]]  # v2.07
     if len(problems) > 8:  # v2.07
-        lines.append(f"    ... und {len(problems) - 8} weitere")  # v2.07
+        # lines.append(f"    ... und {len(problems) - 8} weitere")  # v2.20 (entfallen)
+        lines.append(tr('    ... und {anzahl} weitere', anzahl=len(problems) - 8))  # v2.20
     lines.append("Abhilfe: Menü Hilfe → Update webMobaLedLib … (stellt die Dateien wieder her), oder die Anleitung, Kapitel „Wenn nichts mehr geht“.")  # v2.07
     return lines  # v2.07
 
@@ -740,7 +757,11 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "2.18 (2026-10-26)"  # v2.18
+VERSION = "2.22 (2026-10-27)"  # v2.22
+# VERSION = "2.21 (2026-10-26)"  # v2.22 (entfallen)
+# VERSION = "2.20 (2026-10-26)"  # v2.21 (entfallen)
+# VERSION = "2.19 (2026-10-26)"  # v2.20 (entfallen)
+# VERSION = "2.18 (2026-10-26)"  # v2.19 (entfallen)
 # VERSION = "2.17 (2026-10-23)"  # v2.18 (entfallen)
 # VERSION = "2.16 (2026-10-23)"  # v2.17 (entfallen)
 # VERSION = "2.15 (2026-10-23)"  # v2.16 (entfallen)
@@ -1413,9 +1434,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         with ui.dialog() as dlg, ui.card().classes("w-[560px] max-w-full"):
             # ui.label(f"Raspberry Pi {what}?").classes("text-h6")  # v2.16 (entfallen)
             ui.label(tr('Raspberry Pi {what}?', what=what)).classes("text-h6")  # v2.16
-            ui.label("Das Programm wird beendet. Mit \"Speichern\" werden vorher die Tabellen und die Konfiguration gesichert. "
-                     + ("Danach startet der Raspberry Pi neu." if reboot else
-                        "Danach fährt der Raspberry Pi herunter. Erst wenn die grüne LED nicht mehr blinkt, darf der Strom getrennt werden."))
+            # ui.label("Das Programm wird beendet. Mit \"Speichern\" werden vorher die Tabellen und die Konfiguration gesichert. "  # v2.20 (entfallen)
+                     # + ("Danach startet der Raspberry Pi neu." if reboot else  # v2.20 (entfallen)
+                        # "Danach fährt der Raspberry Pi herunter. Erst wenn die grüne LED nicht mehr blinkt, darf der Strom getrennt werden."))  # v2.20 (entfallen)
+            ui.label(tr('Das Programm wird beendet. Mit "Speichern" werden vorher die Tabellen und die Konfiguration gesichert. ')  # v2.20
+                     + (tr('Danach startet der Raspberry Pi neu.') if reboot else  # v2.20
+                        tr('Danach fährt der Raspberry Pi herunter. Erst wenn die grüne LED nicht mehr blinkt, darf der Strom getrennt werden.')))  # v2.20
             with ui.row().classes("justify-end w-full"):
                 ui.button("Abbrechen (A)", on_click=lambda: dlg.submit(None)).props("flat data-key=A").classes("mll-cancel")
                 ui.button("Ohne Speichern (O)", on_click=lambda: dlg.submit("nosave")).props("color=negative outline data-key=O")
@@ -1880,9 +1904,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             logger.debug("letzte Zeile mit Eintraegen nicht bestimmbar", exc_info=True)
             last_used = None
         if last_used:
-            text = f"Zeile {last_used} letzte benutzte Zeile von {meta['rows']} Zeilen"
+            # text = f"Zeile {last_used} letzte benutzte Zeile von {meta['rows']} Zeilen"  # v2.20 (entfallen)
+            text = tr('Zeile {zeile} letzte benutzte Zeile von {zeilen} Zeilen', zeile=last_used, zeilen=meta['rows'])  # v2.20
         elif last_used == 0:
-            text = f"Keine Einträge, {meta['rows']} Zeilen"
+            # text = f"Keine Einträge, {meta['rows']} Zeilen"  # v2.20 (entfallen)
+            text = tr('Keine Einträge, {zeilen} Zeilen', zeilen=meta['rows'])  # v2.20
         else:
             text = f"{meta['rows']} Zeilen"
         if meta["shown_rows"] != meta["rows"]:                 # Zeilen ausgeblendet (Aus- oder Einblenden)
@@ -2631,7 +2657,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             X02.MsgBox("Es ist keine Hilfeseite eingetragen.", 64, "Hilfe")
 
     def about():
-        X02.MsgBox("webMobaLedLib by Harold\n\nVersion " + str(ctrl.ProgVersion) + "\nWeb-Oberfläche: webMobaLedLib " + VERSION + "\n\nDatenordner (Konfiguration, Sicherungen, Protokolle):\n" + ctrl.data_dir, 64, "About")
+        # X02.MsgBox("webMobaLedLib by Harold\n\nVersion " + str(ctrl.ProgVersion) + "\nWeb-Oberfläche: webMobaLedLib " + VERSION + "\n\nDatenordner (Konfiguration, Sicherungen, Protokolle):\n" + ctrl.data_dir, 64, "About")  # v2.20 (entfallen)
+        X02.MsgBox("webMobaLedLib by Harold\n\nVersion " + str(ctrl.ProgVersion) + tr('\nWeb-Oberfläche: webMobaLedLib ') + VERSION + tr('\n\nDatenordner (Konfiguration, Sicherungen, Protokolle):\n') + ctrl.data_dir, 64, "About")  # v2.20
 
     async def show_logfile():
         """Protokoll anzeigen: die letzten Zeilen der aktuellen Datei (reichen sie nicht, auch der Rest der vorigen, gedrehten Datei),
@@ -2652,7 +2679,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             if len(lines) < max_lines and os.path.exists(LOGFILE + ".1"):       # Datei gerade gedreht: Rest der vorigen Datei davor
                 lines = tail(LOGFILE + ".1", max_lines - len(lines)) + lines
             size = os.path.getsize(LOGFILE) / 1024 if os.path.exists(LOGFILE) else 0
-            head = f"Datei: {LOGFILE}   ({size:.0f} KB, Stufe {LOG_INFO['level']}). Angezeigt: die letzten {len(lines)} Zeilen."
+            # head = f"Datei: {LOGFILE}   ({size:.0f} KB, Stufe {LOG_INFO['level']}). Angezeigt: die letzten {len(lines)} Zeilen."  # v2.20 (entfallen)
+            head = tr('Datei: {LOGFILE}   ({size:.0f} KB, Stufe {stufe}). Angezeigt: die letzten {anzahl} Zeilen.', LOGFILE=LOGFILE, size=size, stufe=LOG_INFO['level'], anzahl=len(lines))  # v2.20
             return head, "\n".join(lines) if lines else "Die Protokolldatei ist leer oder nicht lesbar."
 
         with ui.dialog() as dlg, ui.card().classes("w-[1300px] max-w-full"):
@@ -2775,20 +2803,25 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 return
             except Exception as ex:                              # noqa: BLE001
                 logger.exception("Update fehlgeschlagen")
-                finish(f"Das Update ist fehlgeschlagen: {ex}", error=True)
+                # finish(f"Das Update ist fehlgeschlagen: {ex}", error=True)  # v2.20 (entfallen)
+                finish(tr('Das Update ist fehlgeschlagen: {ex}', ex=ex), error=True)  # v2.20
                 return
-            lines = [f"Fertig: {len(result.written)} Dateien geschrieben, {len(result.deleted)} gelöscht."]
+            # lines = [f"Fertig: {len(result.written)} Dateien geschrieben, {len(result.deleted)} gelöscht."]  # v2.20 (entfallen)
+            lines = [tr('Fertig: {geschrieben} Dateien geschrieben, {geloescht} gelöscht.', geschrieben=len(result.written), geloescht=len(result.deleted))]  # v2.20
             if result.backup:
-                lines.append(f"Gesichert (zum Zurückholen): {result.backup}")
+                # lines.append(f"Gesichert (zum Zurückholen): {result.backup}")  # v2.20 (entfallen)
+                lines.append(tr('Gesichert (zum Zurückholen): {sicherung}', sicherung=result.backup))  # v2.20
             if plan.requirements_changed:
                 status.set_text("Die Python-Pakete werden aktualisiert (das kann einige Minuten dauern) ...")
                 shared.update(done=0, total=0, text="")
                 bar.props("indeterminate")
                 ok, out = await run.io_bound(wu.pip_install, here)
                 bar.props(remove="indeterminate")
-                lines.append("Python-Pakete aktualisiert." if ok else "ACHTUNG: Die Python-Pakete konnten nicht aktualisiert werden:\n" + out)
+                # lines.append("Python-Pakete aktualisiert." if ok else "ACHTUNG: Die Python-Pakete konnten nicht aktualisiert werden:\n" + out)  # v2.20 (entfallen)
+                lines.append("Python-Pakete aktualisiert." if ok else tr('ACHTUNG: Die Python-Pakete konnten nicht aktualisiert werden:\n') + out)  # v2.20
             if result.failed:
-                lines.append("Nicht ersetzt (meist von einem anderen Programm gesperrt):\n" + "\n".join(f"  {p}: {m}" for p, m in result.failed[:15]))
+                # lines.append("Nicht ersetzt (meist von einem anderen Programm gesperrt):\n" + "\n".join(f"  {p}: {m}" for p, m in result.failed[:15]))  # v2.20 (entfallen)
+                lines.append(tr('Nicht ersetzt (meist von einem anderen Programm gesperrt):\n') + "\n".join(f"  {p}: {m}" for p, m in result.failed[:15]))  # v2.20
             if plan.pi_changed and os.environ.get("INVOCATION_ID"):
                 lines.append("Dateien im Ordner pi haben sich geändert. Bitte auf dem Raspberry Pi einmal ausführen:\n"
                              "  sudo bash ~/mobaledlib/python/pi/install_pi.sh --no-check")
@@ -2820,7 +2853,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 zip_path = os.path.join(work["tmp"], "webmobaledlib.zip")
 
                 def download_progress(done, total):
-                    shared.update(done=done, total=total, text=f"Geladen: {done // 1024} KB" + (f" von {total // 1024} KB" if total else ""))
+                    # shared.update(done=done, total=total, text=f"Geladen: {done // 1024} KB" + (f" von {total // 1024} KB" if total else ""))  # v2.20 (entfallen)
+                    shared.update(done=done, total=total, text=f"Geladen: {done // 1024} KB" + (tr(' von {kb} KB', kb=total // 1024) if total else ""))  # v2.20
 
                 await run.io_bound(wu.download, wu.update_url(), zip_path, download_progress)
                 shared.update(done=0, total=0, text="")
@@ -2831,21 +2865,26 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 return
             except Exception as ex:                              # noqa: BLE001
                 logger.exception("Update: Pruefung fehlgeschlagen")
-                finish(f"Die Prüfung ist fehlgeschlagen: {ex}", error=True)
+                # finish(f"Die Prüfung ist fehlgeschlagen: {ex}", error=True)  # v2.20 (entfallen)
+                finish(tr('Die Prüfung ist fehlgeschlagen: {ex}', ex=ex), error=True)  # v2.20
                 return
             plan = work["plan"]
             bar.props(remove="indeterminate")
             bar.set_value(0)
             if plan.empty:
-                finish(f"Sie haben bereits die aktuelle Version ({plan.version_new}). Es ist keine Datei zu ersetzen.")
+                # finish(f"Sie haben bereits die aktuelle Version ({plan.version_new}). Es ist keine Datei zu ersetzen.")  # v2.20 (entfallen)
+                finish(tr('Sie haben bereits die aktuelle Version ({neue_version}). Es ist keine Datei zu ersetzen.', neue_version=plan.version_new))  # v2.20
                 return
-            head = (f"Neue Version: {plan.version_new}   (installiert: {VERSION})\n"
-                    f"{len(plan.new)} neue und {len(plan.changed)} geänderte Dateien werden geschrieben, {len(plan.delete)} Dateien werden gelöscht, "
-                    f"{plan.same} Dateien sind unverändert und werden nicht angefasst.")
+            # head = (f"Neue Version: {plan.version_new}   (installiert: {VERSION})\n"  # v2.20 (entfallen)
+                    # f"{len(plan.new)} neue und {len(plan.changed)} geänderte Dateien werden geschrieben, {len(plan.delete)} Dateien werden gelöscht, "  # v2.20 (entfallen)
+                    # f"{plan.same} Dateien sind unverändert und werden nicht angefasst.")  # v2.20 (entfallen)
+            head = (tr('Neue Version: {neue_version}   (installiert: {VERSION})\n{neu} neue und {geaendert} geänderte Dateien werden geschrieben, {anzahl} Dateien werden gelöscht, {same} Dateien sind unverändert und werden nicht angefasst.', neue_version=plan.version_new, VERSION=VERSION, neu=len(plan.new), geaendert=len(plan.changed), anzahl=len(plan.delete), same=plan.same))  # v2.20
             if plan.downgrade:  # v2.07
-                head = ("ACHTUNG: Dieses ZIP hat eine ÄLTERE Version als die installierte!\n" + head +  # v2.07
-                        "\nEin Rücksprung auf eine ältere Version ist nur sinnvoll, wenn Sie ihn wollen (zum Beispiel nach einem Fehler in der neuen Version). "  # v2.07
-                        "Wurde versehentlich ein altes ZIP bereitgestellt: Abbrechen.")  # v2.07
+                # head = ("ACHTUNG: Dieses ZIP hat eine ÄLTERE Version als die installierte!\n" + head +  # v2.20 (entfallen)
+                        # "\nEin Rücksprung auf eine ältere Version ist nur sinnvoll, wenn Sie ihn wollen (zum Beispiel nach einem Fehler in der neuen Version). "  # v2.20 (entfallen)
+                        # "Wurde versehentlich ein altes ZIP bereitgestellt: Abbrechen.")  # v2.20 (entfallen)
+                head = (tr('ACHTUNG: Dieses ZIP hat eine ÄLTERE Version als die installierte!\n') + head +  # v2.20
+                        tr('\nEin Rücksprung auf eine ältere Version ist nur sinnvoll, wenn Sie ihn wollen (zum Beispiel nach einem Fehler in der neuen Version). Wurde versehentlich ein altes ZIP bereitgestellt: Abbrechen.'))  # v2.20
             status.set_text(head)
             status.style("color: #c62828; font-weight: 600" if plan.downgrade else "")  # v2.07
             listing.style("height: 260px; border: 1px solid #c8c8c8")
@@ -2853,16 +2892,19 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 ui.label("\n".join(wu.describe(plan))).style("white-space: pre; font-family: monospace; font-size: 12px; padding: 6px")
             notes = []
             if plan.local_modified:
-                notes.append("Von Ihnen veränderte Dateien werden ersetzt (die alte Fassung wird vorher gesichert): " + ", ".join(plan.local_modified[:6]))
+                # notes.append("Von Ihnen veränderte Dateien werden ersetzt (die alte Fassung wird vorher gesichert): " + ", ".join(plan.local_modified[:6]))  # v2.20 (entfallen)
+                notes.append(tr('Von Ihnen veränderte Dateien werden ersetzt (die alte Fassung wird vorher gesichert): ') + ", ".join(plan.local_modified[:6]))  # v2.20
             if plan.first_update:
                 notes.append("Erstes Update dieser Installation: Dateien, die im neuen Release fehlen, werden diesmal nicht gelöscht.")
             if plan.ignored:
-                notes.append("Persönliche Dateien im ZIP werden ignoriert: " + ", ".join(plan.ignored))
+                # notes.append("Persönliche Dateien im ZIP werden ignoriert: " + ", ".join(plan.ignored))  # v2.20 (entfallen)
+                notes.append(tr('Persönliche Dateien im ZIP werden ignoriert: ') + ", ".join(plan.ignored))  # v2.20
             notes.append("Vor dem Ersetzen werden die Tabellen gesichert. Konfiguration, Passwort und Protokolle bleiben unverändert.")
             note.set_text("\n".join(notes))
             # set_buttons(("Abbrechen", close_update, "flat", "mll-cancel"), ("Aktualisieren", do_apply, "color=primary", "mll-default"))  # v2.07 (entfallen)
             if plan.downgrade:  # v2.07
-                set_buttons(("Abbrechen", close_update, "color=primary", "mll-default mll-cancel"), (f"Trotzdem auf Version {plan.version_new} zurückgehen", do_apply_downgrade, "outline color=negative", ""))  # v2.07
+                # set_buttons(("Abbrechen", close_update, "color=primary", "mll-default mll-cancel"), (f"Trotzdem auf Version {plan.version_new} zurückgehen", do_apply_downgrade, "outline color=negative", ""))  # v2.20 (entfallen)
+                set_buttons(("Abbrechen", close_update, "color=primary", "mll-default mll-cancel"), (tr('Trotzdem auf Version {neue_version} zurückgehen', neue_version=plan.version_new), do_apply_downgrade, "outline color=negative", ""))  # v2.20
             else:  # v2.07
                 set_buttons(("Abbrechen", close_update, "flat", "mll-cancel"), ("Aktualisieren", do_apply, "color=primary", "mll-default"))  # v2.07
 
@@ -3061,7 +3103,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             if state["busy"]:
                 ui.notify("Es läuft noch ein Vorgang - bitte warten.", type="warning")
                 return
-            extra = f"\n\nEs wurde nur die erste von {a['count']} Dateien übernommen." if int(a.get("count") or 1) > 1 else ""
+            # extra = f"\n\nEs wurde nur die erste von {a['count']} Dateien übernommen." if int(a.get("count") or 1) > 1 else ""  # v2.20 (entfallen)
+            extra = tr('\n\nEs wurde nur die erste von {anzahl} Dateien übernommen.', anzahl=a['count']) if int(a.get("count") or 1) > 1 else ""  # v2.20
             with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[560px] max-w-full"):
                 ui.label("PGF-Datei laden").classes("text-h6")
                 # ui.label(f"Die Datei '{name}' laden?{extra}").style("white-space: pre-line")  # v2.16 (entfallen)
@@ -3730,10 +3773,23 @@ def main():
     favicon = os.path.join(here, "install", "favicon.png")          # Symbol im Browserreiter (install/make_icons.py)
     def on_connect(client):
         logger.info("Browser verbunden (Client %s)", client.id)
+        try:  # v2.22
+            from _web import web_pi_status  # v2.22
+            pi_warning = web_pi_status.pending_warning()                 # Raspberry Pi: Unterspannung oder Drosselung gemeldet (einmal pro Programmlauf)  # v2.22
+            if pi_warning:  # v2.22
+                with client:  # v2.22
+                    ui.notify(tr(pi_warning), type="warning", timeout=0, close_button=True, multi_line=True)  # v2.22
+        except Exception:                                                # noqa: BLE001  eine Meldung darf nie das Verbinden stoeren  # v2.22
+            logger.debug("Raspberry Pi: Warnung nicht angezeigt", exc_info=True)  # v2.22
 
     def on_disconnect(client):
         logger.info("Browser getrennt (Client %s)", client.id)         # kurz nach dem Aufbau der Seite: Verbindungsabbruch ("Connection lost")
 
+    try:  # v2.22
+        from _web import web_pi_status  # v2.22
+        web_pi_status.start()                                            # nur auf einem Raspberry Pi: regelmaessig Unterspannung, Temperatur und Speicher ins Protokoll  # v2.22
+    except Exception:                                                    # noqa: BLE001  # v2.22
+        logger.debug("Raspberry Pi: Beobachtung nicht gestartet", exc_info=True)  # v2.22
     nicegui_app.on_connect(on_connect)
     nicegui_app.on_disconnect(on_disconnect)
     from _web import web_servotest as _servo_page  # v1.87

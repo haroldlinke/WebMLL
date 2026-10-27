@@ -1,15 +1,16 @@
-# Datei-Version: 1.02 (2026-10-21) - M07_COM_Port.py
+# Datei-Version: 1.03 (2026-10-26) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.02
-# Last Update:    2026-10-21
+# Version:        1.03
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  EnumComPorts: FTDI-Adapter (VID 0403, Beschreibung FT232 ...) werden erkannt, sonst meldete die Pruefung beim Hochladen 'kein Arduino angeschlossen'; DetectArduino: kein Absturz, wenn die Verbindung inzwischen getrennt wurde
 #   1.02  2026-10-21  Pico: jede Kennung VID 2E8A und Adafruit 239A:813D (vorher nur 2E8A:000A), pyserial- und Windows-Zweig; DetectArduino schaltet RTS ein (Version K des Excel-Programms)
+#   1.03  2026-10-26  Linux: die Platzhalter-Anschluesse /dev/ttyS0 ... ttyS31 ohne Geraet erscheinen nicht mehr in der Liste der Anschluesse (auch nicht mit unbekannte Ports anzeigen)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -48,6 +49,8 @@
 # 2021-01-07 v4.02 HL: - Else: check done, first PoC release
 import serial.tools.list_ports as portlist
 import logging
+import os  # v1.03
+import re  # v1.03
 import serial
 try:    
     from zeroconf import Zeroconf, ServiceBrowser, ServiceListener,  DNSAddress
@@ -622,6 +625,8 @@ def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True):
         idx=0
         for comport in temp_comports_list:
             Debug.Print("EnumComPorts:"+repr(comport.description)+" "+repr(comport.device))
+            if os.name != 'nt' and re.match(r'^/dev/ttyS\d+$', str(comport.device)) and str(comport.hwid).strip().lower() in ('n/a', ''):  # v1.03
+                continue                              # Linux: ttyS0 ... ttyS31 sind Platzhalter ohne Geraet (auch mit "unbekannte Ports anzeigen" nie in der Liste)  # v1.03
             # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 ) ) or ( ESP_Inst == True and InStr(comport.description, 'Silicon Labs CP210x') > 0 )  or  ( PICO_Inst == True and InStr(comport.description, 'USB\\\\VID_2E8A&PID_000A\\') > 0 ):
             # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and InStr(comport.hwid, 'USB VID:PID=2E8A:000A') > 0 ):  # v1.02 (entfallen)
             if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and ( InStr(comport.hwid, 'USB VID:PID=2E8A:') > 0 or InStr(comport.hwid, 'USB VID:PID=239A:813D') > 0 ) ):  # v1.02

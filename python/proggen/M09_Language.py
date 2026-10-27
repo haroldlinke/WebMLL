@@ -1,9 +1,9 @@
-# Datei-Version: 1.03 (2026-10-23) - M09_Language.py
+# Datei-Version: 1.04 (2026-10-26) - M09_Language.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M09_Language.py
 # Path:           proggen/M09_Language.py
-# Version:        1.03
-# Last Update:    2026-10-23
+# Version:        1.04
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.01  2026-10-21  Neu: Get_Language_Identifier (Sprachnummer -> DE, EN, NL, FR, IT, ES; Version K des Excel-Programms)
 #   1.02  2026-10-23  Language_Changed (Zwischenspeicher nach einem Sprachwechsel leeren); Probe neutrale Tokens: CANONICAL_TOKENS (Standard aus), Token_Display, Token_Canonical
 #   1.03  2026-10-23  Get_Display_Cells: Spaltenkoepfe (mit Tooltip aus den Zeilen Cell und Comment der Tabelle Languages) und Namensspalte (aus Lib_Macros) in der eingestellten Sprache anzeigen, ohne die Zellen zu aendern
+#   1.04  2026-10-26  Get_Language_Str: Fehlt der Text in der Tabelle Languages, wird im Katalog der Web-Oberflaeche (csv/Web_Languages.csv) nachgeschlagen
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -672,6 +673,7 @@ def Get_Language_Str(Desc, GenError=False, Look_At=xlPart):
     if Desc == r'':
         return _ret
         # 23.01.20:
+    Orig = Desc  # v1.04
     Desc = Replace(Desc, "\n",vbCr)
     Desc = Replace(Desc, r'| ', r'|')
     if InStr(Desc, vbCr + vbLf) > 0:
@@ -684,6 +686,14 @@ def Get_Language_Str(Desc, GenError=False, Look_At=xlPart):
         _ret = Replace(Res, r'|', vbCr)
     else:
         _ret = Replace(Replace(Res, r'|' + vbLf, vbCr), r'| ' + vbLf, vbCr)
+    if Res == Desc and Get_ExcelLanguage() != 0:                      # nicht in der Tabelle Languages: im Katalog der Web-Oberflaeche (csv/Web_Languages.csv) nachsehen  # v1.04
+        try:  # v1.04
+            from _web import web_i18n  # v1.04
+            cat = web_i18n.catalog_text(Orig)  # v1.04
+            if cat:  # v1.04
+                _ret = cat.replace('\r\n', vbCr).replace('\n', vbCr)  # v1.04
+        except Exception:  # v1.04
+            pass  # v1.04
     return _ret
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Desc - ByVal 

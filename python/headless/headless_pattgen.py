@@ -1,8 +1,8 @@
-# Datei-Version: 1.15 (2026-10-26) - headless_pattgen.py
+# Datei-Version: 1.16 (2026-10-26) - headless_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_pattgen.py
 # Path:           headless/headless_pattgen.py
-# Version:        1.15
+# Version:        1.16
 # Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -24,6 +24,7 @@
 #   1.13  2026-10-19  restore_dynamic_rows: auch die Zeile Goto Aktivierung (Zeile 13) neu bestimmen (Hide_Show_Check_Goto_Activation); die Vorlage versteckt sie, nach dem Neustart fehlte sie
 #   1.14  2026-10-23  Dateien im Pattern-Format aus dem Excel-Programm (cp1252) werden auch von sheet_names_in_file und object_lines_in_file richtig gelesen (Blattnamen, Textfelder und Formularknoepfe), nicht nur von Load_Sheets
 #   1.15  2026-10-26  Speichern im Pattern-Format: Datei wird (Programm Einstellungen, Standard an) in den Windows-Zeichensatz umgeschrieben, wenn alle Zeichen Platz haben (fuer das Excel-Programm)
+#   1.16  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 # ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Pattern_GeneratorPage: baut die Arbeitsmappe "PatternWorkbook" des Patterngenerators.
 
@@ -70,6 +71,11 @@ import pattgen.Tabelle9 as T09  # v1.01
 import pgcommon.G00_common as G00  # v1.01
 from vb2py.vbfunctions import VBMissingArgument  # v1.07
 from headless.headless_proggen import HeadlessStatusForm
+try:  # v1.16
+    from _web.web_i18n import tr  # v1.16
+except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.16
+    def tr(text, **values):  # v1.16
+        return text.format(**values) if values else text  # v1.16
 
 logger = logging.getLogger(__name__)
 
@@ -176,11 +182,13 @@ def check_param_value(meta, text):  # v1.09
     Zeit: Zahl in ms oder 'Zahl Einheit' (Min, Sek, sek, Sec, sec, Ms, ms) innerhalb Min und Max. Rueckgabe: Fehlertext oder None"""
     text = str(text).strip()  # v1.09
     if text == "":  # v1.09
-        return f"Der Parameter '{meta['name']}' darf nicht leer sein."  # v1.09
+        # return f"Der Parameter '{meta['name']}' darf nicht leer sein."  # v1.16 (entfallen)
+        return tr("Der Parameter '{parameter}' darf nicht leer sein.", parameter=meta['name'])  # v1.16
     if meta["type"] != "Time":  # v1.09
         return None  # v1.09
     low, high = meta["min"], meta["max"]  # v1.09
-    hint = f"Der Parameter '{meta['name']}' ist ungültig.\nBitte eine Zeit zwischen {low} ms und {high} ms eingeben, zum Beispiel 30 Sek, 5 Min oder 500 ms."  # v1.09
+    # hint = f"Der Parameter '{meta['name']}' ist ungültig.\nBitte eine Zeit zwischen {low} ms und {high} ms eingeben, zum Beispiel 30 Sek, 5 Min oder 500 ms."  # v1.16 (entfallen)
+    hint = tr("Der Parameter '{parameter}' ist ungültig.\nBitte eine Zeit zwischen {low} ms und {high} ms eingeben, zum Beispiel 30 Sek, 5 Min oder 500 ms.", parameter=meta['name'], low=low, high=high)  # v1.16
     parts = text.split(" ")  # v1.09
     if len(parts) == 1 and _number(parts[0]) is not None:  # v1.09
         value = _number(parts[0])  # v1.09

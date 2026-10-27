@@ -1,10 +1,19 @@
-Datei-Version: 1.00 (2026-10-23) - UEBERSETZEN.md
-Gilt für webMobaLedLib 2.14
+Datei-Version: 1.03 (2026-10-27) - UEBERSETZEN.md
+Gilt für webMobaLedLib 2.22
 
 # Übersetzen der Web-Oberfläche
 
 Die Texte der Oberfläche (Menüs, Knöpfe, Meldungen, Hinweise) stehen in der Datei **`python/csv/Web_Languages.csv`**. Die Meldungen des Programm Generators und des Patterngenerators
 (zum Beispiel die Fragen beim Erzeugen eines Programms) kommen weiter aus dem Tabellenblatt **Languages** der Excel-Datei; die Parameter-Texte der Makros aus **Par_Description**.
+
+## Wo die Texte stehen
+
+1. **Katalog `csv/Web_Languages.csv`** (diese Datei): alle Texte der Web-Oberfläche und alle Texte, die es im Excel-Programm nicht gab. Er geht vor.
+2. **Tabelle Languages der Excel-Datei** (`csv/Prog_Generator_MobaLedLib.xlsm`): die Texte der Formulare und Meldungen aus dem Excel-Programm, mit Übersetzungen in sieben Sprachen. Ein Text, der **nicht** im Katalog steht, wird dort gesucht; Einträge mit „ToDo“ gelten als nicht übersetzt.
+3. **Reihenfolge** (seit 2.22): gewählte Sprache im Katalog, gewählte Sprache in der Tabelle Languages, dann English im Katalog, English in der Tabelle, zuletzt der deutsche Text. Ein englischer Text des Katalogs verdrängt also keine vorhandene Übersetzung der Tabelle mehr (vorher mischten sich Niederländisch und Englisch).
+4. **Nederlands** (Stand 2.22): Für **742 von 766 Texten** des Katalogs gibt es einen **Entwurf** (von Claude geschrieben, nicht von einem Muttersprachler geprüft); die übrigen 24 stehen in der Tabelle Languages. Zum Prüfen gibt es `Web_Languages_Nederlands_Entwurf.csv` (Spalten Deutsch;English;Nederlands (Entwurf)): Die Spalte Nederlands verbessern und die Datei zurückschicken; sie wird in `csv/Web_Languages.csv` eingearbeitet. Eigene Verbesserungen kann man auch direkt in `csv/Web_Languages.csv` (Spalte Nederlands) eintragen.
+
+Für eine neue Übersetzung genügt es, den Eintrag im Katalog zu ergänzen, auch für Texte, die in der Tabelle Languages noch „ToDo“ sind.
 
 ## Aufbau der Datei
 

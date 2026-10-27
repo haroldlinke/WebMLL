@@ -1,13 +1,14 @@
-# Datei-Version: 1.00 (2026-10-19) - web_network.py
+# Datei-Version: 1.01 (2026-10-26) - web_network.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_network.py
 # Path:           _web/web_network.py
-# Version:        1.00
-# Last Update:    2026-10-19
+# Version:        1.01
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-19  Neu: Einstellung Zugriff aus dem Netz (Datei network.json im Datenordner), Rangfolge der Adresse des Servers (Aufruf, MLL_HOST, Einstellung, Voreinstellung)
+#   1.01  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 # ----------------------------------------------------------------------------------------------
 """Einstellung "Zugriff aus dem Netz erlauben" (Programm Einstellungen) fuer Windows, macOS und Linux-Desktop.
 
@@ -27,6 +28,11 @@ import logging
 import os
 
 import userdata
+try:  # v1.01
+    from _web.web_i18n import tr  # v1.01
+except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.01
+    def tr(text, **values):  # v1.01
+        return text.format(**values) if values else text  # v1.01
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +84,8 @@ def describe(setting: bool, running_host: str, source: str) -> tuple[str, bool]:
     """Text zum Zustand und ob ein Neustart noetig ist, damit die Einstellung wirkt: (Text, Neustart)"""
     if source in ("cli", "env"):
         what = "Startparameter --host" if source == "cli" else "Umgebungsvariable MLL_HOST"
-        return f"Die Adresse ist fest vorgegeben ({what} = {running_host}). Der Schalter hat dann keine Wirkung.", False
+        # return f"Die Adresse ist fest vorgegeben ({what} = {running_host}). Der Schalter hat dann keine Wirkung.", False  # v1.01 (entfallen)
+        return tr('Die Adresse ist fest vorgegeben ({what} = {running_host}). Der Schalter hat dann keine Wirkung.', what=what, running_host=running_host), False  # v1.01
     running_open = is_open(running_host)
     if setting == running_open:
         return ("Eingeschaltet: Das Programm ist im Netz erreichbar." if setting else "Ausgeschaltet: Das Programm ist nur auf diesem Rechner erreichbar."), False

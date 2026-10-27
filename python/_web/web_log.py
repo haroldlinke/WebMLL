@@ -1,4 +1,4 @@
-# Datei-Version: 1.04 (2026-10-15) - web_log.py
+# Datei-Version: 1.05 (2026-10-26) - web_log.py
 """Log-Fenster fuer Kompilieren und Hochladen (Ersatz fuer ARDUINOMonitorPage).
 
 WebLog bietet dieselben Methoden wie das Textfenster der Tk-Seite
@@ -14,6 +14,11 @@ from __future__ import annotations
 import logging
 
 from _web import web_dialogs as wd
+try:  # v1.05
+    from _web.web_i18n import tr  # v1.05
+except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.05
+    def tr(text, **values):  # v1.05
+        return text.format(**values) if values else text  # v1.05
 
 logger = logging.getLogger(__name__)
 arduino_log = logging.getLogger("webmobaledlib.arduino")           # Ausgabe der Laeufe im Protokoll
@@ -114,7 +119,8 @@ class WebLog:
             self._cancel_close()
             if self._dialog is None or not self._dialog.value:        # nicht vorhanden oder schon geschlossen
                 return
-            note = f"Dieses Fenster schließt sich in {seconds} Sekunden."
+            # note = f"Dieses Fenster schließt sich in {seconds} Sekunden."  # v1.05 (entfallen)
+            note = tr('Dieses Fenster schließt sich in {seconds} Sekunden.', seconds=seconds)  # v1.05
             self.lines.append((note, "text-grey-7"))
             self._push(note, "text-grey-7")
             self._close_handle = self._loop.call_later(seconds, self._close_now)

@@ -1,4 +1,4 @@
-# Datei-Version: 1.04 (2026-10-15) - web_logging.py
+# Datei-Version: 1.05 (2026-10-27) - web_logging.py
 """Protokoll (Logging) der Web-Oberflaeche, im gleichen Stil wie im Original pyMobaLedLib.py.
 
 Die Originalmodule benutzen den Standard-Logger (logging.getLogger(__name__)) und schreiben bis zur Stufe DEBUG. Damit dieses Protokoll
@@ -126,6 +126,11 @@ def log_environment(logger: logging.Logger) -> None:
                 os.environ.get("XDG_SESSION_TYPE", "-"), os.environ.get("DISPLAY", "-"), os.environ.get("WAYLAND_DISPLAY", "-"),
                 os.environ.get("MLL_TK_ROOT", "-"), os.environ.get("MLL_HEADLESS", "-"))
     try:
+        from _web import web_pi_status  # v1.05
+        web_pi_status.log_banner()                                           # Raspberry Pi: Modell, Unterspannung, Temperatur, Speicher (sonst nichts)  # v1.05
+    except Exception:                                                        # noqa: BLE001  # v1.05
+        logger.debug("Raspberry Pi: Status nicht lesbar", exc_info=True)  # v1.05
+    try:  # v1.05
         import tkinter
         if getattr(tkinter, "__file__", "") == "<no_tk>":
             logger.info("tkinter: Ersatz no_tk (kein Tk noetig)")

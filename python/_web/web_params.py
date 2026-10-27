@@ -1,4 +1,4 @@
-# Datei-Version: 1.02 (2026-10-23) - web_params.py
+# Datei-Version: 1.03 (2026-10-26) - web_params.py
 """Web-Version von create_macroparam_frame/create_macroparam_content (pyMobaLedLib.py) fuer die Einstellungsseiten.
 
 Die Einstellungsseiten (ConfigurationPage "Programm Einstellungen", ProgGenConfigPage, ARDUINOConfigPage) sind nicht von
@@ -393,14 +393,14 @@ class ArduinoPaths:
             if value:
                 if os.path.isfile(value):
                     version = ctrl.arduino_ide_version(value)
-                    text, color = f"Die Datei ist vorhanden{(' (Version ' + version + ')') if version else ''}.", "#2e7d32"
+                    text, color = tr("Die Datei ist vorhanden") + ((' (Version ' + version + ')') if version else '') + ".", "#2e7d32"  # v1.03
                 else:
                     text, color = "Unter diesem Pfad gibt es keine Datei (Groß-/Kleinschreibung und Schrägstriche prüfen).", "#c62828"
             else:
                 found = ctrl.find_arduino_ide()
                 if found:
                     version = ctrl.arduino_ide_version(found)
-                    text, color = f"Kein Pfad eingetragen. Automatisch gefunden: {found}{(' (Version ' + version + ')') if version else ''}", "#2e7d32"
+                    text, color = tr("Kein Pfad eingetragen. Automatisch gefunden: {found}", found=found) + ((' (Version ' + version + ')') if version else ''), "#2e7d32"  # v1.03
                 else:
                     text, color = "Kein Pfad eingetragen, und die automatische Suche hat keine IDE gefunden.", "#ef6c00"
             if version and not version.startswith("1.8"):
@@ -425,7 +425,8 @@ class ArduinoPaths:
                                 "Die IDE 1.8.19 von arduino.cc laden („Legacy IDE“) und entpacken, am besten nach ~/arduino-1.8.19, oder den Pfad von Hand eintragen.")
                 status.style("color: #ef6c00")
                 return
-            status.set_text(f"{len(found)} Treffer. Zum Übernehmen anklicken:")
+            # status.set_text(f"{len(found)} Treffer. Zum Übernehmen anklicken:")  # v1.03 (entfallen)
+            status.set_text(tr('{anzahl} Treffer. Zum Übernehmen anklicken:', anzahl=len(found)))  # v1.03
             status.style("color: inherit")
             with results:
                 for item in found:

@@ -1,4 +1,4 @@
-# Datei-Version: 1.04 (2026-10-15) - web_form_house.py
+# Datei-Version: 1.05 (2026-10-26) - web_form_house.py
 """Web-Ersatz fuer proggen/Userform_House.py (House und GasLights).
 
 Das Original baut das Tk-Fenster schon im Konstruktor; deshalb wird hier die ganze Klasse ersetzt
@@ -22,6 +22,11 @@ import sys
 import textwrap
 
 from _web import web_dialogs as wd
+try:  # v1.05
+    from _web.web_i18n import tr  # v1.05
+except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.05
+    def tr(text, **values):  # v1.05
+        return text.format(**values) if values else text  # v1.05
 
 logger = logging.getLogger(__name__)
 
@@ -69,12 +74,14 @@ def replace_problem(rooms: list[str], idx: int, new_label: str, chan_of: dict) -
     if old == new:
         return None
     if old == "RGB":
-        return (f"'{rooms[idx]}' belegt eine ganze RGB-LED (alle 3 Kanäle). Er kann nur durch einen Effekt ersetzt werden, "
-                "der ebenfalls eine RGB-LED belegt. Sonst bitte 'Einfügen' wählen.")
+        # return (f"'{rooms[idx]}' belegt eine ganze RGB-LED (alle 3 Kanäle). Er kann nur durch einen Effekt ersetzt werden, "  # v1.05 (entfallen)
+                # "der ebenfalls eine RGB-LED belegt. Sonst bitte 'Einfügen' wählen.")  # v1.05 (entfallen)
+        return (tr("'{raum}' belegt eine ganze RGB-LED (alle 3 Kanäle). Er kann nur durch einen Effekt ersetzt werden, der ebenfalls eine RGB-LED belegt. Sonst bitte 'Einfügen' wählen.", raum=rooms[idx]))  # v1.05
     color = CHANNEL_COLOR.get(old, "")
     ch = old + (f" ({color})" if color else "")
-    return (f"'{rooms[idx]}' belegt den Einzelkanal {ch}. Er kann nur durch einen Effekt mit demselben Einzelkanal {old} "
-            "ersetzt werden, sonst würde eine andere LED angesprochen. Sonst bitte 'Einfügen' wählen.")
+    # return (f"'{rooms[idx]}' belegt den Einzelkanal {ch}. Er kann nur durch einen Effekt mit demselben Einzelkanal {old} "  # v1.05 (entfallen)
+            # "ersetzt werden, sonst würde eine andere LED angesprochen. Sonst bitte 'Einfügen' wählen.")  # v1.05 (entfallen)
+    return (tr("'{raum}' belegt den Einzelkanal {ch}. Er kann nur durch einen Effekt mit demselben Einzelkanal {old} ersetzt werden, sonst würde eine andere LED angesprochen. Sonst bitte 'Einfügen' wählen.", raum=rooms[idx], ch=ch, old=old))  # v1.05
 
 
 def replace_allowed(rooms: list[str], idx: int, new_label: str, chan_of: dict) -> bool:
@@ -170,9 +177,11 @@ def check_numbers(mode: str, st: dict, led_channels: int):
         try:
             v = float(str(val).strip())
         except ValueError:
-            return f"'{name}' ist keine Zahl."
+            # return f"'{name}' ist keine Zahl."  # v1.05 (entfallen)
+            return tr("'{name}' ist keine Zahl.", name=name)  # v1.05
         if v != int(v) or v < lo or v > hi:
-            return f"'{name}' muss eine ganze Zahl zwischen {lo} und {hi} sein."
+            # return f"'{name}' muss eine ganze Zahl zwischen {lo} und {hi} sein."  # v1.05 (entfallen)
+            return tr("'{name}' muss eine ganze Zahl zwischen {lo} und {hi} sein.", name=name, lo=lo, hi=hi)  # v1.05
     return None
 
 

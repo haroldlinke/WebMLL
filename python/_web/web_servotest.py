@@ -1,9 +1,9 @@
-# Datei-Version: 2.05 (2026-10-23) - web_servotest.py
+# Datei-Version: 2.06 (2026-10-26) - web_servotest.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_servotest.py
 # Path:           _web/web_servotest.py
-# Version:        2.05
-# Last Update:    2026-10-23
+# Version:        2.06
+# Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,6 +14,7 @@
 #   2.03  2026-10-20  Verlassen von Reiter und Seite: leave() sendet Wert 0 und beendet den Direktmodus, bricht laufende Ablaeufe ab (epoch), nur einmal und ohne eine andere Seite zu stoeren; stop_all fuer Beenden und Neustart; page_closed fuer das Trennen des Browsers
 #   2.04  2026-10-21  Die dritte Taste im Zustand Einstellen (Verbinden) entfaellt: verbunden wird mit der Taste Mit ARDUINO verbinden in der Kopfzeile fuer alle Reiter; neu ServoPage.on_connected (Direktmodus und Servo waehlen nach dem Verbinden)
 #   2.05  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
+#   2.06  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Servo Test 1" nach dem Excel-Dialog "Servo Test und Einstellung" (UserForm der Excel-Fassung, Stand Oktober 2026).
 
@@ -109,8 +110,18 @@ PARAM_DEFAULTS = {                    # (Text im Excel-Dialog, Min, Max, Vorgabe
 TEXT_DEFAULT = ("Wählen sie zuerst die Adresse des Servos.\nMit dem Schieberegler wird die Position eingestellt.\n\n"
                 "Mit den Knöpfen unten wird der aktuelle Servo konfiguriert.")
 TEXT_POSITION = "Mit den Pfeiltasten wird die Position eingestellt. Durch Halten der Tasten wird die Position schneller verändert"
-TEXT_MIN = "Konfiguration der Minimalposition\n\n" + TEXT_POSITION
-TEXT_MAX = "Konfiguration der Maximalposition\n\n" + TEXT_POSITION
+# TEXT_MIN = "Konfiguration der Minimalposition\n\n" + TEXT_POSITION  # v2.06 (entfallen)
+# TEXT_MAX = "Konfiguration der Maximalposition\n\n" + TEXT_POSITION  # v2.06 (entfallen)
+TEXT_MIN = "Konfiguration der Minimalposition\n\n" + TEXT_POSITION  # v2.06 (wieder wie vorher; uebersetzt wird beim Aufruf mit text_min(), nicht beim Import)
+TEXT_MAX = "Konfiguration der Maximalposition\n\n" + TEXT_POSITION  # v2.06
+
+
+def text_min():  # v2.06
+    return tr("Konfiguration der Minimalposition\n\n") + tr(TEXT_POSITION)  # v2.06
+
+
+def text_max():  # v2.06
+    return tr("Konfiguration der Maximalposition\n\n") + tr(TEXT_POSITION)  # v2.06
 TEXT_SPEED = ("Konfiguration der Geschwindigkeit\n\nMit den Pfeiltasten wird die Geschwindigkeit eingestellt. "
               "Durch Halten der Tasten wird die Geschwindigkeit schneller verändert")
 BUTTON_START, BUTTON_NEXT = "Servo Konfigurieren", "Weiter"
@@ -413,7 +424,7 @@ class ServoModel:
             self.arrows_visible = True
             self.fields_enabled = False
             self.action2_text = BUTTON2_SAVE
-            self._enter_step(1, TEXT_MIN, "Minimalposition", BUTTON_NEXT)
+            self._enter_step(1, text_min(), "Minimalposition", BUTTON_NEXT)  # v2.06
             self.cancel_text = BUTTON_NO_SAVE
             self.min_max_active = True                  # EnableControl_Buttons True
             self.send_select_current_module()
@@ -432,7 +443,7 @@ class ServoModel:
         if epoch is None:  # v2.03
             return False
         try:
-            self._enter_step(2, TEXT_MAX, "Maximalposition")
+            self._enter_step(2, text_max(), "Maximalposition")  # v2.06
             await self._send_pause(SRV_BUTTON1, epoch)  # v2.03
             return True
         except _Aborted:  # v2.03

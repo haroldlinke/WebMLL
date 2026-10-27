@@ -1,8 +1,8 @@
-# Datei-Version: 1.02 (2026-10-26) - web_i18n.py
+# Datei-Version: 1.06 (2026-10-26) - web_i18n.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_i18n.py
 # Path:           _web/web_i18n.py
-# Version:        1.02
+# Version:        1.06
 # Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -10,6 +10,10 @@
 #   1.00  2026-10-23  Neu: Mehrsprachigkeit der Web-Oberflaeche: Katalog csv/Web_Languages.csv, Uebersetzung der Texte beim Aufbau der Seite, Auszug der Texte und Pruefung der Abdeckung, Testsprache
 #   1.01  2026-10-23  Auszug erkennt tr('... {name}', name=...) als Text; f-Strings ohne Woerter oder nur mit neutralen Woertern (webMobaLedLib, Max, Min) werden nicht gemeldet
 #   1.02  2026-10-26  Auszug erkennt die Texte der Optionen in PARAM_OVERRIDES und PARAM_ADDITIONS (Programm Einstellungen)
+#   1.03  2026-10-26  tr() schlaegt, wenn ein Text nicht im Katalog steht, in der Tabelle Languages des Excel-Programms nach (Formulare, Optionen, Meldungen); Fehlt dort die Sprache oder steht ToDo: English
+#   1.04  2026-10-26  catalog_text: Uebersetzung nur aus dem Katalog (fuer M09.Get_Language_Str, wenn die Tabelle Languages keine hat)
+#   1.05  2026-10-26  Uebersetzung wird mit den Leerzeichen des Textes eingesetzt; vor einem Satzzeichen entfaellt das vordere Leerzeichen (_fit)
+#   1.06  2026-10-26  tr(): gewaehlte Sprache zuerst im Katalog, dann in der Tabelle Languages, erst danach English (ein englischer Katalogtext verdraengte vorher eine vorhandene niederlaendische Uebersetzung der Tabelle)
 # ----------------------------------------------------------------------------------------------
 """Mehrsprachige Web-Oberflaeche (Konzept siehe HOC_intern.md, Version 2.14).
 
@@ -44,7 +48,8 @@ PROJECT = os.path.dirname(HERE)
 CATALOG_FILE = os.path.join(PROJECT, "csv", "Web_Languages.csv")
 TEST_MARK = ("⟦", "⟧")
 
-_state = {"catalog": None, "mtime": None, "path": None}
+# _state = {"catalog": None, "mtime": None, "path": None}  # v1.03 (entfallen)
+_state = {"catalog": None, "mtime": None, "path": None, "sheet": None}  # v1.03
 _installed = {"done": False, "originals": []}
 
 
@@ -95,18 +100,88 @@ def tr(text, **values):
     elif lang != 0:
         stripped = text.strip()
         row = load_catalog().get(text) or load_catalog().get(stripped)
-        if row:
-            chosen = row[lang].strip() if lang < len(row) else ""
-            if not chosen and lang != 1 and len(row) > 1:
-                chosen = row[1].strip()                                # English als Rueckfall
+        # if row:  # v1.06 (entfallen)
+            # chosen = row[lang].strip() if lang < len(row) else ""  # v1.06 (entfallen)
+            # if not chosen and lang != 1 and len(row) > 1:  # v1.06 (entfallen)
+                # chosen = row[1].strip()                                # English als Rueckfall  # v1.06 (entfallen)
+        srow = sheet_index().get(_norm(text))  # v1.06
+        # Reihenfolge: gewaehlte Sprache im Katalog, gewaehlte Sprache in der Tabelle Languages, dann dasselbe fuer English (vorher stand ein englischer Katalogtext vor
+        # einer vorhandenen niederlaendischen Uebersetzung der Tabelle: gemischte Sprachen)
+        for column in ((lang, 1) if lang != 1 else (1,)):  # v1.06
+            chosen = row[column].strip() if row and column < len(row) else ""  # v1.06
+            if not chosen and srow and column < len(srow):  # v1.06
+                chosen = srow[column].strip()  # v1.06
+                if chosen.lower().startswith("todo"):  # v1.06
+                    chosen = ""  # v1.06
             if chosen:
-                out = text.replace(stripped, chosen, 1) if text != stripped else chosen   # fuehrende und folgende Leerzeichen bleiben
+                out = _fit(text, stripped, chosen)                     # fuehrende und folgende Leerzeichen bleiben  # v1.05
+        # else:                                                          # nicht im Katalog: die Tabelle Languages des Excel-Programms (Formulare, Meldungen)  # v1.06 (entfallen)
+            # srow = sheet_index().get(_norm(text))  # v1.06 (entfallen)
+            # if srow:  # v1.06 (entfallen)
+                # for column in (lang, 1):  # v1.06 (entfallen)
+                    # chosen = srow[column].strip() if column < len(srow) else ""  # v1.06 (entfallen)
+                    # if chosen and not chosen.lower().startswith("todo"):  # v1.06 (entfallen)
+                        # out = _fit(text, stripped, chosen)  # v1.06 (entfallen)
+                        # break  # v1.06 (entfallen)
+                break  # v1.06
     return out.format(**values) if values else out
+
+
+def catalog_text(text: str, lang: int = -1):  # v1.04
+    """Uebersetzung eines Textes nur aus dem Katalog der Web-Oberflaeche (Sprache lang, sonst English); None, wenn es keine gibt oder die Sprache Deutsch ist.
+    Gebraucht von M09.Get_Language_Str: Fehlt ein Text in der Tabelle Languages, wird hier nachgeschlagen (Texte, die es im Excel-Programm nicht gibt)."""
+    lang = current_language() if lang < 0 else lang  # v1.04
+    if lang in (0, 99) or not isinstance(text, str) or not text.strip():  # v1.04
+        return None  # v1.04
+    stripped = text.strip()  # v1.04
+    row = load_catalog().get(text) or load_catalog().get(stripped)  # v1.04
+    if not row:  # v1.04
+        return None  # v1.04
+    for column in (lang, 1):  # v1.04
+        chosen = row[column].strip() if column < len(row) else ""  # v1.04
+        if chosen:  # v1.04
+            # return text.replace(stripped, chosen, 1) if text != stripped else chosen  # v1.05 (entfallen)
+            return _fit(text, stripped, chosen)  # v1.05
+    return None  # v1.04
+
+
+def _fit(text: str, stripped: str, chosen: str) -> str:  # v1.05
+    """Die Uebersetzung an die Stelle des Textes setzen: Leerzeichen vorn und hinten bleiben, nur vor einem Satzzeichen (? ! . , ; : )) entfaellt das vordere (zum Beispiel ' werden?' -> '?')"""  # v1.05
+    if text == stripped:  # v1.05
+        return chosen  # v1.05
+    lead = text[:len(text) - len(text.lstrip())]  # v1.05
+    trail = text[len(text.rstrip()):]  # v1.05
+    if chosen[:1] in ".,;:!?)":  # v1.05
+        lead = ""  # v1.05
+    return lead + chosen + trail  # v1.05
+
+
+def _norm(text) -> str:  # v1.03
+    return re.sub(r"\s+", " ", str(text)).strip().lower()  # v1.03
+
+
+def sheet_index() -> dict:  # v1.03
+    """Die Tabelle Languages des Excel-Programms als {normierter deutscher Text: [Deutsch, English, Nederlands, ...]} (nur Zeilen mit Text; ohne den Anteil nach dem Kennzeichen §).
+    Dort sind die Texte der Formulare (Optionen, Verteiler und Stecker Nummer ...) und der Meldungen schon uebersetzt; der Katalog der Web-Oberflaeche geht vor."""
+    if _state["sheet"] is None:  # v1.03
+        index = {}  # v1.03
+        try:  # v1.03
+            import mlpyproggen.Prog_Generator as PG  # v1.03
+            import proggen.M02_Public as M02  # v1.03
+            for row in PG.ThisWorkbook.Sheets(M02.LANGUAGES_SH).tksheet.data[2:]:  # v1.03
+                if len(row) > 3 and row[2] is not None and str(row[2]).strip():  # v1.03
+                    index.setdefault(_norm(str(row[2]).split("§")[0]), [str(x).split("§")[0] if x is not None else "" for x in row[2:2 + len(LANGUAGE_NAMES)]])  # v1.03
+        except Exception:                                              # noqa: BLE001  ohne geladene Arbeitsmappe: nur der Katalog  # v1.03
+            logger.debug("web_i18n: Tabelle Languages nicht verfuegbar", exc_info=True)  # v1.03
+            return {}  # v1.03
+        _state["sheet"] = index  # v1.03
+    return _state["sheet"]  # v1.03
 
 
 def language_changed() -> None:
     """Nach einem Sprachwechsel: Katalog neu lesen"""
-    _state.update(catalog=None, mtime=None)
+    # _state.update(catalog=None, mtime=None)  # v1.03 (entfallen)
+    _state.update(catalog=None, mtime=None, sheet=None)  # v1.03
 
 
 # --------------------------------------------------------------------------- Umstellung der Elemente

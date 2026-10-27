@@ -1,8 +1,8 @@
-# Datei-Version: 1.02 (2026-10-26) - M08_ARDUINO.py
+# Datei-Version: 1.03 (2026-10-26) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.02
+# Version:        1.03
 # Last Update:    2026-10-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -10,6 +10,7 @@
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
 #   1.02  2026-10-26  Entwickler: PlatformIO (Create_PIO_Build_cmd, platformio.ini, Start_Arduino.cmd); Claude: PlatformIO auch fuer Linux, macOS und Raspberry Pi (Ordner bin statt Scripts, Find_PIO, PIO_Version), PATH nur einmal ergaenzt, verstaendliche Meldung wenn pio fehlt, platformio.ini wird beim Hochladen mit PlatformIO mit den aktuellen Einstellungen geschrieben
+#   1.03  2026-10-26  PlatformIO unter Linux: pipx-Installation (~/.local/bin) wird gefunden, Installationshinweis je System, Hinweis und Einrichtung der udev-Regel fuer den Raspberry Pi Pico (picotool: unable to connect)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -134,6 +135,7 @@ import os
 import platform
 import shutil  # v1.02
 import subprocess  # v1.02
+import sys  # v1.03
 from pathlib import Path
 
 def get_appdata_dir(appname):
@@ -422,6 +424,9 @@ def Create_PIO_Build_cmd(ResultName, ComPort, BuildOptions, InoName, Mode, SrcDi
                 __Environment = "pico"
             elif InStr(BuildOptions, M02.BOARD_ESP32):
                 __Environment = "esp32"                
+    if __Environment == 'pico' and not Pico_Udev_Ok():  # v1.03
+        if P01.MsgBox(__Pico_Udev_Message(), vbQuestion + vbYesNo + vbDefaultButton2, 'PlatformIO') != vbYes:  # v1.03
+            return ''  # v1.03
     cmd = __Create_PIO_Build_cmd(__Environment, ResultName, ComPort, SrcDir)
     return cmd
     
@@ -436,10 +441,16 @@ def PIO_Scripts_Dir():  # v1.02
 def Find_PIO():  # v1.02
     # Vollstaendiger Pfad von pio (erst im Ordner von PlatformIO, dann im PATH); '' wenn PlatformIO nicht installiert ist
     names = ('pio.exe', 'platformio.exe') if os.name == 'nt' else ('pio', 'platformio')  # v1.02
-    for name in names:  # v1.02
-        p = os.path.join(PIO_Scripts_Dir(), name)  # v1.02
-        if os.path.isfile(p):  # v1.02
-            return p  # v1.02
+    # for name in names:  # v1.03 (entfallen)
+        # p = os.path.join(PIO_Scripts_Dir(), name)  # v1.03 (entfallen)
+        # if os.path.isfile(p):  # v1.03 (entfallen)
+            # return p  # v1.03 (entfallen)
+    folders = [PIO_Scripts_Dir()] + ([] if os.name == 'nt' else [os.path.join(os.path.expanduser('~'), '.local', 'bin')])      # pipx und pip --user legen pio nach ~/.local/bin  # v1.03
+    for folder in folders:  # v1.03
+        for name in names:  # v1.03
+            p = os.path.join(folder, name)  # v1.03
+            if os.path.isfile(p):  # v1.03
+                return p  # v1.03
     for name in ('pio', 'platformio'):  # v1.02
         p = shutil.which(name)  # v1.02
         if p:  # v1.02
@@ -459,11 +470,73 @@ def PIO_Version(pio=''):  # v1.02
         return ''  # v1.02
 
 
+def PIO_Install_Hint():  # v1.03
+    # Hinweis zur Installation von PlatformIO je System (deutscher Text, wird uebersetzt). Debian, Ubuntu und Raspberry Pi OS erlauben pip install nicht ausserhalb einer virtuellen Umgebung (PEP 668): pipx.
+    if os.name == 'nt':  # v1.03
+        return 'https://platformio.org/install/cli (zum Beispiel mit: pip install platformio)'  # v1.03
+    return 'https://platformio.org/install/cli (Linux, macOS: pipx install platformio, danach pipx ensurepath und neu anmelden; Debian, Ubuntu, Raspberry Pi OS: vorher sudo apt install pipx)'  # v1.03
+
+
 def __PIO_Missing_Message():  # v1.02
     return (M09.Get_Language_Str("PlatformIO wurde nicht gefunden.") + vbCr + vbCr +  # v1.02
             M09.Get_Language_Str("PlatformIO ist als Entwicklungsumgebung eingestellt (Optionen, Entwicklungsumgebung), aber das Programm pio ist nicht installiert.") + vbCr + vbCr +  # v1.02
-            M09.Get_Language_Str("Installation: https://platformio.org/install/cli (zum Beispiel mit pip install platformio). Danach findet das Programm pio selbst.") + vbCr + vbCr +  # v1.02
+            # M09.Get_Language_Str("Installation: https://platformio.org/install/cli (zum Beispiel mit pip install platformio). Danach findet das Programm pio selbst.") + vbCr + vbCr +  # v1.03 (entfallen)
+            M09.Get_Language_Str("Installation: ") + M09.Get_Language_Str(PIO_Install_Hint()) + M09.Get_Language_Str(". Danach findet das Programm pio selbst.") + vbCr + vbCr +  # v1.03
             M09.Get_Language_Str("Oder in den Optionen wieder die ARDUINO-IDE einstellen."))  # v1.02
+
+
+UDEV_DIRS = ('/etc/udev/rules.d', '/lib/udev/rules.d', '/usr/lib/udev/rules.d')  # v1.03
+
+
+def Pico_Udev_Ok(dirs=None):  # v1.03
+    # Linux: Gibt es eine udev-Regel fuer Raspberry Pi (Hersteller 2e8a)? Ohne sie darf ein normaler Benutzer den Pico im BOOTSEL-Modus nicht ansprechen (picotool: unable to connect). Ausserhalb von Linux immer True.
+    if not sys.platform.startswith('linux'):  # v1.03
+        return True  # v1.03
+    for folder in (dirs or UDEV_DIRS):  # v1.03
+        try:  # v1.03
+            names = os.listdir(folder)  # v1.03
+        except OSError:  # v1.03
+            continue  # v1.03
+        for name in names:  # v1.03
+            if name.endswith('.rules'):  # v1.03
+                try:  # v1.03
+                    with open(os.path.join(folder, name), encoding='utf-8', errors='replace') as fh:  # v1.03
+                        if '2e8a' in fh.read().lower():  # v1.03
+                            return True  # v1.03
+                except OSError:  # v1.03
+                    pass  # v1.03
+    return False  # v1.03
+
+
+def Pico_Udev_Script():  # v1.03
+    return os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'install', 'install_pico_udev.sh'))  # v1.03
+
+
+def __Pico_Udev_Message():  # v1.03
+    return (M09.Get_Language_Str("Für den Raspberry Pi Pico braucht Linux einmalig eine Regel für den USB-Zugriff (udev), sonst meldet PlatformIO: picotool was unable to connect.") + vbCr + vbCr +  # v1.03
+            M09.Get_Language_Str("Einrichten: Optionen, Entwicklungsumgebung, USB-Zugriff für den Pico einrichten, oder im Terminal:") + vbCr + "  sudo bash " + Pico_Udev_Script() + vbCr + vbCr +  # v1.03
+            M09.Get_Language_Str("Danach den Pico neu anstecken (BOOTSEL-Taste gedrückt halten).") + vbCr + vbCr +  # v1.03
+            M09.Get_Language_Str("Trotzdem hochladen?"))  # v1.03
+
+
+def Setup_Pico_Udev():  # v1.03
+    # Linux: richtet die udev-Regel fuer den Pico ein (install/install_pico_udev.sh) mit pkexec (fragt nach dem Passwort). Rueckgabe: (True/False, Text)
+    script = Pico_Udev_Script()  # v1.03
+    if not sys.platform.startswith('linux'):  # v1.03
+        return False, M09.Get_Language_Str("Das gibt es nur unter Linux.")  # v1.03
+    if not os.path.isfile(script):  # v1.03
+        return False, M09.Get_Language_Str("Die Datei install_pico_udev.sh wurde nicht gefunden:") + ' ' + script  # v1.03
+    runner = shutil.which('pkexec')  # v1.03
+    if not runner:  # v1.03
+        return False, M09.Get_Language_Str("pkexec ist nicht installiert. Bitte im Terminal ausführen:") + vbCr + "  sudo bash " + script  # v1.03
+    try:  # v1.03
+        res = subprocess.run([runner, '/bin/bash', script], capture_output=True, text=True, timeout=300)  # v1.03
+    except Exception as ex:  # v1.03
+        return False, str(ex)  # v1.03
+    text = ((res.stdout or '') + (res.stderr or '')).strip()  # v1.03
+    if res.returncode in (126, 127):  # v1.03
+        return False, M09.Get_Language_Str("Die Einrichtung wurde abgebrochen oder ist nicht erlaubt. Bitte im Terminal ausführen:") + vbCr + "  sudo bash " + script  # v1.03
+    return res.returncode == 0, text  # v1.03
 
 
 def __Create_PIO_Build_cmd(Environment, ResultName, ComPort, SrcDir):
