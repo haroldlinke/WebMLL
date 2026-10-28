@@ -1,19 +1,22 @@
 @echo off
-REM Datei-Version: 1.07 (2026-10-15) - install_windows.bat
+REM Datei-Version: 1.09 (2026-10-27) - install_windows.bat
 REM Installiert die Web-Oberflaeche von webMobaLedLib unter Windows: Python-Umgebung, Pakete, Programmsymbol und
 REM eine Verknuepfung "webMobaLedLib" auf dem Desktop.
 REM Aufruf: Doppelklick, oder mit Optionen:
 REM   /ide       ARDUINO IDE 1.8.19 von arduino.cc laden und installieren (die IDE 2.x wird NICHT unterstuetzt), dazu /libs
 REM   /libs      Bibliothek MobaLedLib (und FastLED in der geforderten Version) mit der ARDUINO IDE installieren
+REM   /platformio PlatformIO (Ersatz fuer die ARDUINO IDE) in eine eigene Python-Umgebung %USERPROFILE%\.platformio\penv installieren
 REM   /nocheck   ohne den Test der Installation am Ende
 setlocal EnableExtensions
 set "NOCHECK=0"
 set "WITHIDE=0"
 set "WITHLIBS=0"
+set "WITHPIO=0"
 set "FASTLED=3.9.12"
 for %%A in (%*) do (
   if /i "%%A"=="/nocheck" set "NOCHECK=1"
   if /i "%%A"=="/libs" set "WITHLIBS=1"
+  if /i "%%A"=="/platformio" set "WITHPIO=1"
   if /i "%%A"=="/ide" set "WITHIDE=1"
   if /i "%%A"=="/ide" set "WITHLIBS=1"
 )
@@ -155,6 +158,40 @@ echo Keine ARDUINO IDE gefunden. Bitte die IDE 1.8.19 installieren (arduino.cc, 
 echo und install_windows.bat /libs noch einmal starten (oder gleich install_windows.bat /ide), oder MobaLedLib in der IDE installieren.
 
 :nolibs
+REM --- PlatformIO (nur mit /platformio): eigene Python-Umgebung wie beim Installer von platformio.org
+if "%WITHPIO%"=="0" goto :nopio
+set "PIOHOME=%USERPROFILE%\.platformio"
+if defined MLL_PIO_HOME set "PIOHOME=%MLL_PIO_HOME%"
+echo.
+echo PlatformIO (Ersatz fuer die ARDUINO IDE)
+if exist "%PIOHOME%\penv\Scripts\pio.exe" goto :pio_vorhanden
+echo Umgebung: %PIOHOME%\penv
+if exist "%PIOHOME%\penv\Scripts\python.exe" goto :pio_pip
+%PY% -m venv "%PIOHOME%\penv"
+if errorlevel 1 goto :pio_fehler
+:pio_pip
+echo PlatformIO installieren (das dauert einige Minuten) ...
+if not defined MLL_PIO_PIP_ARGS "%PIOHOME%\penv\Scripts\python.exe" -m pip install --upgrade pip
+"%PIOHOME%\penv\Scripts\python.exe" -m pip install --prefer-binary %MLL_PIO_PIP_ARGS% platformio
+if errorlevel 1 goto :pio_fehler
+if not exist "%PIOHOME%\penv\Scripts\pio.exe" goto :pio_fehler
+echo PlatformIO ist installiert: %PIOHOME%\penv\Scripts\pio.exe
+"%PIOHOME%\penv\Scripts\pio.exe" --version
+echo Als Entwicklungsumgebung einstellen: Optionen, Optionen und spezielle Funktionen, Entwicklungsumgebung.
+echo Das erste Hochladen laedt die Compiler und Bibliotheken nach (Internet noetig): etwa 5 Minuten beim Nano, etwa 10 Minuten beim Pico. Danach geht es schnell.
+echo Raspberry Pi Pico: einmalig den USB-Treiber WinUSB mit Zadig installieren (Anleitung, Kapitel 2.16).
+goto :nopio
+
+:pio_vorhanden
+echo PlatformIO ist schon installiert: %PIOHOME%\penv\Scripts\pio.exe
+"%PIOHOME%\penv\Scripts\pio.exe" --version
+goto :nopio
+
+:pio_fehler
+echo FEHLER beim Installieren von PlatformIO (siehe oben). Ursachen: kein Internet oder Python zu alt oder zu neu fuer ein Paket.
+echo Nachholen: install_windows.bat /platformio
+
+:nopio
 REM --- Test der Installation
 if "%NOCHECK%"=="1" goto :fertig
 echo.

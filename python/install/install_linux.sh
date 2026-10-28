@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.04 (2026-10-15) - install_linux.sh
+# Datei-Version: 1.05 (2026-10-27) - install_linux.sh
 # Installiert die Web-Oberflaeche von webMobaLedLib auf einem Linux-Desktop (Debian, Ubuntu, Linux Mint, Fedora, Arch ...):
 # im eigenen Benutzerkonto, ohne Systemdienst. Es entsteht eine Python-Umgebung im Projektordner (venv_web), ein Starter im
 # Anwendungsmenue und ein Symbol auf dem Schreibtisch. (Raspberry Pi als Dienst: pi/install_pi.sh)
@@ -8,20 +8,22 @@
 #     bash install_linux.sh [Optionen]
 #   --with-arduino-ide    ARDUINO IDE 1.8.19 nach ~/arduino-1.8.19 laden (ohne root)
 #   --with-arduino-libs   Bibliothek MobaLedLib samt FastLED in der geforderten Version installieren (braucht die IDE)
+#   --with-platformio     PlatformIO (Ersatz fuer die ARDUINO IDE) in eine eigene Python-Umgebung ~/.platformio/penv installieren (install_platformio.sh)
 #   --no-desktop-icon     kein Symbol auf dem Schreibtisch (der Eintrag im Anwendungsmenue bleibt)
 #   --no-dialout          die Gruppe dialout (USB-Anschluss des Arduino) nicht eintragen
 #   --no-check            den Test der Installation (pi_check.py) ueberspringen
 set -uo pipefail
 
-WITH_IDE=0; WITH_LIBS=0; DESKTOP_ICON=1; DIALOUT=1; RUN_CHECK=1
+WITH_IDE=0; WITH_LIBS=0; WITH_PIO=0; DESKTOP_ICON=1; DIALOUT=1; RUN_CHECK=1
 for a in "$@"; do
   case "$a" in
     --with-arduino-ide)  WITH_IDE=1; WITH_LIBS=1 ;;
     --with-arduino-libs) WITH_LIBS=1 ;;
+    --with-platformio)   WITH_PIO=1 ;;
     --no-desktop-icon)   DESKTOP_ICON=0 ;;
     --no-dialout)        DIALOUT=0 ;;
     --no-check)          RUN_CHECK=0 ;;
-    -h|--help)           sed -n '3,15p' "$0"; exit 0 ;;
+    -h|--help)           sed -n '3,14p' "$0"; exit 0 ;;
     *) echo "Unbekannte Option: $a"; exit 1 ;;
   esac
 done
@@ -145,6 +147,11 @@ if [ -n "$IDE_EXE" ]; then
   fi
 else
   echo "Keine ARDUINO IDE gefunden. Installieren mit:  bash install_linux.sh --with-arduino-ide"
+fi
+
+# --- 5b. PlatformIO (optional)
+if [ "$WITH_PIO" = "1" ]; then
+  MLL_PYTHON="$PY" bash "$HERE/install_platformio.sh" || echo "(PlatformIO: siehe Meldungen oben; Nachholen: bash install_platformio.sh)"
 fi
 
 # --- 6. Starter, Symbol und Eintraege

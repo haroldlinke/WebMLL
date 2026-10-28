@@ -1,4 +1,4 @@
-Datei-Version: 1.03 (2026-10-27) - UEBERSETZEN.md
+Datei-Version: 1.04 (2026-10-27) - UEBERSETZEN.md
 Gilt für webMobaLedLib 2.22
 
 # Übersetzen der Web-Oberfläche
@@ -11,7 +11,7 @@ Die Texte der Oberfläche (Menüs, Knöpfe, Meldungen, Hinweise) stehen in der D
 1. **Katalog `csv/Web_Languages.csv`** (diese Datei): alle Texte der Web-Oberfläche und alle Texte, die es im Excel-Programm nicht gab. Er geht vor.
 2. **Tabelle Languages der Excel-Datei** (`csv/Prog_Generator_MobaLedLib.xlsm`): die Texte der Formulare und Meldungen aus dem Excel-Programm, mit Übersetzungen in sieben Sprachen. Ein Text, der **nicht** im Katalog steht, wird dort gesucht; Einträge mit „ToDo“ gelten als nicht übersetzt.
 3. **Reihenfolge** (seit 2.22): gewählte Sprache im Katalog, gewählte Sprache in der Tabelle Languages, dann English im Katalog, English in der Tabelle, zuletzt der deutsche Text. Ein englischer Text des Katalogs verdrängt also keine vorhandene Übersetzung der Tabelle mehr (vorher mischten sich Niederländisch und Englisch).
-4. **Nederlands** (Stand 2.22): Für **742 von 766 Texten** des Katalogs gibt es einen **Entwurf** (von Claude geschrieben, nicht von einem Muttersprachler geprüft); die übrigen 24 stehen in der Tabelle Languages. Zum Prüfen gibt es `Web_Languages_Nederlands_Entwurf.csv` (Spalten Deutsch;English;Nederlands (Entwurf)): Die Spalte Nederlands verbessern und die Datei zurückschicken; sie wird in `csv/Web_Languages.csv` eingearbeitet. Eigene Verbesserungen kann man auch direkt in `csv/Web_Languages.csv` (Spalte Nederlands) eintragen.
+4. **Stand der Sprachen:** **English** (Entwurf) und **Nederlands, Français, Italiano, Español, Dansk** (Entwürfe, von Claude geschrieben, **nicht von Muttersprachlern geprüft**): Für je 744 von 766 Texten des Katalogs gibt es eine Übersetzung; die übrigen stehen in der Tabelle Languages. Fachwörter und Anrede (Niederländisch „je“, Französisch „vous“, Italienisch und Spanisch „tu“/„tú“, Dänisch „du“) sind Vorschläge. Zum Prüfen gibt es `Web_Languages_Nederlands_Entwurf.csv` (Deutsch;English;Nederlands) und `Web_Languages_Entwurf_FR_IT_ES_DA.csv` (Deutsch;English;Francais;Italiano;Espanol;Dansk, jeweils mit „(Entwurf)“ im Spaltenkopf): die eigene Spalte verbessern und die Datei zurückschicken; sie wird in `csv/Web_Languages.csv` eingearbeitet. Eigene Verbesserungen kann man auch direkt in `csv/Web_Languages.csv` eintragen.
 
 Für eine neue Übersetzung genügt es, den Eintrag im Katalog zu ergänzen, auch für Texte, die in der Tabelle Languages noch „ToDo“ sind.
 

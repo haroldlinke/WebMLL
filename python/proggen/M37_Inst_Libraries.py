@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-10-26) - M37_Inst_Libraries.py
+# Datei-Version: 1.06 (2026-10-27) - M37_Inst_Libraries.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M37_Inst_Libraries.py
 # Path:           proggen/M37_Inst_Libraries.py
-# Version:        1.05
-# Last Update:    2026-10-26
+# Version:        1.06
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.03  2026-10-20  Select_Missing: esp32:esp32 wird auf Linux mit 64-Bit-ARM (Raspberry Pi) nicht ausgewaehlt (keine Werkzeuge fuer ESP32 1.0.4), sonst scheitert die Installation bei jedem Start
 #   1.04  2026-10-21  Norm_Path: Pfade und Namen aus der Tabelle Libraries mit / lesen (die Excel-Datei 3.5.0K schreibt Backslash: ATTinyCore\\src\\ATTinyCore.h, esp32:tools\\esptool_py); Is_Lib_Installed, Get_Lib_Version, Get_Required_Version vergleichen mit normierten Namen
 #   1.05  2026-10-26  Nach dem Laden der Bibliothek von GitHub wird ein Ordner mit dem Zusatz -longInpAddresses umbenannt (Excel 3.5.0-K-long; Aenderung des Entwicklers, vorher mit der Marke V2.18)
+#   1.06  2026-10-27  PlatformIO: keine Pruefung der ARDUINO Bibliotheken und Boards (Install_Missing_Libraries_and_Board), Version der MobaLedLib aus libraries/MobaLedLib/library.properties (Get_Lib_Version)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -65,6 +66,8 @@ import mlpyproggen.Prog_Generator as PG
 import urllib.request 
 
 import os
+import re  # v1.06
+import logging  # v1.06
 
 import proggen.M02_Public as M02
 import proggen.M02a_Public as M02a
@@ -1631,6 +1634,9 @@ def Install_Selected():
 
 def Install_Missing_Libraries_and_Board():
     #-----------------------------------------------
+    if M28.Is_PlatformIO():  # v1.06
+        logging.info("Pruefung der ARDUINO Bibliotheken und Boards uebersprungen: PlatformIO ist die Entwicklungsumgebung")  # v1.06
+        return  # v1.06
     F00.StatusMsg_UserForm.ShowDialog(M09.Get_Language_Str('Überprüfe Bibliotheken und Boards'), '')
     Update_General_Versions()
     Get_All_Library_States()
@@ -1660,10 +1666,27 @@ def Is_Lib_Installed(LibName):
         Row = Row + 1
     return _fn_return_value
 
+def __Version_from_library_properties(LibName):  # v1.06
+    """Version aus libraries/<LibName>/library.properties (Zeile version=...) im Sketchbook-Pfad, sonst ''"""  # v1.06
+    try:  # v1.06
+        text = M30.Read_File_to_String(M02a.Get_Sketchbook_Path() + '/libraries/' + LibName + '/library.properties')  # v1.06
+        if text != '#ERROR#':  # v1.06
+            found = re.search(r'^\s*version\s*=\s*(\S+)', text, re.M)  # v1.06
+            if found:  # v1.06
+                return found.group(1).strip()  # v1.06
+    except Exception:  # v1.06
+        logging.debug("library.properties von %s nicht lesbar", LibName, exc_info=True)  # v1.06
+    return ''  # v1.06
+
 def Get_Lib_Version(LibName):
     _fn_return_value = False
     Row = Long()
     #-------------------------------------------------------------
+    if M28.Is_PlatformIO() and Norm_Path(LibName) == 'MobaLedLib':  # v1.06
+        # PlatformIO: Die Seite Bibliotheken wird nicht aus der ARDUINO IDE gefuellt; die Version steht in libraries/MobaLedLib/library.properties des Python-Ordners
+        Ver = __Version_from_library_properties('MobaLedLib')  # v1.06
+        if Ver != '':  # v1.06
+            return Ver  # v1.06
     Row = First_Dat_Row
     LastRow = M30.LastUsedRowIn(M02.LIBRARYS__SH)
     with_6 = PG.ThisWorkbook.Sheets(M02.LIBRARYS__SH)

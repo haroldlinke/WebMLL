@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-27) - DieseArbeitsmappe.py
+# ----------------------------------------------------------------------------------------------
+# Name:           DieseArbeitsmappe.py
+# Path:           proggen/DieseArbeitsmappe.py
+# Version:        1.01
+# Last Update:    2026-10-27
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-27  PlatformIO: keine Pruefung der ARDUINO IDE und der Bibliotheken beim Start, Sketchbook-Pfad = Python-Ordner, Erweiterungen werden geladen
+# ----------------------------------------------------------------------------------------------
 from vb2py.vbfunctions import *
 from vb2py.vbdebug import *
 import ExcelAPI.XLA_Application as P01
@@ -12,6 +24,7 @@ import proggen.M30_Tools as M30
 import proggen.M09_Language as M09
 import proggen.M08_ARDUINO as M08
 import proggen.M38_Extensions as M38
+import proggen.M02a_Public as M02a  # v1.01
 import proggen.M39_Simulator as M39
 
 
@@ -90,8 +103,16 @@ def Workbook_Open():
     M28.Clear_COM_Port_Check_and_Set_Cursor_in_all_Sheets(False)
     M01.Set_Config_Default_Values_at_Program_Start()
     
-    ARDUINO_exe = M08.Find_ArduinoExe()
-    if ARDUINO_exe !="":
+    # ARDUINO_exe = M08.Find_ArduinoExe()  # v1.01 (entfallen)
+    # if ARDUINO_exe !="":  # v1.01 (entfallen)
+    pio_mode = M28.Is_PlatformIO()                                  # PlatformIO: keine Pruefung der ARDUINO IDE und der Bibliotheken; der Sketchbook-Pfad ist der Python-Ordner  # v1.01
+    if pio_mode:  # v1.01
+        M02a.Read_Sketchbook_Path_from_preferences_txt()  # v1.01
+        M38.Load_Extensions()  # v1.01
+    ARDUINO_exe = "" if pio_mode else M08.Find_ArduinoExe()  # v1.01
+    if pio_mode:  # v1.01
+        continue_update = False  # v1.01
+    elif ARDUINO_exe !="":  # v1.01
         continue_update=True
     else:
         P01.MsgBox(M09.Get_Language_Str('Die ARDUINO IDE wurde nicht gefunden. Entweder wurde ARDUINO noch nicht installiert (Windows) oder das ARDUINO-Verzeichnis wurde noch nicht eingegeben (LINUX/Mac)'), vbInformation, M09.Get_Language_Str('ARDUINO IDE nicht gefunden'))

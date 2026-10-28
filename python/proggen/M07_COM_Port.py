@@ -1,9 +1,9 @@
-# Datei-Version: 1.03 (2026-10-26) - M07_COM_Port.py
+# Datei-Version: 1.04 (2026-10-27) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.03
-# Last Update:    2026-10-26
+# Version:        1.04
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.01  2026-10-20  EnumComPorts: FTDI-Adapter (VID 0403, Beschreibung FT232 ...) werden erkannt, sonst meldete die Pruefung beim Hochladen 'kein Arduino angeschlossen'; DetectArduino: kein Absturz, wenn die Verbindung inzwischen getrennt wurde
 #   1.02  2026-10-21  Pico: jede Kennung VID 2E8A und Adafruit 239A:813D (vorher nur 2E8A:000A), pyserial- und Windows-Zweig; DetectArduino schaltet RTS ein (Version K des Excel-Programms)
 #   1.03  2026-10-26  Linux: die Platzhalter-Anschluesse /dev/ttyS0 ... ttyS31 ohne Geraet erscheinen nicht mehr in der Liste der Anschluesse (auch nicht mit unbekannte Ports anzeigen)
+#   1.04  2026-10-27  Find_Nano_Like_Device: erkennt einen Arduino Nano (CH340, FTDI, Arduino) an einem Anschluss, wenn ein Pico oder ESP32 eingestellt ist
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -652,6 +653,28 @@ def Check_If_Port_is_Available(PortNr):
     return fn_return_value
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: PortNr - ByVal 
+NANO_LIKE_VIDS = (0x1A86, 0x0403, 0x2341, 0x2A03)                        # CH340/CH341, FTDI, Arduino: Hersteller der Anschluesse, an denen ein Nano oder Uno haengt (nicht: 0x10C4 Silicon Labs CP210x der ESP32, 0x2E8A Raspberry Pi)  # v1.04
+
+
+def Find_Nano_Like_Device(PortNr):  # v1.04
+    """Beschreibung des Geraetes an einem Anschluss, wenn es nach einem Arduino Nano oder Uno aussieht (CH340, FTDI, Arduino), sonst ''.
+    Gebraucht, wenn ein Pico oder ESP32 eingestellt ist: Die Liste der Anschluesse enthaelt dann nur dessen Geraete, und die Pruefung meldete
+    'kein PICO angeschlossen', obwohl der Anschluss stimmt und ein Nano daran haengt."""
+    try:  # v1.04
+        for comport in portlist.comports():  # v1.04
+            if str(comport.device) != str(PortNr):  # v1.04
+                continue  # v1.04
+            vid = getattr(comport, "vid", None)  # v1.04
+            text = (str(comport.description) + " " + str(getattr(comport, "manufacturer", "") or "") + " " + str(getattr(comport, "product", "") or ""))  # v1.04
+            if vid == 0x2E8A:  # v1.04
+                return ""  # v1.04
+            if vid in NANO_LIKE_VIDS or "CH340" in text or "CH341" in text or "Arduino" in text or "USB2.0-Serial" in text:  # v1.04
+                return str(comport.description).strip() or "Arduino"  # v1.04
+    except Exception:                                                        # noqa: BLE001  # v1.04
+        Debug.Print("Find_Nano_Like_Device fehlgeschlagen")  # v1.04
+    return ""  # v1.04
+
+
 def Check_If_Port_is_Available_And_Get_Name(PortNr):
     Debug.Print("Check_If_Port_is_Available_And_Get_Name:"+PortNr)
     fn_return_value = ""

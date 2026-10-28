@@ -1,9 +1,9 @@
-# Datei-Version: 1.19 (2026-10-26) - web_pattgen.py
+# Datei-Version: 1.20 (2026-10-27) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
-# Version:        1.19
-# Last Update:    2026-10-26
+# Version:        1.20
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -28,6 +28,7 @@
 #   1.17  2026-10-20  Knopf Vollbild entfaellt hier: Er steht jetzt einmal in der Kopfzeile (webmobaledlib)
 #   1.18  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 #   1.19  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
+#   1.20  2026-10-27  cellStyle setzt Hinter- und Schriftfarbe immer ausdruecklich (leer = zuruecksetzen): AG Grid entfernt einen frueher gesetzten Stil nicht, wenn die Funktion null liefert
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 
@@ -132,8 +133,10 @@ JS_STYLE = """
 `;
 })();
 """
-JS_CELL_STYLE = ("params => (params.data && params.data._st && params.data._st[params.colDef.field]) "
-                 "? params.data._st[params.colDef.field] : null")
+# JS_CELL_STYLE = ("params => (params.data && params.data._st && params.data._st[params.colDef.field]) "  # v1.20 (entfallen)
+                 # "? params.data._st[params.colDef.field] : null")  # v1.20 (entfallen)
+JS_CELL_STYLE = ("params => { const st = (params.data && params.data._st) ? params.data._st[params.colDef.field] : null; "  # v1.20
+                 "return Object.assign({backgroundColor: '', color: ''}, st || {}); }")  # v1.20
 
 # Balken der grafischen Anzeige: SVG im scrollenden Inhalt der Tabelle (.ag-center-cols-container), damit sie mit den Zellen wandern.
 # AG Grid baut den Inhalt asynchron auf; deshalb bis zu drei Sekunden lang erneut versuchen, bis der Behaelter da ist.

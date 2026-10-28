@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-26) - UserForm_Options.py
+# Datei-Version: 1.02 (2026-10-27) - UserForm_Options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           UserForm_Options.py
 # Path:           proggen/UserForm_Options.py
-# Version:        1.01
-# Last Update:    2026-10-26
+# Version:        1.02
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-26  Beschriftungen: Installiere Korrekturversion (vorher Installiere Beta Test) und Hilfe im Forum (vorher Mail an Hardi) (Aenderung des Entwicklers)
+#   1.02  2026-10-27  PlatformIO: ESP32 und Pico sind waehlbar, auch wenn die Pakete der ARDUINO IDE fehlen
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -399,7 +400,8 @@ class CUserForm_Options:
         if InStr(str(BuildOpt), M02.BOARD_NANO_EVERY) > 0:
             return
             # currently no option in GUI, but that's ok, as ATMEGA4809 is currently unsupported 28.10.20: Jürgen
-        if InStr(str(BuildOpt), M02.BOARD_ESP32) > 0 and Side == 'L' and M37.ESP32_Lib_Installed():
+        # if InStr(str(BuildOpt), M02.BOARD_ESP32) > 0 and Side == 'L' and M37.ESP32_Lib_Installed():  # v1.02 (entfallen)
+        if InStr(str(BuildOpt), M02.BOARD_ESP32) > 0 and Side == 'L' and ( M37.ESP32_Lib_Installed() or M28.Is_PlatformIO() ):             # PlatformIO braucht das ESP32-Paket der IDE nicht  # v1.02
             self.Controls['ESP32_L'].Value = True
             return
             # 11.11.20:
@@ -616,10 +618,12 @@ class CUserForm_Options:
                 try:
                     
                     if rb.startswith("ESP32"):
-                        if not M37.ESP32_Lib_Installed():
+                        # if not M37.ESP32_Lib_Installed():  # v1.02 (entfallen)
+                        if not M37.ESP32_Lib_Installed() and not M28.Is_PlatformIO():  # v1.02
                             continue
                     if rb_text.startswith("Pico"):
-                        if not M37.PICO_Lib_Installed():
+                        # if not M37.PICO_Lib_Installed():  # v1.02 (entfallen)
+                        if not M37.PICO_Lib_Installed() and not M28.Is_PlatformIO():  # v1.02
                             continue
                 except BaseException as e:
                     logging.error(e, exc_info=True)

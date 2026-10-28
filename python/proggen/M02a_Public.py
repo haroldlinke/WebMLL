@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-21) - M02a_Public.py
+# Datei-Version: 1.02 (2026-10-27) - M02a_Public.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M02a_Public.py
 # Path:           proggen/M02a_Public.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.02
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-21  Neu: Get_FirmwareDir (Ordner der fertigen Firmware-Dateien, Version K des Excel-Programms; die Konstante FirmwareDir steht in M02_Public)
+#   1.02  2026-10-27  PlatformIO ohne ARDUINO IDE: Der Sketchbook-Pfad ist der Python-Ordner (Get_Project_Dir), preferences.txt wird nicht gelesen; Wechsel der Entwicklungsumgebung wird erkannt
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -70,8 +71,19 @@ import proggen.M30_Tools as M30
 # ####################################################
 
 
+def Get_Project_Dir():  # v1.02
+    """Der Python-Ordner (mit libraries/MobaLedLib, LEDs_AutoProg und platformio.ini): zwei Ebenen ueber dieser Datei"""  # v1.02
+    import os  # v1.02
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__))).replace("\\", "/")  # v1.02
+
 def Read_Sketchbook_Path_from_preferences_txt():
-    
+    import proggen.M28_Diverse as M28  # v1.02
+    if M28.Is_PlatformIO():  # v1.02
+        # PlatformIO ohne ARDUINO IDE: Es gibt keine preferences.txt. Der Python-Ordner ist der Sketchbook-Pfad; sein Ordner libraries enthaelt die MobaLedLib
+        # (Bibliothek fuer PlatformIO) und die Erweiterungen (M38_Extensions).
+        M02.Sketchbook_Path = Get_Project_Dir()  # v1.02
+        logging.debug("Sketchbook-Pfad (PlatformIO): " + M02.Sketchbook_Path)  # v1.02
+        return True  # v1.02
     M02.Sketchbook_Path = ""
     
     Name = String()
@@ -104,7 +116,11 @@ def Get_Sketchbook_Path():
     
     #----------------------------------------------
     Debug.Print('Get_Sketchbook_Path called')
-    if M02.Sketchbook_Path == '':
+    # if M02.Sketchbook_Path == '':  # v1.02 (entfallen)
+    import proggen.M28_Diverse as M28  # v1.02
+    pio_dir = Get_Project_Dir()  # v1.02
+    # Der Pfad wird zwischengespeichert; beim Wechsel der Entwicklungsumgebung (ARDUINO IDE <-> PlatformIO) muss er neu bestimmt werden
+    if M02.Sketchbook_Path == '' or (M28.Is_PlatformIO() != (M02.Sketchbook_Path == pio_dir)):  # v1.02
         Read_Sketchbook_Path_from_preferences_txt()
     fn_return_value = M02.Sketchbook_Path
     logging.debug("Get_Sketchbook_Path="+ fn_return_value)

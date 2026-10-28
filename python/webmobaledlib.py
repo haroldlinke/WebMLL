@@ -1,8 +1,8 @@
-# Datei-Version: 2.22 (2026-10-27) - webmobaledlib.py
+# Datei-Version: 2.28 (2026-10-27) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        2.22
+# Version:        2.28
 # Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -92,6 +92,12 @@
 #   2.20  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht; neue Mindestversionen
 #   2.21  2026-10-26  Linux: Anschlussliste ohne die Platzhalter ttyS0 bis ttyS31, unbekannte Ports nur wenn kein bekannter Anschluss da ist; PlatformIO ueber pipx; udev-Regel fuer den Raspberry Pi Pico
 #   2.22  2026-10-27  ZIP mit UTF-8-Kennzeichen fuer Umlaute (release_tools zip), Reihenfolge der Sprachen (Tabelle vor English), Raspberry Pi: Unterspannung, Temperatur und Speicher im Protokoll und Warnung
+#   2.23  2026-10-27  Zeilen faerben: Spalten mit geaenderter Farbe werden nach der gezielten Aktualisierung neu gezeichnet (style_columns), vorher nur Typ und Symbol
+#   2.24  2026-10-27  Zeilen faerben: Mindestversion M20_PageEvents_a_Functions 1.05 (ganze Zeile bei jeder Aenderung neu bewertet)
+#   2.25  2026-10-27  Zeilen faerben: cellStyle setzt Hintergrund- und Schriftfarbe immer ausdruecklich (leer = zuruecksetzen), AG Grid entfernt einen frueheren Stil sonst nicht
+#   2.26  2026-10-27  Installationsskripte: PlatformIO mit eigener Option installieren (install_platformio.sh, --with-platformio, /platformio); keine Aenderung am Programm
+#   2.27  2026-10-27  Rueckmeldung NL-Tester zu 2.22: Ein/Aus-Testtaste mit Startwert, Reiter DCC Arduino nur bei Nano, Pico eingestellt aber Nano am Anschluss, Kontrollkaestchen Pattern Configurator entfernt
+#   2.28  2026-10-27  PlatformIO ohne ARDUINO IDE: keine Pruefung der IDE und der Bibliotheken beim Start, Sketchbook-Pfad = Python-Ordner, Reiter Update nur mit der IDE, ESP32 und Pico immer waehlbar, Version der MobaLedLib aus library.properties
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -165,14 +171,20 @@ REQUIRED_FILES = {  # v1.75
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.14", "_web/web_pattgen.py": "1.18", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.05", "_web/web_update.py": "1.05", "release_tools.py": "1.04", "recover.py": "1.00", "repair.py": "1.02", "_web/web_z21.py": "1.01", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.05", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.03",  # v1.76 (headless_pattgen 1.13)  # v2.18 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.10", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.04", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.18 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.19", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.06", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.22 (entfallen)
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.19", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.22
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.19", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.25 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.27 (entfallen)
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.07", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.27
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.02", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.21 (entfallen)
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.03", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.03", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.21
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.03", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.03", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.27 (entfallen)
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.28 (entfallen)
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.28
     # "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.98 (entfallen)
     # "proggen/M06_Write_Header.py": "1.03", "proggen/M20_PageEvents_a_Functions.py": "1.03", "proggen/M18_Save_Load.py": "1.01",  # v2.03 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.12 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.03",  # v2.18 (entfallen)
-    "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.18
+    # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.04", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.24 (entfallen)
+    # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.05", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.27 (entfallen)
+    "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.06", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.27
     "proggen/M18a_Load_PicoConfig.py": "1.01", "proggen/M17_Import_old_Data.py": "1.01",  # v1.75
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.01", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.01", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v1.99 (entfallen)
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.02", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.00 (entfallen)
@@ -184,7 +196,9 @@ REQUIRED_FILES = {  # v1.75
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.02", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.04", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.02", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.03", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.19 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.04", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.21 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.05", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.03", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.22 (entfallen)
-    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.05", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.03", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.22
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.05", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.03", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.27 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.06", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.28 (entfallen)
+    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.28
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -593,8 +607,10 @@ def event_col_id(a: dict) -> str:
     return ""
 
 
-JS_CELL_STYLE = ("params => (params.data && params.data._st && params.data._st[params.colDef.field]) "
-                 "? params.data._st[params.colDef.field] : null")
+# JS_CELL_STYLE = ("params => (params.data && params.data._st && params.data._st[params.colDef.field]) "  # v2.25 (entfallen)
+                 # "? params.data._st[params.colDef.field] : null")  # v2.25 (entfallen)
+JS_CELL_STYLE = ("params => { const st = (params.data && params.data._st) ? params.data._st[params.colDef.field] : null; "  # v2.25
+                 "return Object.assign({backgroundColor: '', color: ''}, st || {}); }")  # v2.25
 # Zellen mit Symbol (Shape vom Typ Bild) und Testtasten: Bild/Tasten plus Text; Text nur als textContent
 # (kein HTML aus Zelleninhalten). Die Testtasten melden Maus runter/hoch mit dem Ereignis mll_tb an den Server
 # (bridge_id = Element, das das Ereignis annimmt).
@@ -630,6 +646,19 @@ def renderer_columns(rows) -> set:  # v1.50
     for r in rows:  # v1.50
         cols.update((r.get("_tb") or {}).keys())  # v1.50
         cols.update((r.get("_img") or {}).keys())  # v1.50
+    return cols  # v2.23
+
+
+def style_columns(old_rows, new_rows) -> set:  # v2.23
+    """Spalten, in denen sich der Stil (Hintergrund- und Schriftfarbe, Feld _st) einer Zeile zwischen dem Stand des Browsers (old_rows) und dem neuen Stand
+    (new_rows) unterscheidet. AG Grid wertet cellStyle nach applyTransaction nur fuer Zellen neu aus, deren Wert sich aendert: Eine neue oder entfernte Farbe
+    (Zeilen faerben, ganze Zeile an oder aus) blieb in allen anderen Spalten stehen, nur Typ und Symbol (Renderer, refreshCells) zeigten sie."""
+    old_by_id = {r["_r"]: (r.get("_st") or {}) for r in old_rows}  # v2.23
+    cols = set()  # v2.23
+    for r in new_rows:  # v2.23
+        old_st, new_st = old_by_id.get(r["_r"], {}), (r.get("_st") or {})  # v2.23
+        if old_st != new_st:  # v2.23
+            cols.update(k for k in set(old_st) | set(new_st) if old_st.get(k) != new_st.get(k))  # v2.23
     return cols  # v1.50
 
 
@@ -757,7 +786,13 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "2.22 (2026-10-27)"  # v2.22
+VERSION = "2.28 (2026-10-27)"  # v2.28
+# VERSION = "2.27 (2026-10-27)"  # v2.28 (entfallen)
+# VERSION = "2.26 (2026-10-27)"  # v2.27 (entfallen)
+# VERSION = "2.25 (2026-10-27)"  # v2.26 (entfallen)
+# VERSION = "2.24 (2026-10-27)"  # v2.25 (entfallen)
+# VERSION = "2.23 (2026-10-27)"  # v2.24 (entfallen)
+# VERSION = "2.22 (2026-10-27)"  # v2.23 (entfallen)
 # VERSION = "2.21 (2026-10-26)"  # v2.22 (entfallen)
 # VERSION = "2.20 (2026-10-26)"  # v2.21 (entfallen)
 # VERSION = "2.19 (2026-10-26)"  # v2.20 (entfallen)
@@ -1865,11 +1900,13 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 if changed_rows:
                     grid.run_grid_method("applyTransaction", {"update": changed_rows})
                     refresh_cols = renderer_columns(changed_rows) | renderer_columns([old_by_id[r["_r"]] for r in changed_rows])  # v1.50
+                    refresh_cols |= style_columns(old_rows, changed_rows)  # Farben, die sich geaendert haben (Zeilen faerben)  # v2.23
             else:                                          # Zeilen eingefuegt/geloescht/ausgeblendet: alle Zeilen austauschen
                 mode = "alle Zeilen"
                 grid.run_grid_method("setGridOption", "pinnedTopRowData", pinned)
                 grid.run_grid_method("setGridOption", "rowData", rows)
                 refresh_cols = renderer_columns(rows) | renderer_columns(old_rows)  # v1.50
+                refresh_cols |= style_columns(old_rows, rows)  # Farben, die sich geaendert haben (Zeilen faerben)  # v2.23
         else:
             grid.update()                                  # neue Spalten (anderes Blatt, Schrift geaendert): alles neu senden
         if refresh_cols:                                   # Testknoepfe und Symbole stehen in Zusatzfeldern der Zeile: die Zellen neu zeichnen lassen  # v1.50

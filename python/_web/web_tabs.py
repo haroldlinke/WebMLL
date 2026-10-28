@@ -1,9 +1,9 @@
-# Datei-Version: 1.06 (2026-10-26) - web_tabs.py
+# Datei-Version: 1.07 (2026-10-27) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.06
-# Last Update:    2026-10-26
+# Version:        1.07
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,6 +14,7 @@
 #   1.04  2026-10-21  Reiter Servo Einstellungen (vorher Servo Test 1) und DM Servo Einstellungen (vorher Servo Test 2, nur mit Option); OPTIONAL_TABS, tab_enabled, apply_param_overrides, is_enabled
 #   1.05  2026-10-21  Adresse /Z21Simulator und Reiter Z21 Simulator (nur mit der Option Z21 Simulator anzeigen); neuer Hinweis der Option
 #   1.06  2026-10-26  Neue Option SaveExcelCharset (Dateien fuer das Excel-Programm im Windows-Zeichensatz speichern) in den Programm Einstellungen (PARAM_ADDITIONS)
+#   1.07  2026-10-27  Das Kontrollkaestchen Pattern Configurator (ShowPatternGenerator) hat im Web keine Wirkung und wird in den Programm Einstellungen nicht mehr angezeigt (PARAM_REMOVALS)
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -64,6 +65,10 @@ PARAM_ADDITIONS = {"SaveExcelCharset": ({"ParName": "SaveExcelCharset", "Cnt": "
                                         "ShowZ21Simulator")}  # v1.06
 
 
+# Optionen des Tk-Programms, die im Web keine Wirkung haben und deshalb nicht angezeigt werden: Der Reiter Patterngenerator ist immer da
+PARAM_REMOVALS = ("ShowPatternGenerator",)  # v1.07
+
+
 def is_enabled(value) -> bool:  # v1.04
     """Wert einer Option (Checkbutton): 1, true, ja, an, ein"""  # v1.04
     return str(value if value is not None else "").strip().lower() in ("1", "true", "ja", "yes", "an", "ein", "on")  # v1.04
@@ -89,6 +94,13 @@ def apply_param_overrides(ctrl) -> None:  # v1.04
     for key, changes in PARAM_OVERRIDES.items():  # v1.04
         if key in data:  # v1.04
             data[key].update(changes)  # v1.04
+    try:  # v1.07
+        params = ctrl.MacroDef.data["ConfigurationPage"]["Params"]  # v1.07
+        for key in PARAM_REMOVALS:  # v1.07
+            while key in params:  # v1.07
+                params.remove(key)  # v1.07
+    except (AttributeError, KeyError, TypeError):  # v1.07
+        logger.debug("Optionen ohne Wirkung nicht ausgeblendet", exc_info=True)  # v1.07
     for key, (definition, after) in PARAM_ADDITIONS.items():                            # neue Optionen anlegen und in die Seite Programm Einstellungen eintragen  # v1.06
         data.setdefault(key, dict(definition))  # v1.06
         try:  # v1.06

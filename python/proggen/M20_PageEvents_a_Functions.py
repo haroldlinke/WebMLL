@@ -1,15 +1,18 @@
-# Datei-Version: 1.03 (2026-10-21) - M20_PageEvents_a_Functions.py
+# Datei-Version: 1.06 (2026-10-27) - M20_PageEvents_a_Functions.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M20_PageEvents_a_Functions.py
 # Path:           proggen/M20_PageEvents_a_Functions.py
-# Version:        1.03
-# Last Update:    2026-10-21
+# Version:        1.06
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-17  Update_All_Start_LedNr: Sh.Visible in (xlSheetVisible, True) (bisher wurde kein Blatt berechnet), Durchgang wiederholen bis Zeile 1 stabil ist (Include-Feature); davor Original-Port, nicht erfasst
 #   1.02  2026-10-17  Update_Start_LedNr: CellLinesSum(LEDs) statt CellLinesSum("") (Zeilen mit negativer LED-Zahl wie Next_LED(-1) merken den Hoechststand vor dem Abziehen: LED-Summe eines Blatts stimmte nicht mit Excel)
 #   1.03  2026-10-21  Version K des Excel-Programms: Adresse muss groesser 0 sein (Select_Typ_by_Dialog, Proc_Typ_Col, Complete_Addr_Column_with_InCnt, Update_StartValue); Update_TestButtons loescht die Testknoepfe, wenn die Adresse entfaellt oder das Makro keinen Eingang mehr braucht (ClearButtons)
+#   1.04  2026-10-27  Zeilen faerben: RFColorRow als Text '0' oder 'False' (aeltere Konfiguration) gilt nicht mehr als 'ganze Zeile'
+#   1.05  2026-10-27  Zeilen faerben: bei jeder Aenderung zuerst alle Farben der Zeile loeschen (dehighlight Zeile:Zeile) und alle Spalten neu pruefen; vorher blieb die Farbe stehen, wenn das Macro geaendert oder 'ganze Zeile' abgeschaltet wurde
+#   1.06  2026-10-27  Update_TestButtons: der Name einer wiederverwendeten Testtaste wird wie im VBA-Original immer neu gesetzt (sonst schaltete eine Ein/Aus-Taste mit Startwert nach dem Neuzeichnen nicht mehr um)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -834,60 +837,102 @@ def Global_Worksheet_SelectionChange(Target):
 
 def check_conditionalformating(Target, allcolumns=False):
     row = Target.currentcell[0]
+    sheet = Target.Worksheet.tksheet  # v1.05
     if row == 1 or row == 2:
-        Target.Worksheet.tksheet[row-1].bg = "#0000FF"
-        Target.Worksheet.tksheet[row-1].fg = "#FFFF00"
-        colorchanged = True
-    else:
-        columnlist = [Target.currentcell[1]]
-        controller = Target.Worksheet.Workbook.controller
-        RowFormatInput = controller.getConfigData("RowFormatInput")
-        colorchanged = False
-        
-        if allcolumns:
-            columnlist = [2,3,4,7,8,9,11,12,13,14]
-        for column in columnlist:
-            result = False
-            for format_data_idx in RowFormatInput:
-                format_data = RowFormatInput.get(format_data_idx)
-                compCol = format_data.get("RFCompCol", None)
-                if compCol != None and compCol != "0":
-                    if int(compCol) == int(column):
-                        compValue = format_data.get("RFCompValue", None)
-                        compOperator = format_data.get("RFCompOperator", None)
-                        compColor = format_data.get("RFColor", None)
-                        if allcolumns:
-                            changedValue = Target.Worksheet.tksheet.get_cell_data(row-1, column-1)
-                        else:
-                            changedValue = Target.Value
-                        changedValue_str = str(changedValue)
-                        if compValue != None and compOperator != None and compColor != None:
-                            if compOperator == "Gleich":
-                                result = changedValue_str == compValue
-                            elif compOperator == "Ungleich":
-                                result = changedValue_str != compValue
-                            elif compOperator == "Beginnt mit":
-                                result = changedValue_str.startswith(compValue)
-                            elif compOperator == "Endet mit":
-                                result = changedValue_str.endswith(compValue)
-                            elif compOperator == "Enthält":
-                                result = compValue in changedValue_str
-                            
-                            if result == True:
-                                colorrow = format_data.get("RFColorRow", None)
-                                if colorrow:
-                                    Target.Worksheet.tksheet[row-1].bg = compColor
-                                    colorchanged = True
-                                else:
-                                    Target.Worksheet.tksheet[row-1, column-1].bg = compColor
-                                    colorchanged = True
-                                break
-        # if result == True:
-            # break
-    if colorchanged == False:
-        Target.Worksheet.tksheet.dehighlight(row-1)
-        if allcolumns == False:
-            check_conditionalformating(Target, allcolumns=True)
+        # Target.Worksheet.tksheet[row-1].bg = "#0000FF"  # v1.05 (entfallen)
+        # Target.Worksheet.tksheet[row-1].fg = "#FFFF00"  # v1.05 (entfallen)
+        # colorchanged = True  # v1.05 (entfallen)
+    # else:  # v1.05 (entfallen)
+        # columnlist = [Target.currentcell[1]]  # v1.05 (entfallen)
+        # controller = Target.Worksheet.Workbook.controller  # v1.05 (entfallen)
+        # RowFormatInput = controller.getConfigData("RowFormatInput")  # v1.05 (entfallen)
+        # colorchanged = False  # v1.05 (entfallen)
+        # if allcolumns:  # v1.05 (entfallen)
+            # columnlist = [2,3,4,7,8,9,11,12,13,14]  # v1.05 (entfallen)
+        # for column in columnlist:  # v1.05 (entfallen)
+            # result = False  # v1.05 (entfallen)
+            # for format_data_idx in RowFormatInput:  # v1.05 (entfallen)
+                # format_data = RowFormatInput.get(format_data_idx)  # v1.05 (entfallen)
+                # compCol = format_data.get("RFCompCol", None)  # v1.05 (entfallen)
+                # if compCol != None and compCol != "0":  # v1.05 (entfallen)
+                    # if int(compCol) == int(column):  # v1.05 (entfallen)
+                        # compValue = format_data.get("RFCompValue", None)  # v1.05 (entfallen)
+                        # compOperator = format_data.get("RFCompOperator", None)  # v1.05 (entfallen)
+                        # compColor = format_data.get("RFColor", None)  # v1.05 (entfallen)
+                        # if allcolumns:  # v1.05 (entfallen)
+                            # changedValue = Target.Worksheet.tksheet.get_cell_data(row-1, column-1)  # v1.05 (entfallen)
+                        # else:  # v1.05 (entfallen)
+                            # changedValue = Target.Value  # v1.05 (entfallen)
+                        # changedValue_str = str(changedValue)  # v1.05 (entfallen)
+                        # if compValue != None and compOperator != None and compColor != None:  # v1.05 (entfallen)
+                            # if compOperator == "Gleich":  # v1.05 (entfallen)
+                                # result = changedValue_str == compValue  # v1.05 (entfallen)
+                            # elif compOperator == "Ungleich":  # v1.05 (entfallen)
+                                # result = changedValue_str != compValue  # v1.05 (entfallen)
+                            # elif compOperator == "Beginnt mit":  # v1.05 (entfallen)
+                                # result = changedValue_str.startswith(compValue)  # v1.05 (entfallen)
+                            # elif compOperator == "Endet mit":  # v1.05 (entfallen)
+                                # result = changedValue_str.endswith(compValue)  # v1.05 (entfallen)
+                            # elif compOperator == "Enthält":  # v1.05 (entfallen)
+                                # result = compValue in changedValue_str  # v1.05 (entfallen)
+                            # if result == True:  # v1.05 (entfallen)
+                                # colorrow = format_data.get("RFColorRow", None)  # v1.05 (entfallen)
+                                # if colorrow and str(colorrow).strip().lower() not in ("0", "false", "falsch", "nein"):      # "0" und "False" als Text (aelterer Konfigurationsstand) bedeuten: nicht ganze Zeile  # v1.05 (entfallen)
+                                    # Target.Worksheet.tksheet[row-1].bg = compColor  # v1.05 (entfallen)
+                                    # colorchanged = True  # v1.05 (entfallen)
+                                # else:  # v1.05 (entfallen)
+                                    # Target.Worksheet.tksheet[row-1, column-1].bg = compColor  # v1.05 (entfallen)
+                                    # colorchanged = True  # v1.05 (entfallen)
+                                # break  # v1.05 (entfallen)
+    # if colorchanged == False:  # v1.05 (entfallen)
+        # Target.Worksheet.tksheet.dehighlight(row-1)  # v1.05 (entfallen)
+        # if allcolumns == False:  # v1.05 (entfallen)
+            # check_conditionalformating(Target, allcolumns=True)  # v1.05 (entfallen)
+        sheet[row-1].bg = "#0000FF"  # v1.05
+        sheet[row-1].fg = "#FFFF00"  # v1.05
+        return  # v1.05
+    # Die Farbe einer Zeile haengt von allen Bedingungen ab, nicht nur von der geaenderten Spalte: Zuerst alle Farben der Zeile loeschen (Zellen und ganze Zeile),
+    # dann alle Spalten pruefen. Vorher blieb die Farbe einer frueheren Bedingung (zum Beispiel "ganze Zeile") stehen, wenn das Macro geaendert wurde oder
+    # "ganze Zeile" abgeschaltet war (dehighlight(row-1) loeschte die Zellfarben nicht).
+    sheet.dehighlight(f"{row}:{row}")  # v1.05
+    controller = Target.Worksheet.Workbook.controller  # v1.05
+    RowFormatInput = controller.getConfigData("RowFormatInput") or {}  # v1.05
+    changed_col = None if allcolumns else Target.currentcell[1]  # v1.05
+    for column in [2, 3, 4, 7, 8, 9, 11, 12, 13, 14]:  # v1.05
+        for format_data_idx in RowFormatInput:  # v1.05
+            format_data = RowFormatInput.get(format_data_idx)  # v1.05
+            compCol = format_data.get("RFCompCol", None)  # v1.05
+            if compCol == None or compCol == "0" or int(compCol) != int(column):  # v1.05
+                continue  # v1.05
+            compValue = format_data.get("RFCompValue", None)  # v1.05
+            compOperator = format_data.get("RFCompOperator", None)  # v1.05
+            compColor = format_data.get("RFColor", None)  # v1.05
+            if compValue == None or compOperator == None or compColor == None:  # v1.05
+                continue  # v1.05
+            if column == changed_col:  # v1.05
+                changedValue = Target.Value                       # der gerade geaenderte Wert  # v1.05
+            else:  # v1.05
+                changedValue = sheet.get_cell_data(row-1, column-1)  # v1.05
+            changedValue_str = str(changedValue)  # v1.05
+            if compOperator == "Gleich":  # v1.05
+                result = changedValue_str == compValue  # v1.05
+            elif compOperator == "Ungleich":  # v1.05
+                result = changedValue_str != compValue  # v1.05
+            elif compOperator == "Beginnt mit":  # v1.05
+                result = changedValue_str.startswith(compValue)  # v1.05
+            elif compOperator == "Endet mit":  # v1.05
+                result = changedValue_str.endswith(compValue)  # v1.05
+            elif compOperator == "Enthält":  # v1.05
+                result = compValue in changedValue_str  # v1.05
+            else:  # v1.05
+                result = False  # v1.05
+            if result == True:  # v1.05
+                colorrow = format_data.get("RFColorRow", None)  # v1.05
+                if colorrow and str(colorrow).strip().lower() not in ("0", "false", "falsch", "nein"):      # "0" und "False" als Text (aelterer Konfigurationsstand) bedeuten: nicht ganze Zeile  # v1.05
+                    sheet[row-1].bg = compColor  # v1.05
+                else:  # v1.05
+                    sheet[row-1, column-1].bg = compColor  # v1.05
+                break  # v1.05
     return
 
 def Global_Worksheet_ConditionalFormating(Target):
@@ -1275,6 +1320,8 @@ def Update_TestButtons(Row, onValue=0, First_Call=True, redraw=False):
                 objButton_Height = Height - 2
                 objButton_Width = Height - 2
                 objButton = P01.ActiveSheet.Shapes.AddShape(msoShapeRectangle, objButton_Left, objButton_Top, objButton_Height, objButton_Width, Fill="#FF0000", name=objButton_Name)
+            elif objButton.Name != objButton_Name:                                                        # wiederverwendete Taste: der Name wird wie im VBA-Original (.Name = ...) immer neu gesetzt. Sonst blieb der Name einer umgeschalteten Taste stehen und die Taste schaltete nach dem Neuzeichnen mit dem Startwert nicht mehr um  # v1.06
+                objButton.Name = objButton_Name  # v1.06
             
             if P01.Cells(Row, M25.Inp_Typ_Col).Text == M09.OnOff_T:
                 if objButton.TextFrame2.TextRange.Text != str(TextOffset):

@@ -1,13 +1,14 @@
-# Datei-Version: 1.00 (2026-10-20) - headless_startup.py
+# Datei-Version: 1.01 (2026-10-27) - headless_startup.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_startup.py
 # Path:           headless/headless_startup.py
-# Version:        1.00
-# Last Update:    2026-10-20
+# Version:        1.01
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-20  Neu: Fragen und Meldungen, die beim Start des Programms gestellt werden (kein Browser verbunden), werden beim ersten Verbinden gezeigt; die Pruefung der ARDUINO Bibliotheken wird bis dahin zurueckgestellt
+#   1.01  2026-10-27  PlatformIO: die zurueckgestellte Pruefung der ARDUINO Bibliotheken und Boards beim ersten Browser entfaellt
 # ----------------------------------------------------------------------------------------------
 """Fragen und Meldungen beim Start des Programms.
 
@@ -50,6 +51,13 @@ def install() -> None:
     original = M37.Install_Missing_Libraries_and_Board
 
     def deferred(*args, **kwargs):
+        try:  # v1.01
+            import proggen.M28_Diverse as M28  # v1.01
+            if M28.Is_PlatformIO():  # v1.01
+                logger.info("Pruefung der ARDUINO Bibliotheken und Boards entfaellt: PlatformIO ist die Entwicklungsumgebung")  # v1.01
+                return None  # v1.01
+        except Exception:                                    # noqa: BLE001  # v1.01
+            logger.debug("Entwicklungsumgebung nicht bestimmbar", exc_info=True)  # v1.01
         if STATE["starting"]:
             PENDING.append(("Bibliotheken und Boards pruefen", original))
             logger.info("Pruefung der ARDUINO Bibliotheken und Boards zurueckgestellt, bis ein Browser verbunden ist")

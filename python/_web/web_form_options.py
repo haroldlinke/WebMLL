@@ -1,4 +1,4 @@
-# Datei-Version: 1.05 (2026-10-26) - web_form_options.py
+# Datei-Version: 1.07 (2026-10-27) - web_form_options.py
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -108,12 +108,38 @@ async def _options_async(spec: dict, st: dict):
                     if b.get("label"):
                         ui.label(b["label"]).classes("text-grey-8").style("white-space: pre-line")
 
+            ide_tabs = []                                              # Reiter, die es nur mit der ARDUINO IDE gibt (nicht mit PlatformIO)  # v1.07
+
+            def update_ide_tabs():  # v1.07
+                for tab in ide_tabs:  # v1.07
+                    set_tab_visible(tab, not vals.get("use_pio"))  # v1.07
+
+            dcc = {"tab": None}  # v1.06
+
+            def set_tab_visible(tab, visible):  # v1.06
+                try:  # v1.06
+                    tab.set_visibility(bool(visible))  # v1.06
+                except AttributeError:                                     # andere NiceGUI-Version: Eigenschaft visible  # v1.06
+                    tab.visible = bool(visible)  # v1.06
+
+            def update_dcc_tab():  # v1.06
+                """Reiter DCC Arduino nur zeigen, wenn oben ein Nano gewaehlt ist (bei automatischer Erkennung bleibt der Stand von vorher)"""  # v1.06
+                tab = dcc["tab"]  # v1.06
+                if tab is None:  # v1.06
+                    return  # v1.06
+                nano_values = spec["pages"]["left"].get("nano_values")  # v1.06
+                if vals.get("auto_L") or vals.get("L") is None or nano_values is None:  # v1.06
+                    set_tab_visible(tab, dcc["initial"])  # v1.06
+                else:  # v1.06
+                    set_tab_visible(tab, vals["L"] in nano_values)  # v1.06
+
             def board_group(side, tab):
                 p = spec["pages"][side]
                 key = "L" if side == "left" else "R"
                 with ui.column().classes("gap-0"):
                     ui.checkbox(p["auto_text"], value=bool(vals["auto_" + key]),
-                                on_change=lambda e, k=key: vals.__setitem__("auto_" + k, bool(e.value)))
+                                # on_change=lambda e, k=key: vals.__setitem__("auto_" + k, bool(e.value)))  # v1.06 (entfallen)
+                                on_change=lambda e, k=key: (vals.__setitem__("auto_" + k, bool(e.value)), update_dcc_tab()))  # v1.06
                     first = {v: t for v, t in p["radios"] if v <= 3}
                     second = {v: t for v, t in p["radios"] if v > 3}
                     g = {}
@@ -122,6 +148,7 @@ async def _options_async(spec: dict, st: dict):
                         if e.value is None:
                             return
                         vals[k] = e.value
+                        update_dcc_tab()  # v1.06
                         other = g["b"] if which == "a" else g["a"]
                         if other is not None:
                             other.value = None
@@ -136,6 +163,13 @@ async def _options_async(spec: dict, st: dict):
 
             with ui.tabs().classes("w-full") as tabs:
                 tab_objs = [ui.tab(t["name"]) for t in spec["tabs"]]
+                for t, tab_obj in zip(spec["tabs"], tab_objs):  # v1.06
+                    if t.get("ide_only"):  # v1.07
+                        ide_tabs.append(tab_obj)  # v1.07
+                        set_tab_visible(tab_obj, not vals.get("use_pio"))  # v1.07
+                    if t.get("nano_only"):  # v1.06
+                        dcc["tab"], dcc["initial"] = tab_obj, bool(t.get("visible", True))  # v1.06
+                        set_tab_visible(tab_obj, dcc["initial"])  # v1.06
             with ui.tab_panels(tabs, value=tab_objs[0]).classes("w-full"):
                 for t, tab in zip(spec["tabs"], tab_objs):
                     with ui.tab_panel(tab):
@@ -148,10 +182,13 @@ async def _options_async(spec: dict, st: dict):
                         elif t["kind"] == "ide":  # v1.04
                             ui.label(t["intro"]).classes("text-grey-8").style("white-space: pre-line")  # v1.04
                             ui.radio({0: t["arduino_text"], 1: t["pio_text"]}, value=1 if vals.get("use_pio") else 0,  # v1.04
-                                     on_change=lambda e: vals.__setitem__("use_pio", bool(e.value)))  # v1.04
+                                     # on_change=lambda e: vals.__setitem__("use_pio", bool(e.value)))  # v1.07 (entfallen)
+                                     on_change=lambda e: (vals.__setitem__("use_pio", bool(e.value)), update_ide_tabs()))  # v1.07
                             ui.label(t["status"]).classes("text-grey-8").style("white-space: pre-line")  # v1.04
                             for b in t["buttons"]:  # v1.04
                                 button_row(b)  # v1.04
+                            for text in t.get("texts", []):  # v1.07
+                                ui.label(text).classes("text-grey-8").style("white-space: pre-line")  # v1.07
                         else:
                             for b in t["buttons"]:
                                 button_row(b)
@@ -171,6 +208,8 @@ def make_class(Base):
     ns = sys.modules[Base.__module__].__dict__
     M02, M09, M25, M37, P01 = (ns[n] for n in ("M02", "M09", "M25", "M37", "P01"))
     vbCritical = ns["vbCritical"]
+    import proggen.M28_Diverse as M28pio  # v1.07
+    vbYes, vbYesNo, vbQuestion = ns.get("vbYes", 6), ns.get("vbYesNo", 4), ns.get("vbQuestion", 32)  # v1.07
     PFX = "_" + Base.__name__            # Praefix fuer private Methoden (Name Mangling)
     buttons = harvest_buttons(Base)
 
@@ -218,17 +257,27 @@ def make_class(Base):
                     "auto_R": bool(self.Autodetect_Typ_R_CheckBox_var.get()),  # v1.04
                     "use_pio": bool(M28.Get_Bool_Config_Var("Use_PlatformIO"))}  # v1.04
 
+        def _is_nano_value(self, value):  # v1.06
+            """Gehoert der Wert des Radioknopfes zu einem Arduino Nano oder Uno (nicht ESP32 und nicht Pico)?"""  # v1.06
+            try:  # v1.06
+                board = str(self.boardlist[value]).lower()  # v1.06
+            except (IndexError, KeyError, TypeError):  # v1.06
+                return True  # v1.06
+            return "esp32" not in board and "rp2040" not in board  # v1.06
+
         def _radios(self, side):
             items = []
             for rb, d in self.radiobuttons.items():
                 if not rb.endswith(side):
                     continue
-                if rb.startswith("ESP32") and not M37.ESP32_Lib_Installed():
+                # if rb.startswith("ESP32") and not M37.ESP32_Lib_Installed():  # v1.07 (entfallen)
+                if rb.startswith("ESP32") and not M37.ESP32_Lib_Installed() and not M28pio.Is_PlatformIO():  # v1.07
                     continue
                 items.append((d["value"], d["text"]))
             return sorted(items)
 
         def _web_spec(self, first_page_only):
+            import proggen.M02a_Public as M02a  # v1.06
             buildopt = str(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL))
             wlan_device = "WLAN" in buildopt
             cands = buttons.get("__Detect_LED_Port_Button_Click", [])
@@ -243,9 +292,14 @@ def make_class(Base):
             pages = {"left": {"radios": self._radios("_L"), "subtitle": subtitle, "auto_text": auto_text}}
             if not first_page_only:
                 if M25.Page_ID != "CAN":
+                    # Wie im Excel-Programm (UpdateDCCSubPage): Der Reiter DCC Arduino gehoert nur zu einem Nano; bei Pico und ESP32 ist er ausgeblendet
+                    # (und erscheint wieder, wenn man oben ein Nano-Board waehlt: nano_values, siehe _options_async)
                     tabs.append({"name": M25.Page_ID + " Arduino", "kind": "arduino", "side": "right",
-                                 "buttons": tab_buttons(buttons, ["__Detect_Right_Port_Button_Click", "__ProInstall_Button_Click"])})
+                                 # "buttons": tab_buttons(buttons, ["__Detect_Right_Port_Button_Click", "__ProInstall_Button_Click"])})  # v1.06 (entfallen)
+                                 "buttons": tab_buttons(buttons, ["__Detect_Right_Port_Button_Click", "__ProInstall_Button_Click"]),  # v1.06
+                                 "nano_only": True, "visible": M02a.Get_BoardTyp() == M02.HT_AM328})  # v1.06
                     pages["right"] = {"radios": self._radios("_R"), "subtitle": subtitle, "auto_text": auto_text}
+                    pages["left"]["nano_values"] = [v for v, _text in pages["left"]["radios"] if self._is_nano_value(v)]  # v1.06
                 files = tab_buttons(buttons, ["__Import_Button_Click", "__Save_Button_Click", "__Load_Button_Click", "__Copy_Page_Button_Click"])
                 for b in files:
                     if b["handler"][2:] in {h[2:] for h in NOT_IN_WEB}:
@@ -259,6 +313,7 @@ def make_class(Base):
                 pio = M08.Find_PIO()  # v1.04
                 tabs.append({"name": tr("Entwicklungsumgebung"), "kind": "ide",  # v1.04
                              "intro": tr("Womit sollen die Programme übersetzt und auf den Arduino geladen werden?"),  # v1.04
+                             "texts": [tr("Das Programm webMobaLedLib selbst aktualisieren: Menü Hilfe → Update webMobaLedLib …")],  # v1.07
                              "arduino_text": tr("ARDUINO-IDE (Standard)"), "pio_text": tr("PlatformIO (Ersatz für die ARDUINO-IDE)"),  # v1.04
                              "status": (tr("PlatformIO gefunden: {pfad}", pfad=pio) if pio else  # v1.04
                                         # tr("PlatformIO wurde nicht gefunden. Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio)")),  # v1.05 (entfallen)
@@ -272,10 +327,14 @@ def make_class(Base):
                 tabs.append({"name": M09.Get_Language_Str("Update"), "kind": "list", "buttons": tab_buttons(
                     buttons, ["__Update_to_Arduino_Button_Click", "__Update_Beta_Button_Click",
                               "__Show_Lib_and_Board_Page_Button_Click"]),
-                    "texts": ["Das Programm webMobaLedLib selbst aktualisieren: Menü Hilfe → Update webMobaLedLib …"]})
+                    # "texts": ["Das Programm webMobaLedLib selbst aktualisieren: Menü Hilfe → Update webMobaLedLib …"]})  # v1.07 (entfallen)
+                    "texts": ["Das Programm webMobaLedLib selbst aktualisieren: Menü Hilfe → Update webMobaLedLib …"],  # v1.07
+                    "ide_only": True})                               # nur mit der ARDUINO IDE (Bibliotheken und Boards aktualisieren)  # v1.07
                 wlan_inst = "WLAN" in buildopt
                 tabs.append({"name": M09.Get_Language_Str("Bootloader"), "kind": "list", "buttons": tab_buttons(
-                    buttons, ["__WLAN_Pico_Button_Click"] if wlan_inst else ["__FastBootloader_Button_Click"])})
+                    # buttons, ["__WLAN_Pico_Button_Click"] if wlan_inst else ["__FastBootloader_Button_Click"])})  # v1.07 (entfallen)
+                    buttons, ["__WLAN_Pico_Button_Click"] if wlan_inst else ["__FastBootloader_Button_Click"]),  # v1.07
+                    "ide_only": not wlan_inst})                      # der schnelle Bootloader braucht ArduinoISP und avrdude der IDE; der Knopf fuer den WLAN-Pico nur eine Webseite  # v1.07
             lower = [dict(buttons[h][0], handler=h) for h in ("__HardiForum_Button_Click", "__Close_Button_Click") if h in buttons]
             return {"title": M09.Get_Language_Str("Optionen und spezielle Funktionien"), "tabs": tabs,
                     "pages": pages, "lower": lower}
@@ -297,6 +356,8 @@ def make_class(Base):
             if "use_pio" in vals and vals["use_pio"] != initial.get("use_pio"):  # v1.04
                 import proggen.M28_Diverse as M28  # v1.04
                 M28.Set_String_Config_Var("Use_PlatformIO", "1" if vals["use_pio"] else "0")           # Config: PlatformIO Build verwenden  # v1.04
+                M02.Sketchbook_Path = ""                                  # der Sketchbook-Pfad der neuen Entwicklungsumgebung wird neu bestimmt (Python-Ordner oder preferences.txt der IDE)  # v1.07
+                self._web_switched_to_ide = not vals["use_pio"]  # v1.07
             if vals["auto_L"] != initial["auto_L"]:
                 self._web_ensure_text(True)
                 getattr(self, PFX + "__Autodetect_Typ_L_CheckBox_Click")()     # inkl. Check_Board
@@ -307,6 +368,16 @@ def make_class(Base):
                 self.Change_Board(True, self.boardlist[self.rb_res["_L"].get()])
             if vals["R"] != initial["R"] and self.rb_res["_R"].get():
                 self.Change_Board(False, self.boardlist[self.rb_res["_R"].get()])
+
+        def _web_ide_libs_question(self):  # v1.07
+            """Zurueck auf die ARDUINO IDE: Gibt es sie, und sollen die Bibliotheken und Boards jetzt geprueft werden (beim Start war das wegen PlatformIO entfallen)?"""  # v1.07
+            import proggen.M08_ARDUINO as M08  # v1.07
+            import proggen.M37_Inst_Libraries as M37mod  # v1.07
+            if M08.Find_ArduinoExe() == "":  # v1.07
+                P01.MsgBox(M09.Get_Language_Str('Die ARDUINO IDE wurde nicht gefunden. Entweder wurde ARDUINO noch nicht installiert (Windows) oder das ARDUINO-Verzeichnis wurde noch nicht eingegeben (LINUX/Mac)'), vbCritical, M09.Get_Language_Str('ARDUINO IDE nicht gefunden'))  # v1.07
+                return  # v1.07
+            if P01.MsgBox(tr("Die ARDUINO IDE ist jetzt die Entwicklungsumgebung. Sollen die Bibliotheken und Boards jetzt geprüft werden?"), vbYesNo + vbQuestion, tr("Entwicklungsumgebung")) == vbYes:  # v1.07
+                M37mod.Install_Missing_Libraries_and_Board()  # v1.07
 
         def _web_check_pio(self):  # v1.04
             """Knopf PlatformIO pruefen: Ist pio installiert? Welche Version?"""  # v1.04
@@ -340,7 +411,11 @@ def make_class(Base):
                 if res is None:
                     break
                 _kind, handler, vals = res
+                self._web_switched_to_ide = False  # v1.07
                 self._web_apply(vals, initial)
+                if self._web_switched_to_ide:  # v1.07
+                    self._web_switched_to_ide = False  # v1.07
+                    self._web_ide_libs_question()  # v1.07
                 self._web_hidden = False
                 self._web_reshow = False
                 if handler == "__Check_PIO_Button_Click":                 # gibt es nur im Web (kein Knopf des Originals)  # v1.04

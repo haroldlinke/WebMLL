@@ -1,9 +1,9 @@
-# Datei-Version: 1.03 (2026-10-26) - M08_ARDUINO.py
+# Datei-Version: 1.04 (2026-10-27) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.03
-# Last Update:    2026-10-26
+# Version:        1.04
+# Last Update:    2026-10-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
 #   1.02  2026-10-26  Entwickler: PlatformIO (Create_PIO_Build_cmd, platformio.ini, Start_Arduino.cmd); Claude: PlatformIO auch fuer Linux, macOS und Raspberry Pi (Ordner bin statt Scripts, Find_PIO, PIO_Version), PATH nur einmal ergaenzt, verstaendliche Meldung wenn pio fehlt, platformio.ini wird beim Hochladen mit PlatformIO mit den aktuellen Einstellungen geschrieben
 #   1.03  2026-10-26  PlatformIO unter Linux: pipx-Installation (~/.local/bin) wird gefunden, Installationshinweis je System, Hinweis und Einrichtung der udev-Regel fuer den Raspberry Pi Pico (picotool: unable to connect)
+#   1.04  2026-10-27  Pico oder ESP32 eingestellt, am Anschluss haengt ein Arduino Nano: statt der Fehlermeldung 'kein PICO angeschlossen' wird angeboten, das Board auf Arduino Nano umzustellen
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -1955,6 +1956,15 @@ def Check_If_Arduino_could_be_programmed_and_set_Board_type(ComPortColumn, Build
                 BaudRate = 921600
             else:
                 BaudRate = M07.Get_Arduino_Baudrate(ComPort, Start_Baudrate, DeviceSignature, FirmwareVer)
+        if BaudRate <= 0 and not ComPort.startswith("IP:") and PG.global_controller.execute_upload and M02a.Get_BoardTyp() == M02.HT_PICO:  # v1.04
+            # Pico eingestellt (nicht ESP32: viele ESP32-Platinen haben ebenfalls einen CH340), am Anschluss haengt aber ein Arduino Nano (zum Beispiel, weil das Board von einer frueheren Sitzung stehen blieb): Umstellen anbieten
+            NanoText = M07.Find_Nano_Like_Device(ComPort)  # v1.04
+            if NanoText != '':  # v1.04
+                AskMsg = Replace(Replace(Replace(M09.Get_Language_Str('Am COM Port #1# ist ein Arduino Nano (#3#) angeschlossen, eingestellt ist aber #2#.'), "#1#", ComPort), "#2#", GetArduName()), "#3#", NanoText) + vbCr + vbCr + M09.Get_Language_Str('Soll das Board auf Arduino Nano umgestellt werden?')  # v1.04
+                if P01.MsgBox(AskMsg, vbYesNo + vbQuestion, M09.Get_Language_Str('Board stimmt nicht mit dem Anschluss überein')) == vbYes:  # v1.04
+                    M28.Change_Board_Typ(ComPortColumn == M25.COMPort_COL, M02.BOARD_NANO_NEW)  # v1.04
+                    Retry = True  # v1.04
+                    continue  # v1.04
         if BaudRate <= 0 and not ComPort.startswith("IP:"):
             if M07.Check_If_Port_is_Available(ComPort) == False:
                 Msg = M09.Get_Language_Str('Fehler: Es ist kein #2# an COM Port #1# angeschlossen.')

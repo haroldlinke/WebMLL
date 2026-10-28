@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 2.82 (2026-10-27), gilt für webMobaLedLib 2.22*
+*Datei-Version: 2.86 (2026-10-27), gilt für webMobaLedLib 2.28*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -435,7 +435,7 @@ Die Seite wird in allen Browsern neu geladen, und alle Texte erscheinen in der n
   Ein Name, der beim Laden einer Datei in einer anderen Sprache entstanden ist, wird dadurch ersetzt.
 - **Meldungen mit eingesetzten Werten und zusammengesetzte Meldungen** (zum Beispiel „Fehler beim Speichern: …“, die Meldungen des Updates, der Firewall, des Z21 Simulators, „… Seite(n) gelöscht“) werden ebenfalls übersetzt; die eingesetzten Werte (Dateinamen, Zahlen, Fehlertexte des Systems) bleiben, wie sie sind.
 - **Noch nicht übersetzt** (erscheinen auf Deutsch): die Beschreibungen in den Beispielblättern, die Anleitung und Texte, die nur im Excel-Programm vorkommen (Animationsformulare der Tk-Version).
-- **Fehlende Übersetzungen:** Fehlt ein Text in der gewählten Sprache, erscheint der englische, fehlt auch der, der deutsche. Stand: English (Entwurf) für alle Texte der Oberfläche (766 Einträge im Katalog; Nederlands als Entwurf); Nederlands, French, Italian, Spanish und Denmark folgen.
+- **Fehlende Übersetzungen:** Fehlt ein Text in der gewählten Sprache, erscheint der englische, fehlt auch der, der deutsche. Stand: English (Entwurf) für alle Texte der Oberfläche (766 Einträge im Katalog; English, Nederlands, Français, Italiano, Español und Dansk als Entwürfe); Nederlands, French, Italian, Spanish und Denmark folgen.
   Wie man mitübersetzt, steht in `install/UEBERSETZEN.md`.
 
 ### 2.16 Entwicklungsumgebung: ARDUINO IDE oder PlatformIO
@@ -446,10 +446,18 @@ Programme werden mit der **ARDUINO IDE** (Standard, Abschnitt 2.2) oder mit **Pl
 - **Installieren:** PlatformIO muss einmal installiert werden (Anleitung: https://platformio.org/install/cli).
   - **Windows:** zum Beispiel mit `pip install platformio` oder mit der PlatformIO-Erweiterung von Visual Studio Code.
   - **Linux, macOS und Raspberry Pi:** mit **pipx**: `pipx install platformio`, danach `pipx ensurepath` und neu anmelden (oder den Rechner neu starten). Debian, Ubuntu und Raspberry Pi OS erlauben `pip install` nicht außerhalb einer virtuellen Umgebung (Meldung „externally-managed-environment“); dort vorher `sudo apt install pipx`. Das Installationsskript von platformio.org (Ordner `~/.platformio`) geht ebenfalls.
+  - **Mit dem Installationsskript:** `install_windows.bat /platformio`, `bash install_linux.sh --with-platformio`, `bash install_mac.command --with-platformio` oder `sudo bash install_pi.sh --with-platformio` (auch zusammen mit `--with-arduino-ide`). Das Skript legt eine **eigene Python-Umgebung** `~/.platformio/penv` an (Windows: `%USERPROFILE%\.platformio\penv`), genau wie der Installer von platformio.org, und installiert PlatformIO dort hinein. Das geht auch auf Debian, Ubuntu und Raspberry Pi OS (die Meldung „externally-managed-environment“ tritt nicht auf), `pipx` ist nicht nötig. Auf Linux, macOS und Raspberry Pi geht es auch einzeln und nachträglich: `bash install/install_platformio.sh` (ohne `sudo`). Auf dem Raspberry Pi gehört die Umgebung dem Benutzer des Dienstes. Das Skript installiert nur PlatformIO; danach in den Optionen **Entwicklungsumgebung** auf PlatformIO einstellen (**PlatformIO prüfen** zeigt den Stand). Das erste Hochladen lädt die Compiler und Bibliotheken nach (Internet): **etwa 5 Minuten beim Nano und etwa 10 Minuten beim Pico**, nur beim ersten Mal. Die Installation von PlatformIO selbst lädt ebenfalls eine größere Datenmenge.
   - Das Programm findet `pio` selbst: im Ordner von PlatformIO (**Windows:** `%USERPROFILE%\.platformio\penv\Scripts`; **Linux, macOS und Raspberry Pi:** `~/.platformio/penv/bin`), unter Linux und macOS auch in `~/.local/bin` (dort legt pipx es ab), und im Pfad (PATH). Fehlt es, erscheint beim Hochladen eine Meldung mit dem Installationshinweis; man kann dann in den Optionen wieder die ARDUINO IDE einstellen.
 - **Ablauf:** Beim Hochladen schreibt das Programm die Datei `platformio.ini` (im Ordner `python`) mit den aktuellen Einstellungen (Boards `nano_new`, `nano_old`, `nano_full`, `pico`, `esp32`; die Bibliothek MobaLedLib kommt aus dem Ordner `libraries`) und startet `pio run -t upload`. Beim ersten Mal lädt PlatformIO die Werkzeuge für das Board aus dem Internet; das kann einige Minuten dauern.
 - **Raspberry Pi Pico unter Windows:** Für das Hochladen mit PlatformIO braucht der Pico unter Windows **einmalig einen zusätzlichen USB-Treiber**. Den Pico mit gedrückter BOOTSEL-Taste anstecken (Bootloader-Modus), das Programm **Zadig** starten (https://zadig.akeo.ie), unter *Options → List All Devices* den Eintrag **„RP2 Boot (Interface 1)“** wählen, als Treiber **WinUSB** einstellen und *Install Driver* (oder *Replace Driver*) anklicken. Danach lässt sich der Pico hochladen. Fehlt der Treiber, steht in der Fehlermeldung von PlatformIO bereits ein Hinweis auf Zadig.
 - **Raspberry Pi Pico unter Linux:** Linux erlaubt einem normalen Benutzer den Zugriff auf den Pico im Bootloader-Modus nur mit einer **udev-Regel**. Fehlt sie, meldet das Hochladen: „RP2040 device ... appears to be in BOOTSEL mode, but picotool was unable to connect. Maybe try 'sudo' or check your permissions“. Das Programm weist vor dem Hochladen darauf hin. Einrichten (einmalig): **Optionen → Optionen und spezielle Funktionen → Entwicklungsumgebung → „USB-Zugriff für den Pico einrichten“** (fragt nach dem Passwort) oder im Terminal `sudo bash install/install_pico_udev.sh`. Danach den Pico neu anstecken (BOOTSEL-Taste gedrückt halten). Das Skript legt die Regel `/etc/udev/rules.d/99-mobaledlib-pico.rules` an und nimmt den Benutzer in die Gruppen `plugdev` und `dialout` auf (gilt nach dem nächsten Anmelden).
+- **PlatformIO ganz ohne ARDUINO IDE:** Ist **PlatformIO** als Entwicklungsumgebung eingestellt (Optionen → Entwicklungsumgebung), braucht das Programm die ARDUINO IDE **nicht**. Dann gilt:
+  - Beim Start gibt es **keine Suche nach der IDE** (keine Meldung „ARDUINO IDE nicht gefunden“) und **keine Prüfung oder Aktualisierung der ARDUINO Bibliotheken und Boards**.
+  - Der **Sketchbook-Pfad ist der Python-Ordner**: Das Programm liest die Datei `preferences.txt` der IDE nicht mehr. Der Ordner `libraries` im Python-Ordner enthält die MobaLedLib (für PlatformIO) und die Erweiterungen (Extensions). Die Version der MobaLedLib steht in `libraries/MobaLedLib/library.properties`. FastLED, NmraDcc und weitere Bibliotheken lädt PlatformIO beim ersten Übersetzen selbst.
+  - Die Reiter **Update** (Bibliotheken und Boards der IDE aktualisieren) und **Bootloader** (schneller Bootloader, braucht ArduinoISP und avrdude der IDE; bei einem WLAN-Pico bleibt der Reiter) werden ausgeblendet; sie erscheinen wieder, wenn man die ARDUINO IDE einstellt. Das Update des Programms selbst bleibt im Menü **Hilfe → Update webMobaLedLib**.
+  - **ESP32** und **Pico** sind als Board wählbar, auch wenn ihre Pakete in der IDE fehlen.
+  - Schaltet man auf die ARDUINO IDE zurück, fragt das Programm, ob die Bibliotheken und Boards jetzt geprüft werden sollen (und meldet, wenn die IDE nicht gefunden wird).
+  - Weiter an die IDE gebunden sind der schnelle Bootloader und das Übersetzen des Simulators (nur Windows).
 - **Ordner `.pio`:** PlatformIO legt im Ordner `python` den Ordner `.pio` an (Übersetzungsergebnisse und geladene Bibliotheken, **mehrere hundert MB**). Er gehört nicht ins Release (`zip_erstellen.bat` lässt ihn weg), Update und Reparatur fassen ihn nicht an. Man kann ihn jederzeit löschen, um Platz zu schaffen; beim nächsten Hochladen wird er neu aufgebaut (das dauert dann länger).
 - **Hinweis:** PlatformIO ist neu im Programm. Rückmeldungen, vor allem von Linux, macOS und dem Raspberry Pi, sind willkommen.
 
@@ -479,6 +487,7 @@ Das Programm beruht auf dem Excel-Programm **3.5.0-K-long** der MobaLedLib. Es e
 |---|---|
 | `/ide` | ARDUINO IDE 1.8.19 laden und installieren, dazu `/libs` |
 | `/libs` | Bibliotheken FastLED (3.9.12) und MobaLedLib mit `arduino_debug.exe` installieren |
+| `/platformio` | PlatformIO (Ersatz für die ARDUINO IDE) in eine eigene Python-Umgebung `%USERPROFILE%\.platformio\penv` installieren (siehe 2.16) |
 | `/nocheck` | ohne den Test der Installation am Ende |
 
 **Starten:** Verknüpfung auf dem Desktop doppelklicken (oder `install\start_windows.bat`). Es öffnet sich ein (minimiertes) Konsolenfenster und nach 20 bis
@@ -509,6 +518,7 @@ nicht:** Für diese Systeme gibt es keine fertigen Pakete (zum Beispiel `orjson`
 |---|---|
 | `--with-arduino-ide` | ARDUINO IDE 1.8.19 laden und installieren, dazu `--with-arduino-libs` |
 | `--with-arduino-libs` | Bibliotheken FastLED (3.9.12) und MobaLedLib mit der IDE installieren |
+| `--with-platformio` | PlatformIO in eine eigene Python-Umgebung `~/.platformio/penv` installieren (siehe 2.16) |
 | `--nocheck` | ohne den Test der Installation am Ende |
 
 **Starten:** `webMobaLedLib` auf dem Schreibtisch doppelklicken. Beim ersten Mal fragt macOS eventuell: Rechtsklick → *Öffnen* → *Öffnen*. Die Oberfläche
@@ -543,6 +553,7 @@ Das Skript erledigt der Reihe nach:
 |---|---|
 | `--with-arduino-ide` | IDE 1.8.19 laden, dazu `--with-arduino-libs` |
 | `--with-arduino-libs` | nur die Bibliotheken (die IDE ist schon da) |
+| `--with-platformio` | PlatformIO in eine eigene Python-Umgebung `~/.platformio/penv` installieren (siehe 2.16) |
 | `--no-desktop-icon` | kein Symbol auf dem Schreibtisch |
 | `--no-dialout` | die Gruppe `dialout` nicht eintragen |
 | `--no-check` | ohne den Test der Installation |
@@ -611,6 +622,7 @@ Das Skript erledigt der Reihe nach:
 |---|---|
 | `--with-arduino-ide` | IDE 1.8.19 laden, dazu `--with-arduino-libs` |
 | `--with-arduino-libs` | nur die Bibliotheken |
+| `--with-platformio` | PlatformIO für den Benutzer des Dienstes in `~/.platformio/penv` installieren (siehe 2.16) |
 | `--port 9000` | anderer Port (Voreinstellung 8080) |
 | `--hostname webMLLraspi` | Rechnernamen des Pi ändern, danach erreichbar als `http://webMLLraspi.local:8080` (6.7) |
 | `--password GEHEIM` | anderes Anfangspasswort festlegen (Voreinstellung: `mobaledlib`) |

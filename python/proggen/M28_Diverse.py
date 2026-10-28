@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-27) - M28_Diverse.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M28_Diverse.py
+# Path:           proggen/M28_Diverse.py
+# Version:        1.01
+# Last Update:    2026-10-27
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-27  Is_PlatformIO: ist PlatformIO als Entwicklungsumgebung eingestellt?
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -166,6 +178,15 @@ def Clear_COM_Port_Check_and_Set_Cursor_in_all_Sheets(ReleaseMode):
 def Test_Clear_COM_Port_Check_and_Set_Cursor_in_all_Sheets():
     #UT-----------------------------------------------------------------
     Clear_COM_Port_Check_and_Set_Cursor_in_all_Sheets(True)
+
+def Is_PlatformIO():  # v1.01
+    """PlatformIO ist als Entwicklungsumgebung eingestellt (Optionen, Entwicklungsumgebung): Dann gibt es keine Pruefung der ARDUINO IDE und ihrer Bibliotheken und Boards;
+    der Sketchbook-Pfad ist der Python-Ordner (M02a.Get_Project_Dir)."""
+    try:  # v1.01
+        return Get_Bool_Config_Var("Use_PlatformIO") == True  # v1.01
+    except Exception:  # v1.01
+        return False  # v1.01
+
 
 def Get_Bool_Config_Var(Name):
     _fn_return_value = False
