@@ -1,9 +1,9 @@
-# Datei-Version: 2.28 (2026-10-27) - webmobaledlib.py
+# Datei-Version: 2.44 (2026-10-28) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        2.28
-# Last Update:    2026-10-27
+# Version:        2.44
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -98,6 +98,22 @@
 #   2.26  2026-10-27  Installationsskripte: PlatformIO mit eigener Option installieren (install_platformio.sh, --with-platformio, /platformio); keine Aenderung am Programm
 #   2.27  2026-10-27  Rueckmeldung NL-Tester zu 2.22: Ein/Aus-Testtaste mit Startwert, Reiter DCC Arduino nur bei Nano, Pico eingestellt aber Nano am Anschluss, Kontrollkaestchen Pattern Configurator entfernt
 #   2.28  2026-10-27  PlatformIO ohne ARDUINO IDE: keine Pruefung der IDE und der Bibliotheken beim Start, Sketchbook-Pfad = Python-Ordner, Reiter Update nur mit der IDE, ESP32 und Pico immer waehlbar, Version der MobaLedLib aus library.properties
+#   2.29  2026-10-28  Grafische Ansicht, Stufe 1: Umschalter Tabelle, Grafik, Beides, Ketten der Makros mit Symbolen, Anklicken markiert die Zeile, Doppelklick oeffnet die Makroauswahl
+#   2.30  2026-10-28  Grafik: Klick und Doppelklick ueber das Ereignis mll_graph, die Grafik folgt der Auswahl der Tabelle und umgekehrt, LED Nr im Format Kanal-Nummer, Einzel-LEDs (C1-1) in der Kette
+#   2.31  2026-10-28  Grafik: Doppelklick wartet auf die Klicks davor (state busy) und oeffnet die Makroauswahl, Klick markiert die ganze Zeile
+#   2.32  2026-10-28  Grafik Stufe 2a: Makrobaum links, Doppelklick haengt das Makro ans Ende der Kette an (Parameterdialog, Abbrechen legt keine Zeile an)
+#   2.33  2026-10-28  Grafik: Makrobaum wird ohne run_in_worker geladen (Hintergrundaufgabe hat keinen Kontext der Seite), Baum war beim Oeffnen leer
+#   2.34  2026-10-28  Grafik: Makrobaum mit Knopf Dialog (ganzer Dialog mit vorgewaehltem Makro) neben + (nur Parameterdialog)
+#   2.35  2026-10-28  Grafik: Knopf Dialog im Makrobaum startet die gefuehrte Eingabe des Dialogknopfs (Zelle in Spalte D aktiv) statt direkt die Makroauswahl
+#   2.36  2026-10-28  Grafik Stufe 2b: Makros aus dem Baum per Ziehen und Ablegen an eine beliebige Stelle der Ketten (vor/hinter einem Kaestchen, Kettenende, neue Kette, Ohne LEDs)
+#   2.37  2026-10-28  Grafik: Ablegen startet den ganzen Dialog (gefuehrte Eingabe), mit der Umschalt-Taste nur die Parameter
+#   2.38  2026-10-28  Grafik Stufe 2c: Kaestchen verschieben (nur innerhalb der eigenen Kette), loeschen (Papierkorb, Entf, mit Rueckfrage), Kontextmenue
+#   2.39  2026-10-28  PlatformIO: Boardliste (ESP32) folgt dem Wechsel der Entwicklungsumgebung im Dialog sofort; UnknownPackageError beim Hochladen wird einmal wiederholt
+#   2.40  2026-10-28  Grafik Stufe 3: Anlagenansicht (Hintergrundbild, frei verschiebbare Kaestchen, Zoom), Layout mit der Arbeitsmappe gesichert, Datei .MLL_view zum Austausch
+#   2.41  2026-10-28  Absturz beim Seitenaufbau behoben: on_graph_layout wurde vor seiner Definition an GraphPanel uebergeben
+#   2.42  2026-10-28  Grafik: Bild laden oeffnet den Dialog (web_graph 1.08: Coroutine zurueckgeben statt Hintergrundaufgabe)
+#   2.43  2026-10-28  Anlagenansicht: Klick und Doppelklick auf ein Kaestchen funktionieren (Pointer-Capture); Umschalt-Doppelklick oeffnet den Dialog mit den Parametern
+#   2.44  2026-10-28  Dialog Other: kein Absturz mehr, wenn in der Zelle nur der Makroname steht (Makro aus der Grafik in eine Kette gezogen)
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -157,7 +173,7 @@ if os.environ.get("MLL_RECOVERED") != "1":  # v2.08
 # dann stuerzt ein Teil ab oder tut nichts. Die Pruefung beim Start meldet es im Protokoll, auf der Konsole und mit einer roten Meldung oben auf der Seite.
 REQUIRED_FILES = {  # v1.75
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.09", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.00", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.03", "_web/web_servotest2.py": "1.00", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v1.97 (entfallen)
-    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.03", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.97 (entfallen)
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.09", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.03", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.04", "proggen/M08_ARDUINO.py": "1.01", "_web/web_network.py": "1.00", "_web/web_firewall.py": "1.02", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v1.97 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.10", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.00", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.03", "_web/web_servotest2.py": "1.00", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.01 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.10", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.04 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.13", "_web/web_pattgen.py": "1.17", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.04", "headless/headless_gridmodel.py": "1.02", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.00", "_web/web_servotest.py": "2.04", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.02",  # v1.76 (headless_pattgen 1.13)  # v2.05 (entfallen)
@@ -173,11 +189,14 @@ REQUIRED_FILES = {  # v1.75
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.19", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.06", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.22 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.19", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.25 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.27 (entfallen)
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.07", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.27
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.07", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.30 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.08", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.40 (entfallen)
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.08", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.40
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.02", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.21 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.03", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.03", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.27 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.28 (entfallen)
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.28
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.39 (entfallen)
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.03", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.39
     # "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.98 (entfallen)
     # "proggen/M06_Write_Header.py": "1.03", "proggen/M20_PageEvents_a_Functions.py": "1.03", "proggen/M18_Save_Load.py": "1.01",  # v2.03 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.12 (entfallen)
@@ -198,7 +217,19 @@ REQUIRED_FILES = {  # v1.75
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.05", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.03", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.22 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.05", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.03", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.27 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.01", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.06", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.28 (entfallen)
-    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.28
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.30 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.01", "_web/web_graph.py": "1.01", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.32 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_macro_tree.py": "1.04", "headless/headless_graph_ops.py": "1.00", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.02", "_web/web_graph.py": "1.02", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.34 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.01", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.03", "_web/web_graph.py": "1.03", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.35 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.02", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.03", "_web/web_graph.py": "1.03", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.36 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.03", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.04", "_web/web_graph.py": "1.04", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.37 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.03", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.04", "_web/web_graph.py": "1.05", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.38 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.05", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.05", "_web/web_graph.py": "1.06", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.07", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.39 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.05", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.05", "_web/web_graph.py": "1.06", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.40 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.01", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.05", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.07", "_web/web_graph.py": "1.07", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.42 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.01", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.05", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.07", "_web/web_graph.py": "1.08", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.43 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.01", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.08", "_web/web_graph.py": "1.09", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.44 (entfallen)
+    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.01", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.08", "_web/web_graph.py": "1.09", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.44
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -786,7 +817,23 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "2.28 (2026-10-27)"  # v2.28
+VERSION = "2.44 (2026-10-28)"  # v2.44
+# VERSION = "2.43 (2026-10-28)"  # v2.44 (entfallen)
+# VERSION = "2.42 (2026-10-28)"  # v2.43 (entfallen)
+# VERSION = "2.41 (2026-10-28)"  # v2.42 (entfallen)
+# VERSION = "2.40 (2026-10-28)"  # v2.41 (entfallen)
+# VERSION = "2.39 (2026-10-28)"  # v2.40 (entfallen)
+# VERSION = "2.38 (2026-10-28)"  # v2.39 (entfallen)
+# VERSION = "2.37 (2026-10-28)"  # v2.38 (entfallen)
+# VERSION = "2.36 (2026-10-28)"  # v2.37 (entfallen)
+# VERSION = "2.35 (2026-10-28)"  # v2.36 (entfallen)
+# VERSION = "2.34 (2026-10-28)"  # v2.35 (entfallen)
+# VERSION = "2.33 (2026-10-28)"  # v2.34 (entfallen)
+# VERSION = "2.32 (2026-10-28)"  # v2.33 (entfallen)
+# VERSION = "2.31 (2026-10-28)"  # v2.32 (entfallen)
+# VERSION = "2.30 (2026-10-28)"  # v2.31 (entfallen)
+# VERSION = "2.29 (2026-10-28)"  # v2.30 (entfallen)
+# VERSION = "2.28 (2026-10-27)"  # v2.29 (entfallen)
 # VERSION = "2.27 (2026-10-27)"  # v2.28 (entfallen)
 # VERSION = "2.26 (2026-10-27)"  # v2.27 (entfallen)
 # VERSION = "2.25 (2026-10-27)"  # v2.26 (entfallen)
@@ -1356,9 +1403,14 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
     # ------------------------------------------------------------------ Toolbar
     # with ui.row().classes("items-start gap-1 mll-toolbar"):  # v2.01 (entfallen)
+    from _web import web_graph                       # Grafische Ansicht: Tabelle, Grafik, Beides  # v2.29
     with ui.row().classes("items-start gap-1 mll-toolbar w-full"):  # v2.01
         # web_fullscreen.button()                         # Vollbild ein und aus (entfallen: ein Knopf in der Kopfzeile)  # v1.81
         toolbar_slot = ui.row().classes("items-start gap-1 mll-toolbar")
+        view_toggle = ui.toggle({"Tabelle": tr("Tabelle"), "Grafik": tr("Grafik"), "Beides": tr("Beides")}, value=web_graph.DEFAULT_VIEW,  # v2.29
+                                on_change=lambda e: set_view(e.value)).props("dense no-caps unelevated size=sm").classes("mll-viewtoggle")  # v2.29
+        view_toggle.tooltip(tr("Ansicht des Programm Generators: Tabelle, Grafik (Ketten der Makros) oder beides"))  # v2.29
+        view_toggle.set_visibility(False)                       # nur fuer Datenblaetter  # v2.29
         ui.space()  # v2.01
         lib_version_label = ui.label("").classes("text-caption mll-libver").style("white-space: nowrap; align-self: center")             # Version der MobaLedLib wie in Excel: Ver.3.5.0-K  # v2.01
 
@@ -1589,6 +1641,355 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     web_form_exchange.build_banner(ctrl, show_tab=lambda name: tabs.set_value(name), run_in_worker=lambda fn: run_in_worker(fn),  # v1.46
                                    refresh_pg=lambda: show(state["ws"]), get_workbook=lambda: wb)  # v1.46
 
+    graph_state = {"view": {}, "key": None, "guard": False}           # Ansicht je Blatt (Name -> Tabelle, Grafik oder Beides)  # v2.29
+
+    graph_lock = asyncio.Lock()                                       # Klick, Klick, Doppelklick kommen kurz hintereinander: nacheinander bearbeiten  # v2.31
+
+    def select_row(ws_, r):  # v2.31
+        """Ganze Zeile markieren (wie ein Klick auf die Zeilennummer): in der Tabelle des Blatts und im Grid"""  # v2.31
+        ws_.tksheet.set_selection(rows={r}, cells={(r, 0)}, current=(r, 0), type_="row")  # v2.31
+        try:  # v2.31
+            grid.run_row_method(str(r), "setSelected", True, True)  # v2.31
+        except Exception:                                  # noqa: BLE001  # v2.31
+            logger.debug("Zeile im Grid nicht markiert", exc_info=True)  # v2.31
+
+    # async def on_graph_hit(row, dbl):  # v2.43 (entfallen)
+    async def on_graph_hit(row, dbl, shift=False):  # v2.43
+        # """Knoten angeklickt: Zeile markieren (die Tabelle folgt ueber on_select); Doppelklick: Makroauswahl wie beim Klick auf das Symbol"""  # v2.31 (entfallen)
+        # ws_ = state["ws"]  # v2.31 (entfallen)
+        # if ws_ is None or state["busy"]:  # v2.31 (entfallen)
+            # return  # v2.31 (entfallen)
+        # ic = icon_column(ws_)  # v2.31 (entfallen)
+        # col = ic if ic is not None else 0  # v2.31 (entfallen)
+        # ws_.tksheet.set_selection(cells={(row, col)}, current=(row, col))  # v2.31 (entfallen)
+        # try:  # v2.31 (entfallen)
+            # focus_cell(ws_.tksheet, row, col)                # die Tabelle springt zur Zeile (set_selection loest on_select nicht aus)  # v2.31 (entfallen)
+        # except Exception:                                  # noqa: BLE001  # v2.31 (entfallen)
+            # logger.debug("Tabelle nicht auf die Zeile gesetzt", exc_info=True)  # v2.31 (entfallen)
+        # await fire_selection_event(ws_)  # v2.31 (entfallen)
+        # graph_panel.select(row)  # v2.31 (entfallen)
+        # if dbl:  # v2.31 (entfallen)
+            # await open_macro_dialog(ws_)  # v2.31 (entfallen)
+        """Knoten angeklickt: ganze Zeile markieren (die Tabelle springt dorthin). Doppelklick: Makroauswahl wie beim Klick auf das Symbol.
+        Der Doppelklick wartet, bis die Klicks davor fertig sind (state["busy"]): sonst wurde er verworfen und der Dialog oeffnete sich nicht."""
+        async with graph_lock:  # v2.31
+            ws_ = state["ws"]  # v2.31
+            if ws_ is None:  # v2.31
+                return  # v2.31
+            if dbl:  # v2.31
+                for _ in range(30):  # v2.31
+                    if not state["busy"]:  # v2.31
+                        break  # v2.31
+                    await asyncio.sleep(0.1)  # v2.31
+            if state["busy"]:  # v2.31
+                return  # v2.31
+            ic = icon_column(ws_)  # v2.31
+            col = ic if ic is not None else 0  # v2.31
+            if dbl:  # v2.31
+                ws_.tksheet.set_selection(cells={(row, col)}, current=(row, col))      # die Makroauswahl liest die aktive Zelle (wie der Klick auf das Symbol)  # v2.31
+            else:  # v2.31
+                select_row(ws_, row)  # v2.31
+            try:  # v2.31
+                focus_cell(ws_.tksheet, row, col)            # die Tabelle springt zur Zeile (set_selection loest on_select nicht aus)  # v2.31
+            except Exception:                              # noqa: BLE001  # v2.31
+                logger.debug("Tabelle nicht auf die Zeile gesetzt", exc_info=True)  # v2.31
+            await fire_selection_event(ws_)  # v2.31
+            graph_panel.select(row)  # v2.31
+            if dbl:  # v2.31
+                # await open_macro_dialog(ws_)  # v2.43 (entfallen)
+                from _web import web_macro_tree  # v2.43
+                from headless import headless_graph_ops as graph_ops  # v2.43
+                if shift:                                    # Umschalt-Doppelklick: gleich der Dialog mit den Parametern des vorhandenen Makros (ohne die Makroauswahl)  # v2.43
+                    try:  # v2.43
+                        known = await run_in_worker(lambda: graph_ops.macro_of_row(ws_, row))  # v2.43
+                    except Exception:                        # noqa: BLE001  # v2.43
+                        logger.debug("Makro der Zeile nicht ermittelt", exc_info=True)  # v2.43
+                        known = None  # v2.43
+                    if known:  # v2.43
+                        web_macro_tree.force_result(f"{known[0]},{known[1]}")  # v2.43
+                try:  # v2.43
+                    await open_macro_dialog(ws_)  # v2.43
+                finally:  # v2.43
+                    web_macro_tree.clear_forced()  # v2.43
+                if state["ws"] is ws_:  # v2.31
+                    select_row(ws_, row)                     # danach wieder die ganze Zeile  # v2.31
+                    graph_panel.select(row)  # v2.31
+
+    # graph_panel = web_graph.GraphPanel(ui, on_graph_hit)  # v2.32 (entfallen)
+    tree_state = {"items": None, "loading": False}                    # Makros aus Lib_Macros fuer den Baum der Grafik (einmal geladen)  # v2.32
+
+    async def load_tree():  # v2.32
+        """Makrobaum der Grafik fuellen (die Daten kommen aus dem Blatt Lib_Macros und werden im Worker-Thread gelesen)"""  # v2.32
+        from _web import web_macro_tree  # v2.32
+        try:  # v2.32
+            # items, _info = await run_in_worker(web_macro_tree.collect_macro_rows)  # v2.33 (entfallen)
+            # Nicht run_in_worker: load_tree laeuft als Hintergrundaufgabe (angestossen beim Aufbau der Seite), und run_in_worker braucht den Kontext der Seite
+            # (context.client: "The current slot cannot be determined"). collect_macro_rows liest nur das Blatt Lib_Macros und braucht keinen.
+            items, _info = await asyncio.get_running_loop().run_in_executor(None, web_macro_tree.collect_macro_rows)  # v2.33
+            tree_state["items"] = items  # v2.32
+            graph_panel.set_tree(web_macro_tree.graph_tree_nodes(items, graph_panel.filter_text), bool(graph_panel.filter_text.strip()))  # v2.32
+        except Exception:                                  # noqa: BLE001  # v2.32
+            logger.exception("Makrobaum der Grafik nicht geladen")  # v2.32
+        finally:  # v2.32
+            tree_state["loading"] = False  # v2.32
+
+    async def open_guided_dialog(ws):  # v2.35
+        """Wie der Knopf Dialog der Werkzeugleiste (F00.Dialog_Button_Click -> M03.Dialog_Guided_Input): die gefuehrte Eingabe ab der aktiven Zelle"""  # v2.35
+        import proggen.F00_mainbuttons as F00_dlg  # v2.35
+
+        def work():  # v2.35
+            ws.Activate()  # v2.35
+            try:  # v2.35
+                X02.ActiveCell()  # v2.35
+                F00_dlg.Dialog_Button_Click()  # v2.35
+            except SystemExit:  # v2.35
+                raise RuntimeError("Der Dialog wurde mit EndProg beendet") from None  # v2.35
+        try:  # v2.35
+            await run_in_worker(work)  # v2.35
+        except Exception as ex:                      # noqa: BLE001  # v2.35
+            logger.exception("Dialog fehlgeschlagen")  # v2.35
+            ui.notify(tr('Makroauswahl: {ex}', ex=ex), type="negative")  # v2.35
+        show(ws)  # v2.35
+
+    def on_tree_filter(text):  # v2.32
+        if tree_state["items"] is None:  # v2.32
+            return  # v2.32
+        from _web import web_macro_tree  # v2.32
+        graph_panel.set_tree(web_macro_tree.graph_tree_nodes(tree_state["items"], text), bool(str(text or "").strip()))  # v2.32
+
+    # async def on_tree_hit(macro, lib_row, dbl):  # v2.34 (entfallen)
+    async def wait_not_busy():  # v2.36
+        """Klicks und Ablegen kommen kurz hintereinander: kurz warten, bis der Befehl davor (state busy) fertig ist"""  # v2.36
+        for _ in range(30):  # v2.36
+            if not state["busy"]:  # v2.36
+                break  # v2.36
+            await asyncio.sleep(0.1)  # v2.36
+        return not state["busy"]  # v2.36
+
+    # async def place_macro(macro, lib_row, mode, channel, index):  # v2.40 (entfallen)
+    async def place_macro(macro, lib_row, mode, channel, index, plant_pos=None):  # v2.40
+        """Eine neue Zeile an der Stelle index mit dem LED Kanal channel einfuegen und den Dialog fuer das Makro starten (unter graph_lock aufrufen).
+        mode 'params' (Doppelklick, +, Ablegen): danach nur der Dialog mit den Parametern (das Makro ist gewaehlt).
+        mode 'full' (Knopf Dialog, Ablegen mit Umschalt-Taste): das Makro steht als Text ('House(') in der Zeile, die Zelle in Spalte D ist aktiv und die GEFUEHRTE Eingabe
+        des Dialogknopfs laeuft (Adresse, Typ, Testtasten, Beschreibung, ... Makroauswahl mit dem Makro vorgewaehlt, Parameter), wie von Hand.
+        Abbrechen legt in beiden Faellen keine Zeile an."""
+        from _web import web_macro_tree  # v2.36
+        from headless import headless_graph_ops as graph_ops  # v2.36
+        ws_ = state["ws"]  # v2.36
+        if ws_ is None:  # v2.36
+            return  # v2.36
+        ic = icon_column(ws_)  # v2.36
+        col = ic if ic is not None else 0  # v2.36
+        full = (mode == "full")  # v2.36
+        placeholder = ""  # v2.36
+        if full:                                         # Text, mit dem die Makroauswahl das Makro vorwaehlt (Spalte "Find Name for detection", zum Beispiel "House(")  # v2.36
+            placeholder = next((it.get("find_name", "") for it in (tree_state["items"] or []) if it["row"] == lib_row), "") or (macro + "(")  # v2.36
+        sel_col = graph_ops.guided_start_column(ws_) if full else col                        # voller Dialog: wie von Hand die Zelle in Spalte D aktivieren, dort beginnt die gefuehrte Eingabe  # v2.36
+
+        def insert():  # v2.36
+            r = graph_ops.insert_macro_row(ws_, index, channel)  # v2.36
+            if full:  # v2.36
+                graph_ops.set_config_text(ws_, r, placeholder)  # v2.36
+            ws_.tksheet.set_selection(cells={(r, sel_col)}, current=(r, sel_col))             # die Dialoge lesen die aktive Zelle  # v2.36
+            return r  # v2.36
+        try:  # v2.36
+            new_r = await run_in_worker(insert)  # v2.36
+        except Exception as ex:                      # noqa: BLE001  # v2.36
+            logger.exception("Zeile fuer das Makro nicht eingefuegt")  # v2.36
+            ui.notify(tr('Fehler beim Einfügen der Zeilen: {ex}', ex=ex), type="negative")  # v2.36
+            show(ws_)  # v2.36
+            return  # v2.36
+        if not full:  # v2.36
+            web_macro_tree.force_result(f"{macro},{lib_row}")             # das Makro ist schon gewaehlt: kein Baum, gleich die Parameter  # v2.36
+        try:  # v2.36
+            await fire_selection_event(ws_)  # v2.36
+            if full:  # v2.36
+                await open_guided_dialog(ws_)  # v2.36
+            else:  # v2.36
+                await open_macro_dialog(ws_)  # v2.36
+        finally:  # v2.36
+            web_macro_tree.clear_forced()  # v2.36
+        if state["ws"] is ws_ and graph_ops.is_unused_row(ws_, new_r, placeholder):         # abgebrochen (leer oder nur der vorgemerkte Text): die neue Zeile wieder entfernen  # v2.36
+            try:  # v2.36
+                await run_in_worker(lambda: graph_ops.remove_row(ws_, new_r))  # v2.36
+            except Exception:                      # noqa: BLE001  # v2.36
+                logger.exception("Leere Zeile nicht entfernt")  # v2.36
+            show(ws_)  # v2.36
+        elif state["ws"] is ws_:  # v2.36
+            if plant_pos is not None:                        # aus der Anlagenansicht abgelegt: das neue Kaestchen steht an der Ablagestelle  # v2.40
+                from headless import headless_graph_layout as GL  # v2.40
+                try:  # v2.40
+                    layout = graph_layout_of(ws_)  # v2.40
+                    cache = graph_state.setdefault("pos", {}).setdefault(ws_.Name, {})  # v2.40
+                    cache[ws_.tksheet.row_id(new_r)] = GL.clamp(float(plant_pos[0]), float(plant_pos[1]), layout)  # v2.40
+                    layout_changed(ws_)  # v2.40
+                    refresh_graph(ws_, True)  # v2.40
+                except (TypeError, ValueError):  # v2.40
+                    logger.debug("Ablagestelle unbrauchbar: %r", plant_pos)  # v2.40
+            select_row(ws_, new_r)  # v2.36
+            graph_follow(new_r)  # v2.36
+
+    async def on_tree_hit(macro, lib_row, dbl, mode="params"):  # v2.34
+        """Doppelklick, + oder Dialog auf ein Makro im Baum: eine neue Zeile ans Ende der Kette des markierten Knotens (sonst der ersten Kette)."""  # v2.36
+        if not dbl:  # v2.32
+            return  # v2.32
+        # from _web import web_macro_tree  # v2.36 (entfallen)
+        from headless import headless_graph_ops as graph_ops  # v2.32
+        async with graph_lock:  # v2.32
+            ws_ = state["ws"]  # v2.32
+            # if ws_ is None:  # v2.36 (entfallen)
+                # return  # v2.36 (entfallen)
+            # for _ in range(30):  # v2.36 (entfallen)
+                # if not state["busy"]:  # v2.36 (entfallen)
+                    # break  # v2.36 (entfallen)
+                # await asyncio.sleep(0.1)  # v2.36 (entfallen)
+            # if state["busy"]:  # v2.36 (entfallen)
+            if ws_ is None or not await wait_not_busy():  # v2.36
+                return  # v2.32
+            model = graph_state.get("model") or {"chains": [], "other": []}  # v2.32
+            channel = graph_ops.target_channel(model, selected_row(ws_))  # v2.32
+            index = graph_ops.insertion_index(model, channel, first_data_row0())  # v2.32
+            # ic = icon_column(ws_)  # v2.36 (entfallen)
+            # col = ic if ic is not None else 0  # v2.36 (entfallen)
+            # full = (mode == "full")  # v2.36 (entfallen)
+            # placeholder = ""  # v2.36 (entfallen)
+            # if full:                                         # Text, mit dem die Makroauswahl das Makro vorwaehlt (Spalte "Find Name for detection", zum Beispiel "House(")  # v2.36 (entfallen)
+                # placeholder = next((it.get("find_name", "") for it in (tree_state["items"] or []) if it["row"] == lib_row), "") or (macro + "(")  # v2.36 (entfallen)
+            await place_macro(macro, lib_row, mode, channel, index)  # v2.36
+
+            # sel_col = graph_ops.guided_start_column(ws_) if full else col                    # voller Dialog: wie von Hand die Zelle in Spalte D aktivieren, dort beginnt die gefuehrte Eingabe  # v2.36 (entfallen)
+    # async def on_graph_drop(macro, lib_row, target, full):  # v2.37 (entfallen)
+    async def on_graph_drop(macro, lib_row, target, shift):  # v2.37
+        """Makro aus dem Baum auf die Grafik gezogen und abgelegt: die Stelle (vor oder hinter einem Kaestchen, Ende einer Kette, neue Kette, Spalte Ohne LEDs) bestimmt
+        Zeile und LED Kanal (headless_graph_ops.drop_position). Danach laeuft wie beim Knopf Dialog der GANZE Dialog (gefuehrte Eingabe); mit der Umschalt-Taste nur der
+        Dialog mit den Parametern."""
+        from headless import headless_graph_ops as graph_ops  # v2.36
+        async with graph_lock:  # v2.36
+            ws_ = state["ws"]  # v2.36
+            if ws_ is None or not await wait_not_busy():  # v2.36
+                return  # v2.36
+            model = graph_state.get("model") or {"chains": [], "other": []}  # v2.36
+            if (target or {}).get("kind") == "plant":        # auf die Flaeche der Anlagenansicht: wie das +, das Kaestchen steht danach an der Ablagestelle  # v2.40
+                channel = graph_ops.target_channel(model, selected_row(ws_))  # v2.40
+                index = graph_ops.insertion_index(model, channel, first_data_row0())  # v2.40
+                await place_macro(macro, lib_row, "params" if shift else "full", channel, index, plant_pos=(target.get("x"), target.get("y")))  # v2.40
+                return  # v2.40
+            index, channel = graph_ops.drop_position(model, target, first_data_row0())  # v2.36
+            # await place_macro(macro, lib_row, "full" if full else "params", channel, index)  # v2.37 (entfallen)
+            await place_macro(macro, lib_row, "params" if shift else "full", channel, index)  # v2.37
+
+            # def insert():  # v2.36 (entfallen)
+                # r = graph_ops.insert_macro_row(ws_, index, channel)  # v2.36 (entfallen)
+                # if full:  # v2.36 (entfallen)
+                    # graph_ops.set_config_text(ws_, r, placeholder)  # v2.36 (entfallen)
+                # ws_.tksheet.set_selection(cells={(r, sel_col)}, current=(r, sel_col))         # die Dialoge lesen die aktive Zelle  # v2.36 (entfallen)
+                # return r  # v2.36 (entfallen)
+            # try:  # v2.36 (entfallen)
+                # new_r = await run_in_worker(insert)  # v2.36 (entfallen)
+            # except Exception as ex:                      # noqa: BLE001  # v2.36 (entfallen)
+                # logger.exception("Zeile fuer das Makro nicht eingefuegt")  # v2.36 (entfallen)
+                # ui.notify(tr('Fehler beim Einfügen der Zeilen: {ex}', ex=ex), type="negative")  # v2.36 (entfallen)
+                # show(ws_)  # v2.36 (entfallen)
+                # return  # v2.36 (entfallen)
+            # if not full:  # v2.36 (entfallen)
+                # web_macro_tree.force_result(f"{macro},{lib_row}")         # das Makro ist schon gewaehlt: kein Baum, gleich die Parameter  # v2.36 (entfallen)
+            # try:  # v2.36 (entfallen)
+                # await fire_selection_event(ws_)  # v2.36 (entfallen)
+                # if full:  # v2.36 (entfallen)
+                    # await open_guided_dialog(ws_)                      # wie der Knopf Dialog: Adresse, Typ, Testtasten, Beschreibung ... Makroauswahl (Makro vorgewaehlt)  # v2.36 (entfallen)
+                # else:  # v2.36 (entfallen)
+                    # await open_macro_dialog(ws_)  # v2.36 (entfallen)
+            # finally:  # v2.36 (entfallen)
+                # web_macro_tree.clear_forced()  # v2.36 (entfallen)
+            # if state["ws"] is ws_ and graph_ops.is_unused_row(ws_, new_r, placeholder):         # abgebrochen (leer oder nur der vorgemerkte Text): die neue Zeile wieder entfernen  # v2.36 (entfallen)
+                # try:  # v2.36 (entfallen)
+                    # await run_in_worker(lambda: graph_ops.remove_row(ws_, new_r))  # v2.36 (entfallen)
+                # except Exception:                      # noqa: BLE001  # v2.36 (entfallen)
+                    # logger.exception("Leere Zeile nicht entfernt")  # v2.36 (entfallen)
+                # show(ws_)  # v2.36 (entfallen)
+            # elif state["ws"] is ws_:  # v2.36 (entfallen)
+                # select_row(ws_, new_r)  # v2.36 (entfallen)
+                # graph_follow(new_r)  # v2.36 (entfallen)
+    # graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter)  # v2.36 (entfallen)
+    # graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop)  # v2.38 (entfallen)
+    async def confirm_delete(row, name):  # v2.38
+        """Rueckfrage vor dem Loeschen einer Zeile: die Grafik darf nichts ungefragt zerstoeren"""  # v2.38
+        with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[440px] max-w-full"):  # v2.38
+            ui.label(tr("Zeile {zeile} löschen?", zeile=row + 1)).classes("text-h6")  # v2.38
+            ui.label(tr("Das Makro „{name}“ wird aus der Tabelle entfernt.", name=name))  # v2.38
+            with ui.row().classes("justify-end w-full"):  # v2.38
+                ui.button(tr("Abbrechen"), on_click=lambda: dlg.submit(False)).props("flat")  # v2.38
+                ui.button(tr("Löschen"), on_click=lambda: dlg.submit(True)).props("color=negative")  # v2.38
+        dlg.open()  # v2.38
+        answer = await dlg  # v2.38
+        dlg.delete()  # v2.38
+        return bool(answer)  # v2.38
+
+    async def on_graph_cmd(cmd, row, target):  # v2.38
+        """Befehle aus der Grafik: move (ein Kaestchen wurde gezogen: NUR innerhalb der eigenen Kette, headless_graph_ops.plan_move), delete (Papierkorb oder Entf, mit Rueckfrage),
+        up und down (Kontextmenue, Nachbar in der Kette), dialog (Kontextmenue: wie der Doppelklick)."""
+        from headless import headless_graph_ops as graph_ops  # v2.38
+        from headless import headless_graph  # v2.38
+        if cmd == "dialog":  # v2.38
+            await on_graph_hit(row, True)  # v2.38
+            return  # v2.38
+        async with graph_lock:  # v2.38
+            ws_ = state["ws"]  # v2.38
+            if ws_ is None or not await wait_not_busy():  # v2.38
+                return  # v2.38
+            model = graph_state.get("model") or {"chains": [], "other": []}  # v2.38
+            node = headless_graph.find_node(model, row)  # v2.38
+            if node is None:  # v2.38
+                return  # v2.38
+            if cmd == "place":                               # Anlagenansicht: Kaestchen frei auf dem Bild verschoben (nur die Position, die Tabelle bleibt)  # v2.40
+                from headless import headless_graph_layout as GL  # v2.40
+                try:  # v2.40
+                    x, y = float((target or {})["x"]), float((target or {})["y"])  # v2.40
+                except (KeyError, TypeError, ValueError):  # v2.40
+                    return  # v2.40
+                layout = graph_layout_of(ws_)  # v2.40
+                cache = graph_state.setdefault("pos", {}).setdefault(ws_.Name, {})  # v2.40
+                cache[node["id"]] = GL.clamp(x, y, layout)  # v2.40
+                layout["nodes"] = GL.collect_positions(cache, model)  # v2.40
+                layout_changed(ws_)  # v2.40
+                return  # v2.40
+            if cmd in ("up", "down"):  # v2.38
+                target = graph_ops.neighbour_target(model, row, cmd)  # v2.38
+                if target is None:  # v2.38
+                    return                                   # am Rand der Kette  # v2.38
+                cmd = "move"  # v2.38
+            if cmd == "move":  # v2.38
+                move_to = graph_ops.plan_move(model, row, target or {})  # v2.38
+                if move_to is None:  # v2.38
+                    return                                   # nichts zu tun oder nicht erlaubt (andere Kette): die Grafik laesst es gar nicht zu  # v2.38
+                try:  # v2.38
+                    await run_in_worker(lambda: graph_ops.move_row(ws_, row, move_to))  # v2.38
+                except Exception as ex:                      # noqa: BLE001  # v2.38
+                    logger.exception("Zeile nicht verschoben")  # v2.38
+                    ui.notify(tr('Fehler beim Verschieben: {ex}', ex=ex), type="negative")  # v2.38
+                    show(ws_)  # v2.38
+                    return  # v2.38
+                show(ws_)  # v2.38
+                new_node = next((n for c in (graph_state.get("model") or {}).get("chains", []) for n in c["nodes"] if n["id"] == node["id"]), None)  # v2.38
+                if new_node is not None and state["ws"] is ws_:  # v2.38
+                    select_row(ws_, new_node["row"])  # v2.38
+                    graph_follow(new_node["row"])  # v2.38
+            elif cmd == "delete":  # v2.38
+                if not await confirm_delete(row, node.get("label") or node.get("makro") or ""):  # v2.38
+                    return  # v2.38
+                try:  # v2.38
+                    await run_in_worker(lambda: graph_ops.delete_row(ws_, row))  # v2.38
+                except Exception as ex:                      # noqa: BLE001  # v2.38
+                    logger.exception("Zeile nicht geloescht")  # v2.38
+                    ui.notify(tr('Fehler beim Löschen: {ex}', ex=ex), type="negative")  # v2.38
+                show(ws_)  # v2.38
+
+    # graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop, on_graph_cmd)  # v2.40 (entfallen)
+    # graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop, on_graph_cmd, on_graph_layout)  # v2.41 (entfallen)
+    # on_graph_layout ist weiter unten definiert (bei refresh_graph): erst beim Aufruf aufloesen, sonst UnboundLocalError beim Aufbau der Seite
+    graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop, on_graph_cmd, lambda action, value=None: on_graph_layout(action, value))  # v2.41
+    graph_panel.set_visible(False)  # v2.29
+
     grid_wrap = ui.element("div").classes("w-full mll-grid-wrap").style("flex: 1 1 0; min-height: 160px; position: relative")
     grid_options = {
         "columnDefs": [],
@@ -1818,6 +2219,199 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
     ui.on("mll_anchor", on_anchor)
 
+    def graph_view_for(ws) -> str:  # v2.29
+        """Ansicht des Blatts: die gewaehlte, sonst die Standardansicht aus den Programm Einstellungen; Blaetter ohne Daten: Tabelle"""  # v2.29
+        try:  # v2.29
+            if not M28.Is_Data_Sheet(ws):  # v2.29
+                return "Tabelle"  # v2.29
+        except Exception:                                  # noqa: BLE001  # v2.29
+            return "Tabelle"  # v2.29
+        return graph_state["view"].get(ws.Name) or web_graph.normalize_view(ctrl.getConfigData(web_graph.CONFIG_KEY))  # v2.29
+
+    def selected_row(ws):  # v2.29
+        try:  # v2.29
+            sh = ws.tksheet  # v2.29
+            cur = sh.get_currently_selected()  # v2.29
+            return int(sh.displayed_row_to_data(cur.row)) if cur is not None and cur.row is not None else None  # v2.29
+        except Exception:                                  # noqa: BLE001  # v2.29
+            return None  # v2.29
+
+    def graph_follow(r):  # v2.30
+        """Knoten der Zeile r (0-basiert) in der Grafik markieren, wenn die Grafik sichtbar ist"""  # v2.30
+        try:  # v2.30
+            ws_ = state["ws"]  # v2.30
+            if ws_ is not None and web_graph.show_graph(graph_view_for(ws_)):  # v2.30
+                graph_panel.select(int(r))  # v2.30
+        except Exception:                                  # noqa: BLE001  # v2.30
+            logger.debug("Auswahl in der Grafik nicht gesetzt", exc_info=True)  # v2.30
+
+    def apply_graph_view(ws):  # v2.29
+        """Umschalter und die beiden Flaechen (Grafik oben, Tabelle unten) an die Ansicht des Blatts anpassen"""  # v2.29
+        view = graph_view_for(ws)  # v2.29
+        try:  # v2.29
+            data_sheet = bool(M28.Is_Data_Sheet(ws))  # v2.29
+        except Exception:                                  # noqa: BLE001  # v2.29
+            data_sheet = False  # v2.29
+        view_toggle.set_visibility(data_sheet)  # v2.29
+        if view_toggle.value != view:  # v2.29
+            graph_state["guard"] = True  # v2.29
+            try:  # v2.29
+                view_toggle.set_value(view)  # v2.29
+            finally:  # v2.29
+                graph_state["guard"] = False  # v2.29
+        grid_wrap.set_visibility(web_graph.show_table(view))  # v2.29
+        graph_panel.set_visible(web_graph.show_graph(view))  # v2.29
+
+    def graph_layout_of(ws):  # v2.40
+        """Layout der Anlagenansicht des Blatts (Modus, Bild, Positionen); wird mit der Arbeitsmappe gesichert"""  # v2.40
+        from headless import headless_graph_layout as GL  # v2.40
+        return GL.get_layout(ws)  # v2.40
+
+    def layout_changed(ws):  # v2.40
+        ws.view_layout_ver = getattr(ws, "view_layout_ver", 0) + 1            # fuer die automatische Sicherung (workbook_signature)  # v2.40
+
+    def plant_data_for(ws, model):  # v2.40
+        """Daten der Anlagenansicht: gespeicherte Positionen an die Zeilen binden, fehlende automatisch setzen, das Layout des Blatts auf dem Stand der Tabelle halten"""  # v2.40
+        from headless import headless_graph_layout as GL  # v2.40
+        layout = GL.get_layout(ws)  # v2.40
+        if layout["mode"] != "plant":  # v2.40
+            return None  # v2.40
+        cache = graph_state.setdefault("pos", {})  # v2.40
+        pos = cache.get(ws.Name)  # v2.40
+        if pos is None:  # v2.40
+            pos = GL.bind_positions(layout, model)  # v2.40
+        full = GL.auto_place(model, pos, layout)  # v2.40
+        cache[ws.Name] = full  # v2.40
+        saved = GL.collect_positions(full, model)  # v2.40
+        if saved != layout["nodes"]:  # v2.40
+            layout["nodes"] = saved  # v2.40
+            layout_changed(ws)  # v2.40
+        return web_graph.plant_data(layout, full, model)  # v2.40
+
+    async def ask_upload(title, accept):  # v2.40
+        """Dialog zum Hochladen einer Datei (Bild, Anlagenansicht); Rueckgabe (Name, Bytes) oder None"""  # v2.40
+        with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[560px] max-w-full"):  # v2.40
+            ui.label(title).classes("text-h6")  # v2.40
+
+            async def on_up(e):  # v2.40
+                name, data = await web_dialogs._read_upload(e)  # v2.40
+                dlg.submit((name, bytes(data) if isinstance(data, (bytes, bytearray)) else str(data).encode("utf-8")))  # v2.40
+            ui.upload(on_upload=on_up, auto_upload=True, max_files=1, label=tr("Datei hierher ziehen oder zum Auswählen klicken")).classes("w-full").props(f'accept="{accept}"')  # v2.40
+            with ui.row().classes("justify-end w-full"):  # v2.40
+                ui.button(tr("Abbrechen"), on_click=lambda: dlg.submit(None)).props("flat")  # v2.40
+        dlg.open()  # v2.40
+        answer = await dlg  # v2.40
+        web_dialogs.safe_delete(dlg)  # v2.40
+        return answer  # v2.40
+
+    async def on_graph_layout(action, value=None):  # v2.40
+        """Kopfzeile der Grafik: Ansicht Ketten oder Anlage, Bild laden, Bild entfernen"""  # v2.40
+        from headless import headless_graph_layout as GL  # v2.40
+        ws_ = state["ws"]  # v2.40
+        if ws_ is None:  # v2.40
+            return  # v2.40
+        layout = GL.get_layout(ws_)  # v2.40
+        if action == "mode":  # v2.40
+            if value in GL.MODES and value != layout["mode"]:  # v2.40
+                layout["mode"] = value  # v2.40
+                layout_changed(ws_)  # v2.40
+                refresh_graph(ws_, True)  # v2.40
+        elif action == "image_remove":  # v2.40
+            layout["image"] = None  # v2.40
+            layout_changed(ws_)  # v2.40
+            refresh_graph(ws_, True)  # v2.40
+        elif action == "image_load":  # v2.40
+            got = await ask_upload(tr("Hintergrundbild laden"), "image/png,image/jpeg,image/gif,image/webp,.png,.jpg,.jpeg,.gif,.webp")  # v2.40
+            if got is None:  # v2.40
+                return  # v2.40
+            try:  # v2.40
+                image = await run.io_bound(GL.process_image, got[1])               # verkleinern kann bei grossen Bildern dauern  # v2.40
+            except ValueError as ex:  # v2.40
+                ui.notify(tr(str(ex)), type="negative")  # v2.40
+                return  # v2.40
+            layout["image"], layout["mode"] = image, "plant"  # v2.40
+            pos = graph_state.setdefault("pos", {}).get(ws_.Name) or {}  # v2.40
+            graph_state["pos"][ws_.Name] = {k: GL.clamp(x, y, layout) for k, (x, y) in pos.items()}     # innerhalb der neuen Flaeche halten  # v2.40
+            layout_changed(ws_)  # v2.40
+            refresh_graph(ws_, True)  # v2.40
+            ui.notify(tr("Bild geladen: {name}", name=got[0]), type="positive")  # v2.40
+
+    async def layout_export():  # v2.40
+        """Menue Datei: die Anlagenansicht (Bild und Positionen) als Datei .MLL_view herunterladen"""  # v2.40
+        from headless import headless_graph_layout as GL  # v2.40
+        ws_ = state["ws"]  # v2.40
+        if ws_ is None or not M28.Is_Data_Sheet(ws_):  # v2.40
+            ui.notify(tr("Bitte zuerst ein Datenblatt wählen."), type="warning")  # v2.40
+            return  # v2.40
+        layout = GL.get_layout(ws_)  # v2.40
+        if not layout["image"] and not layout["nodes"]:  # v2.40
+            ui.notify(tr("Es gibt noch keine Anlagenansicht (Bild oder Positionen) zum Speichern."), type="warning")  # v2.40
+            return  # v2.40
+        name = f"{ws_.Name}.MLL_view"  # v2.40
+        path = os.path.join(tempfile.mkdtemp(prefix="mll_view_"), name)  # v2.40
+        with open(path, "w", encoding="utf-8") as fh:  # v2.40
+            fh.write(GL.export_json(layout))  # v2.40
+        offer_download(path, name)  # v2.40
+
+    async def layout_import():  # v2.40
+        """Menue Datei: eine Anlagenansicht (.MLL_view) laden: ersetzt Bild und Positionen des aktuellen Blatts"""  # v2.40
+        from headless import headless_graph_layout as GL  # v2.40
+        ws_ = state["ws"]  # v2.40
+        if ws_ is None or not M28.Is_Data_Sheet(ws_):  # v2.40
+            ui.notify(tr("Bitte zuerst ein Datenblatt wählen."), type="warning")  # v2.40
+            return  # v2.40
+        got = await ask_upload(tr("Anlagenansicht laden"), ".MLL_view,.json")  # v2.40
+        if got is None:  # v2.40
+            return  # v2.40
+        try:  # v2.40
+            layout = GL.import_json(got[1].decode("utf-8", errors="replace"))  # v2.40
+        except ValueError as ex:  # v2.40
+            ui.notify(tr(str(ex)), type="negative")  # v2.40
+            return  # v2.40
+        ws_.view_layout = layout  # v2.40
+        graph_state.setdefault("pos", {})[ws_.Name] = None                       # die Positionen werden an die Zeilen dieses Blatts gebunden  # v2.40
+        graph_state["view"][ws_.Name] = "Grafik"  # v2.40
+        layout_changed(ws_)  # v2.40
+        apply_graph_view(ws_)  # v2.40
+        refresh_graph(ws_, True)  # v2.40
+        ui.notify(tr("Anlagenansicht geladen: {name}", name=got[0]), type="positive")  # v2.40
+
+    def refresh_graph(ws, force=False):  # v2.29
+        """Ketten neu berechnen und zeichnen (nur wenn die Grafik sichtbar ist und sich das Blatt geaendert hat)"""  # v2.29
+        if not web_graph.show_graph(graph_view_for(ws)):  # v2.29
+            return  # v2.29
+        key = (ws.Name, ws.tksheet.version)  # v2.29
+        if not force and graph_state["key"] == key:  # v2.29
+            return  # v2.29
+        from headless import headless_graph  # v2.29
+        model = headless_graph.build_model(ws, collect_icons(ws), M09.Get_Display_Cells(ws))  # v2.29
+        graph_state["key"] = key  # v2.29
+        graph_state["model"] = model                       # fuer die Operationen (Makro anhaengen)  # v2.32
+        # graph_panel.update(model, selected_row(ws))  # v2.40 (entfallen)
+        layout = graph_layout_of(ws)  # v2.40
+        graph_panel.set_plant_controls(layout["mode"], bool(layout["image"]))  # v2.40
+        graph_panel.update(model, selected_row(ws), plant_data_for(ws, model))  # v2.40
+        if tree_state["items"] is None and not tree_state["loading"]:  # v2.32
+            tree_state["loading"] = True  # v2.32
+            try:  # v2.32
+                asyncio.ensure_future(load_tree())  # v2.32
+            except RuntimeError:                           # noqa: BLE001  keine laufende Ereignisschleife: beim naechsten Mal  # v2.32
+                tree_state["loading"] = False  # v2.32
+
+    def set_view(value):  # v2.29
+        if graph_state["guard"]:  # v2.29
+            return  # v2.29
+        ws = state["ws"]  # v2.29
+        try:  # v2.29
+            if ws is None or not M28.Is_Data_Sheet(ws):  # v2.29
+                return  # v2.29
+        except Exception:                                  # noqa: BLE001  # v2.29
+            return  # v2.29
+        graph_state["view"][ws.Name] = web_graph.normalize_view(value)  # v2.29
+        graph_state["key"] = None  # v2.29
+        apply_graph_view(ws)  # v2.29
+        refresh_graph(ws, True)  # v2.29
+
     def show(ws):
         t_start = time.perf_counter()  # v1.49
         try:
@@ -1951,6 +2545,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if meta["shown_rows"] != meta["rows"]:                 # Zeilen ausgeblendet (Aus- oder Einblenden)
             text += f", {meta['shown_rows']} sichtbar"
         info.set_text(text)
+        try:  # v2.29
+            apply_graph_view(ws)  # v2.29
+            refresh_graph(ws)  # v2.29
+        except Exception:                                  # noqa: BLE001  die Grafik darf die Tabelle nie stoeren  # v2.29
+            logger.exception("Grafische Ansicht nicht aktualisiert")  # v2.29
 
     # --- programmgesteuerte Auswahl (Makro ruft Cells(r, c).Select()): Zelle im Grid markieren
     loop = asyncio.get_running_loop()
@@ -1958,6 +2557,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     def focus_cell(sheet, r, c):
         if state["ws"] is None or state["ws"].tksheet is not sheet:
             return
+        try:  # v2.29
+            if web_graph.show_graph(graph_view_for(state["ws"])):  # v2.29
+                graph_panel.select(r)                        # die Grafik folgt der Auswahl der Tabelle  # v2.29
+        except Exception:                                  # noqa: BLE001  # v2.29
+            logger.debug("Auswahl in der Grafik nicht gesetzt", exc_info=True)  # v2.29
         pinned_ids = [p["_r"] for p in grid.options.get("pinnedTopRowData", [])]
         body_ids = [x["_r"] for x in grid.options.get("rowData", [])]
         if SCROLL_DEBUG:
@@ -2108,6 +2712,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             # Wie in Excel ist die aktive Zelle einer markierten Zeile ihre erste Zelle; die Makros
             # (ActiveCell, getSelectedCell) lesen die ausgewaehlten ZELLEN, nicht nur die Zeilen.
             state["ws"].tksheet.set_selection(rows={r}, cells={(r, 0)}, current=(r, 0), type_="row")
+            graph_follow(r)  # v2.30
             await fire_selection_event(state["ws"])
             return
         if not col_id.startswith("c"):
@@ -2116,6 +2721,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if SCROLL_DEBUG:
             logger.info("SCROLL: Klick auf Zeile %s, Spalte %s (Zeilenindex im Grid: %s)", r, c, a.get("rowIndex"))
         state["ws"].tksheet.set_selection(cells={(r, c)}, current=(r, c))
+        graph_follow(r)                                      # die Grafik folgt der Auswahl in der Tabelle (set_selection loest on_select/focus_cell nicht aus)  # v2.30
         ws0 = state["ws"]
         if is_libraries_sheet(ws0) and c == library_select_column() and r + 1 >= int(M37.First_Dat_Row) and not state["busy"]:
             await toggle_library_select(ws0, r, c)           # wie Is_Libraries_Select_Column im Excel-Original
@@ -2137,6 +2743,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             first = min(sel_rows)
             cells, current = {(first, 0)}, (first, 0)
         sh.set_selection(rows=sel_rows, cells=cells, current=current)
+        if sel_rows:  # v2.30
+            graph_follow(min(sel_rows))  # v2.30
 
     def on_key(e):
         if e.action.keydown and getattr(e.key, "escape", False):
@@ -2958,7 +3566,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         return os.path.splitext(main_workbook_file())[0] + ".autosave.json"
 
     def workbook_signature():
-        return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or [])) for s in list(wb.sheets))
+        # return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or [])) for s in list(wb.sheets))  # v2.40 (entfallen)
+        return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0)) for s in list(wb.sheets))  # v2.40
 
     def save_now():
         sync_all_sheets()
@@ -3080,6 +3689,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             None,
             ("ProgrammGenerator: PGF-Datei lesen", run_command(lambda: M18.Load_Data_from_File(), "PGF lesen", live=False)),
             ("ProgrammGenerator: PGF-Datei speichern", run_command(lambda: M18.Save_Data_to_File(), "PGF speichern")),
+            ("ProgrammGenerator: Anlagenansicht laden ...", layout_import),  # v2.40
+            ("ProgrammGenerator: Anlagenansicht speichern ...", layout_export),  # v2.40
             None,
             ("Beenden ...", quit_program),
         ],
@@ -3782,6 +4393,8 @@ def main():
     for url, folder in (("/mll_images", "images"), ("/mll_icons", "icons")):     # Symbole fuer Toolbar und Makrobaum
         if os.path.isdir(os.path.join(here, folder)):
             nicegui_app.add_static_files(url, os.path.join(here, folder))
+    from _web import web_graph as _web_graph_routes  # v2.40
+    _web_graph_routes.install_routes(nicegui_app)                                   # Adresse fuer das Hintergrundbild der Anlagenansicht  # v2.40
     # FILE_PROBLEMS[:] = check_file_versions()  # v2.07 (entfallen)
     FILE_PROBLEMS[:] = check_file_versions() + installation_problems()  # v2.07
     _notice = update_notice()  # v2.08

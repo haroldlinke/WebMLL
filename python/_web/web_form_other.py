@@ -1,4 +1,4 @@
-# Datei-Version: 1.04 (2026-10-21) - web_form_other.py
+# Datei-Version: 1.06 (2026-10-28) - web_form_other.py
 """Web-Ersatz fuer proggen/Userform_Other.py (Parameterformular fuer Makros ohne Sonderformular).
 
 Die Klasse WebUserFormOther erbt von UserForm_Other und ersetzt nur Show_UserForm_Other:
@@ -179,11 +179,16 @@ def make_class(Base):
                     Typ, Min, Max, Def, Opt, InpTxt, Hint = M10.Get_Par_Data(p)
                     if UseOldParams:
                         if Typ == "RGB":
-                            ParVal = self.Get_RGB_from_OldParams(OldParams, Nr, 3)
+                            # ParVal = self.Get_RGB_from_OldParams(OldParams, Nr, 3)  # v1.06 (entfallen)
+                            if Nr + 2 <= UBound(OldParams):                         # nur wenn die drei Werte in der Zelle stehen (sonst Vorgabe, zum Beispiel bei "Name(" aus der Grafik)  # v1.06
+                                ParVal = self.Get_RGB_from_OldParams(OldParams, Nr, 3)  # v1.06
                             Nr = Nr + 2
                         elif Typ == "RGB2":
-                            ParVal = (self.Get_RGB_from_OldParams(OldParams, Nr, 3) + "  "
-                                      + self.Get_RGB_from_OldParams(OldParams, Nr + 3, 3))
+                            # ParVal = (self.Get_RGB_from_OldParams(OldParams, Nr, 3) + "  "  # v1.06 (entfallen)
+                                      # + self.Get_RGB_from_OldParams(OldParams, Nr + 3, 3))  # v1.06 (entfallen)
+                            if Nr + 5 <= UBound(OldParams):  # v1.06
+                                ParVal = (self.Get_RGB_from_OldParams(OldParams, Nr, 3) + "  "  # v1.06
+                                          + self.Get_RGB_from_OldParams(OldParams, Nr + 3, 3))  # v1.06
                             Nr = Nr + 5
                         else:
                             if Nr <= UBound(OldParams):
@@ -245,7 +250,8 @@ def make_class(Base):
                                    "type": wtype, "options": [Trim(s) for s in (SelectValues or []) if Trim(s) != ""],
                                    "value": "" if norm(ParVal) == "" else str(norm(ParVal))})
                 if p == "Cx" or p == "B_LED_Cx":
-                    if UseOldParams:
+                    # if UseOldParams:  # v1.05 (entfallen)
+                    if UseOldParams and Nr <= UBound(OldParams):                  # steht in der Zelle nur der Makroname ("Name(", zum Beispiel aus der Grafik) oder weniger Parameter: Vorgabe nehmen  # v1.05
                         v = option_value_for(Trim(OldParams(Nr)), p == "B_LED_Cx")
                         if v is None:
                             P01.MsgBox(M09.Get_Language_Str("Fehler beim Lesen der bestehenden Kanalbezeichnung '")

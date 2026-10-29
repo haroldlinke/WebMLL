@@ -1,9 +1,9 @@
-# Datei-Version: 1.11 (2026-10-21) - XLA_Application.py
+# Datei-Version: 1.12 (2026-10-28) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.11
-# Last Update:    2026-10-21
+# Version:        1.12
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -18,6 +18,7 @@
 #   1.09  2026-10-19  Versteckte Zeilen mit dem Blatt sichern und wiederherstellen (hidden_rows); getCellCoords fuer versteckte Zeilen: Hoehe 0 an der naechsten angezeigten Zeile; nach einem Neustart war die Goto-Zeile 47 wieder versteckt und die Pfeile lagen unten
 #   1.10  2026-10-21  LoadSheetfromExcelWorkbook: benannte Bereiche mit ungueltigem Bezug (#REF!) und Bereiche werden uebersprungen statt mit IndexError abzubrechen (die Excel-Datei 3.5.0K hat viele Namen mit #REF!)
 #   1.11  2026-10-21  LoadSheetfromExcelWorkbook: das Kuerzel _x000D_ (und andere _xHHHH_) aus Excel wird in das Zeichen umgewandelt (die Meldungen zeigten |_x000D_); find_in_col_ret_col_val: bei langen Texten (nur die ersten 50 Zeichen im Zwischenspeicher) muss die gefundene Zeile den ganzen Text enthalten, sonst genaue Suche (falsche Zeile mit gleichem Anfang in der Tabelle Languages)
+#   1.12  2026-10-28  Das Layout der Anlagenansicht (view_layout) wird mit dem Blatt gesichert und geladen (getData, setData)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -3011,6 +3012,9 @@ class CWorksheet(object):
             shown = self.tksheet.displayed_rows                                     # versteckte Zeilen (Datenzeilen): der Zustand der Vorlage stimmt nach einem Neustart nicht (Goto-Zeile 47)  # v1.09
             data["hidden_rows"] = sorted(set(range(self.tksheet.get_total_rows())) - set(shown)) if shown else []  # v1.09
         data["col_pos"] = copy.deepcopy(self.tksheet.get_column_widths(canvas_positions=True))
+        layout = getattr(self, "view_layout", None)                                    # Anlagenansicht der grafischen Ansicht (Bild, Positionen): wird mit der Arbeitsmappe gesichert  # v1.12
+        if layout:  # v1.12
+            data["view_layout"] = copy.deepcopy(layout)  # v1.12
         if self.saveShapes:
             shapelist = self.shapelist
             new_shapelist = []
@@ -3063,6 +3067,7 @@ class CWorksheet(object):
         return data
     
     def setData(self,data, copyshapes=True):
+        self.view_layout = copy.deepcopy(data.get("view_layout")) if data.get("view_layout") else None       # Anlagenansicht der grafischen Ansicht  # v1.12
         sheet_data = copy.deepcopy(data.get("TKSHEET_data", {}))
         #self.table.set_data(data["TKSHEET_data"])
         self.tksheet.set_data("A1", data=sheet_data, emit_event=True, redraw=True)

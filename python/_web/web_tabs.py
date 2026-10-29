@@ -1,9 +1,9 @@
-# Datei-Version: 1.07 (2026-10-27) - web_tabs.py
+# Datei-Version: 1.08 (2026-10-28) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.07
-# Last Update:    2026-10-27
+# Version:        1.08
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -15,6 +15,7 @@
 #   1.05  2026-10-21  Adresse /Z21Simulator und Reiter Z21 Simulator (nur mit der Option Z21 Simulator anzeigen); neuer Hinweis der Option
 #   1.06  2026-10-26  Neue Option SaveExcelCharset (Dateien fuer das Excel-Programm im Windows-Zeichensatz speichern) in den Programm Einstellungen (PARAM_ADDITIONS)
 #   1.07  2026-10-27  Das Kontrollkaestchen Pattern Configurator (ShowPatternGenerator) hat im Web keine Wirkung und wird in den Programm Einstellungen nicht mehr angezeigt (PARAM_REMOVALS)
+#   1.08  2026-10-28  Neue Option Standardansicht des Programm Generators (Tabelle, Grafik, Beides) in den Programm Einstellungen
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -62,7 +63,13 @@ PARAM_OVERRIDES = {"ShowProgramGenerator": {"Input Text": "DM Servo Einstellunge
 PARAM_ADDITIONS = {"SaveExcelCharset": ({"ParName": "SaveExcelCharset", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "SaveExcelCharset", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.06
                                          "Input Text": "Dateien für das Excel-Programm speichern",  # v1.06
                                          "Hint": "Gespeicherte Dateien (.MLL_pcf und .MLL_pgf) werden im Windows-Zeichensatz geschrieben, damit das Excel-Programm sie lesen kann (Umlaute und Trennzeichen). Enthält eine Datei Zeichen, die dort keinen Platz haben, bleibt sie UTF-8. Das Laden geht mit beiden."},  # v1.06
-                                        "ShowZ21Simulator")}  # v1.06
+                                        # "ShowZ21Simulator")}  # v1.08 (entfallen)
+                                        "ShowZ21Simulator"),  # v1.08
+                 "GraphDefaultView": ({"ParName": "GraphDefaultView", "Cnt": "1", "Type": "Combo", "Values": ["Tabelle", "Grafik", "Beides"], "ValuesText": ["Tabelle", "Grafik", "Beides"],  # v1.08
+                                       "ConfigName": ["graphdefaultview", "graphdefaultviewnumber"], "Min": "0", "Max": "255", "Default": "Tabelle",  # v1.08
+                                       "Input Text": "Standardansicht des Programm Generators",  # v1.08
+                                       "Hint": "Ansicht, mit der ein Blatt des Programm Generators geöffnet wird: Tabelle, Grafik (Ketten der Makros) oder Beides (Grafik oben, Tabelle unten). Mit den Knöpfen über der Tabelle kann man jederzeit umschalten."},  # v1.08
+                                      "SaveExcelCharset")}  # v1.08
 
 
 # Optionen des Tk-Programms, die im Web keine Wirkung haben und deshalb nicht angezeigt werden: Der Reiter Patterngenerator ist immer da

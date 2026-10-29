@@ -1,4 +1,4 @@
-# Datei-Version: 1.07 (2026-10-27) - web_form_options.py
+# Datei-Version: 1.08 (2026-10-28) - web_form_options.py
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -113,6 +113,7 @@ async def _options_async(spec: dict, st: dict):
             def update_ide_tabs():  # v1.07
                 for tab in ide_tabs:  # v1.07
                     set_tab_visible(tab, not vals.get("use_pio"))  # v1.07
+                refresh_boards()  # v1.08
 
             dcc = {"tab": None}  # v1.06
 
@@ -133,6 +134,20 @@ async def _options_async(spec: dict, st: dict):
                 else:  # v1.06
                     set_tab_visible(tab, vals["L"] in nano_values)  # v1.06
 
+            boards = []                                                # (Seite der Spezifikation, Radiogruppen) fuer refresh_boards  # v1.08
+
+            def board_second(p):  # v1.08
+                """Boards ab Wert 4 (Uno, IDE, ESP32, Pico ...): ESP32 nur, wenn PlatformIO eingestellt ist oder die ARDUINO IDE das ESP32-Paket hat"""  # v1.08
+                esp = p.get("esp32_value")  # v1.08
+                hide_esp = esp is not None and not (vals.get("use_pio") or p.get("esp32_lib"))  # v1.08
+                return {v: t for v, t in p["radios"] if v > 3 and not (hide_esp and v == esp)}  # v1.08
+
+            def refresh_boards():  # v1.08
+                """Nach dem Wechsel der Entwicklungsumgebung im Dialog die Boardliste anpassen (ESP32 erscheint oder verschwindet sofort, ohne den Dialog neu zu oeffnen)"""  # v1.08
+                for p, g in boards:  # v1.08
+                    if g.get("b") is not None:  # v1.08
+                        g["b"].set_options(board_second(p))  # v1.08
+
             def board_group(side, tab):
                 p = spec["pages"][side]
                 key = "L" if side == "left" else "R"
@@ -141,7 +156,8 @@ async def _options_async(spec: dict, st: dict):
                                 # on_change=lambda e, k=key: vals.__setitem__("auto_" + k, bool(e.value)))  # v1.06 (entfallen)
                                 on_change=lambda e, k=key: (vals.__setitem__("auto_" + k, bool(e.value)), update_dcc_tab()))  # v1.06
                     first = {v: t for v, t in p["radios"] if v <= 3}
-                    second = {v: t for v, t in p["radios"] if v > 3}
+                    # second = {v: t for v, t in p["radios"] if v > 3}  # v1.08 (entfallen)
+                    second = board_second(p)  # v1.08
                     g = {}
 
                     def pick(which, e, k=key):
@@ -160,6 +176,7 @@ async def _options_async(spec: dict, st: dict):
                         g["b"].on_value_change(lambda e: pick("b", e))
                     if not second:
                         g["b"] = None
+                    boards.append((p, g))  # v1.08
 
             with ui.tabs().classes("w-full") as tabs:
                 tab_objs = [ui.tab(t["name"]) for t in spec["tabs"]]
@@ -271,9 +288,10 @@ def make_class(Base):
                 if not rb.endswith(side):
                     continue
                 # if rb.startswith("ESP32") and not M37.ESP32_Lib_Installed():  # v1.07 (entfallen)
-                if rb.startswith("ESP32") and not M37.ESP32_Lib_Installed() and not M28pio.Is_PlatformIO():  # v1.07
-                    continue
-                items.append((d["value"], d["text"]))
+                # if rb.startswith("ESP32") and not M37.ESP32_Lib_Installed() and not M28pio.Is_PlatformIO():  # v1.08 (entfallen)
+                    # continue  # v1.08 (entfallen)
+                # items.append((d["value"], d["text"]))  # v1.08 (entfallen)
+                items.append((d["value"], d["text"]))                     # ESP32 immer: ob er angezeigt wird, entscheidet der Dialog live (IDE ohne ESP32-Paket: nein, PlatformIO: ja)  # v1.08
             return sorted(items)
 
         def _web_spec(self, first_page_only):
@@ -289,7 +307,10 @@ def make_class(Base):
             subtitle = M09.Get_Language_Str("Für andere Hauptplatine")
             auto_text = M09.Get_Language_Str("Automatisch erkennen")
             tabs = [{"name": "LED Arduino", "kind": "arduino", "side": "left", "buttons": left}]
-            pages = {"left": {"radios": self._radios("_L"), "subtitle": subtitle, "auto_text": auto_text}}
+            # pages = {"left": {"radios": self._radios("_L"), "subtitle": subtitle, "auto_text": auto_text}}  # v1.08 (entfallen)
+            esp32_value = next((d["value"] for rb, d in self.radiobuttons.items() if rb.startswith("ESP32") and rb.endswith("_L")), None)  # v1.08
+            pages = {"left": {"radios": self._radios("_L"), "subtitle": subtitle, "auto_text": auto_text,  # v1.08
+                              "esp32_value": esp32_value, "esp32_lib": bool(M37.ESP32_Lib_Installed())}}  # v1.08
             if not first_page_only:
                 if M25.Page_ID != "CAN":
                     # Wie im Excel-Programm (UpdateDCCSubPage): Der Reiter DCC Arduino gehoert nur zu einem Nano; bei Pico und ESP32 ist er ausgeblendet

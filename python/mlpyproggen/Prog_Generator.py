@@ -1,15 +1,17 @@
-# Datei-Version: 1.02 (2026-10-21) - Prog_Generator.py
+# Datei-Version: 1.04 (2026-10-28) - Prog_Generator.py
 # ----------------------------------------------------------------------------------------------
 # Name:           Prog_Generator.py
 # Path:           mlpyproggen/Prog_Generator.py
-# Version:        1.02
-# Last Update:    2026-10-21
+# Version:        1.04
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (start_ARDUINO_program_cmd)
 #   1.02  2026-10-21  execute_shell_cmd: Ausgabe vollstaendig lesen (der Rest nach dem Ende des Prozesses ging verloren, zum Beispiel der Traceback von esptool); Zeichen, die nicht UTF-8 sind, ersetzen statt die Zeile zu verlieren
+#   1.03  2026-10-28  execute_shell_cmd: bei PlatformIO UnknownPackageError einmal wiederholen, danach Hinweis auf die Diagnose
+#   1.04  2026-10-28  _drain_output gibt die letzten Zeilen an die Auswertung weiter: UnknownPackageError steht meist in den letzten Zeilen, die erst nach dem Ende des Prozesses gelesen werden
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -380,7 +382,8 @@ def build_workbook_dict(default_font, default_smallfont, default_boldfont):
     return workbook_dict
 
 
-def _drain_output(process, page, timeout=2.0):  # v1.02
+# def _drain_output(process, page, timeout=2.0):  # v1.04 (entfallen)
+def _drain_output(process, page, timeout=2.0, collector=None):  # v1.04
     """Rest der Ausgabe lesen, nachdem sich der Prozess beendet hat: Zum Beispiel esptool schreibt einen Traceback und endet sofort, die letzten Zeilen standen dann noch im
     Puffer und gingen verloren. Haelt ein Kindprozess die Leitung offen, wird nach timeout Sekunden aufgegeben (kein Haengen).
     Eine Funktion auf Modulebene und keine Methode: HeadlessProgGeneratorPage uebernimmt aus Prog_GeneratorPage nur die Methoden einer festen Liste (_BORROWED)."""
@@ -401,6 +404,8 @@ def _drain_output(process, page, timeout=2.0):  # v1.02
     thread.join(timeout)  # v1.02
     data = b"".join(list(chunks))  # v1.02
     for line in data.decode("utf-8", errors="replace").splitlines():  # v1.02
+        if collector is not None:  # v1.04
+            collector.append(line)                                         # die letzten Zeilen (zum Beispiel die Fehlermeldung) auch fuer die Auswertung merken  # v1.04
         page.add_text_to_textwindow(line + "\n")  # v1.02
     if data:  # v1.02
         page.update()  # v1.02
@@ -1088,30 +1093,55 @@ class Prog_GeneratorPage(tk.Frame):
         self.arduinoMonitorPage.update()
         
         try:
-            self.process = subprocess.Popen(cmd_str, stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin = subprocess.DEVNULL,shell=True)
-            self.continue_loop=True
-        
-            # Poll process.stdout to show stdout live
-            while True:
-                output = self.process.stdout.readline()
-                # if self.process.poll() is not None:  # v1.02 (verschoben hinter die Ausgabe: die gelesene Zeile ging verloren)
-                #     logging.debug("shell ended")  # v1.02 (verschoben)
-                #     #print("shell ended")  # v1.02 (verschoben)
-                #     break  # v1.02 (verschoben)
-                if output:
-                    try:
-                        self.arduinoMonitorPage.add_text_to_textwindow(output.decode('utf-8', errors='replace')+"\n")  # v1.02
-                    except BaseException as e:
-                        logging.debug("ProgGenerator - execute_shell_cmd-output:"+str(e))
-                    self.arduinoMonitorPage.update()
-                if self.process.poll() is not None:  # v1.02
-                    logging.debug("shell ended")  # v1.02
-                    _drain_output(self.process, self.arduinoMonitorPage)  # v1.02
-                    break  # v1.02
-                if not output:  # v1.02
-                    time.sleep(0.01)  # v1.02
-    
-            rc = self.process.returncode
+            # self.process = subprocess.Popen(cmd_str, stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin = subprocess.DEVNULL,shell=True)  # v1.03 (entfallen)
+            # self.continue_loop=True  # v1.03 (entfallen)
+            # while True:  # v1.03 (entfallen)
+                # output = self.process.stdout.readline()  # v1.03 (entfallen)
+                # if output:  # v1.03 (entfallen)
+                    # try:  # v1.03 (entfallen)
+                        # self.arduinoMonitorPage.add_text_to_textwindow(output.decode('utf-8', errors='replace')+"\n")  # v1.03 (entfallen)
+                    # except BaseException as e:  # v1.03 (entfallen)
+                        # logging.debug("ProgGenerator - execute_shell_cmd-output:"+str(e))  # v1.03 (entfallen)
+                    # self.arduinoMonitorPage.update()  # v1.03 (entfallen)
+                # if self.process.poll() is not None:  # v1.03 (entfallen)
+                    # logging.debug("shell ended")  # v1.03 (entfallen)
+                    # _drain_output(self.process, self.arduinoMonitorPage)  # v1.03 (entfallen)
+                    # break  # v1.03 (entfallen)
+                # if not output:  # v1.03 (entfallen)
+                    # time.sleep(0.01)  # v1.03 (entfallen)
+            # rc = self.process.returncode  # v1.03 (entfallen)
+            collected = []                                                 # Ausgabezeilen (fuer die Erkennung von UnknownPackageError)  # v1.03
+            for attempt in (1, 2):  # v1.03
+                self.process = subprocess.Popen(cmd_str, stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin = subprocess.DEVNULL,shell=True)  # v1.03
+                self.continue_loop=True  # v1.03
+                collected.clear()  # v1.03
+                # Poll process.stdout to show stdout live
+                while True:  # v1.03
+                    output = self.process.stdout.readline()  # v1.03
+                    if output:  # v1.03
+                        try:  # v1.03
+                            text_line = output.decode('utf-8', errors='replace')  # v1.03
+                            collected.append(text_line)  # v1.03
+                            self.arduinoMonitorPage.add_text_to_textwindow(text_line+"\n")  # v1.03
+                        except BaseException as e:  # v1.03
+                            logging.debug("ProgGenerator - execute_shell_cmd-output:"+str(e))  # v1.03
+                        self.arduinoMonitorPage.update()  # v1.03
+                    if self.process.poll() is not None:  # v1.03
+                        logging.debug("shell ended")  # v1.03
+                        # _drain_output(self.process, self.arduinoMonitorPage)  # v1.04 (entfallen)
+                        _drain_output(self.process, self.arduinoMonitorPage, collector=collected)  # v1.04
+                        break  # v1.03
+                    if not output:  # v1.03
+                        time.sleep(0.01)  # v1.03
+                rc = self.process.returncode  # v1.03
+                # PlatformIO: Die Paketverwaltung (Registry im Netz) meldet manchmal fuer ein Paket UnknownPackageError, das es gibt. Dann einmal wiederholen:
+                # die schon geladenen Pakete bleiben, es wird nur noch das Fehlende geholt.
+                if rc != 0 and attempt == 1 and not self.userbreak and "pio " in cmd_str and any("UnknownPackageError" in l for l in collected):  # v1.03
+                    self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("PlatformIO konnte ein Paket nicht finden (UnknownPackageError). Zweiter Versuch ...") + "\n")  # v1.03
+                    logging.info("PlatformIO: UnknownPackageError, zweiter Versuch")  # v1.03
+                    time.sleep(3)  # v1.03
+                    continue  # v1.03
+                break  # v1.03
             
             self.arduinoMonitorPage.update()
             
@@ -1120,6 +1150,8 @@ class Prog_GeneratorPage(tk.Frame):
             
             if rc != 0:
                 self.arduinoMonitorPage.add_text_to_textwindow("\n*****************************************************\n",highlight="Error")
+                if any("UnknownPackageError" in l for l in collected):  # v1.03
+                    self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("Die Paketverwaltung von PlatformIO findet ein Paket nicht (UnknownPackageError, siehe oben). Das hilft meist: Internetverbindung prüfen und das Hochladen später noch einmal versuchen. Bleibt es dabei, bitte in einem Terminal 'pio pkg show' mit dem oben genannten Paket und 'pio --version' ausführen und die Ausgabe mit der Protokolldatei melden.") + "\n")  # v1.03
                 return M40.Failure
             else:
                 self.arduinoMonitorPage.add_text_to_textwindow("\n*****************************************************\n",highlight="OK")

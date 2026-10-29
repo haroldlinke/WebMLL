@@ -1,4 +1,4 @@
-# Datei-Version: 1.03 (2026-10-15) - web_macro_tree.py
+# Datei-Version: 1.05 (2026-10-28) - web_macro_tree.py
 """Web-Ersatz fuer die Makroauswahl (proggen/SelectMacrosTreeForm.py, Tk-Treeview).
 
 Ersetzt M09_SelectMacro_Treeview.SelectMacro_TreeView(SelectName). Die Daten kommen wie im
@@ -131,7 +131,8 @@ def collect_macro_rows():
                      "macro_text": M30.Replace_Multi_Space(cell(row, M02.SM_Macro_COL)),
                      "group_path": cell(row, M02.SM_Group_COL).replace("|", " > ")}
         items.append({"row": row, "name": str(name), "name_cell": name_cell, "group": str(group),
-                      "short": str(short), "icon": icon})
+                      # "short": str(short), "icon": icon})  # v1.05 (entfallen)
+                      "short": str(short), "icon": icon, "find_name": cell(row, M02.SM_FindN_COL)})        # find_name: Spalte "Find Name for detection" (zum Beispiel "House("), so findet die Makroauswahl das Makro einer Zeile wieder  # v1.05
     return items, info
 
 
@@ -283,7 +284,45 @@ async def _tree_async(items, info, preselect_row):
     return res
 
 
+def force_result(result: str) -> None:  # v1.04
+    """Das naechste Oeffnen der Makroauswahl liefert sofort dieses Makro ('Name,Zeile in Lib_Macros') und zeigt den Baum nicht (Grafik: Makro aus dem Baum angehaengt;
+    danach folgt wie immer der Dialog mit den Parametern)."""
+    _state["forced"] = result  # v1.04
+
+
+def clear_forced() -> None:  # v1.04
+    _state.pop("forced", None)  # v1.04
+
+
+def graph_tree_nodes(items: list[dict], text: str = "") -> list[dict]:  # v1.04
+    """Makrobaum der grafischen Ansicht: verschachtelte Liste {label, description, icon, children} bzw. fuer Makros {label, description, icon, macro, row}.
+    macro = Name in Lib_Macros (Spalte Name), row = Zeile in Lib_Macros: zusammen das Ergebnis der Makroauswahl."""
+    by_row = {it["row"]: it for it in items}  # v1.04
+
+    def plain_icon(icon):  # v1.04
+        d = _state["icons_dir"]  # v1.04
+        return f"{ICON_URL_PREFIX}/{icon}.png" if icon and d and os.path.exists(os.path.join(d, icon + ".png")) else ""  # v1.04
+
+    def convert(d: dict) -> list[dict]:  # v1.04
+        out = []  # v1.04
+        for key, val in d.items():  # v1.04
+            if key.startswith("*"):  # v1.04
+                continue  # v1.04
+            if isinstance(val, dict):  # v1.04
+                desc, icon, _row = val.get("*" + key, ("", None, 0))  # v1.04
+                out.append({"label": key, "description": desc, "icon": plain_icon(icon), "children": convert(val)})  # v1.04
+            else:  # v1.04
+                desc, icon, row = val  # v1.04
+                row = int(row)  # v1.04
+                out.append({"label": key, "description": desc, "icon": plain_icon(icon), "macro": by_row[row]["name_cell"] if row in by_row else key, "row": row})  # v1.04
+        return out  # v1.04
+    return convert(build_macro_dict(filter_items(items, text)))  # v1.04
+
+
 def web_select_macro_treeview(SelectName):
+    forced = _state.pop("forced", None)  # v1.04
+    if forced:  # v1.04
+        return forced  # v1.04
     if not wd.bridge_usable():
         return _state["original"](SelectName)
     import proggen.M09_Select_Macro as M09SM
