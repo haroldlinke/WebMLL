@@ -1,3 +1,16 @@
+# Datei-Version: 1.02 (2026-10-28) - M07_COM_Port_New.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M07_COM_Port_New.py
+# Path:           proggen/M07_COM_Port_New.py
+# Version:        1.02
+# Last Update:    2026-10-28
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-28  Hinweis 'PICO im Bootmodus gefunden' funktioniert: Test_IsPicoInBootMode war ein leerer Rumpf, AskBootPico wurde nie auf True gesetzt
+#   1.02  2026-10-28  M12 im Aufruf importieren (nicht am Anfang des Moduls)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -295,6 +308,7 @@ def __Test_Select_Arduino_w_Blinking_LEDs_Dialog():
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: ComPort - ByRef 
 def Show_USB_Port_Dialog(ComPortColumn, ComPort):
+    M08.AskBootPico = True                         # wie im Excel-Programm: solange der Dialog offen ist, nach einem Pico im Bootmodus fragen  # v1.01
     fn_return_value = False
     Res = Long()
 
@@ -400,9 +414,29 @@ def __Test_Check_If_Arduino_could_be_programmed_and_set_Board_type():
     Debug.Print(M08.Check_If_Arduino_could_be_programmed_and_set_Board_type(M25.COMPrtT_COL, M08.BuildOT_COL, BuildOptions, DeviceSignature) + ' BuildOptions: ' + BuildOptions)
     
 def Test_IsPicoInBootMode():                                                          # 28.11.2025 Juergen
+    """Ist ein Pico im Bootmodus (Laufwerk RPI-RP2) angeschlossen? Dann fragen, ob er mit der Start-Firmware (Boards/Heartbeat.uf2) initialisiert werden soll."""  # v1.01
+    import time  # v1.01
+    import proggen.M12_Copy_Prog as M12                                              # hier, nicht oben: sonst ein Kreis der Importe  # v1.02
     if not M08.AskBootPico:
         return
-def test_is_pico_in_boot_mode():
+# def test_is_pico_in_boot_mode():  # v1.01 (entfallen)
+    drive_letters, drive_names, cnt = M30.enum_disk_drives(False)  # v1.01
+    for i in range(cnt):  # v1.01
+        message = M09.Get_Language_Str("PICO im Bootmodus gefunden\nSoll der PICO mit einer Start-Firmware initialisiert werden?")  # v1.01
+        title = M09.Get_Language_Str("Aktualisieren der MobaLedLib")  # v1.01
+        if P01.MsgBox(message, vbQuestion + vbYesNo, title) != vbYes:  # v1.01
+            M08.AskBootPico = False  # v1.01
+            return  # v1.01
+        M08.AskBootPico = False                                                       # nur einmal fragen; das Laufwerk verschwindet, wenn der Pico neu startet  # v1.01
+        try:  # v1.01
+            M12.FileCopy_with_Check(drive_letters[i] + "/", "Heartbeat.uf2", M08.GetWorkbookPath() + "/Boards/Heartbeat.uf2")  # v1.01
+        except Exception as ex:                                                       # noqa: BLE001  # v1.01
+            P01.MsgBox(M09.Get_Language_Str("Die Start-Firmware konnte nicht geschrieben werden: ") + str(ex), vbCritical, title)  # v1.01
+            return  # v1.01
+        time.sleep(3)                                                                 # warten, bis der Pico neu gestartet hat  # v1.01
+        return  # v1.01
+
+def _test_is_pico_in_boot_mode_alt():  # v1.01
     # Early exit
     if not M08.AskBootPico:
         return

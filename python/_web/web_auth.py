@@ -1,4 +1,4 @@
-# Datei-Version: 1.03 (2026-10-15) - web_auth.py
+# Datei-Version: 1.04 (2026-10-28) - web_auth.py
 """Passwortschutz (HTTP Basic) fuer die Web-Oberflaeche, wenn sie im Netz erreichbar ist (Raspberry Pi).
 
 Reines ASGI-Middleware: Es prueft sowohl normale Seitenaufrufe als auch die WebSocket-Verbindung der Oberflaeche.
@@ -62,7 +62,9 @@ class BasicAuthMiddleware:
         if scope["type"] == "websocket":
             await send({"type": "websocket.close", "code": 1008})
             return
-        body = "Anmeldung erforderlich".encode("utf-8")
+        # body = "Anmeldung erforderlich".encode("utf-8")  # v1.04 (entfallen)
+        from _web import web_i18n  # v1.04
+        body = web_i18n.tr("Anmeldung erforderlich").encode("utf-8")  # v1.04
         await send({"type": "http.response.start", "status": 401, "headers": [
             (b"www-authenticate", f'Basic realm="{self.realm}", charset="UTF-8"'.encode("ascii")),
             (b"content-type", b"text/plain; charset=utf-8"), (b"content-length", str(len(body)).encode("ascii"))]})

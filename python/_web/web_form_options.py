@@ -1,4 +1,4 @@
-# Datei-Version: 1.08 (2026-10-28) - web_form_options.py
+# Datei-Version: 1.10 (2026-10-28) - web_form_options.py
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -17,6 +17,7 @@ from __future__ import annotations
 import ast
 import inspect
 import logging
+import os  # v1.10
 import sys
 import textwrap
 
@@ -100,13 +101,25 @@ async def _options_async(spec: dict, st: dict):
             def action(handler):
                 return lambda: dlg.submit(("action", handler, collect()))
 
+            pico_rows = []                                             # Knoepfe nur fuer den Pico (Firmware installieren)  # v1.09
+            pico_values = list(spec["pages"]["left"].get("pico_values") or [])  # v1.09
+
+            def update_pico_buttons():  # v1.09
+                show = vals.get("L") in pico_values  # v1.09
+                for r_ in pico_rows:  # v1.09
+                    r_.set_visibility(show)  # v1.09
+
             def button_row(b):
-                with ui.row().classes("items-center w-full no-wrap"):
+                # with ui.row().classes("items-center w-full no-wrap"):  # v1.09 (entfallen)
+                with ui.row().classes("items-center w-full no-wrap") as row_el:  # v1.09
                     btn = ui.button(wd.clean_text(b["text"]), on_click=action(b["handler"])).props("outline no-caps").classes("w-64")
                     if b.get("disabled"):
                         btn.disable()
                     if b.get("label"):
                         ui.label(b["label"]).classes("text-grey-8").style("white-space: pre-line")
+                if b.get("pico_only"):  # v1.09
+                    pico_rows.append(row_el)  # v1.09
+                    row_el.set_visibility(vals.get("L") in pico_values)  # v1.09
 
             ide_tabs = []                                              # Reiter, die es nur mit der ARDUINO IDE gibt (nicht mit PlatformIO)  # v1.07
 
@@ -164,6 +177,7 @@ async def _options_async(spec: dict, st: dict):
                         if e.value is None:
                             return
                         vals[k] = e.value
+                        update_pico_buttons()  # v1.09
                         update_dcc_tab()  # v1.06
                         other = g["b"] if which == "a" else g["a"]
                         if other is not None:
@@ -304,13 +318,17 @@ def make_class(Base):
             left = [dict(port_btn, handler="__Detect_LED_Port_Button_Click")]
             if wlan_device and buttons.get("__Detect_LED_IP_Button_Click"):
                 left.append(dict(buttons["__Detect_LED_IP_Button_Click"][0], handler="__Detect_LED_IP_Button_Click"))
+            left.append({"text": tr("Firmware installieren"), "handler": "__Boot_Firmware_Button_Click", "disabled": False, "pico_only": True,       # nur mit dem Pico (wie im Excel-Programm)  # v1.09
+                         "label": tr("Schreibt eine fertige Firmware (UF2-Datei aus dem Ordner MobaLedLib/firmware) auf den Raspberry Pi Pico")})  # v1.09
             subtitle = M09.Get_Language_Str("Für andere Hauptplatine")
             auto_text = M09.Get_Language_Str("Automatisch erkennen")
             tabs = [{"name": "LED Arduino", "kind": "arduino", "side": "left", "buttons": left}]
             # pages = {"left": {"radios": self._radios("_L"), "subtitle": subtitle, "auto_text": auto_text}}  # v1.08 (entfallen)
             esp32_value = next((d["value"] for rb, d in self.radiobuttons.items() if rb.startswith("ESP32") and rb.endswith("_L")), None)  # v1.08
             pages = {"left": {"radios": self._radios("_L"), "subtitle": subtitle, "auto_text": auto_text,  # v1.08
-                              "esp32_value": esp32_value, "esp32_lib": bool(M37.ESP32_Lib_Installed())}}  # v1.08
+                              # "esp32_value": esp32_value, "esp32_lib": bool(M37.ESP32_Lib_Installed())}}  # v1.09 (entfallen)
+                              "esp32_value": esp32_value, "esp32_lib": bool(M37.ESP32_Lib_Installed()),  # v1.09
+                              "pico_values": [d["value"] for rb, d in self.radiobuttons.items() if rb.startswith("PICO") and rb.endswith("_L")]}}  # v1.09
             if not first_page_only:
                 if M25.Page_ID != "CAN":
                     # Wie im Excel-Programm (UpdateDCCSubPage): Der Reiter DCC Arduino gehoert nur zu einem Nano; bei Pico und ESP32 ist er ausgeblendet
@@ -424,6 +442,30 @@ def make_class(Base):
             else:  # v1.05
                 P01.MsgBox(tr("Die Regel konnte nicht eingerichtet werden.") + "\n\n" + text, vbCritical, "PlatformIO")  # v1.05
 
+        def _web_pico_firmware(self):  # v1.09
+            """Knopf Firmware installieren (nur Pico): Firmware und Version waehlen, dann die UF2-Datei auf den Pico schreiben (Bootmodus-Laufwerk RPI-RP2 oder
+            ueber den seriellen Anschluss in den Bootmodus versetzen, wie uf2conv.py im Excel-Programm)."""
+            import headless.headless_pico as HP  # v1.09
+            import proggen.M02a_Public as M02a  # v1.09
+            from _web import web_form_firmware as WFF  # v1.09
+            from _web.web_i18n import current_language  # v1.09
+            title = tr("Firmware installieren")  # v1.09
+            folder = M02a.Get_FirmwareDir()  # v1.09
+            groups = HP.scan_firmware(folder, HP.language_id(current_language()))  # v1.09
+            if not groups:  # v1.09
+                P01.MsgBox(tr("Im Ordner {ordner} gibt es keine Firmware-Dateien (*.uf2). Die fertigen Firmware-Dateien gehören in diesen Ordner (Unterordner MobaLedLib/firmware des Sketchbook-Ordners).", ordner=folder),  # v1.09
+                           ns.get("vbInformation", 64), title)  # v1.09
+                return  # v1.09
+            path = wd.call_in_loop(WFF.firmware_async, groups, folder, default=None)  # v1.09
+            if not path:  # v1.09
+                return  # v1.09
+            try:  # v1.09
+                HP.flash_uf2(path, log=lambda text: logger.info("%s", text))  # v1.09
+            except RuntimeError as ex:  # v1.09
+                P01.MsgBox(tr(str(ex)), vbCritical, title)  # v1.09
+                return  # v1.09
+            P01.MsgBox(tr("Die Firmware {datei} wurde auf den Pico geschrieben. Der Pico startet jetzt neu.", datei=os.path.basename(path)), ns.get("vbInformation", 64), title)  # v1.09
+
         def _web_loop(self, first_page_only):
             while True:
                 initial = self._web_prepare(first_page_only)
@@ -441,6 +483,9 @@ def make_class(Base):
                 self._web_reshow = False
                 if handler == "__Check_PIO_Button_Click":                 # gibt es nur im Web (kein Knopf des Originals)  # v1.04
                     self._web_check_pio()  # v1.04
+                    continue  # v1.09
+                if handler == "__Boot_Firmware_Button_Click":             # Firmware des Pico installieren (Version K des Excel-Programms)  # v1.09
+                    self._web_pico_firmware()  # v1.09
                     continue  # v1.05
                 if handler == "__Pico_Udev_Button_Click":                 # gibt es nur im Web, nur unter Linux  # v1.05
                     self._web_pico_udev()  # v1.05

@@ -1,8 +1,8 @@
-# Datei-Version: 1.08 (2026-10-28) - web_tabs.py
+# Datei-Version: 1.10 (2026-10-28) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.08
+# Version:        1.10
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -16,6 +16,8 @@
 #   1.06  2026-10-26  Neue Option SaveExcelCharset (Dateien fuer das Excel-Programm im Windows-Zeichensatz speichern) in den Programm Einstellungen (PARAM_ADDITIONS)
 #   1.07  2026-10-27  Das Kontrollkaestchen Pattern Configurator (ShowPatternGenerator) hat im Web keine Wirkung und wird in den Programm Einstellungen nicht mehr angezeigt (PARAM_REMOVALS)
 #   1.08  2026-10-28  Neue Option Standardansicht des Programm Generators (Tabelle, Grafik, Beides) in den Programm Einstellungen
+#   1.09  2026-10-28  Seite fuer unbekannte Adressen in der eingestellten Sprache
+#   1.10  2026-10-28  Adresse nur einmal maskieren (vorher doppelt)
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -131,12 +133,31 @@ def is_fullscreen(value) -> bool:
     return str(value or "").strip().lower() in ("1", "true", "ja", "yes", "an", "ein", "on")
 
 
+def html_lang() -> str:  # v1.09
+    """Sprachkennung fuer <html lang=...> nach der eingestellten Sprache"""  # v1.09
+    from _web.web_i18n import current_language  # v1.09
+    n = current_language()  # v1.09
+    return ("de", "en", "nl", "fr", "it", "es", "da")[n] if isinstance(n, int) and 0 <= n < 7 else "de"  # v1.09
+
+
+def tr(text, **values):  # v1.09
+    """Text in der eingestellten Sprache (Katalog der Web-Oberflaeche)"""  # v1.09
+    from _web import web_i18n  # v1.09
+    return web_i18n.tr(text, **values)  # v1.09
+
+
 def not_found_page(path: str) -> str:
     """Seite fuer eine unbekannte Adresse: Liste der gueltigen Adressen"""
     shown = html.escape("/" + str(path or "").strip("/"))
-    items = "".join(f'<li><a href="/{name}">/{name}</a>: {html.escape(TAB_TITLES[tab])} (<a href="/{name}?vollbild=1">im Vollbild</a>)</li>' for name, tab in TAB_URLS.items())
-    return ("<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>webMobaLedLib: Adresse unbekannt</title>"
+    # items = "".join(f'<li><a href="/{name}">/{name}</a>: {html.escape(TAB_TITLES[tab])} (<a href="/{name}?vollbild=1">im Vollbild</a>)</li>' for name, tab in TAB_URLS.items())  # v1.09 (entfallen)
+    # return ("<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>webMobaLedLib: Adresse unbekannt</title>"  # v1.09 (entfallen)
+    items = "".join(f'<li><a href="/{name}">/{name}</a>: {html.escape(tr(TAB_TITLES[tab]))} (<a href="/{name}?vollbild=1">{html.escape(tr("im Vollbild"))}</a>)</li>' for name, tab in TAB_URLS.items())  # v1.09
+    return ("<!doctype html><html lang=\"" + html.escape(html_lang()) + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + html.escape(tr("webMobaLedLib: Adresse unbekannt")) + "</title>"  # v1.09
             "<style>body{font-family:sans-serif;margin:2em;color:#222}li{margin:.4em 0}a{color:#1565c0}</style></head><body>"
-            f"<h1>Die Adresse {shown} gibt es nicht</h1>"
-            "<p>Die Reiter lassen sich direkt aufrufen. Mit dem Zusatz <code>?vollbild=1</code> öffnet sich der Reiter im Vollbild.</p>"
-            f"<ul><li><a href=\"/\">/</a>: Startseite (Programm Generator)</li>{items}</ul></body></html>")
+            # f"<h1>Die Adresse {shown} gibt es nicht</h1>"  # v1.09 (entfallen)
+            # "<p>Die Reiter lassen sich direkt aufrufen. Mit dem Zusatz <code>?vollbild=1</code> öffnet sich der Reiter im Vollbild.</p>"  # v1.09 (entfallen)
+            # f"<ul><li><a href=\"/\">/</a>: Startseite (Programm Generator)</li>{items}</ul></body></html>")  # v1.09 (entfallen)
+            # f"<h1>{html.escape(tr('Die Adresse {adresse} gibt es nicht', adresse=shown))}</h1>"  # v1.10 (entfallen)
+            f"<h1>{html.escape(tr('Die Adresse {adresse} gibt es nicht', adresse='/' + str(path or '').strip('/')))}</h1>"  # v1.10
+            f"<p>{html.escape(tr('Die Reiter lassen sich direkt aufrufen. Mit dem Zusatz ?vollbild=1 öffnet sich der Reiter im Vollbild.'))}</p>"  # v1.09
+            f"<ul><li><a href=\"/\">/</a>: {html.escape(tr('Startseite (Programm Generator)'))}</li>{items}</ul></body></html>")  # v1.09

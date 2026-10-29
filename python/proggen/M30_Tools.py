@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-21) - M30_Tools.py
+# Datei-Version: 1.02 (2026-10-28) - M30_Tools.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M30_Tools.py
 # Path:           proggen/M30_Tools.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.02
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-21  Neu: IsValidVariableName (Muster PAT_LEDVariableName) und VersionStr_is_GreaterEqual (Version K des Excel-Programms)
+#   1.02  2026-10-28  enum_disk_drives: Pico im Bootmodus mit headless_pico.find_boot_drives (Linux: /proc/mounts, /media, /run/media, nicht eingehaengte Laufwerke)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -1755,6 +1756,13 @@ import subprocess
 
 
 def enum_disk_drives(print_debug=True):
+    """Laufwerke von Pico im Bootmodus (Name RPI-RP2): (Pfade, Namen, Anzahl). Windows, Linux (auch nicht eingehaengte Laufwerke, mit udisksctl) und macOS."""  # v1.02
+    import headless.headless_pico as HP  # v1.02
+    drives = HP.find_boot_drives(print_debug)  # v1.02
+    return drives, [HP.BOOT_LABEL] * len(drives), len(drives)  # v1.02
+
+
+def _enum_disk_drives_alt(print_debug=True):  # v1.02
     drive_letters = []
     drive_names = []
 

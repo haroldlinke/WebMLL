@@ -1,8 +1,8 @@
-# Datei-Version: 2.44 (2026-10-28) - webmobaledlib.py
+# Datei-Version: 2.47 (2026-10-28) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        2.44
+# Version:        2.47
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -114,6 +114,9 @@
 #   2.42  2026-10-28  Grafik: Bild laden oeffnet den Dialog (web_graph 1.08: Coroutine zurueckgeben statt Hintergrundaufgabe)
 #   2.43  2026-10-28  Anlagenansicht: Klick und Doppelklick auf ein Kaestchen funktionieren (Pointer-Capture); Umschalt-Doppelklick oeffnet den Dialog mit den Parametern
 #   2.44  2026-10-28  Dialog Other: kein Absturz mehr, wenn in der Zelle nur der Makroname steht (Makro aus der Grafik in eine Kette gezogen)
+#   2.45  2026-10-28  Grafik: Groesse der Kaestchen (Schieber), Raster, Mehrfachauswahl, gemeinsam verschieben, Ausrichten, mehrere loeschen, Rueckgaengig fuer Positionen, Ausrichten und Groesse
+#   2.46  2026-10-28  Abschlussseite und Seite Herunterfahren in allen Sprachen; Pico: Hinweis Bootmodus, Firmware installieren, Pico-Laufwerk unter Linux
+#   2.47  2026-10-28  Hintergrundbild der Anlagenansicht ohne Pillow: Verkleinern im Browser, Pruefen des Bildkopfes auf dem Server
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -191,7 +194,8 @@ REQUIRED_FILES = {  # v1.75
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.06", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.27 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.07", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.30 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.08", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.40 (entfallen)
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.08", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.40
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.08", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.46 (entfallen)
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.46
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.02", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.21 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.03", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.03", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.27 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.28 (entfallen)
@@ -229,7 +233,10 @@ REQUIRED_FILES = {  # v1.75
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.01", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.05", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.07", "_web/web_graph.py": "1.07", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.42 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.01", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.05", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.07", "_web/web_graph.py": "1.08", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.43 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.01", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.08", "_web/web_graph.py": "1.09", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.44 (entfallen)
-    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.01", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.08", "_web/web_graph.py": "1.09", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.44
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.01", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.08", "_web/web_graph.py": "1.09", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.45 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.06", "headless/headless_graph_layout.py": "1.02", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.09", "_web/web_graph.py": "1.10", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.08", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.46 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M07_COM_Port_New.py": "1.02", "headless/headless_pico.py": "1.01", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.02", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.09", "_web/web_graph.py": "1.10", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.10", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.47 (entfallen)
+    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M07_COM_Port_New.py": "1.02", "headless/headless_pico.py": "1.01", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.10", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.47
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -391,16 +398,40 @@ def start_backend():
     headless_startup.end()  # v1.79
 
 
+def _current_language_number() -> int:  # v2.46
+    """Nummer der eingestellten Sprache (0 Deutsch, 1 English ...); 0, wenn sie sich nicht ermitteln laesst"""  # v2.46
+    try:  # v2.46
+        from _web import web_i18n  # v2.46
+        n = web_i18n.current_language()  # v2.46
+        return n if isinstance(n, int) and 0 <= n < 7 else 0  # v2.46
+    except Exception:                                  # noqa: BLE001  # v2.46
+        return 0  # v2.46
+
+
 @nicegui_app.get("/beendet")
-def beendet_seite(saved: int = 1):
+# def beendet_seite(saved: int = 1):  # v2.46 (entfallen)
+def beendet_seite(saved: int = 1, lang: int = -1):  # v2.46
+    """Abschlussseite nach dem Beenden. Die Sprache kommt in der Adresse mit (lang), weil das Programm dann schon beendet ist."""  # v2.46
+    import html as _html  # v2.46
     from fastapi.responses import HTMLResponse
-    hint = ("Die Daten wurden gespeichert." if saved else "Es wurde nicht gespeichert.")
-    return HTMLResponse(f"""<!doctype html><html lang="de"><head><meta charset="utf-8">
-<title>webMobaLedLib beendet</title>
-<style>body{{font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;
-background:#f4f4f4;color:#222}}.box{{text-align:center;padding:2em 3em;background:#fff;border-radius:8px;
-box-shadow:0 2px 8px rgba(0,0,0,.2)}}h1{{margin:0 0 .4em}}p{{margin:.3em 0;color:#555}}</style></head>
-<body><div class="box"><h1>Programm beendet</h1><p>Das Fenster kann geschlossen werden.</p><p>{hint}</p></div></body></html>""")
+    # hint = ("Die Daten wurden gespeichert." if saved else "Es wurde nicht gespeichert.")  # v2.46 (entfallen)
+    # return HTMLResponse(f"""<!doctype html><html lang="de"><head><meta charset="utf-8">  # v2.46 (entfallen)
+# <title>webMobaLedLib beendet</title>  # v2.46 (entfallen)
+# <style>body{{font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;  # v2.46 (entfallen)
+# background:#f4f4f4;color:#222}}.box{{text-align:center;padding:2em 3em;background:#fff;border-radius:8px;  # v2.46 (entfallen)
+# box-shadow:0 2px 8px rgba(0,0,0,.2)}}h1{{margin:0 0 .4em}}p{{margin:.3em 0;color:#555}}</style></head>  # v2.46 (entfallen)
+# <body><div class="box"><h1>Programm beendet</h1><p>Das Fenster kann geschlossen werden.</p><p>{hint}</p></div></body></html>""")  # v2.46 (entfallen)
+    from _web import web_i18n  # v2.46
+    with web_i18n.use_language(lang) as number:  # v2.46
+        hint = web_i18n.tr("Die Daten wurden gespeichert.") if saved else web_i18n.tr("Es wurde nicht gespeichert.")  # v2.46
+        title, head, text = (_html.escape(web_i18n.tr(s)) for s in ("webMobaLedLib beendet", "Programm beendet", "Das Fenster kann geschlossen werden."))  # v2.46
+        html_lang = ("de", "en", "nl", "fr", "it", "es", "da")[number] if isinstance(number, int) and 0 <= number < 7 else "de"  # v2.46
+    style = ("body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f4f4f4;color:#222}"  # v2.46
+             ".box{text-align:center;padding:2em 3em;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)}h1{margin:0 0 .4em}p{margin:.3em 0;color:#555}")  # v2.46
+    return HTMLResponse("".join([  # v2.46
+        f'<!doctype html><html lang="{html_lang}"><head><meta charset="utf-8">',  # v2.46
+        f"<title>{title}</title><style>{style}</style></head>",  # v2.46
+        f'<body><div class="box"><h1>{head}</h1><p>{text}</p><p>{_html.escape(hint)}</p></div></body></html>']))  # v2.46
 
 
 # Per Drag and Drop auf die Tabelle gezogene Dateien: Der Browser schickt den Inhalt per POST an /mll_drop, der Server legt ihn in
@@ -431,22 +462,43 @@ async def mll_drop(request: Request):
 
 
 @nicegui_app.get("/heruntergefahren")
-def heruntergefahren_seite(reboot: int = 0):
+# def heruntergefahren_seite(reboot: int = 0):  # v2.46 (entfallen)
+def heruntergefahren_seite(reboot: int = 0, lang: int = -1):  # v2.46
+    """Seite nach dem Herunterfahren oder Neustart des Raspberry Pi (die Sprache kommt in der Adresse mit)"""  # v2.46
+    import html as _html  # v2.46
     from fastapi.responses import HTMLResponse
-    if reboot:
-        head, text = "Der Raspberry Pi startet neu", "Diese Seite lädt sich neu, sobald das Programm wieder erreichbar ist (etwa eine Minute)."
-        script = ("<script>setInterval(function(){fetch('/',{cache:'no-store'}).then(function(r){if(r.ok)location.href='/';})"
-                  ".catch(function(){});},5000);</script>")
-    else:
-        head, text = "Der Raspberry Pi wird heruntergefahren", ("Warte, bis die grüne LED am Raspberry Pi nicht mehr blinkt "
-                                                               "(etwa 10 Sekunden), dann kannst du den Strom trennen.")
-        script = ""
-    return HTMLResponse(f"""<!doctype html><html lang="de"><head><meta charset="utf-8">
-<title>webMobaLedLib</title>
-<style>body{{font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;
-background:#f4f4f4;color:#222}}.box{{text-align:center;padding:2em 3em;background:#fff;border-radius:8px;
-box-shadow:0 2px 8px rgba(0,0,0,.2);max-width:34em}}h1{{margin:0 0 .4em}}p{{margin:.3em 0;color:#555}}</style></head>
-<body><div class="box"><h1>{head}</h1><p>{text}</p></div>{script}</body></html>""")
+    # if reboot:  # v2.46 (entfallen)
+        # head, text = "Der Raspberry Pi startet neu", "Diese Seite lädt sich neu, sobald das Programm wieder erreichbar ist (etwa eine Minute)."  # v2.46 (entfallen)
+        # script = ("<script>setInterval(function(){fetch('/',{cache:'no-store'}).then(function(r){if(r.ok)location.href='/';})"  # v2.46 (entfallen)
+                  # ".catch(function(){});},5000);</script>")  # v2.46 (entfallen)
+    # else:  # v2.46 (entfallen)
+        # head, text = "Der Raspberry Pi wird heruntergefahren", ("Warte, bis die grüne LED am Raspberry Pi nicht mehr blinkt "  # v2.46 (entfallen)
+                                                               # "(etwa 10 Sekunden), dann kannst du den Strom trennen.")  # v2.46 (entfallen)
+        # script = ""  # v2.46 (entfallen)
+    # return HTMLResponse(f"""<!doctype html><html lang="de"><head><meta charset="utf-8">  # v2.46 (entfallen)
+# <title>webMobaLedLib</title>  # v2.46 (entfallen)
+# <style>body{{font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;  # v2.46 (entfallen)
+# background:#f4f4f4;color:#222}}.box{{text-align:center;padding:2em 3em;background:#fff;border-radius:8px;  # v2.46 (entfallen)
+# box-shadow:0 2px 8px rgba(0,0,0,.2);max-width:34em}}h1{{margin:0 0 .4em}}p{{margin:.3em 0;color:#555}}</style></head>  # v2.46 (entfallen)
+# <body><div class="box"><h1>{head}</h1><p>{text}</p></div>{script}</body></html>""")  # v2.46 (entfallen)
+    from _web import web_i18n  # v2.46
+    with web_i18n.use_language(lang) as number:  # v2.46
+        if reboot:  # v2.46
+            head, text = web_i18n.tr("Der Raspberry Pi startet neu"), web_i18n.tr("Diese Seite lädt sich neu, sobald das Programm wieder erreichbar ist (etwa eine Minute).")  # v2.46
+            script = ("<script>setInterval(function(){fetch('/',{cache:'no-store'}).then(function(r){if(r.ok)location.href='/';})"  # v2.46
+                      ".catch(function(){});},5000);</script>")  # v2.46
+        else:  # v2.46
+            head = web_i18n.tr("Der Raspberry Pi wird heruntergefahren")  # v2.46
+            text = web_i18n.tr("Warte, bis die grüne LED am Raspberry Pi nicht mehr blinkt (etwa 10 Sekunden), dann kannst du den Strom trennen.")  # v2.46
+            script = ""  # v2.46
+        html_lang = ("de", "en", "nl", "fr", "it", "es", "da")[number] if isinstance(number, int) and 0 <= number < 7 else "de"  # v2.46
+    head, text = _html.escape(head), _html.escape(text)  # v2.46
+    style = ("body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f4f4f4;color:#222}"  # v2.46
+             ".box{text-align:center;padding:2em 3em;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2);max-width:34em}h1{margin:0 0 .4em}p{margin:.3em 0;color:#555}")  # v2.46
+    return HTMLResponse("".join([  # v2.46
+        f'<!doctype html><html lang="{html_lang}"><head><meta charset="utf-8">',  # v2.46
+        f"<title>webMobaLedLib</title><style>{style}</style></head>",  # v2.46
+        f'<body><div class="box"><h1>{head}</h1><p>{text}</p></div>{script}</body></html>']))  # v2.46
 
 
 _icon_warned: set = set()
@@ -817,7 +869,10 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "2.44 (2026-10-28)"  # v2.44
+VERSION = "2.47 (2026-10-28)"  # v2.47
+# VERSION = "2.46 (2026-10-28)"  # v2.47 (entfallen)
+# VERSION = "2.45 (2026-10-29)"  # v2.46 (entfallen)
+# VERSION = "2.44 (2026-10-28)"  # v2.45 (entfallen)
 # VERSION = "2.43 (2026-10-28)"  # v2.44 (entfallen)
 # VERSION = "2.42 (2026-10-28)"  # v2.43 (entfallen)
 # VERSION = "2.41 (2026-10-28)"  # v2.42 (entfallen)
@@ -1540,7 +1595,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if not close_session(choice == "save"):
             return
         logger.info("Raspberry Pi wird %s (%s)", what, "mit Speichern" if choice == "save" else "ohne Speichern")
-        ui.navigate.to(f"/heruntergefahren?reboot={1 if reboot else 0}")
+        # ui.navigate.to(f"/heruntergefahren?reboot={1 if reboot else 0}")  # v2.46 (entfallen)
+        ui.navigate.to(f"/heruntergefahren?reboot={1 if reboot else 0}&lang={_current_language_number()}")  # v2.46
         await asyncio.sleep(2.5)                                              # Zeit, die Abschlussseite auszuliefern
         subprocess.Popen(["sudo", "-n", systemctl_path(), action])
 
@@ -1562,11 +1618,13 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             logger.debug("Beenden-Dialog nicht entfernt", exc_info=True)
         if choice is None:
             return
+        _close_lang = _current_language_number()                      # vor dem Schliessen merken: danach liefert das Programm Deutsch  # v2.46
         if not close_session(choice == "save"):
             return
         logger.info("Programm wird beendet (%s)", "mit Speichern" if choice == "save" else "ohne Speichern")
         try:
-            ui.navigate.to(f"/beendet?saved={1 if choice == 'save' else 0}")     # Abschlussseite statt Abfrage-Fenster
+            # ui.navigate.to(f"/beendet?saved={1 if choice == 'save' else 0}")     # Abschlussseite statt Abfrage-Fenster  # v2.46 (entfallen)
+            ui.navigate.to(f"/beendet?saved={1 if choice == 'save' else 0}&lang={_close_lang}")     # Abschlussseite statt Abfrage-Fenster  # v2.46
             await asyncio.sleep(2.0)                                              # Zeit, die Seite auszuliefern
         except Exception:                                  # noqa: BLE001  (Seite nicht mehr da: trotzdem beenden)
             logger.debug("Abschlussseite nicht gezeigt", exc_info=True)
@@ -1912,11 +1970,14 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 # graph_follow(new_r)  # v2.36 (entfallen)
     # graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter)  # v2.36 (entfallen)
     # graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop)  # v2.38 (entfallen)
-    async def confirm_delete(row, name):  # v2.38
+    # async def confirm_delete(row, name):  # v2.45 (entfallen)
+    async def confirm_delete(row, name, count=1):  # v2.45
         """Rueckfrage vor dem Loeschen einer Zeile: die Grafik darf nichts ungefragt zerstoeren"""  # v2.38
         with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[440px] max-w-full"):  # v2.38
-            ui.label(tr("Zeile {zeile} löschen?", zeile=row + 1)).classes("text-h6")  # v2.38
-            ui.label(tr("Das Makro „{name}“ wird aus der Tabelle entfernt.", name=name))  # v2.38
+            # ui.label(tr("Zeile {zeile} löschen?", zeile=row + 1)).classes("text-h6")  # v2.45 (entfallen)
+            # ui.label(tr("Das Makro „{name}“ wird aus der Tabelle entfernt.", name=name))  # v2.45 (entfallen)
+            ui.label(tr("{n} Zeilen löschen?", n=count) if count > 1 else tr("Zeile {zeile} löschen?", zeile=row + 1)).classes("text-h6")  # v2.45
+            ui.label(tr("Die gewählten Makros werden aus der Tabelle entfernt.") if count > 1 else tr("Das Makro „{name}“ wird aus der Tabelle entfernt.", name=name))  # v2.45
             with ui.row().classes("justify-end w-full"):  # v2.38
                 ui.button(tr("Abbrechen"), on_click=lambda: dlg.submit(False)).props("flat")  # v2.38
                 ui.button(tr("Löschen"), on_click=lambda: dlg.submit(True)).props("color=negative")  # v2.38
@@ -1938,6 +1999,38 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             if ws_ is None or not await wait_not_busy():  # v2.38
                 return  # v2.38
             model = graph_state.get("model") or {"chains": [], "other": []}  # v2.38
+            if cmd == "undo":                                # Strg+Z in der Anlagenansicht  # v2.45
+                await layout_undo(ws_)  # v2.45
+                return  # v2.45
+            if cmd in ("place_many", "align"):               # mehrere Kaestchen gemeinsam verschoben oder ausgerichtet (nur Positionen)  # v2.45
+                from headless import headless_graph_layout as GL  # v2.45
+                layout = graph_layout_of(ws_)  # v2.45
+                cache = graph_state.setdefault("pos", {}).setdefault(ws_.Name, {})  # v2.45
+                by_row = {n["row"]: n for n in GL.model_nodes(model)}  # v2.45
+                t_ = target or {}  # v2.45
+                if cmd == "place_many":  # v2.45
+                    moves = {}  # v2.45
+                    for it in (t_.get("items") or []):  # v2.45
+                        try:  # v2.45
+                            r_, x_, y_ = int(it["row"]), float(it["x"]), float(it["y"])  # v2.45
+                        except (KeyError, TypeError, ValueError):  # v2.45
+                            continue  # v2.45
+                        if r_ in by_row:  # v2.45
+                            moves[by_row[r_]["id"]] = GL.snap_pos(x_, y_, layout)  # v2.45
+                    if not moves:  # v2.45
+                        return  # v2.45
+                    lundo_push(ws_, tr("Verschieben von {n} Kästchen", n=len(moves)))  # v2.45
+                else:  # v2.45
+                    ids = [by_row[r_]["id"] for r_ in (t_.get("rows") or []) if isinstance(r_, int) and r_ in by_row]  # v2.45
+                    moves = GL.align_positions(cache, ids, str(t_.get("mode", "")), layout)  # v2.45
+                    if len(ids) < 2 or not moves or all(cache.get(i_) == moves[i_] for i_ in moves):  # v2.45
+                        return  # v2.45
+                    lundo_push(ws_, tr("Ausrichten von {n} Kästchen", n=len(ids)))  # v2.45
+                cache.update(moves)  # v2.45
+                layout["nodes"] = GL.collect_positions(cache, model)  # v2.45
+                layout_changed(ws_)  # v2.45
+                refresh_graph(ws_, True)  # v2.45
+                return  # v2.45
             node = headless_graph.find_node(model, row)  # v2.38
             if node is None:  # v2.38
                 return  # v2.38
@@ -1949,9 +2042,16 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     return  # v2.40
                 layout = graph_layout_of(ws_)  # v2.40
                 cache = graph_state.setdefault("pos", {}).setdefault(ws_.Name, {})  # v2.40
-                cache[node["id"]] = GL.clamp(x, y, layout)  # v2.40
+                # cache[node["id"]] = GL.clamp(x, y, layout)  # v2.45 (entfallen)
+                lundo_push(ws_, tr("Verschieben von „{name}“", name=node.get("label") or node.get("makro") or ""))  # v2.45
+                new_pos = GL.snap_pos(x, y, layout)  # v2.45
+                cache[node["id"]] = new_pos  # v2.45
                 layout["nodes"] = GL.collect_positions(cache, model)  # v2.40
                 layout_changed(ws_)  # v2.40
+                if round(new_pos[0]) != round(x) or round(new_pos[1]) != round(y):  # v2.45
+                    refresh_graph(ws_, True)                 # Raster oder Rand: das Kaestchen springt an die endgueltige Stelle  # v2.45
+                else:  # v2.45
+                    plant_controls(ws_)                      # nur der Knopf Rueckgaengig  # v2.45
                 return  # v2.40
             if cmd in ("up", "down"):  # v2.38
                 target = graph_ops.neighbour_target(model, row, cmd)  # v2.38
@@ -1975,10 +2075,15 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     select_row(ws_, new_node["row"])  # v2.38
                     graph_follow(new_node["row"])  # v2.38
             elif cmd == "delete":  # v2.38
-                if not await confirm_delete(row, node.get("label") or node.get("makro") or ""):  # v2.38
+                # if not await confirm_delete(row, node.get("label") or node.get("makro") or ""):  # v2.45 (entfallen)
+                rows_ = [r_ for r_ in ((target or {}).get("rows") or []) if isinstance(r_, int) and headless_graph.find_node(model, r_) is not None]  # v2.45
+                if len(rows_) < 2:  # v2.45
+                    rows_ = [row]  # v2.45
+                if not await confirm_delete(row, node.get("label") or node.get("makro") or "", count=len(rows_)):  # v2.45
                     return  # v2.38
                 try:  # v2.38
-                    await run_in_worker(lambda: graph_ops.delete_row(ws_, row))  # v2.38
+                    # await run_in_worker(lambda: graph_ops.delete_row(ws_, row))  # v2.45 (entfallen)
+                    await run_in_worker(lambda: [graph_ops.delete_row(ws_, r_) for r_ in sorted(rows_, reverse=True)])             # von unten nach oben: die Zeilennummern darueber bleiben gueltig  # v2.45
                 except Exception as ex:                      # noqa: BLE001  # v2.38
                     logger.exception("Zeile nicht geloescht")  # v2.38
                     ui.notify(tr('Fehler beim Löschen: {ex}', ex=ex), type="negative")  # v2.38
@@ -1987,7 +2092,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     # graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop, on_graph_cmd)  # v2.40 (entfallen)
     # graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop, on_graph_cmd, on_graph_layout)  # v2.41 (entfallen)
     # on_graph_layout ist weiter unten definiert (bei refresh_graph): erst beim Aufruf aufloesen, sonst UnboundLocalError beim Aufbau der Seite
-    graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop, on_graph_cmd, lambda action, value=None: on_graph_layout(action, value))  # v2.41
+    # graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop, on_graph_cmd, lambda action, value=None: on_graph_layout(action, value))  # v2.47 (entfallen)
+    graph_panel = web_graph.GraphPanel(ui, on_graph_hit, on_tree_hit, on_tree_filter, on_graph_drop, on_graph_cmd, lambda action, value=None: on_graph_layout(action, value), lambda args: on_graph_image(args))  # v2.47
     graph_panel.set_visible(False)  # v2.29
 
     grid_wrap = ui.element("div").classes("w-full mll-grid-wrap").style("flex: 1 1 0; min-height: 160px; position: relative")
@@ -2304,6 +2410,63 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         web_dialogs.safe_delete(dlg)  # v2.40
         return answer  # v2.40
 
+    def plant_controls(ws):  # v2.45
+        """Kopfzeile der Anlagenansicht: Ansicht, Bild, Groesse, Raster und die letzte rueckgaengig zu machende Aenderung"""  # v2.45
+        layout = graph_layout_of(ws)  # v2.45
+        graph_panel.set_plant_controls(layout["mode"], bool(layout["image"]), layout["size"], layout["snap"], lundo_label(ws))  # v2.45
+
+    def lundo_stack(ws):  # v2.45
+        """Journal fuer Rueckgaengig: nur Positionen, Ausrichten und Groesse der Anlagenansicht (je Blatt), keine Aenderungen an der Tabelle"""  # v2.45
+        return graph_state.setdefault("lundo", {}).setdefault(ws.Name, [])  # v2.45
+
+    def lundo_push(ws, label):  # v2.45
+        """Den Stand VOR einer Aenderung merken (alle Positionen und die Groesse; sie sind klein), hoechstens 30 Schritte"""  # v2.45
+        stack = lundo_stack(ws)  # v2.45
+        stack.append({"label": label, "size": graph_layout_of(ws)["size"], "pos": dict(graph_state.setdefault("pos", {}).get(ws.Name) or {})})  # v2.45
+        del stack[:-30]  # v2.45
+
+    def lundo_label(ws):  # v2.45
+        stack = lundo_stack(ws)  # v2.45
+        return stack[-1]["label"] if stack else None  # v2.45
+
+    async def layout_undo(ws_):  # v2.45
+        """Knopf Rueckgaengig oder Strg+Z in der Anlagenansicht: Positionen und Groesse auf den Stand vor der letzten Aenderung"""  # v2.45
+        stack = lundo_stack(ws_)  # v2.45
+        if not stack:  # v2.45
+            ui.notify(tr("Es gibt nichts rückgängig zu machen."), type="info")  # v2.45
+            return  # v2.45
+        entry = stack.pop()  # v2.45
+        layout = graph_layout_of(ws_)  # v2.45
+        layout["size"] = entry["size"]  # v2.45
+        graph_state.setdefault("pos", {})[ws_.Name] = dict(entry["pos"])  # v2.45
+        layout_changed(ws_)  # v2.45
+        refresh_graph(ws_, True)  # v2.45
+        ui.notify(tr("Rückgängig: {aktion}", aktion=entry["label"]), type="positive")  # v2.45
+
+    async def on_graph_image(args):  # v2.47
+        """Ein Hintergrundbild wurde im Browser gewaehlt, dort verkleinert und hochgeladen (web_graph.UPLOAD_ROUTE): args {token, name} oder {error, name}.
+        Pillow braucht es dafuer nicht (es gibt es nicht fuer alle Systeme)."""
+        from headless import headless_graph_layout as GL  # v2.47
+        ws_ = state["ws"]  # v2.47
+        if ws_ is None:  # v2.47
+            return  # v2.47
+        err = args.get("error")  # v2.47
+        if err:  # v2.47
+            texts = {"too_big": tr("Das Bild ist zu groß (mehr als 15 MB)."), "empty": tr("Die Datei ist leer."), "network": tr("Das Bild konnte nicht zum Programm übertragen werden.")}  # v2.47
+            ui.notify(texts.get(err) or (err if " " in str(err) else tr("Die Datei ist kein Bild, das das Programm lesen kann (PNG, JPG, GIF oder WebP).")), type="negative")  # v2.47
+            return  # v2.47
+        image = web_graph.take_pending_image(args.get("token"))  # v2.47
+        if image is None:  # v2.47
+            ui.notify(tr("Das Bild konnte nicht zum Programm übertragen werden."), type="negative")  # v2.47
+            return  # v2.47
+        layout = GL.get_layout(ws_)  # v2.47
+        layout["image"], layout["mode"] = image, "plant"  # v2.47
+        pos = graph_state.setdefault("pos", {}).get(ws_.Name) or {}  # v2.47
+        graph_state["pos"][ws_.Name] = {k: GL.clamp(x, y, layout) for k, (x, y) in pos.items()}     # innerhalb der neuen Flaeche halten  # v2.47
+        layout_changed(ws_)  # v2.47
+        refresh_graph(ws_, True)  # v2.47
+        ui.notify(tr("Bild geladen: {name}", name=args.get("name") or ""), type="positive")  # v2.47
+
     async def on_graph_layout(action, value=None):  # v2.40
         """Kopfzeile der Grafik: Ansicht Ketten oder Anlage, Bild laden, Bild entfernen"""  # v2.40
         from headless import headless_graph_layout as GL  # v2.40
@@ -2316,6 +2479,23 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 layout["mode"] = value  # v2.40
                 layout_changed(ws_)  # v2.40
                 refresh_graph(ws_, True)  # v2.40
+        elif action == "size":                               # Schieber in der Kopfzeile: Groesse der Kaestchen  # v2.45
+            if isinstance(value, (list, tuple)) and value:  # v2.45
+                value = value[0]  # v2.45
+            size = GL.clamp_size(value)  # v2.45
+            if size != layout["size"]:  # v2.45
+                lundo_push(ws_, tr("Größe der Kästchen ändern"))  # v2.45
+                layout["size"] = size  # v2.45
+                cache = graph_state.setdefault("pos", {}).get(ws_.Name)  # v2.45
+                if cache:  # v2.45
+                    graph_state["pos"][ws_.Name] = {k: GL.clamp(x, y, layout) for k, (x, y) in cache.items()}  # v2.45
+                layout_changed(ws_)  # v2.45
+                refresh_graph(ws_, True)  # v2.45
+        elif action == "snap":                               # Raster: Positionen rasten beim Loslassen ein (halbe Kaestchengroesse)  # v2.45
+            layout["snap"] = bool(value)  # v2.45
+            layout_changed(ws_)  # v2.45
+        elif action == "undo":  # v2.45
+            await layout_undo(ws_)  # v2.45
         elif action == "image_remove":  # v2.40
             layout["image"] = None  # v2.40
             layout_changed(ws_)  # v2.40
@@ -2389,7 +2569,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         graph_state["model"] = model                       # fuer die Operationen (Makro anhaengen)  # v2.32
         # graph_panel.update(model, selected_row(ws))  # v2.40 (entfallen)
         layout = graph_layout_of(ws)  # v2.40
-        graph_panel.set_plant_controls(layout["mode"], bool(layout["image"]))  # v2.40
+        # graph_panel.set_plant_controls(layout["mode"], bool(layout["image"]))  # v2.45 (entfallen)
+        plant_controls(ws)  # v2.45
         graph_panel.update(model, selected_row(ws), plant_data_for(ws, model))  # v2.40
         if tree_state["items"] is None and not tree_state["loading"]:  # v2.32
             tree_state["loading"] = True  # v2.32

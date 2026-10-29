@@ -1,9 +1,9 @@
-# Datei-Version: 1.06 (2026-10-26) - web_i18n.py
+# Datei-Version: 1.07 (2026-10-28) - web_i18n.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_i18n.py
 # Path:           _web/web_i18n.py
-# Version:        1.06
-# Last Update:    2026-10-26
+# Version:        1.07
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,6 +14,7 @@
 #   1.04  2026-10-26  catalog_text: Uebersetzung nur aus dem Katalog (fuer M09.Get_Language_Str, wenn die Tabelle Languages keine hat)
 #   1.05  2026-10-26  Uebersetzung wird mit den Leerzeichen des Textes eingesetzt; vor einem Satzzeichen entfaellt das vordere Leerzeichen (_fit)
 #   1.06  2026-10-26  tr(): gewaehlte Sprache zuerst im Katalog, dann in der Tabelle Languages, erst danach English (ein englischer Katalogtext verdraengte vorher eine vorhandene niederlaendische Uebersetzung der Tabelle)
+#   1.07  2026-10-28  use_language: feste Seiten (Programm beendet, Raspberry Pi faehrt herunter) in der Sprache des Programms, auch wenn es schon beendet ist
 # ----------------------------------------------------------------------------------------------
 """Mehrsprachige Web-Oberflaeche (Konzept siehe HOC_intern.md, Version 2.14).
 
@@ -37,10 +38,13 @@ import csv
 import io
 import logging
 import os
+import contextlib  # v1.07
+import contextvars  # v1.07
 import re
 import sys
 
 logger = logging.getLogger(__name__)
+_LANG_OVERRIDE: contextvars.ContextVar = contextvars.ContextVar("mll_language", default=None)       # Sprache fuer feste Seiten (zum Beispiel "Programm beendet"), wenn das Programm schon beendet ist  # v1.07
 
 LANGUAGE_NAMES = ("Deutsch", "English", "Nederlands", "Francais", "Italiano", "Espanol", "Dansk")
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -78,10 +82,25 @@ def load_catalog(path: str = "", force: bool = False) -> dict:
     return catalog
 
 
+@contextlib.contextmanager  # v1.07
+def use_language(number):  # v1.07
+    """Fuer den Block (und diese Anfrage) die Sprache number (0 bis 6) benutzen statt der eingestellten; ungueltig: die eingestellte. Die festen Seiten
+    (Programm beendet, Raspberry Pi faehrt herunter) rufen sich nach dem Beenden auf: die Sprache wird dann in der Adresse mitgegeben."""
+    valid = isinstance(number, int) and 0 <= number < len(LANGUAGE_NAMES)  # v1.07
+    token = _LANG_OVERRIDE.set(number if valid else None)  # v1.07
+    try:  # v1.07
+        yield (number if valid else current_language())  # v1.07
+    finally:  # v1.07
+        _LANG_OVERRIDE.reset(token)  # v1.07
+
+
 def current_language() -> int:
     """Nummer der eingestellten Sprache wie M09.Get_ExcelLanguage (0 Deutsch, 1 English, ...); 99 = Testsprache (MLL_TEST_LANGUAGE=1)"""
     if os.environ.get("MLL_TEST_LANGUAGE") == "1":
         return 99
+    override = _LANG_OVERRIDE.get()  # v1.07
+    if override is not None:  # v1.07
+        return override  # v1.07
     try:
         import proggen.M09_Language as M09
         return int(M09.Get_ExcelLanguage())
