@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-28) - M12_Copy_Prog.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M12_Copy_Prog.py
+# Path:           proggen/M12_Copy_Prog.py
+# Version:        1.01
+# Last Update:    2026-10-28
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-28  Get_DestDir_All steht in M02a_Public, nicht in M02_Public
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -197,7 +209,8 @@ def Copy_Prog_If_in_LibDir_WithResult(DidCopy):
     #   UserProfile = "C:"
     #End If
     # Create the destination directory if it doesn't exist
-    FullDestDir = M02.Get_DestDir_All()
+    # FullDestDir = M02.Get_DestDir_All()  # v1.01 (entfallen)
+    FullDestDir = M02a.Get_DestDir_All()  # v1.01
     # VB2PY (UntranslatedCode) On Error Resume Next
     Parts = Split(FullDestDir, '/')
     for p in Parts:

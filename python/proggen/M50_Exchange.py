@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-28) - M50_Exchange.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M50_Exchange.py
+# Path:           proggen/M50_Exchange.py
+# Version:        1.01
+# Last Update:    2026-10-28
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-28  Get_DestDir_All steht in M02a_Public, nicht in M02_Public
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -141,7 +153,8 @@ def __Get_Pattern_Configurator_Name():
     if Same_Name_already_open(__Default_Pattern_Configurator_Name):
         fn_return_value = P01.Workbooks(__Default_Pattern_Configurator_Name).FullName
     else:
-        Path = M02.Get_DestDir_All()
+        # Path = M02.Get_DestDir_All()  # v1.01 (entfallen)
+        Path = M02a.Get_DestDir_All()  # v1.01
         # Check if it exists in the user dir
         FullPath = Path + __Default_Pattern_Configurator_Name
         if Dir(FullPath) == '':

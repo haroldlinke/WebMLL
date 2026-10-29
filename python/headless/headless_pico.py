@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-28) - headless_pico.py
+# Datei-Version: 1.02 (2026-10-28) - headless_pico.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_pico.py
 # Path:           headless/headless_pico.py
-# Version:        1.01
+# Version:        1.02
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-28  Neu: Pico-Firmware suchen, Pico im Bootmodus finden (Linux, macOS, Windows), UF2-Datei schreiben
 #   1.01  2026-10-28  Einhaengen mit udisksctl nach einem Fehlschlag erst nach 30 Sekunden noch einmal versuchen
+#   1.02  2026-10-28  Windows: Fehler beim Oeffnen des Anschlusses mit 1200 Baud ist kein Fehler (der Pico startet neu), auf das Laufwerk warten; Laufwerke ohne Unterprozess; Firmware-Ordner mit anderer Schreibweise; has_firmware
 # ----------------------------------------------------------------------------------------------
 
 """Raspberry Pi Pico: Firmware-Dateien suchen, Pico im Bootmodus (Laufwerk RPI-RP2) finden und eine UF2-Datei darauf schreiben.
@@ -37,7 +38,8 @@ LANG_IDS = ("DE", "EN", "NL", "FR", "IT", "ES", "DA")        # wie die Sprachnum
 BOOT_LABEL = "RPI-RP2"                                         # Name des Laufwerks des Pico im Bootmodus
 BOOT_MARKER = "INFO_UF2.TXT"                                   # Diese Datei liegt im Laufwerk des Bootloaders (schliesst alte, leere Ordner aus)
 # HOOKS = {"system": platform.system, "sleep": time.sleep, "run": subprocess.run, "read_mounts": None, "list_ports": None, "touch": None}  # v1.01 (entfallen)
-HOOKS = {"system": platform.system, "sleep": time.sleep, "run": subprocess.run, "read_mounts": None, "list_ports": None, "touch": None, "clock": time.time}  # v1.01
+# HOOKS = {"system": platform.system, "sleep": time.sleep, "run": subprocess.run, "read_mounts": None, "list_ports": None, "touch": None, "clock": time.time}  # v1.02 (entfallen)
+HOOKS = {"system": platform.system, "sleep": time.sleep, "run": subprocess.run, "read_mounts": None, "list_ports": None, "touch": None, "clock": time.time, "win_drives": None}  # v1.02
 _AUTOMOUNT_FAILED: dict = {}                                   # Geraet -> Zeitpunkt des letzten Fehlschlags (der Hinweis fragt oft nach: nicht jedes Mal neu versuchen)  # v1.01
 RETRY_AUTOMOUNT_S = 30.0  # v1.01
 
@@ -155,10 +157,37 @@ def desc_details(data, lang: str) -> tuple:
     return str(data.get("name") or ""), str(block.get("short") or ""), str(block.get("detail") or ""), str(data.get("version") or "")
 
 
+def resolve_firmware_dir(path: str) -> str:  # v1.02
+    """Den Firmware-Ordner finden, auch wenn er anders geschrieben ist (Firmware statt firmware): Linux unterscheidet Gross- und Kleinschreibung, Windows nicht"""  # v1.02
+    if not path:  # v1.02
+        return path  # v1.02
+    p = path.rstrip("/\\")  # v1.02
+    if os.path.isdir(p):  # v1.02
+        return path  # v1.02
+    parent, name = os.path.split(p)  # v1.02
+    try:  # v1.02
+        for entry in sorted(os.listdir(parent or ".")):  # v1.02
+            if entry.lower() == name.lower() and os.path.isdir(os.path.join(parent, entry)):  # v1.02
+                return os.path.join(parent, entry)  # v1.02
+    except OSError:  # v1.02
+        pass  # v1.02
+    return path  # v1.02
+
+
+def has_firmware(folder: str) -> bool:  # v1.02
+    """Liegt im Firmware-Ordner mindestens eine Datei *.uf2? (nur dann zeigen die Optionen den Knopf Firmware installieren)"""  # v1.02
+    folder = resolve_firmware_dir(folder)  # v1.02
+    try:  # v1.02
+        return bool(folder) and os.path.isdir(folder) and any(f.lower().endswith(".uf2") and os.path.isfile(os.path.join(folder, f)) for f in os.listdir(folder))  # v1.02
+    except OSError:  # v1.02
+        return False  # v1.02
+
+
 def scan_firmware(folder: str, lang: str = "DE") -> list:
     """Alle *.uf2 im Ordner, gruppiert nach Firmware-Name: [{"base", "versions": [{"version", "file", "short", "detail"}, ...]}, ...]. Gruppen nach Name sortiert,
     die Versionen absteigend (die hoechste zuerst). Leere Liste, wenn es den Ordner nicht gibt."""
     groups: dict = {}
+    folder = resolve_firmware_dir(folder)  # v1.02
     if not folder or not os.path.isdir(folder):
         return []
     for fname in sorted(os.listdir(folder)):
@@ -242,20 +271,48 @@ def _linux_automount(device: str):
     return m.group(1) if (res.returncode == 0 and m) else None
 
 
+def _windows_drives() -> list:  # v1.02
+    """[(Laufwerk, Name)] der austauschbaren und festen Laufwerke ohne Unterprozess (schnell genug fuer das Warten auf den Pico; keine Meldung 'Laufwerk nicht bereit')"""  # v1.02
+    import ctypes  # v1.02
+    k32 = ctypes.windll.kernel32  # v1.02
+    out = []  # v1.02
+    old = k32.SetErrorMode(1)                                          # SEM_FAILCRITICALERRORS  # v1.02
+    try:  # v1.02
+        mask = k32.GetLogicalDrives()  # v1.02
+        for i in range(26):  # v1.02
+            if not mask & (1 << i):  # v1.02
+                continue  # v1.02
+            root = chr(65 + i) + ":\\"  # v1.02
+            if k32.GetDriveTypeW(root) not in (2, 3):                  # austauschbar, fest  # v1.02
+                continue  # v1.02
+            label = ctypes.create_unicode_buffer(261)  # v1.02
+            if k32.GetVolumeInformationW(root, label, 261, None, None, None, None, 0):  # v1.02
+                out.append((root, label.value))  # v1.02
+    finally:  # v1.02
+        k32.SetErrorMode(old)  # v1.02
+    return out  # v1.02
+
+
 def find_boot_drives(print_debug: bool = False, automount: bool = True) -> list:
     """Laufwerke von Pico im Bootmodus (BOOTSEL): Liste der Pfade. Unter Linux wird ein nicht eingehaengtes Laufwerk eingehaengt (automount)."""
     system = HOOKS["system"]()
     found: list = []
     if system == "Windows":
-        for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-            root = f"{letter}:/"
-            if os.path.exists(root):
-                try:
-                    out = HOOKS["run"](["cmd", "/c", f"vol {letter}:"], capture_output=True, timeout=10).stdout.decode(errors="ignore")
-                    if BOOT_LABEL in out:
-                        found.append(root)
-                except (OSError, subprocess.SubprocessError):
-                    pass
+        # for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":  # v1.02 (entfallen)
+            # root = f"{letter}:/"  # v1.02 (entfallen)
+            # if os.path.exists(root):  # v1.02 (entfallen)
+                # try:  # v1.02 (entfallen)
+                    # out = HOOKS["run"](["cmd", "/c", f"vol {letter}:"], capture_output=True, timeout=10).stdout.decode(errors="ignore")  # v1.02 (entfallen)
+                    # if BOOT_LABEL in out:  # v1.02 (entfallen)
+                        # found.append(root)  # v1.02 (entfallen)
+                # except (OSError, subprocess.SubprocessError):  # v1.02 (entfallen)
+                    # pass  # v1.02 (entfallen)
+        try:  # v1.02
+            for root, label in (HOOKS["win_drives"]() if HOOKS["win_drives"] else _windows_drives()):  # v1.02
+                if str(label).upper() == BOOT_LABEL:  # v1.02
+                    found.append(root)  # v1.02
+        except Exception:                                              # noqa: BLE001  # v1.02
+            logger.debug("Laufwerke nicht gelesen", exc_info=True)  # v1.02
     elif system == "Darwin":
         path = "/Volumes/" + BOOT_LABEL
         if _is_boot_dir(path):
@@ -298,6 +355,14 @@ def _touch_1200(port: str) -> None:
     s.close()
 
 
+def _is_permission_error(ex: BaseException) -> bool:  # v1.02
+    """Fehlt dem Benutzer das Recht auf den Anschluss (Linux: Gruppe dialout)? Dann hilft Warten nicht."""  # v1.02
+    if isinstance(ex, PermissionError) or getattr(ex, "errno", None) in (13,):  # v1.02
+        return True  # v1.02
+    text = str(ex).lower()  # v1.02
+    return any(s in text for s in ("permission denied", "zugriff verweigert", "access is denied", "zugriff wurde verweigert"))  # v1.02
+
+
 def copy_to_drive(uf2_path: str, drive: str) -> str:
     """Kopiert die UF2-Datei auf das Laufwerk; der Pico startet nach dem Schreiben sofort neu und das Laufwerk verschwindet, das ist kein Fehler"""
     dest = os.path.join(drive, os.path.basename(uf2_path))
@@ -324,17 +389,26 @@ def flash_uf2(uf2_path: str, serial_port=None, wait_s: float = 20.0, log=None) -
         if not ports:
             raise RuntimeError("Es wurde kein Raspberry Pi Pico gefunden. Bitte den Pico anschließen (oder mit gedrückter Taste BOOTSEL einstecken) und noch einmal versuchen.")
         say("Pico wird in den Bootmodus versetzt: " + str(ports[0]))
+        touch_error = None  # v1.02
         try:
             _touch_1200(ports[0])
         except Exception as ex:                                        # noqa: BLE001
-            raise RuntimeError("Der Anschluss " + str(ports[0]) + " ließ sich nicht öffnen: " + str(ex)) from ex
+            # raise RuntimeError("Der Anschluss " + str(ports[0]) + " ließ sich nicht öffnen: " + str(ex)) from ex  # v1.02 (entfallen)
+            if _is_permission_error(ex):  # v1.02
+                raise RuntimeError("Der Anschluss " + str(ports[0]) + " ließ sich nicht öffnen: " + str(ex)) from ex  # v1.02
+            # Der Pico startet im Moment des Oeffnens neu und das Geraet verschwindet mitten in der Einstellung (Windows zum Beispiel: 'Ein nicht vorhandenes Geraet wurde angegeben'):
+            # das ist das Zeichen, dass der Weckruf angekommen ist. Also auf das Laufwerk warten; nur wenn es nicht erscheint, ist es ein Fehler.
+            touch_error = ex  # v1.02
+            say("Anschluss " + str(ports[0]) + ": " + str(ex) + " (der Pico startet vermutlich gerade neu, es wird auf das Laufwerk gewartet)")  # v1.02
         waited = 0.0
         while not drives and waited < wait_s:
             HOOKS["sleep"](0.5)
             waited += 0.5
             drives = find_boot_drives(automount=True)
         if not drives:
-            raise RuntimeError("Der Pico meldet sich nicht im Bootmodus (Laufwerk RPI-RP2). Bitte den Pico mit gedrückter Taste BOOTSEL einstecken und noch einmal versuchen.")
+            # raise RuntimeError("Der Pico meldet sich nicht im Bootmodus (Laufwerk RPI-RP2). Bitte den Pico mit gedrückter Taste BOOTSEL einstecken und noch einmal versuchen.")  # v1.02 (entfallen)
+            detail = (" (Der Anschluss " + str(ports[0]) + " ließ sich nicht öffnen: " + str(touch_error) + ")") if touch_error else ""  # v1.02
+            raise RuntimeError("Der Pico meldet sich nicht im Bootmodus (Laufwerk RPI-RP2). Bitte den Pico mit gedrückter Taste BOOTSEL einstecken und noch einmal versuchen." + detail)  # v1.02
     drive = drives[0]
     say("Firmware wird geschrieben: " + os.path.basename(uf2_path) + " -> " + drive)
     copy_to_drive(uf2_path, drive)

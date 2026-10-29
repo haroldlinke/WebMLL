@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-28) - M70_Exp_Libraries.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M70_Exp_Libraries.py
+# Path:           proggen/M70_Exp_Libraries.py
+# Version:        1.01
+# Last Update:    2026-10-28
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-28  AnalogScanner: mit PlatformIO nichts tun, sonst Download mit Python statt powershell (unter Linux Absturz), umbenennen nach dem Entpacken, Fehler als False
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -38,6 +50,10 @@ from vb2py.vbfunctions import *
 from vb2py.vbdebug import *
 from vb2py.vbconstants import *
 
+import os  # v1.01
+import shutil  # v1.01
+import zipfile  # v1.01
+
 import proggen.M02_Public as M02
 import proggen.M02a_Public as M02a
 import proggen.M09_Language as M09
@@ -61,8 +77,27 @@ def __Check_Expected_Files(Path, ExpectedFilesLst):
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Expected_DirName - ByVal 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: ExpectedFilesLst - ByVal 
+def __Download_File(url, dest, timeout=60):  # v1.01
+    """Datei per HTTP laden, mit Python statt 'powershell Invoke-WebRequest' (das gibt es nur unter Windows; unter Linux und macOS stuerzte der Aufruf ab).
+    Rueckgabe True, sonst Fehlermeldung und False."""
+    import urllib.error  # v1.01
+    import urllib.request  # v1.01
+    try:  # v1.01
+        request = urllib.request.Request(url, headers={"User-Agent": "webMobaLedLib"})  # v1.01
+        with urllib.request.urlopen(request, timeout=timeout) as response, open(dest, "wb") as out:  # v1.01
+            shutil.copyfileobj(response, out)  # v1.01
+        return True  # v1.01
+    except (urllib.error.URLError, OSError, ValueError) as ex:  # v1.01
+        try:  # v1.01
+            os.remove(dest)  # v1.01
+        except OSError:  # v1.01
+            pass  # v1.01
+        P01.MsgBox(M09.Get_Language_Str('Fehler beim Herunterladen der Bibliothek:') + vbCr + '  \'' + url + '\'' + vbCr + str(ex), vbCritical, M09.Get_Language_Str('Fehler: Download fehlgeschlagen'))  # v1.01
+        return False  # v1.01
+
 def __Make_Sure_that_GitHub_Library_Exists(Expected_DirName, ExpectedFilesLst):
-    fn_return_value = None
+    # fn_return_value = None  # v1.01 (entfallen)
+    fn_return_value = False  # v1.01
     DestName_for_ZIP = String()
 
     ExtractedDirName = String()
@@ -84,18 +119,22 @@ def __Make_Sure_that_GitHub_Library_Exists(Expected_DirName, ExpectedFilesLst):
         else:
             P01.MsgBox(Replace(M09.Get_Language_Str('Fehler: Das Verzeichnis \'#1#\' existiert, es enthält aber ' + 'nicht alle der erwarteten Dateien:'), "#1#", Path + Expected_DirName) + vbCr + '  \'' + ExpectedFilesLst + '\'' + vbCr + vbCr + M09.Get_Language_Str('Das Verzeichnis muss manuell gelöscht werden!'), vbCritical, M09.Get_Language_Str('Fehler: Einige Dateien Fehlen'))
             return fn_return_value
-    DestName = M02a.Get_Ardu_LibDir() + DestName_for_ZIP
-    if M37.WIN7_COMPATIBLE_DOWNLOAD:
-        M30.F_shellExec('powershell Invoke-WebRequest "' + 'https://github.com/merose/AnalogScanner/archive/master.zip" -o:' + DestName + '"')
-    else:
-        if M37.Check_if_curl_is_Available_and_gen_Message_if_not('AnalogScanner', 'https://github.com/merose/AnalogScanner/archive/master.zip') == False:
-            return fn_return_value
-            # 05.06.20:
-        M30.F_shellExec('powershell curl "' + 'https://github.com/merose/AnalogScanner/archive/master.zip" -o:' + DestName + '"')
-    #   ToDo:
-    #   - Erkennung von Fehlern
+    # DestName = M02a.Get_Ardu_LibDir() + DestName_for_ZIP  # v1.01 (entfallen)
+    # if M37.WIN7_COMPATIBLE_DOWNLOAD:  # v1.01 (entfallen)
+        # M30.F_shellExec('powershell Invoke-WebRequest "' + 'https://github.com/merose/AnalogScanner/archive/master.zip" -o:' + DestName + '"')  # v1.01 (entfallen)
+    # else:  # v1.01 (entfallen)
+        # if M37.Check_if_curl_is_Available_and_gen_Message_if_not('AnalogScanner', 'https://github.com/merose/AnalogScanner/archive/master.zip') == False:  # v1.01 (entfallen)
+    DestName = Path + DestName_for_ZIP  # v1.01
+    if not __Download_File('https://github.com/merose/AnalogScanner/archive/master.zip', DestName):  # v1.01
+        return fn_return_value  # v1.01
     # Unzip
-    if not M30.UnzipAFile(DestName, Path):
+    try:  # v1.01
+        if not M30.UnzipAFile(DestName, Path):  # v1.01
+            return fn_return_value
+        # M30.F_shellExec('powershell curl "' + 'https://github.com/merose/AnalogScanner/archive/master.zip" -o:' + DestName + '"')  # v1.01 (entfallen)
+    # if not M30.UnzipAFile(DestName, Path):  # v1.01 (entfallen)
+    except (zipfile.BadZipFile, OSError) as ex:  # v1.01
+        P01.MsgBox(M09.Get_Language_Str('Fehler beim entpacken der ZIP-Datei:') + vbCr + '  \'' + DestName + '\'' + vbCr + str(ex), vbCritical, M09.Get_Language_Str('Fehler: Zip-Datei konnte nicht entpackt werden'))  # v1.01
         return fn_return_value
         # Wenn die Datei bereits existiert, dann wird eine Windows Meldung angezeigt
     if Dir(Path + ExtractedDirName, vbDirectory) == '':
@@ -106,8 +145,12 @@ def __Make_Sure_that_GitHub_Library_Exists(Expected_DirName, ExpectedFilesLst):
         #Name(Path + ExtractedDirName + Expected_DirName)
         # VB2PY (UntranslatedCode) On Error GoTo 0
         if Dir(Path + Expected_DirName, vbDirectory) == '':
-            # VB2PY (UntranslatedCode) GoTo Error_Rename
-            pass
+            # pass  # v1.01 (entfallen)
+            try:  # v1.01
+                os.rename(Path + ExtractedDirName, Path + Expected_DirName)       # GitHub nennt den Ordner AnalogScanner-master: sonst wird bei jedem Aufruf wieder geladen  # v1.01
+            except OSError as ex:  # v1.01
+                P01.MsgBox(M09.Get_Language_Str('Fehler beim umbenennen des Verzeichnisses') + vbCr + '  \'' + Path + ExtractedDirName + '\'' + vbCr + str(ex), vbCritical, M09.Get_Language_Str('Fehler beim umbenennen'))  # v1.01
+                return fn_return_value  # v1.01
     fn_return_value = True
     # VB2PY (UntranslatedCode) On Error Resume Next
     Kill(DestName)
@@ -138,8 +181,12 @@ def __Test_Download_Exe():
     M30.UnzipAFile('C:\\Temp\\TestDownload.zip', 'C:\\Temp\\TestUnZip')
 
 def Make_Sure_that_AnalogScanner_Library_Exists():
-    fn_return_value = None
+    # fn_return_value = None  # v1.01 (entfallen)
+    fn_return_value = False  # v1.01
     #------------------------------------------------------------------------
+    import proggen.M28_Diverse as M28  # v1.01
+    if M28.Is_PlatformIO():                                  # PlatformIO holt die Bibliothek selbst (lib_deps in der platformio.ini), im Ordner der IDE gibt es sie nicht  # v1.01
+        return True  # v1.01
     fn_return_value = __Make_Sure_that_GitHub_Library_Exists('AnalogScanner', 'AnalogScanner.cpp AnalogScanner.h')
     return fn_return_value
 

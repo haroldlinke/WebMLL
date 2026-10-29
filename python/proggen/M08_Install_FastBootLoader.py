@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-28) - M08_Install_FastBootLoader.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M08_Install_FastBootLoader.py
+# Path:           proggen/M08_Install_FastBootLoader.py
+# Version:        1.01
+# Last Update:    2026-10-28
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-28  M02a.Get_BoardTyp und M02a.Get_SrcDirInLib (standen faelschlich bei M02); der nicht uebernommene Dialog meldet sich mit einem Hinweis statt abzustuerzen
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         M08 Fast_ARDUINO
@@ -219,7 +231,8 @@ def Create_WriteFastBootloader_cmd(SrcDir):
     # Standard Optiboot bootloader
     #Print #fp, "   ""-Uflash:w:" & GetShortPath(SrcDir & "optiboot_atmega328_Ver108.1.hex") & ":i"" ^"
     # 08.12.23:
-    VBFiles.writeText(fp, '   "-Uflash:w:' + M08.GetShortPath(M02.Get_SrcDirInLib() + 'ArduinoISP\\') + '\\%filename%' + ':i" ^', '\n')
+    # VBFiles.writeText(fp, '   "-Uflash:w:' + M08.GetShortPath(M02.Get_SrcDirInLib() + 'ArduinoISP\\') + '\\%filename%' + ':i" ^', '\n')  # v1.01 (entfallen)
+    VBFiles.writeText(fp, '   "-Uflash:w:' + M08.GetShortPath(M02a.Get_SrcDirInLib() + 'ArduinoISP\\') + '\\%filename%' + ':i" ^', '\n')  # v1.01
     # 08.12.23:
     VBFiles.writeText(fp, '   -Ulock:w:0x0F:m ^', '\n')
     VBFiles.writeText(fp, '   -Uhfuse:w:0xDE:m', '\n')
@@ -286,10 +299,15 @@ def Install_FastBootloader():
     if M25.Page_ID != 'DCC' and M25.Page_ID != 'Selectrix'  and M25.Page_ID != 'LNet':
         P01.MsgBox(M09.Get_Language_Str('Die schnelle Bootloader kann nur von einer DCC, LNet oder Selectrix Seite aus installiert werden.'), vbInformation, M09.Get_Language_Str('Falsche Seite zum aktualisieren des Bootloaders ausgewählt'))
         return
-    if M02.Get_BoardTyp() != M02.HT_AM328:
+    # if M02.Get_BoardTyp() != M02.HT_AM328:  # v1.01 (entfallen)
+    if M02a.Get_BoardTyp() != M02.HT_AM328:  # v1.01
         # 08.12.23: Juergen
         P01.MsgBox(M09.Get_Language_Str('Der schnelle Bootloader kann nur für Arduino installiert werden.'), vbInformation, M09.Get_Language_Str('Falsche Plattform zum Aktualisieren des Bootloaders ausgewählt'))
         return
+    # Der schnelle Bootloader ist in der Webversion noch nicht umgesetzt: BootJumper_Form (Dialog fuer die Jumper) ist nur ein Geruest ohne Oberflaeche, das Schreiben
+    # mit avrdude und ArduinoISP laeuft ueber eine Windows-Stapeldatei. Bis dahin eine Meldung statt eines Absturzes (siehe HOC 2.49).
+    P01.MsgBox(M09.Get_Language_Str('Der schnelle Bootloader lässt sich in der Webversion noch nicht installieren (der Dialog für die Jumper und das Schreiben mit avrdude sind noch nicht übernommen). Bitte dafür das Excel-Programm benutzen.'), vbInformation, M09.Get_Language_Str('Schneller Bootloader'))  # v1.01
+    return  # v1.01
     Res = BootJumper_Form.ShowDialog
     time.sleep(1000)
     if Res:

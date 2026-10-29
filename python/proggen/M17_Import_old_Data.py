@@ -1,13 +1,15 @@
-# Datei-Version: 1.01 (2026-10-17) - M17_Import_old_Data.py
+# Datei-Version: 1.03 (2026-10-28) - M17_Import_old_Data.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M17_Import_old_Data.py
 # Path:           proggen/M17_Import_old_Data.py
-# Version:        1.01
-# Last Update:    2026-10-17
+# Version:        1.03
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-17  Remove_Selection_in_Sheet: Sh.Visible in (xlSheetVisible, True) (Visible liefert True/False); davor Original-Port, nicht erfasst
+#   1.02  2026-10-28  M02a importieren: Get_MobaUserDir steht in M02a_Public
+#   1.03  2026-10-28  Get_MobaUserDir steht in M02a_Public (3 Stellen)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -51,6 +53,7 @@ from vb2py.vbdebug import *
 from vb2py.vbconstants import *
 
 import proggen.M02_Public as M02
+import proggen.M02a_Public as M02a  # v1.02
 import proggen.M02_global_variables as M02GV
 import proggen.M03_Dialog as M03
 import proggen.M06_Write_Header as M06
@@ -122,7 +125,8 @@ def Select_and_Open_Old_Version(OldProgGeneratorFilename):
     # Select the old version of the Prog_Generator and open it
     # 19.01.24 Juergen only ask user for previous filename if OldProgGeneratorFilename isn't given
     if OldProgGeneratorFilename == '':
-        path = M02.Get_MobaUserDir()
+        # path = M02.Get_MobaUserDir()  # v1.03 (entfallen)
+        path = M02a.Get_MobaUserDir()  # v1.03
     else:
         path = GetPathOnly(OldProgGeneratorFilename)
     M08.SafeChDriveAndDir(path)
@@ -241,7 +245,8 @@ def Old_Version_exists():
     ActDir = String()
     #-----------------------------------------------
     ActDir = M30.FileName(PG.ThisWorkbook.Path)
-    path = M02.Get_MobaUserDir() + 'MobaLedLib_*'
+    # path = M02.Get_MobaUserDir() + 'MobaLedLib_*'  # v1.03 (entfallen)
+    path = M02a.Get_MobaUserDir() + 'MobaLedLib_*'  # v1.03
     Name = Dir(path, vbDirectory)
     while Name != '':
         if M30.FileName(Name) != ActDir:
@@ -249,7 +254,8 @@ def Old_Version_exists():
             return fn_return_value
         Name = Dir()
     # Since Version 1.9.6 the data are stored in the directory "MobaLedlib" and use the prefix "Ver_"  ' 26.10.20:
-    path = M02.Get_MobaUserDir() + 'MobaLedLib/Ver_*'
+    # path = M02.Get_MobaUserDir() + 'MobaLedLib/Ver_*'  # v1.03 (entfallen)
+    path = M02a.Get_MobaUserDir() + 'MobaLedLib/Ver_*'  # v1.03
     Name = Dir(path, vbDirectory)
     while Name != '':
         if M30.FileName(Name) != ActDir:

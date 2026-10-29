@@ -1,3 +1,16 @@
+# Datei-Version: 1.02 (2026-10-28) - M39_Simulator.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M39_Simulator.py
+# Path:           proggen/M39_Simulator.py
+# Version:        1.02
+# Last Update:    2026-10-28
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-28  M02a importieren: Get_Ardu_LibDir steht in M02a_Public
+#   1.02  2026-10-28  Get_Ardu_LibDir steht in M02a_Public
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -40,6 +53,7 @@ from vb2py.vbdebug import *
 from vb2py.vbconstants import *
 
 import proggen.M02_Public as M02
+import proggen.M02a_Public as M02a  # v1.01
 import proggen.M02_global_variables as M02GV
 import proggen.M03_Dialog as M03
 import proggen.M06_Write_Header as M06
@@ -536,7 +550,8 @@ def __Create_Compile_Script():
     VBFiles.writeText(fp, 'set packagePath=%USERPROFILE%\\' + M02.AppLoc_Ardu, '\n')
     VBFiles.writeText(fp, 'set toolPath=' + M30.FilePath(M08.Find_ArduinoExe()) + 'hardware\\tools\\avr\\bin', '\n')
     VBFiles.writeText(fp, 'set platformPath=' + M30.FilePath(M08.Find_ArduinoExe()) + 'hardware\\arduino\\avr', '\n')
-    VBFiles.writeText(fp, 'set libraryPath=' + M08.GetShortPath(M30.DelLast(M02.Get_Ardu_LibDir())), '\n')
+    # VBFiles.writeText(fp, 'set libraryPath=' + M08.GetShortPath(M30.DelLast(M02.Get_Ardu_LibDir())), '\n')  # v1.02 (entfallen)
+    VBFiles.writeText(fp, 'set libraryPath=' + M08.GetShortPath(M30.DelLast(M02a.Get_Ardu_LibDir())), '\n')  # v1.02
     VBFiles.writeText(fp, '"%toolPath%/avr-g++" -c -g -Os -Wall -std=gnu++11 -fpermissive -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics -Wno-error=narrowing -MMD -flto -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=10813 -DARDUINO_AVR_NANO -DARDUINO_ARCH_AVR "-I%platformPath%\\cores\\\\arduino" "-I%platformPath%\\variants\\\\eightanaloginputs"  "-I%libraryPath%\\MobaLedLib\\src"  "%scriptDir%Configuration.cpp" -o "%scriptDir%Configuration.cpp.o"', '\n')
     VBFiles.writeText(fp, 'if errorlevel 1 goto :error', '\n')
     VBFiles.writeText(fp, '"%toolPath%/avr-gcc" -Wall -Os -g -flto -fuse-linker-plugin -Wl,--gc-sections -mmcu=atmega328p -o "%scriptDir%Configuration.elf" "%scriptDir%Configuration.cpp.o" -lm', '\n')

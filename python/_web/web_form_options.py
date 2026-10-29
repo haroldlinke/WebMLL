@@ -1,4 +1,4 @@
-# Datei-Version: 1.10 (2026-10-28) - web_form_options.py
+# Datei-Version: 1.11 (2026-10-28) - web_form_options.py
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -103,9 +103,11 @@ async def _options_async(spec: dict, st: dict):
 
             pico_rows = []                                             # Knoepfe nur fuer den Pico (Firmware installieren)  # v1.09
             pico_values = list(spec["pages"]["left"].get("pico_values") or [])  # v1.09
+            fw_avail = bool(spec["pages"]["left"].get("firmware_available"))        # nur mit mindestens einer *.uf2 im Ordner MobaLedLib/firmware  # v1.11
 
             def update_pico_buttons():  # v1.09
-                show = vals.get("L") in pico_values  # v1.09
+                # show = vals.get("L") in pico_values  # v1.11 (entfallen)
+                show = vals.get("L") in pico_values and fw_avail  # v1.11
                 for r_ in pico_rows:  # v1.09
                     r_.set_visibility(show)  # v1.09
 
@@ -119,7 +121,8 @@ async def _options_async(spec: dict, st: dict):
                         ui.label(b["label"]).classes("text-grey-8").style("white-space: pre-line")
                 if b.get("pico_only"):  # v1.09
                     pico_rows.append(row_el)  # v1.09
-                    row_el.set_visibility(vals.get("L") in pico_values)  # v1.09
+                    # row_el.set_visibility(vals.get("L") in pico_values)  # v1.11 (entfallen)
+                    row_el.set_visibility(vals.get("L") in pico_values and fw_avail)  # v1.11
 
             ide_tabs = []                                              # Reiter, die es nur mit der ARDUINO IDE gibt (nicht mit PlatformIO)  # v1.07
 
@@ -328,7 +331,9 @@ def make_class(Base):
             pages = {"left": {"radios": self._radios("_L"), "subtitle": subtitle, "auto_text": auto_text,  # v1.08
                               # "esp32_value": esp32_value, "esp32_lib": bool(M37.ESP32_Lib_Installed())}}  # v1.09 (entfallen)
                               "esp32_value": esp32_value, "esp32_lib": bool(M37.ESP32_Lib_Installed()),  # v1.09
-                              "pico_values": [d["value"] for rb, d in self.radiobuttons.items() if rb.startswith("PICO") and rb.endswith("_L")]}}  # v1.09
+                              # "pico_values": [d["value"] for rb, d in self.radiobuttons.items() if rb.startswith("PICO") and rb.endswith("_L")]}}  # v1.11 (entfallen)
+                              "pico_values": [d["value"] for rb, d in self.radiobuttons.items() if rb.startswith("PICO") and rb.endswith("_L")],  # v1.11
+                              "firmware_available": self._firmware_available()}}  # v1.11
             if not first_page_only:
                 if M25.Page_ID != "CAN":
                     # Wie im Excel-Programm (UpdateDCCSubPage): Der Reiter DCC Arduino gehoert nur zu einem Nano; bei Pico und ESP32 ist er ausgeblendet
@@ -442,6 +447,16 @@ def make_class(Base):
             else:  # v1.05
                 P01.MsgBox(tr("Die Regel konnte nicht eingerichtet werden.") + "\n\n" + text, vbCritical, "PlatformIO")  # v1.05
 
+        def _firmware_available(self):  # v1.11
+            """Liegt im Ordner MobaLedLib/firmware (Sketchbook-Ordner) mindestens eine Datei *.uf2?"""  # v1.11
+            try:  # v1.11
+                import headless.headless_pico as HP  # v1.11
+                import proggen.M02a_Public as M02a  # v1.11
+                return bool(HP.has_firmware(M02a.Get_FirmwareDir()))  # v1.11
+            except Exception:                                                          # noqa: BLE001  # v1.11
+                logger.debug("Firmware-Ordner nicht geprueft", exc_info=True)  # v1.11
+                return False  # v1.11
+
         def _web_pico_firmware(self):  # v1.09
             """Knopf Firmware installieren (nur Pico): Firmware und Version waehlen, dann die UF2-Datei auf den Pico schreiben (Bootmodus-Laufwerk RPI-RP2 oder
             ueber den seriellen Anschluss in den Bootmodus versetzen, wie uf2conv.py im Excel-Programm)."""
@@ -450,7 +465,8 @@ def make_class(Base):
             from _web import web_form_firmware as WFF  # v1.09
             from _web.web_i18n import current_language  # v1.09
             title = tr("Firmware installieren")  # v1.09
-            folder = M02a.Get_FirmwareDir()  # v1.09
+            # folder = M02a.Get_FirmwareDir()  # v1.11 (entfallen)
+            folder = HP.resolve_firmware_dir(M02a.Get_FirmwareDir())                      # auch Firmware statt firmware (Linux)  # v1.11
             groups = HP.scan_firmware(folder, HP.language_id(current_language()))  # v1.09
             if not groups:  # v1.09
                 P01.MsgBox(tr("Im Ordner {ordner} gibt es keine Firmware-Dateien (*.uf2). Die fertigen Firmware-Dateien gehören in diesen Ordner (Unterordner MobaLedLib/firmware des Sketchbook-Ordners).", ordner=folder),  # v1.09

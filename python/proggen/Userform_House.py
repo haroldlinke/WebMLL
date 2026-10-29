@@ -1,3 +1,15 @@
+# Datei-Version: 1.01 (2026-10-28) - Userform_House.py
+# ----------------------------------------------------------------------------------------------
+# Name:           Userform_House.py
+# Path:           proggen/Userform_House.py
+# Version:        1.01
+# Last Update:    2026-10-28
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
+#   1.01  2026-10-28  DelLast steht in M30_Tools, nicht in M02_Public
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         Write header
@@ -432,7 +444,8 @@ class UserForm_House:
         with_0 = ct
         if not IsNumeric(with_0.Value):
             while Len(with_0.Value) > 0 and not IsNumeric(with_0.Value):
-                with_0.Value = M02.DelLast(with_0.Value)
+                # with_0.Value = M02.DelLast(with_0.Value)  # v1.01 (entfallen)
+                with_0.Value = M30.DelLast(with_0.Value)  # v1.01
         else:
             if P01.val(with_0.Value) < MinVal:
                 with_0.Value = MinVal
