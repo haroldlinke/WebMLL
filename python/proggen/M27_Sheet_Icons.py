@@ -214,10 +214,10 @@ def FindMacro_and_Add_Icon_and_Name(MacroStr, Row, Sh, NameOnly=False):
         if InStr(MacroStr, 'Pattern') > 0 or MacroStr.startswith("//"):
             OldEvents = P01.Application.EnableEvents
             P01.Application.EnableEvents = False
-            if MacroStr.startswith("//"):
-                Sh.CellDict[Row, M25.LanName_Col] = 'Pico Config'
-            else:
-                Sh.CellDict[Row, M25.LanName_Col] = M09.Get_Language_Str('Muster') + ' Pattern_Configurator'
+            # if MacroStr.startswith("//"): # remove in V2.51
+                # Sh.CellDict[Row, M25.LanName_Col] = 'Pico Config'
+            # else:
+            Sh.CellDict[Row, M25.LanName_Col] = M09.Get_Language_Str('Muster') + ' Pattern_Configurator' # V2.51
             P01.Application.EnableEvents = OldEvents
             if NameOnly == False:
                 Del_one_Icon_in_IconCol(Row, Sh)

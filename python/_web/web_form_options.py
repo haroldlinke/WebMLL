@@ -1,4 +1,4 @@
-# Datei-Version: 1.11 (2026-10-28) - web_form_options.py
+# Datei-Version: 1.12 (2026-10-28) - web_form_options.py
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -92,7 +92,8 @@ async def _options_async(spec: dict, st: dict):
     vals = dict(st)
 
     with wd._bridge["client"]:
-        with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[900px] max-w-full"):
+        # with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[900px] max-w-full"):  # v1.12 (entfallen)
+        with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[900px] max-w-full").style("max-height: 96vh; overflow-y: auto"):    # auf kleinen Bildschirmen (Laptop) scrollen, sonst fehlen die unteren Boards (Pico)  # v1.12
             ui.label(spec["title"]).classes("text-h6")
 
             def collect():
@@ -185,10 +186,12 @@ async def _options_async(spec: dict, st: dict):
                         other = g["b"] if which == "a" else g["a"]
                         if other is not None:
                             other.value = None
-                    g["a"] = ui.radio(first, value=vals[key] if vals[key] in first else None)
+                    # g["a"] = ui.radio(first, value=vals[key] if vals[key] in first else None)  # v1.12 (entfallen)
+                    g["a"] = ui.radio(first, value=vals[key] if vals[key] in first else None).props("dense")  # v1.12
                     g["a"].on_value_change(lambda e: pick("a", e))
                     ui.label(p["subtitle"]).classes("text-caption q-ml-md")
-                    g["b"] = ui.radio(second, value=vals[key] if vals[key] in second else None) if second else None
+                    # g["b"] = ui.radio(second, value=vals[key] if vals[key] in second else None) if second else None  # v1.12 (entfallen)
+                    g["b"] = ui.radio(second, value=vals[key] if vals[key] in second else None).props("dense") if second else None  # v1.12
                     if g["b"] is not None:
                         g["b"].on_value_change(lambda e: pick("b", e))
                     if not second:

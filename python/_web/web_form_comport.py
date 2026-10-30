@@ -1,15 +1,16 @@
-# Datei-Version: 1.04 (2026-10-26) - web_form_comport.py
+# Datei-Version: 1.05 (2026-10-28) - web_form_comport.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_comport.py
 # Path:           _web/web_form_comport.py
-# Version:        1.04
-# Last Update:    2026-10-26
+# Version:        1.05
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.02  2026-10-15  Web-Ersatz fuer Select_COM_Port_Userform (Original, nicht erfasst)
 #   1.03  2026-10-21  Update_SpinButton: ohne offenen Dialog den Zeitgeber der blinkenden LEDs beenden (stand 10 Minuten lang auf COM6 und blockierte esptool)
 #   1.04  2026-10-26  Unbekannte Ports anzeigen ist unter Linux und macOS nur noch an, wenn kein bekannter Anschluss (zum Beispiel ttyUSB0) gefunden wird
+#   1.05  2026-10-28  neu angeschlossenes Geraet wird gewaehlt (0 = keine Vorgabe, Anschluss am Ende der Liste); Protokollzeile bei Aenderung der Anschlussliste
 # ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/Select_COM_Port_Userform.py (Auswahl des Arduino/Pico-Ports).
 
@@ -146,13 +147,15 @@ def make_class(Base):
                 return [], "", ""
             spin = self._sel_index
             spin_max = len(LocalComPorts) - 1
-            if DefaultPort != " ":
+            # if DefaultPort != " ":  # v1.05 (entfallen)
+            if DefaultPort not in (" ", 0, "", None):                       # 0 heisst 'keine Vorgabe' (so ruft der Zeitgeber der blinkenden LEDs auf): sonst wurde ein neu angeschlossenes Geraet nie gewaehlt  # v1.05
                 for i in range(len(LocalComPorts)):
                     if DefaultPort == LocalComPorts[i]:
                         spin = i
             else:
                 old = ns["OldL_ComPorts"]
                 if M30.isInitialised(old) and len(LocalComPorts) > len(old):
+                    spin = len(LocalComPorts) - 1                           # ein Anschluss ist dazugekommen und steht am Ende: der neue wird gewaehlt  # v1.05
                     for ix in range(len(old)):
                         if LocalComPorts[ix] != old[ix]:
                             spin = ix
@@ -166,6 +169,13 @@ def make_class(Base):
             M07.CheckCOMPort = "999" if port == " " else port
             self.Com_Port_No = spin
             self._sel_index = spin
+            old_ = ns["OldL_ComPorts"]  # v1.05
+            if not M30.isInitialised(old_) or list(old_) != list(LocalComPorts):  # v1.05
+                try:                                                        # nur wenn sich die Liste aendert: die Zeile im Protokoll zeigt, was das Programm sieht (Anschluesse, Board, unbekannte Ports)  # v1.05
+                    import proggen.M02a_Public as _M02a  # v1.05
+                    logger.info("Anschluesse: %s (Board %s, unbekannte Ports anzeigen: %s, gewaehlt: %s)", list(LocalComPorts), _M02a.Get_BoardTyp(), self._show_unknown, port)  # v1.05
+                except Exception:                                           # noqa: BLE001  # v1.05
+                    logger.debug("Anschlussliste nicht protokolliert", exc_info=True)  # v1.05
             ns["OldL_ComPorts"] = LocalComPorts
             return LocalComPorts, port, M30.DelLast("".join(p + " " for p in LocalComPorts)) if LocalComPorts else ""
 

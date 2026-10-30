@@ -1,8 +1,8 @@
-# Datei-Version: 1.02 (2026-10-28) - M07_COM_Port_New.py
+# Datei-Version: 1.03 (2026-10-28) - M07_COM_Port_New.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port_New.py
 # Path:           proggen/M07_COM_Port_New.py
-# Version:        1.02
+# Version:        1.03
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -10,6 +10,7 @@
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-28  Hinweis 'PICO im Bootmodus gefunden' funktioniert: Test_IsPicoInBootMode war ein leerer Rumpf, AskBootPico wurde nie auf True gesetzt
 #   1.02  2026-10-28  M12 im Aufruf importieren (nicht am Anfang des Moduls)
+#   1.03  2026-10-28  Zeitgeber der blinkenden LEDs: Pico/ESP32 unter Linux und macOS nicht jede Sekunde oeffnen; Pruefung des Bootmodus darf den Zeitgeber nicht beenden
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -183,6 +184,13 @@ __PRINT_DEBUG = False
 __CheckCOMPort_Res = Long()
 on_ledon = False
 PicoWL = False
+_Dialog_for_Arduino = True                                    # der Dialog gehoert zu einem Arduino (blinkende LEDs): nur dann wird der Anschluss jede Sekunde geoeffnet und geprueft  # v1.03
+
+
+def _Probe_Port_by_Opening():  # v1.03
+    """Soll der Zeitgeber den gewaehlten Anschluss jede Sekunde oeffnen (DetectArduino: DTR umschalten, Antwort abwarten)? Fuer einen Arduino ja; fuer Pico und ESP32 unter
+    Linux und macOS nein: Das Oeffnen und Schliessen jede Sekunde stoert deren USB-Anschluss (Pico: verschwindet, bis man ihn neu einsteckt; ESP32: Zugriff verweigert)."""
+    return bool(_Dialog_for_Arduino) or P01.checkplatform("Windows") is True  # v1.03
 
 def __Blink_Arduino_LED():
     global __CheckCOMPort_Res, on_ledon
@@ -213,7 +221,11 @@ def __Blink_Arduino_LED():
         # Rescan COM Ports
         if not M07.CheckCOMPort.startswith("IP:"):
             if M07.CheckCOMPort != "999":
-                __CheckCOMPort_Res, DeviceSignatur = M07.DetectArduino(M07.CheckCOMPort, BaudRate, HWVersion, SWMajorVersion, SWMinorVersion, DeviceSignatur, 1, PrintDebug= __PRINT_DEBUG)
+                # __CheckCOMPort_Res, DeviceSignatur = M07.DetectArduino(M07.CheckCOMPort, BaudRate, HWVersion, SWMajorVersion, SWMinorVersion, DeviceSignatur, 1, PrintDebug= __PRINT_DEBUG)  # v1.03 (entfallen)
+                if _Probe_Port_by_Opening():  # v1.03
+                    __CheckCOMPort_Res, DeviceSignatur = M07.DetectArduino(M07.CheckCOMPort, BaudRate, HWVersion, SWMajorVersion, SWMinorVersion, DeviceSignatur, 1, PrintDebug= __PRINT_DEBUG)  # v1.03
+                else:  # v1.03
+                    __CheckCOMPort_Res = 1                                   # Pico, ESP32 (Linux, macOS): der Anschluss steht in der Liste, mehr wird nicht geprueft  # v1.03
             else:
                 __CheckCOMPort_Res = - 9
             #*HLApplication.Cursor = xlNorthwestArrow
@@ -231,7 +243,11 @@ def __Blink_Arduino_LED():
                 F00.Select_COM_Port_UserForm.Show_Status(False, M07.CheckCOMPort_Txt)
         else:
             F00.Select_COM_Port_UserForm.Show_Status(False, M07.CheckCOMPort_Txt)        
-        Test_IsPicoInBootMode()
+        # Test_IsPicoInBootMode()  # v1.03 (entfallen)
+        try:                                                               # eine Ausnahme darf den Zeitgeber nicht beenden: er aktualisiert auch die Liste der Anschluesse  # v1.03
+            Test_IsPicoInBootMode()  # v1.03
+        except Exception:                                              # noqa: BLE001  # v1.03
+            logging.getLogger(__name__).exception("Pruefung auf einen Pico im Bootmodus fehlgeschlagen")  # v1.03
         #*HL Sleep(10)
         P01.DoEvents()
         if M07.CheckCOMPort.startswith("IP:"):
@@ -255,10 +271,12 @@ def __Blink_Arduino_LED():
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: ComPort_IO - ByRef 
 def Select_Arduino_w_Blinking_LEDs_Dialog(Caption, Title, Text, Picture, IsArduino, Buttons, ComPort_IO):
-    global __CheckCOMPort_Res, PicoWL
+    # global __CheckCOMPort_Res, PicoWL  # v1.03 (entfallen)
+    global __CheckCOMPort_Res, PicoWL, _Dialog_for_Arduino  # v1.03
     fn_return_value = None
     Res = Long()
     hint = String()
+    _Dialog_for_Arduino = bool(IsArduino)  # v1.03
     #--------------------------------------------------------------------------------------
     # This function is called if several Arduinos have been detected
     # or if the COM port of the actual Arduino is buzy
