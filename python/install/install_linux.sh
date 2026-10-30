@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.05 (2026-10-27) - install_linux.sh
+# Datei-Version: 1.06 (2026-10-30) - install_linux.sh
 # Installiert die Web-Oberflaeche von webMobaLedLib auf einem Linux-Desktop (Debian, Ubuntu, Linux Mint, Fedora, Arch ...):
 # im eigenen Benutzerkonto, ohne Systemdienst. Es entsteht eine Python-Umgebung im Projektordner (venv_web), ein Starter im
 # Anwendungsmenue und ein Symbol auf dem Schreibtisch. (Raspberry Pi als Dienst: pi/install_pi.sh)
@@ -52,22 +52,22 @@ esac
 echo " Projektordner: $APPDIR"
 echo
 
-# --- 1. Systempakete (Python mit venv und pip, curl und xz fuer den Download der IDE)
+# --- 1. Systempakete (Python mit venv und pip, curl und xz fuer den Download der IDE, git: PlatformIO holt die Plattform des Raspberry Pi Pico aus GitHub)
 SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo"
 install_packages() {
   if command -v apt-get >/dev/null 2>&1; then                      # Debian, Ubuntu, Linux Mint
     local missing=() p
-    for p in python3 python3-venv python3-pip curl xz-utils; do dpkg -s "$p" >/dev/null 2>&1 || missing+=("$p"); done
+    for p in python3 python3-venv python3-pip curl xz-utils git; do dpkg -s "$p" >/dev/null 2>&1 || missing+=("$p"); done
     if [ ${#missing[@]} -gt 0 ]; then
       echo "Systempakete installieren (sudo-Passwort wird abgefragt): ${missing[*]}"
       $SUDO apt-get update && $SUDO apt-get install -y "${missing[@]}" || return 1
     fi
   elif command -v dnf >/dev/null 2>&1; then                         # Fedora
-    $SUDO dnf install -y python3 python3-pip curl xz || return 1
+    $SUDO dnf install -y python3 python3-pip curl xz git || return 1
   elif command -v pacman >/dev/null 2>&1; then                      # Arch, Manjaro
-    $SUDO pacman -S --needed --noconfirm python python-pip curl xz || return 1
+    $SUDO pacman -S --needed --noconfirm python python-pip curl xz git || return 1
   elif command -v zypper >/dev/null 2>&1; then                      # openSUSE
-    $SUDO zypper install -y python3 python3-pip curl xz || return 1
+    $SUDO zypper install -y python3 python3-pip curl xz git || return 1
   else
     echo "Paketverwaltung nicht erkannt: bitte Python 3.10+, venv, pip, curl und xz selbst installieren."
   fi

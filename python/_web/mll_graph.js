@@ -1,4 +1,5 @@
-// Datei-Version: 1.10 (2026-10-29) - mll_graph.js (gilt fuer webMobaLedLib 2.47)
+// Datei-Version: 1.11 (2026-10-30) - mll_graph.js (gilt fuer webMobaLedLib 2.57)
+// 1.11: Symbole mit hoher Aufloesung (icons_gross, 200 Pixel): iconSrc nimmt n.icon_large, wenn die Anzeige mehr als 64 Geraetepixel braucht (Kette 48 Pixel, Anlage halbe Kaestchengroesse, mal devicePixelRatio), sonst das kleine Symbol
 // 1.10: Hintergrundbild ohne Pillow auf dem Server: pickImage waehlt die Datei, loadImageFile verkleinert sie im Browser (Canvas, hoechstens 2048 Pixel; JPEG, mit Transparenz PNG) und schickt sie per POST an /mll_view_upload; danach meldet emitEvent('mll_graph_image', {token}) oder {error}
 // 1.09: Mehrfachauswahl in Ketten- und Anlagenansicht (Strg-Klick, in der Anlage Umschalt-Ziehen mit Rahmen), mehrere Kaestchen gemeinsam ziehen (place_many), Ausrichten im Kontextmenue (align), Loeschen mehrerer Kaestchen (delete mit rows), Strg+Z meldet undo auch in der Anlage
 // 1.08: Anlagenansicht: Klick und Doppelklick auf ein Kaestchen kamen nicht an (setPointerCapture bei jedem Druck leitete das Klickereignis auf den Behaelter um): Capture erst, wenn wirklich gezogen wird; nach dem Ziehen wird das Kaestchen markiert; Meldung mll_graph traegt die Umschalt-Taste (shift)
@@ -84,9 +85,16 @@
     return String(s === null || s === undefined ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
+  // Welche Datei fuer das Symbol: das grosse (icons_gross, 200 Pixel), wenn die Anzeige mit cssPx Pixeln auf diesem Bildschirm mehr als 64 Geraetepixel braucht
+  function iconSrc(n, cssPx, dpr) {
+    if (!n.icon) return "";
+    var ratio = dpr || (typeof window !== "undefined" && window.devicePixelRatio) || 1;
+    return (n.icon_large && cssPx * ratio > 64) ? n.icon_large : n.icon;
+  }
+
   function nodeHtml(n, selectedRow, movable) {
     var cls = "mll-g-node" + (n.row === selectedRow ? " mll-sel" : "");
-    var icon = n.icon ? '<img class="mll-g-icon" src="' + esc(n.icon) + '" alt="">' : '<span class="mll-g-noicon">?</span>';
+    var icon = n.icon ? '<img class="mll-g-icon" src="' + esc(iconSrc(n, 48)) + '" alt="">' : '<span class="mll-g-noicon">?</span>';
     return '<div class="' + cls + '"' + (movable ? ' draggable="true"' : "") + ' data-row="' + esc(n.row) + '" data-id="' + esc(n.id) + '" title="' + esc(n.tooltip || "") + '">' +
       '<span class="mll-g-pin mll-g-in"></span>' + icon +
       '<div class="mll-g-name">' + esc(n.label) + '</div>' +
@@ -129,7 +137,7 @@
   function plantNodeHtml(item, p, selectedRow) {
     var n = item.n, pos = (p.positions || {})[String(n.row)] || [0, 0], s = p.size || 90;
     var cls = "mll-p-node" + (n.row === selectedRow ? " mll-sel" : "");
-    var icon = n.icon ? '<img class="mll-p-icon" src="' + esc(n.icon) + '" alt="" draggable="false" style="width:' + Math.round(s * 0.5) + 'px;height:' + Math.round(s * 0.5) + 'px">' : "";
+    var icon = n.icon ? '<img class="mll-p-icon" src="' + esc(iconSrc(n, Math.round(s * 0.5))) + '" alt="" draggable="false" style="width:' + Math.round(s * 0.5) + 'px;height:' + Math.round(s * 0.5) + 'px">' : "";
     return '<div class="' + cls + '" data-row="' + esc(n.row) + '" data-id="' + esc(n.id) + '" data-inchain="' + (item.inChain ? "1" : "0") + '" title="' + esc(n.tooltip || "") +
       '" style="left:' + pos[0] + 'px;top:' + pos[1] + 'px;width:' + s + 'px;font-size:' + Math.max(8, Math.round(s * 0.13)) + 'px">' + icon +
       '<div class="mll-p-name">' + esc(n.label) + '</div>' + (n.led_text ? '<div class="mll-p-leds">' + esc(n.led_text) + '</div>' : "") + '</div>';
@@ -844,7 +852,7 @@
     return isNaN(row) ? null : {row: row, dbl: !!dbl, shift: !!(e && e.shiftKey)};
   }
 
-  var api = {version: "1.10", css: CSS, escapeHtml: esc, render: render, update: update, select: select, hit: hit, install: install, emitHit: emitHit,
+  var api = {version: "1.11", iconSrc: iconSrc, css: CSS, escapeHtml: esc, render: render, update: update, select: select, hit: hit, install: install, emitHit: emitHit,
              renderTree: renderTree, updateTree: updateTree, treeHit: treeHit, installTree: installTree,
              fitSize: fitSize, loadImageFile: loadImageFile, uploadImage: uploadImage, pickImage: pickImage, plantHtml: plantHtml, installPlant: installPlant, multiRows: multiRows, setMulti: setMulti, toggleMulti: toggleMulti, applyMulti: applyMulti, fitView: fitView, zoomBy: zoomBy, zoomAt: zoomAt, applyView: applyView, updateLines: updateLines,
              fit: function (cid) { var el = (typeof document !== "undefined") ? document.getElementById(cid) : null; return el ? fitView(el) : false; },

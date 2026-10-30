@@ -1,9 +1,9 @@
-# Datei-Version: 2.52 (2026-10-28) - webmobaledlib.py
+# Datei-Version: 2.59 (2026-10-30) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        2.52
-# Last Update:    2026-10-28
+# Version:        2.59
+# Last Update:    2026-10-30
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -122,6 +122,13 @@
 #   2.50  2026-10-28  Nano mit PlatformIO unter Linux: kein Absturz mehr bei der Bibliothek AnalogScanner (PlatformIO holt sie selbst, mit der ARDUINO IDE Download mit Python statt powershell)
 #   2.51  2026-10-28  Anschluss-Dialog: Pico unter Linux nicht mehr jede Sekunde oeffnen, neuer Anschluss wird gewaehlt, Zeitgeber laeuft immer weiter, Protokollzeile der Anschluesse
 #   2.52  2026-10-28  Optionen: Dialog scrollt auf kleinen Bildschirmen, Boardauswahl dichter (Pico am Ende der Liste bleibt erreichbar)
+#   2.53  2026-10-30  Pico mit PlatformIO: fehlt der Git-Client, erscheint eine Meldung mit der Anleitung; install_linux.sh installiert git mit
+#   2.54  2026-10-30  Knopf Hilfe heisst Online Wiki und oeffnet das Wiki in einem neuen Browser-Tab; Knopf Git installieren (Linux, pkexec)
+#   2.55  2026-10-30  Korrektur: Fehler beim Start in 2.54 (F00 is not defined in build_page, Knopf Online Wiki)
+#   2.56  2026-10-30  Optionen: unterer Knopf und Text nicht mehr abgeschnitten; Git installieren zeigt ein Hinweisfenster (dauert mehrere Minuten)
+#   2.57  2026-10-30  Symbole in hoher Aufloesung: icons (64 Pixel) und icons_gross (200 Pixel) fuer die Grafik
+#   2.58  2026-10-30  Kette, Anlage und Tabelle zeigen die PNG-Symbole (die Formen der Tabelle heissen .bmp: es wurde die alte BMP-Datei geliefert)
+#   2.59  2026-10-30  Hilfe: Update Testversion (neuestes Release auf GitHub, auch Pre-Release, nach Rueckfrage)
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -200,20 +207,26 @@ REQUIRED_FILES = {  # v1.75
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.07", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.30 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.08", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.40 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.08", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.46 (entfallen)
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.46
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.59 (entfallen)
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.09", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.59
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.02", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.21 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.03", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.03", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.27 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.28 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.39 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.03", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.51 (entfallen)
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.03", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.51
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.03", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.53 (entfallen)
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.05", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.54 (entfallen)
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.07", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.05", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.54 (entfallen)
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.07", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.06", "proggen/M08_ARDUINO.py": "1.05", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.56 (entfallen)
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.08", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.06", "proggen/M08_ARDUINO.py": "1.05", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.56
     # "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.98 (entfallen)
     # "proggen/M06_Write_Header.py": "1.03", "proggen/M20_PageEvents_a_Functions.py": "1.03", "proggen/M18_Save_Load.py": "1.01",  # v2.03 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.12 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.03",  # v2.18 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.04", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.24 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.05", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.27 (entfallen)
-    "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.06", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.27
+    # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.06", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.54 (entfallen)
+    "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.08", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.04",  # v2.54
     "proggen/M18a_Load_PicoConfig.py": "1.01", "proggen/M17_Import_old_Data.py": "1.01",  # v1.75
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.01", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.01", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v1.99 (entfallen)
     # "proggen/M02_Public.py": "1.01", "proggen/M02a_Public.py": "1.01", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "proggen/M06_Write_Header_SW.py": "1.02", "proggen/M07_COM_Port.py": "1.02", "proggen/M09_Language.py": "1.01", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.01", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.04",  # v2.00 (entfallen)
@@ -247,7 +260,10 @@ REQUIRED_FILES = {  # v1.75
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.02", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.11", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.50 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.02", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.11", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.51 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.11", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.52 (entfallen)
-    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.12", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.52
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.12", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.54 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.13", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.56 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.14", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.57 (entfallen)
+    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.02", "_web/mll_graph.js": "1.11", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.14", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.57
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -549,6 +565,19 @@ def bind_shape(ws, shape, pos=None):
     return int(r0), int(c0)
 
 
+_large_icons: dict = {}  # v2.57
+
+
+def icon_large_url(url) -> str:  # v2.57
+    """Gegenstueck mit hoher Aufloesung (/mll_icons_gross/<Name>, 200 Pixel) zu einem Symbol /mll_icons/<Name>, wenn es die Datei gibt, sonst "". Fuer die Grafik."""  # v2.57
+    base = str(url or "").replace("\\", "/").rsplit("/", 1)[-1]  # v2.57
+    if not base:  # v2.57
+        return ""  # v2.57
+    if base not in _large_icons:  # v2.57
+        _large_icons[base] = os.path.exists(os.path.join(here, "icons_gross", base))  # v2.57
+    return f"/mll_icons_gross/{base}" if _large_icons[base] else ""  # v2.57
+
+
 def collect_icons(ws) -> dict:
     """Bild-Shapes des Blatts -> {(Zeile, Spalte): URL} (0-basiert). Die Datei muss im Ordner icons liegen."""
     import ExcelAPI.XLA_Application as X02
@@ -566,6 +595,8 @@ def collect_icons(ws) -> dict:
             if pos is None:
                 continue
             base = name.replace("\\", "/").split("/")[-1]
+            if base.lower().endswith(".bmp") and os.path.exists(os.path.join(icon_dir, base[:-4] + ".png")):  # v2.58
+                base = base[:-4] + ".png"                                    # die Formen der Tabelle heissen X.bmp (Excel-Programm, 16 x 16): im Web das PNG gleichen Namens (neue Symbole)  # v2.58
             if not os.path.exists(os.path.join(icon_dir, base)):
                 if base not in _icon_warned:
                     _icon_warned.add(base)
@@ -681,7 +712,8 @@ def toolbar_buttons():
         ("Btn_Delete_Table.png", "Lösche\nTabelle", "Tabelle löschen", F00.ClearSheet_Button_Click),
         ("Btn_New_Table.png", "Neue\nTabelle", "Neue Tabelle einfügen", F00.NewSheet_Button_Click),
         ("Btn_Options.png", "Optionen", "Optionen anzeigen", F00.Options_Button_Click),
-        ("Btn_Help.png", "Hilfe", "Hilfe aufrufen", F00.Help_Button_Click),
+        # ("Btn_Help.png", "Hilfe", "Hilfe aufrufen", F00.Help_Button_Click),  # v2.54 (entfallen)
+        ("Btn_Help.png", "Online Wiki", "Online Wiki im Webbrowser öffnen", F00.Help_Button_Click),  # v2.54
         ("Btn_Color_Row.png", "Zeilen Färben", "Zeilen entsprechend den ProgrammGenerator-Einstellungen einfärben",
          lambda: page.RowFormat_Button_click()),
     ]
@@ -880,7 +912,14 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "2.52 (2026-10-28)"  # v2.52
+VERSION = "2.59 (2026-10-30)"  # v2.59
+# VERSION = "2.58 (2026-10-30)"  # v2.59 (entfallen)
+# VERSION = "2.57 (2026-10-30)"  # v2.58 (entfallen)
+# VERSION = "2.56 (2026-10-30)"  # v2.57 (entfallen)
+# VERSION = "2.55 (2026-10-30)"  # v2.56 (entfallen)
+# VERSION = "2.54 (2026-10-30)"  # v2.55 (entfallen)
+# VERSION = "2.53 (2026-10-30)"  # v2.54 (entfallen)
+# VERSION = "2.52 (2026-10-28)"  # v2.53 (entfallen)
 # VERSION = "2.51 (2026-10-28)"  # v2.52 (entfallen)
 # VERSION = "2.50 (2026-10-28)"  # v2.51 (entfallen)
 # VERSION = "2.49 (2026-10-28)"   # v2.50 (entfallen)
@@ -2580,7 +2619,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if not force and graph_state["key"] == key:  # v2.29
             return  # v2.29
         from headless import headless_graph  # v2.29
-        model = headless_graph.build_model(ws, collect_icons(ws), M09.Get_Display_Cells(ws))  # v2.29
+        # model = headless_graph.build_model(ws, collect_icons(ws), M09.Get_Display_Cells(ws))  # v2.57 (entfallen)
+        model = headless_graph.build_model(ws, collect_icons(ws), M09.Get_Display_Cells(ws), icon_large=icon_large_url)  # v2.57
         graph_state["key"] = key  # v2.29
         graph_state["model"] = model                       # fuer die Operationen (Makro anhaengen)  # v2.32
         # graph_panel.update(model, selected_row(ws))  # v2.40 (entfallen)
@@ -3579,13 +3619,18 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         await asyncio.sleep(1.0)
         nicegui_app.shutdown()
 
-    async def update_program():
-        """Hilfe -> Update webMobaLedLib: laedt das neueste Release, vergleicht jede Datei und ersetzt nur, was sich geaendert hat."""
+    # async def update_program():  # v2.59 (entfallen)
+        # """Hilfe -> Update webMobaLedLib: laedt das neueste Release, vergleicht jede Datei und ersetzt nur, was sich geaendert hat."""  # v2.59 (entfallen)
+    async def run_update(test):  # v2.59
+        """Hilfe -> Update webMobaLedLib: laedt das neueste Release, vergleicht jede Datei und ersetzt nur, was sich geaendert hat.
+        test=True (Hilfe -> Update Testversion): nach Rueckfrage das NEUESTE Release auf GitHub, Pre-Release oder normal (wu.newest_release)."""
         from _web import web_update as wu
         shared = {"done": 0, "total": 0, "text": ""}
-        work = {"tmp": None, "release": None, "plan": None}
+        # work = {"tmp": None, "release": None, "plan": None}  # v2.59 (entfallen)
+        work = {"tmp": None, "release": None, "plan": None, "source": None}  # v2.59
         with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[860px] max-w-full"):
-            ui.label("Update webMobaLedLib").classes("text-h6")
+            # ui.label("Update webMobaLedLib").classes("text-h6")  # v2.59 (entfallen)
+            ui.label(tr("Update Testversion webMobaLedLib") if test else "Update webMobaLedLib").classes("text-h6")  # v2.59
             # ui.label(f"Installiert: Version {VERSION}").classes("text-caption text-grey-8")  # v2.16 (entfallen)
             ui.label(tr('Installiert: Version {VERSION}', VERSION=VERSION)).classes("text-caption text-grey-8")  # v2.16
             status = ui.label("").style("white-space: pre-line")
@@ -3698,7 +3743,14 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     # shared.update(done=done, total=total, text=f"Geladen: {done // 1024} KB" + (f" von {total // 1024} KB" if total else ""))  # v2.20 (entfallen)
                     shared.update(done=done, total=total, text=f"Geladen: {done // 1024} KB" + (tr(' von {kb} KB', kb=total // 1024) if total else ""))  # v2.20
 
-                await run.io_bound(wu.download, wu.update_url(), zip_path, download_progress)
+                # await run.io_bound(wu.download, wu.update_url(), zip_path, download_progress)  # v2.59 (entfallen)
+                if test:  # v2.59
+                    status.set_text(tr("Suche nach der neuesten Testversion ..."))  # v2.59
+                    work["source"] = await run.io_bound(wu.newest_release)                  # Pre-Release oder normales Release: das neueste  # v2.59
+                    url = work["source"]["url"]  # v2.59
+                else:  # v2.59
+                    url = wu.update_url()  # v2.59
+                await run.io_bound(wu.download, url, zip_path, download_progress)  # v2.59
                 shared.update(done=0, total=0, text="")
                 status.set_text("Die Dateien werden mit dem installierten Stand verglichen ...")
                 work["release"], work["plan"] = await run.io_bound(wu.prepare, zip_path, here, VERSION)
@@ -3727,6 +3779,9 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                         # "Wurde versehentlich ein altes ZIP bereitgestellt: Abbrechen.")  # v2.20 (entfallen)
                 head = (tr('ACHTUNG: Dieses ZIP hat eine ÄLTERE Version als die installierte!\n') + head +  # v2.20
                         tr('\nEin Rücksprung auf eine ältere Version ist nur sinnvoll, wenn Sie ihn wollen (zum Beispiel nach einem Fehler in der neuen Version). Wurde versehentlich ein altes ZIP bereitgestellt: Abbrechen.'))  # v2.20
+            if work["source"]:  # v2.59
+                src = work["source"]  # v2.59
+                head = tr('Testversion: {tag} ({art}, veröffentlicht am {datum})', tag=src["tag"] or src["name"], art=tr("Pre-Release") if src["prerelease"] else tr("Release"), datum=src["date"]) + "\n" + head  # v2.59
             status.set_text(head)
             status.style("color: #c62828; font-weight: 600" if plan.downgrade else "")  # v2.07
             listing.style("height: 260px; border: 1px solid #c8c8c8")
@@ -3742,6 +3797,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 # notes.append("Persönliche Dateien im ZIP werden ignoriert: " + ", ".join(plan.ignored))  # v2.20 (entfallen)
                 notes.append(tr('Persönliche Dateien im ZIP werden ignoriert: ') + ", ".join(plan.ignored))  # v2.20
             notes.append("Vor dem Ersetzen werden die Tabellen gesichert. Konfiguration, Passwort und Protokolle bleiben unverändert.")
+            if work["source"]:  # v2.59
+                notes.append(tr('Das ist eine Testversion und kann Fehler enthalten. Das normale Update (Hilfe → Update webMobaLedLib …) lädt nur das letzte fertige Release.'))  # v2.59
             note.set_text("\n".join(notes))
             # set_buttons(("Abbrechen", close_update, "flat", "mll-cancel"), ("Aktualisieren", do_apply, "color=primary", "mll-default"))  # v2.07 (entfallen)
             if plan.downgrade:  # v2.07
@@ -3750,12 +3807,28 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             else:  # v2.07
                 set_buttons(("Abbrechen", close_update, "flat", "mll-cancel"), ("Aktualisieren", do_apply, "color=primary", "mll-default"))  # v2.07
 
+        def ask_test():  # v2.59
+            status.set_text(tr("Wollen Sie wirklich eine Testversion installieren?\n\nEine Testversion (das neueste Release auf GitHub, auch ein Pre-Release) ist nicht fertig geprüft und kann Fehler enthalten. Vor dem Ersetzen werden die Tabellen gesichert, und bei einem Abbruch geht das Programm selbst zurück."))  # v2.59
+            set_buttons((tr("Abbrechen"), close_update, "color=primary", "mll-default mll-cancel"), (tr("Testversion suchen"), check, "flat", ""))  # v2.59
+
         dlg.open()
-        await check()
+        # await check()  # v2.59 (entfallen)
+        if test:  # v2.59
+            ask_test()                                          # erst fragen, dann suchen  # v2.59
+        else:  # v2.59
+            await check()  # v2.59
 
     # ---- Zwischenspeichern der Tabellen. Eigene Datei neben der normalen Sicherung (<temp>_<Name>.json), damit
     # "Beenden ohne Speichern" den alten Stand behaelt. Nach einem Absturz wird beim Start angeboten, diesen Stand
     # wiederherzustellen. Die Sicherung wird beim normalen Beenden geloescht.
+    async def update_program():  # v2.59
+        """Hilfe -> Update webMobaLedLib (das letzte fertige Release)"""  # v2.59
+        await run_update(False)  # v2.59
+
+    async def update_test_program():  # v2.59
+        """Hilfe -> Update Testversion: das neueste Release, auch ein Pre-Release, nach Rueckfrage"""  # v2.59
+        await run_update(True)  # v2.59
+
     def main_workbook_file():
         return wb.workbookfilename or os.path.join(ctrl.data_dir, userdata.flat(ctrl.tempworkbookFilname) + "_" + wb.Name + ".json")
 
@@ -3909,6 +3982,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ("Hilfe öffnen", run_command(open_help, "Hilfe")),
             ("Logfile anzeigen", show_logfile),
             ("Update webMobaLedLib ...", update_program),
+            ("Update Testversion ...", update_test_program),  # v2.59
             ("Über ...", run_command(about, "Über")),
         ],
     }
@@ -3976,6 +4050,10 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     with toolbar_slot:
         for icon, text, tooltip, func in toolbar_buttons():
             label = M09.Get_Language_Str(text)
+            # is_wiki = func is F00.Help_Button_Click                          # Online Wiki: der Browser oeffnet es selbst im neuen Tab (kein Umweg ueber den Server, den Popup-Blocker sperren koennten)  # v2.54 (entfallen)
+            is_wiki = icon == "Btn_Help.png"                          # Online Wiki: der Browser oeffnet es selbst im neuen Tab (kein Umweg ueber den Server, den Popup-Blocker sperren koennten)  # v2.54
+            if is_wiki:  # v2.54
+                func = lambda: None                                          # der Server tut nichts: das Oeffnen macht der Klick im Browser (js_handler unten)  # v2.54
             with ui.button(on_click=run_command(func, label.replace("\n", " "))).props("flat no-caps dense") \
                     .classes("items-center mll-tool") as b:
                 if os.path.exists(os.path.join(icon_dir, icon)):
@@ -3984,6 +4062,10 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 else:
                     ui.label(label).classes("text-xs text-center mll-tool-text").style("white-space: pre-line")
             b.tooltip(M09.Get_Language_Str(tooltip))
+            if is_wiki:  # v2.54
+                import json as _json  # v2.54
+                import proggen.M20_PageEvents_a_Functions as _M20  # v2.54
+                b.on("click", js_handler="() => window.open(" + _json.dumps(_M20.HELP_WIKI_URL) + ", '_blank', 'noopener')")  # v2.54
         # Datenblaetter zeigen nur die Spalten bis Q (M30.LastColumnDatSheet). Dieser Knopf blendet auch die Spalten dahinter ein
         # (zum Beispiel die LED-Zahlen der Kanaele 1 bis 9 in Zeile 1) und wieder aus.
         def toggle_all_cols():  # v1.56
@@ -4587,7 +4669,8 @@ def main():
         print("\nWINDOWS: Erreicht ein anderer Rechner die Oberflaeche nicht, blockiert meist die Firewall (Netzwerk als \"Oeffentlich\" eingestuft oder die\n"  # v1.66
               "  Rueckfrage der Firewall verneint). Als Administrator in einer Eingabeaufforderung (Anleitung, Kapitel 8):\n"  # v1.66
               f"  netsh advfirewall firewall add rule name=\"webMobaLedLib\" dir=in action=allow protocol=TCP localport={args.port} profile=private\n")  # v1.66
-    for url, folder in (("/mll_images", "images"), ("/mll_icons", "icons")):     # Symbole fuer Toolbar und Makrobaum
+    # for url, folder in (("/mll_images", "images"), ("/mll_icons", "icons")):     # Symbole fuer Toolbar und Makrobaum  # v2.57 (entfallen)
+    for url, folder in (("/mll_images", "images"), ("/mll_icons", "icons"), ("/mll_icons_gross", "icons_gross")):     # Symbole fuer Toolbar und Makrobaum  # v2.57
         if os.path.isdir(os.path.join(here, folder)):
             nicegui_app.add_static_files(url, os.path.join(here, folder))
     from _web import web_graph as _web_graph_routes  # v2.40

@@ -1,4 +1,4 @@
-# Datei-Version: 1.08 (2026-10-26) - web_update.py
+# Datei-Version: 1.09 (2026-10-28) - web_update.py
 """Update der Web-Oberflaeche aus dem neuesten Release auf GitHub (Menue Hilfe -> Update webmobaledlib).
 
 Anders als das Update des Originals (komplettes Ueberschreiben des Programmordners, bei dem Virenscanner wegen der vielen Schreibzugriffe
@@ -28,6 +28,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error  # v1.09
 import urllib.request
 import warnings  # v1.03
 import zipfile
@@ -45,6 +46,8 @@ except ImportError:                                   # aeltere Installation ohn
 logger = logging.getLogger(__name__)
 
 DEFAULT_URL = "https://github.com/haroldlinke/WebMLL/releases/latest/download/webmobaledlib.zip"
+API_URL = "https://api.github.com/repos/haroldlinke/WebMLL/releases"        # Liste aller Releases, auch der Pre-Releases (releases/latest liefert nur das letzte normale)  # v1.09
+ASSET_NAME = "webmobaledlib.zip"  # v1.09
 MAX_ZIP_BYTES = 80 * 1024 * 1024               # Grenzen gegen kaputte oder boesartige ZIP-Dateien
 MAX_UNPACKED_BYTES = 300 * 1024 * 1024
 MAX_FILE_BYTES = 60 * 1024 * 1024
@@ -208,6 +211,49 @@ def download(url: str, dest: str, progress=None, timeout: float = 30.0) -> str:
         # raise UpdateError(f"Das Update konnte nicht geladen werden: {ex}") from ex  # v1.08 (entfallen)
         raise UpdateError(tr('Das Update konnte nicht geladen werden: {ex}', ex=ex)) from ex  # v1.08
     return dest
+
+
+# ------------------------------------------------------------------ Testversion: das neueste Release (Pre-Release oder normal)
+def api_url() -> str:  # v1.09
+    return os.environ.get("MLL_UPDATE_API_URL", "").strip() or API_URL  # v1.09
+
+
+def pick_release(releases) -> dict:  # v1.09
+    """Aus der Liste der GitHub-Releases das NEUESTE (Pre-Release oder normales, keine Entwuerfe), das den Anhang webmobaledlib.zip hat.
+    Rueckgabe {"tag", "name", "prerelease", "date" (JJJJ-MM-TT), "url", "size"}; UpdateError, wenn es keines gibt."""
+    found = []  # v1.09
+    for rel in releases or []:  # v1.09
+        if not isinstance(rel, dict) or rel.get("draft"):  # v1.09
+            continue  # v1.09
+        asset = next((a for a in (rel.get("assets") or []) if isinstance(a, dict) and a.get("name") == ASSET_NAME  # v1.09
+                      and str(a.get("browser_download_url") or "").lower().startswith("https://")), None)  # v1.09
+        if asset is None:  # v1.09
+            continue  # v1.09
+        found.append((str(rel.get("published_at") or rel.get("created_at") or ""), rel, asset))  # v1.09
+    if not found:  # v1.09
+        raise UpdateError(tr('Auf GitHub gibt es kein Release mit dem Anhang {datei}.', datei=ASSET_NAME))  # v1.09
+    when, rel, asset = max(found, key=lambda item: item[0])  # v1.09
+    return {"tag": str(rel.get("tag_name") or ""), "name": str(rel.get("name") or ""), "prerelease": bool(rel.get("prerelease")),  # v1.09
+            "date": when[:10], "url": str(asset["browser_download_url"]), "size": int(asset.get("size") or 0)}  # v1.09
+
+
+def newest_release(timeout: float = 30.0) -> dict:  # v1.09
+    """Fragt GitHub nach den Releases und liefert das neueste (siehe pick_release). Ohne Konto, 60 Abfragen je Stunde und Adresse."""  # v1.09
+    url = api_url()  # v1.09
+    url += ("&" if "?" in url else "?") + "per_page=30"  # v1.09
+    request = urllib.request.Request(url, headers={"User-Agent": "webmobaledlib-updater", "Accept": "application/vnd.github+json"})  # v1.09
+    try:  # v1.09
+        with urllib.request.urlopen(request, timeout=timeout) as resp:  # v1.09
+            data = json.loads(resp.read().decode("utf-8"))  # v1.09
+    except urllib.error.HTTPError as ex:  # v1.09
+        if ex.code in (403, 429):  # v1.09
+            raise UpdateError(tr('GitHub erlaubt gerade keine weiteren Abfragen (Grenze: 60 je Stunde). Bitte später noch einmal versuchen.')) from ex  # v1.09
+        raise UpdateError(tr('GitHub antwortet mit dem Fehler {code}.', code=ex.code)) from ex  # v1.09
+    except (urllib.error.URLError, OSError, ValueError) as ex:  # v1.09
+        raise UpdateError(tr('Die Liste der Releases konnte nicht gelesen werden: {ex}', ex=ex)) from ex  # v1.09
+    if not isinstance(data, list):  # v1.09
+        raise UpdateError(tr('Die Liste der Releases konnte nicht gelesen werden: {ex}', ex="unerwartete Antwort"))  # v1.09
+    return pick_release(data)  # v1.09
 
 
 # ------------------------------------------------------------------ Release pruefen

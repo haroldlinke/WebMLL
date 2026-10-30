@@ -1,9 +1,9 @@
-# Datei-Version: 1.06 (2026-10-27) - M20_PageEvents_a_Functions.py
+# Datei-Version: 1.08 (2026-10-28) - M20_PageEvents_a_Functions.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M20_PageEvents_a_Functions.py
 # Path:           proggen/M20_PageEvents_a_Functions.py
-# Version:        1.06
-# Last Update:    2026-10-27
+# Version:        1.08
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,8 @@
 #   1.04  2026-10-27  Zeilen faerben: RFColorRow als Text '0' oder 'False' (aeltere Konfiguration) gilt nicht mehr als 'ganze Zeile'
 #   1.05  2026-10-27  Zeilen faerben: bei jeder Aenderung zuerst alle Farben der Zeile loeschen (dehighlight Zeile:Zeile) und alle Spalten neu pruefen; vorher blieb die Farbe stehen, wenn das Macro geaendert oder 'ganze Zeile' abgeschaltet wurde
 #   1.06  2026-10-27  Update_TestButtons: der Name einer wiederverwendeten Testtaste wird wie im VBA-Original immer neu gesetzt (sonst schaltete eine Ein/Aus-Taste mit Startwert nach dem Neuzeichnen nicht mehr um)
+#   1.07  2026-10-28  Show_Help oeffnet das Online Wiki in einem neuen Tab des Webbrowsers statt der Hilfeseite
+#   1.08  2026-10-28  logging im Aufruf importieren
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -721,13 +723,31 @@ def ClearSheet():
 def __set_column_width(sheet):
     M01.set_columnwidth(sheet)
 
+HELP_WIKI_URL = "https://wiki.mobaledlib.de/anleitungen/spezial/programmgenerator"        # Online Wiki: die Hilfe zum Programm Generator  # v1.07
+
+
 def Show_Help():
     #---------------------
     P01.Application.EnableEvents = True
     ## VB2PY (CheckDirective) VB directive took path 1 on 1
     
     #P01.Shell('Explorer https://wiki.mobaledlib.de/anleitungen/spezial/programmgenerator')
-    PG.global_controller.call_helppage()
+    # PG.global_controller.call_helppage()  # v1.07 (entfallen)
+    # PG.global_controller.call_helppage()   (zeigte die Hilfeseite im Programm: entfallen, die Hilfe ist das Online Wiki)
+    Open_Online_Wiki()  # v1.07
+
+
+def Open_Online_Wiki():  # v1.07
+    """Oeffnet das Online Wiki (HELP_WIKI_URL) in einem NEUEN TAB des Webbrowsers (in der Weboberflaeche ueber den Browser, sonst ueber das Betriebssystem)."""  # v1.07
+    import logging  # v1.08
+    try:  # v1.07
+        from _web import web_dialogs as wd  # v1.07
+        if wd.open_url(HELP_WIKI_URL):  # v1.07
+            return  # v1.07
+    except Exception:                                              # noqa: BLE001  # v1.07
+        logging.getLogger(__name__).debug("Online Wiki nicht ueber den Browser der Weboberflaeche geoeffnet", exc_info=True)  # v1.07
+    import webbrowser  # v1.07
+    webbrowser.open(HELP_WIKI_URL, new=2)                           # new=2: neuer Tab  # v1.07
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Sh - ByVal 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Target - ByVal 

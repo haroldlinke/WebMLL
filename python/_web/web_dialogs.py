@@ -1,14 +1,16 @@
-# Datei-Version: 1.06 (2026-10-20) - web_dialogs.py
+# Datei-Version: 1.08 (2026-10-28) - web_dialogs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_dialogs.py
 # Path:           _web/web_dialogs.py
-# Version:        1.06
-# Last Update:    2026-10-20
+# Version:        1.08
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.05  2026-10-17  redirect_messagebox(): tkinter.messagebox im Browser anzeigen (Patterngenerator); davor bis 1.04 nicht erfasst
 #   1.06  2026-10-20  Web-Formular fuer UserForm_ConfirmLicense (LNet Lizenzbestimmungen): vorher Fehler 'HeadlessAppController' object has no attribute 'wait_window'
+#   1.07  2026-10-28  open_url: Adresse in einem neuen Tab des Webbrowsers oeffnen
+#   1.08  2026-10-28  show_busy und hide_busy: Hinweisfenster mit Drehzeichen fuer lange Aktionen
 # ----------------------------------------------------------------------------------------------
 """Web-Dialoge fuer MsgBox und InputBox (NiceGUI) mit Bruecke aus dem Worker-Thread.
 
@@ -120,6 +122,47 @@ def safe_delete(element) -> None:
         element.delete()
     except Exception:                                   # noqa: BLE001
         logger.debug("Element nicht entfernt (Seite weg?)", exc_info=True)
+
+
+def show_busy(text, title=""):  # v1.08
+    """Hinweisfenster mit Drehzeichen und ohne Knopf, solange eine lange Aktion laeuft (zum Beispiel git installieren); nur aus dem Worker-Thread.
+    Rueckgabe: ein Handle fuer hide_busy, None wenn es keine Seite gibt."""
+    async def _go():  # v1.08
+        from nicegui import ui  # v1.08
+        with _bridge["client"]:  # v1.08
+            with ui.dialog().props("persistent") as dlg, ui.card().classes("min-w-[380px] max-w-[640px]"):  # v1.08
+                with ui.row().classes("items-center no-wrap"):  # v1.08
+                    ui.spinner(size="lg")  # v1.08
+                    ui.label(clean_text(title) or "webMobaLedLib").classes("text-h6")  # v1.08
+                ui.label(clean_text(text)).style("white-space: pre-line")  # v1.08
+            dlg.open()  # v1.08
+        return dlg  # v1.08
+    if not _bridge.get("loop") or not _bridge.get("client"):  # v1.08
+        return None  # v1.08
+    return call_in_loop(_go, default=None)  # v1.08
+
+
+def hide_busy(handle) -> None:  # v1.08
+    """Das Hinweisfenster von show_busy schliessen (handle None: nichts tun)."""  # v1.08
+    if handle is None:  # v1.08
+        return  # v1.08
+
+    async def _close():  # v1.08
+        handle.close()  # v1.08
+        safe_delete(handle)  # v1.08
+    call_in_loop(_close)  # v1.08
+
+
+def open_url(url) -> bool:  # v1.07
+    """Adresse in einem neuen Tab des Webbrowsers oeffnen (nur aus dem Worker-Thread). True, wenn der Browser den Auftrag bekam."""  # v1.07
+    async def _go():  # v1.07
+        from nicegui import ui  # v1.07
+        with _bridge["client"]:  # v1.07
+            ui.navigate.to(url, new_tab=True)  # v1.07
+        return True  # v1.07
+    if not _bridge.get("loop") or not _bridge.get("client"):  # v1.07
+        return False  # v1.07
+    return bool(call_in_loop(_go, default=False))  # v1.07
 
 
 def call_in_loop(coro_func, *args, default=None):

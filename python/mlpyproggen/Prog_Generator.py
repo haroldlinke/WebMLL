@@ -1,8 +1,8 @@
-# Datei-Version: 1.04 (2026-10-28) - Prog_Generator.py
+# Datei-Version: 1.06 (2026-10-28) - Prog_Generator.py
 # ----------------------------------------------------------------------------------------------
 # Name:           Prog_Generator.py
 # Path:           mlpyproggen/Prog_Generator.py
-# Version:        1.04
+# Version:        1.06
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -12,6 +12,8 @@
 #   1.02  2026-10-21  execute_shell_cmd: Ausgabe vollstaendig lesen (der Rest nach dem Ende des Prozesses ging verloren, zum Beispiel der Traceback von esptool); Zeichen, die nicht UTF-8 sind, ersetzen statt die Zeile zu verlieren
 #   1.03  2026-10-28  execute_shell_cmd: bei PlatformIO UnknownPackageError einmal wiederholen, danach Hinweis auf die Diagnose
 #   1.04  2026-10-28  _drain_output gibt die letzten Zeilen an die Auswertung weiter: UnknownPackageError steht meist in den letzten Zeilen, die erst nach dem Ende des Prozesses gelesen werden
+#   1.05  2026-10-28  Meldung mit Anleitung, wenn PlatformIO den Git-Client braucht (Pico) und er fehlt
+#   1.06  2026-10-28  Hinweis nennt den Knopf Git installieren
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -1150,6 +1152,9 @@ class Prog_GeneratorPage(tk.Frame):
             
             if rc != 0:
                 self.arduinoMonitorPage.add_text_to_textwindow("\n*****************************************************\n",highlight="Error")
+                if any("Please install Git" in l or "GitNotFound" in l for l in collected):                  # PlatformIO holt die Plattform des Pico aus GitHub und braucht dafuer den Git-Client  # v1.05
+                    # self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("PlatformIO braucht für dieses Board den Git-Client (git), er ist auf diesem Rechner nicht installiert. Linux (Mint, Ubuntu, Debian, Raspberry Pi OS): im Terminal  sudo apt install git  eingeben. macOS: im Terminal  xcode-select --install  eingeben. Windows: Git von https://git-scm.com/download/win installieren und das Programm danach neu starten. Dann noch einmal übersetzen.") + "\n", highlight="Error")  # v1.06 (entfallen)
+                    self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("PlatformIO braucht für dieses Board den Git-Client (git), er ist auf diesem Rechner nicht installiert. Linux (Mint, Ubuntu, Debian, Raspberry Pi OS): in den Optionen (Entwicklungsumgebung) den Knopf Git installieren drücken oder im Terminal  sudo apt install git  eingeben. macOS: im Terminal  xcode-select --install  eingeben. Windows: Git von https://git-scm.com/download/win installieren und das Programm danach neu starten. Dann noch einmal übersetzen.") + "\n", highlight="Error")  # v1.06
                 if any("UnknownPackageError" in l for l in collected):  # v1.03
                     self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("Die Paketverwaltung von PlatformIO findet ein Paket nicht (UnknownPackageError, siehe oben). Das hilft meist: Internetverbindung prüfen und das Hochladen später noch einmal versuchen. Bleibt es dabei, bitte in einem Terminal 'pio pkg show' mit dem oben genannten Paket und 'pio --version' ausführen und die Ausgabe mit der Protokolldatei melden.") + "\n")  # v1.03
                 return M40.Failure

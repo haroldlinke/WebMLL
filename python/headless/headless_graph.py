@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-28) - headless_graph.py
+# Datei-Version: 1.02 (2026-10-28) - headless_graph.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph.py
 # Path:           headless/headless_graph.py
-# Version:        1.01
+# Version:        1.02
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-28  Neu: Modell der Ketten fuer die grafische Ansicht (Stufe 1)
 #   1.01  2026-10-28  LED Nr im Format Kanal-Nummer (1-5) wird gelesen; Makros mit Einzel-LEDs (C1-1, C2-1, ...) gehoeren in die Kette; mehrzeilige LEDs-Zellen
+#   1.02  2026-10-28  Knoten haben icon_large (Symbol mit hoher Aufloesung), wenn es eines gibt
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht des Programm Generators, Stufe 1: das Modell der Ketten.
@@ -71,7 +72,8 @@ def macro_name(config: str) -> str:
     return text.split("(", 1)[0].strip() if "(" in text else text
 
 
-def build_model(ws, icons=None, display=None) -> dict:
+# def build_model(ws, icons=None, display=None) -> dict:  # v1.02 (entfallen)
+def build_model(ws, icons=None, display=None, icon_large=None) -> dict:  # v1.02
     """Ketten und Knoten eines Datenblatts.
 
     icons: {(Zeile, Spalte): URL} (0-basiert, wie collect_icons); display: {(Zeile, Spalte): Text} (Get_Display_Cells, Namen in der gewaehlten Sprache).
@@ -120,6 +122,7 @@ def build_model(ws, icons=None, display=None) -> dict:
                 # "config": config, "icon": icons.get((r, c_icon), ""), "leds": leds,  # v1.01 (entfallen)
                 # "led_from": led_from if leds > 0 else None,  # v1.01 (entfallen)
                 "config": config, "icon": icons.get((r, c_icon), ""), "leds": leds, "single": single,  # v1.01
+                "icon_large": (icon_large(icons.get((r, c_icon), "")) if icon_large and icons.get((r, c_icon), "") else ""),     # Gegenstueck mit hoher Aufloesung (icons_gross), sonst ""  # v1.02
                 "led_from": led_from if in_chain else None,  # v1.01
                 "led_to": (led_from + leds - 1) if (leds > 0 and led_from is not None) else None, "channel": channel}
         # if leds > 0:  # v1.01 (entfallen)

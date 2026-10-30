@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-10-27) - M08_ARDUINO.py
+# Datei-Version: 1.05 (2026-10-28) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.04
-# Last Update:    2026-10-27
+# Version:        1.05
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.02  2026-10-26  Entwickler: PlatformIO (Create_PIO_Build_cmd, platformio.ini, Start_Arduino.cmd); Claude: PlatformIO auch fuer Linux, macOS und Raspberry Pi (Ordner bin statt Scripts, Find_PIO, PIO_Version), PATH nur einmal ergaenzt, verstaendliche Meldung wenn pio fehlt, platformio.ini wird beim Hochladen mit PlatformIO mit den aktuellen Einstellungen geschrieben
 #   1.03  2026-10-26  PlatformIO unter Linux: pipx-Installation (~/.local/bin) wird gefunden, Installationshinweis je System, Hinweis und Einrichtung der udev-Regel fuer den Raspberry Pi Pico (picotool: unable to connect)
 #   1.04  2026-10-27  Pico oder ESP32 eingestellt, am Anschluss haengt ein Arduino Nano: statt der Fehlermeldung 'kein PICO angeschlossen' wird angeboten, das Board auf Arduino Nano umzustellen
+#   1.05  2026-10-28  Git_Installed, Git_Script, Setup_Git: git unter Linux mit pkexec installieren
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -507,6 +508,37 @@ def Pico_Udev_Ok(dirs=None):  # v1.03
                 except OSError:  # v1.03
                     pass  # v1.03
     return False  # v1.03
+
+
+def Git_Installed():  # v1.05
+    # Gibt es den Git-Client (git)? PlatformIO braucht ihn fuer das Board Raspberry Pi Pico (die Plattform wird aus GitHub geklont).
+    return shutil.which('git') is not None  # v1.05
+
+
+def Git_Script():  # v1.05
+    return os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'install', 'install_git.sh'))  # v1.05
+
+
+def Setup_Git():  # v1.05
+    # Linux: installiert git (install/install_git.sh) mit pkexec (fragt nach dem Passwort). Rueckgabe: (True/False, Text)
+    script = Git_Script()  # v1.05
+    if not sys.platform.startswith('linux'):  # v1.05
+        return False, M09.Get_Language_Str("Das gibt es nur unter Linux.")  # v1.05
+    if Git_Installed():  # v1.05
+        return True, M09.Get_Language_Str("git ist schon installiert.")  # v1.05
+    if not os.path.isfile(script):  # v1.05
+        return False, M09.Get_Language_Str("Die Datei install_git.sh wurde nicht gefunden:") + ' ' + script  # v1.05
+    runner = shutil.which('pkexec')  # v1.05
+    if not runner:  # v1.05
+        return False, M09.Get_Language_Str("pkexec ist nicht installiert. Bitte im Terminal ausführen:") + vbCr + "  sudo bash " + script  # v1.05
+    try:  # v1.05
+        res = subprocess.run([runner, '/bin/bash', script], capture_output=True, text=True, timeout=900)  # v1.05
+    except Exception as ex:  # v1.05
+        return False, str(ex)  # v1.05
+    text = ((res.stdout or '') + (res.stderr or '')).strip()  # v1.05
+    if res.returncode in (126, 127):  # v1.05
+        return False, M09.Get_Language_Str("Die Einrichtung wurde abgebrochen oder ist nicht erlaubt. Bitte im Terminal ausführen:") + vbCr + "  sudo bash " + script  # v1.05
+    return res.returncode == 0 and Git_Installed(), text  # v1.05
 
 
 def Pico_Udev_Script():  # v1.03

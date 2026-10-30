@@ -1,4 +1,4 @@
-# Datei-Version: 1.12 (2026-10-28) - web_form_options.py
+# Datei-Version: 1.14 (2026-10-28) - web_form_options.py
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -93,7 +93,9 @@ async def _options_async(spec: dict, st: dict):
 
     with wd._bridge["client"]:
         # with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[900px] max-w-full"):  # v1.12 (entfallen)
-        with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[900px] max-w-full").style("max-height: 96vh; overflow-y: auto"):    # auf kleinen Bildschirmen (Laptop) scrollen, sonst fehlen die unteren Boards (Pico)  # v1.12
+        # with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[900px] max-w-full").style("max-height: 96vh; overflow-y: auto"):    # auf kleinen Bildschirmen (Laptop) scrollen, sonst fehlen die unteren Boards (Pico)  # v1.14 (entfallen)
+        ui.add_css(".mll-optcard > * { flex-shrink: 0; }")       # die Karte ist eine Spalte (flex): ohne das schrumpfen die Reiter und schneiden die unteren Knoepfe und Texte ab  # v1.14
+        with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[900px] max-w-full mll-optcard").style("max-height: 96vh; overflow-y: auto"):    # auf kleinen Bildschirmen (Laptop) scrollen, sonst fehlen die unteren Boards (Pico)  # v1.14
             ui.label(spec["title"]).classes("text-h6")
 
             def collect():
@@ -370,7 +372,11 @@ def make_class(Base):
                                           "label": tr("Zeigt, ob PlatformIO installiert ist, und seine Version")}] +  # v1.05
                                         ([{"text": tr("USB-Zugriff für den Pico einrichten"), "handler": "__Pico_Udev_Button_Click", "disabled": False,  # v1.05
                                            "label": tr("Linux: richtet einmalig die Regel ein, mit der PlatformIO den Pico im BOOTSEL-Modus ansprechen darf (fragt nach dem Passwort). Ohne sie meldet das Hochladen: picotool was unable to connect.")}]  # v1.05
-                                         if sys.platform.startswith("linux") else [])})  # v1.05
+                                         # if sys.platform.startswith("linux") else [])})  # v1.13 (entfallen)
+                                         if sys.platform.startswith("linux") else []) +  # v1.13
+                                        ([{"text": tr("Git installieren"), "handler": "__Install_Git_Button_Click", "disabled": False,          # nur Linux und nur, wenn git fehlt  # v1.13
+                                           "label": tr("Linux: installiert den Git-Client (git). PlatformIO braucht ihn für das Board Raspberry Pi Pico (fragt nach dem Passwort). Ohne git meldet das Übersetzen: Please install Git client.")}]  # v1.13
+                                         if sys.platform.startswith("linux") and not M08.Git_Installed() else [])})  # v1.13
                 tabs.append({"name": M09.Get_Language_Str("Update"), "kind": "list", "buttons": tab_buttons(
                     buttons, ["__Update_to_Arduino_Button_Click", "__Update_Beta_Button_Click",
                               "__Show_Lib_and_Board_Page_Button_Click"]),
@@ -450,6 +456,23 @@ def make_class(Base):
             else:  # v1.05
                 P01.MsgBox(tr("Die Regel konnte nicht eingerichtet werden.") + "\n\n" + text, vbCritical, "PlatformIO")  # v1.05
 
+        def _web_install_git(self):  # v1.13
+            """Knopf Git installieren (Linux): git mit pkexec installieren (install/install_git.sh); PlatformIO braucht den Git-Client fuer den Pico"""  # v1.13
+            import proggen.M08_ARDUINO as M08  # v1.13
+            if M08.Git_Installed():  # v1.13
+                P01.MsgBox(tr("git ist schon installiert."), ns["vbInformation"], "PlatformIO")  # v1.13
+                return  # v1.13
+            # ok, text = M08.Setup_Git()  # v1.14 (entfallen)
+            busy = wd.show_busy(tr("Git wird installiert. Das Betriebssystem fragt gleich nach dem Passwort. Die Installation kann mehrere Minuten dauern, bitte warten ..."), tr("Git installieren"))  # v1.14
+            try:  # v1.14
+                ok, text = M08.Setup_Git()  # v1.14
+            finally:  # v1.14
+                wd.hide_busy(busy)  # v1.14
+            if ok:  # v1.13
+                P01.MsgBox(tr("git ist installiert. Das Übersetzen für den Raspberry Pi Pico kann jetzt wiederholt werden."), ns["vbInformation"], "PlatformIO")  # v1.13
+            else:  # v1.13
+                P01.MsgBox(tr("git konnte nicht installiert werden.") + "\n\n" + text, vbCritical, "PlatformIO")  # v1.13
+
         def _firmware_available(self):  # v1.11
             """Liegt im Ordner MobaLedLib/firmware (Sketchbook-Ordner) mindestens eine Datei *.uf2?"""  # v1.11
             try:  # v1.11
@@ -506,6 +529,9 @@ def make_class(Base):
                 if handler == "__Boot_Firmware_Button_Click":             # Firmware des Pico installieren (Version K des Excel-Programms)  # v1.09
                     self._web_pico_firmware()  # v1.09
                     continue  # v1.05
+                if handler == "__Install_Git_Button_Click":               # gibt es nur im Web, nur unter Linux, nur wenn git fehlt  # v1.13
+                    self._web_install_git()  # v1.13
+                    continue  # v1.13
                 if handler == "__Pico_Udev_Button_Click":                 # gibt es nur im Web, nur unter Linux  # v1.05
                     self._web_pico_udev()  # v1.05
                     continue  # v1.04
