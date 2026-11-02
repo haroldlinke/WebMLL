@@ -1,8 +1,8 @@
-# Datei-Version: 1.11 (2026-10-28) - web_graph.py
+# Datei-Version: 1.13 (2026-10-28) - web_graph.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_graph.py
 # Path:           _web/web_graph.py
-# Version:        1.11
+# Version:        1.13
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -19,6 +19,8 @@
 #   1.09  2026-10-28  Klick und Doppelklick melden die Umschalt-Taste an on_hit (Umschalt-Doppelklick = Dialog mit den Parametern)
 #   1.10  2026-10-28  Stufe 3: Groesse (Schieber), Raster, Rueckgaengig in der Kopfzeile; Befehle place_many, align, undo und delete mit mehreren Zeilen; Texte des Ausrichtens
 #   1.11  2026-10-28  Hintergrundbild ohne Pillow: Knopf oeffnet das Dateifenster im Browser, Upload per POST (mll_view_upload), Ereignis mll_graph_image
+#   1.12  2026-10-28  view_model und update bekommen chain_size (Groesse der Kaestchen in der Ansicht Ketten)
+#   1.13  2026-10-28  Groesse und Rueckgaengig in beiden Ansichten, Trennlinie zwischen Grafik und Tabelle (Ansicht Beides)
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht des Programm Generators, Stufe 1: Verbindung zwischen Modell, Seite und Browser.
@@ -170,9 +172,12 @@ def plant_data(layout: dict, positions: dict, model: dict):  # v1.07
     return {"w": w, "h": h, "image": register_image(layout), "size": float(layout.get("size") or headless_graph_layout.NODE_SIZE), "positions": rows}  # v1.07
 
 
-def view_model(model: dict, plant=None) -> dict:  # v1.07
+# def view_model(model: dict, plant=None) -> dict:  # v1.12 (entfallen)
+def view_model(model: dict, plant=None, chain_size=None) -> dict:  # v1.12
     """Kopie des Modells mit den Texten in der gewaehlten Sprache (Kanal, Anzahl, LED-Nummern, Hinweis zum Knoten) fuer mll_graph.js"""
     out = {"sheet": model.get("sheet", ""), "chains": [], "other": [], "count": model.get("count", 0)}
+    if chain_size:  # v1.12
+        out["chain_size"] = float(chain_size)                                      # Breite der Kaestchen in der Ansicht Ketten (Pixel)  # v1.12
 
     def node_out(n):
         parts = [n.get("label", "")] + ([n["descrip"]] if n.get("descrip") else []) + [n.get("config", "")]
@@ -254,6 +259,10 @@ class GraphPanel:
                     self.plant_hint = ui.label(tr("Kästchen mit der Maus auf dem Bild verteilen; Mausrad zoomt, Hintergrund ziehen verschiebt.")).classes("text-caption text-grey-7")  # v1.07
                 self.element = ui.element("div").props("id=" + CONTAINER_ID + " tabindex=0").style("flex: 1 1 0; width: 100%; min-width: 0; overflow: auto; position: relative; outline: none")  # v1.07
             self.set_plant_controls("chains", False)  # v1.07
+        self.splitter = ui.element("div").props("id=mll-splitter").classes("w-full").style(  # v1.13
+            "flex: 0 0 9px; height: 9px; cursor: row-resize; touch-action: none; display: none; border-top: 1px solid #b0bec5; border-bottom: 1px solid #b0bec5; "  # v1.13
+            "background: repeating-linear-gradient(90deg, #cfd8dc 0 6px, #b0bec5 6px 8px)")                  # Trennlinie, die mll_graph.js (split) zieht und die Stellung merkt  # v1.13
+        self.splitter.tooltip(tr("Trennlinie ziehen: mehr Platz für die Grafik oder die Tabelle (Doppelklick: Mitte)"))  # v1.13
         self.filter_text = ""  # v1.02
         # self.element.on("click", self._handle, js_handler="(e) => { const h = mllGraph.hit(e, false); if (h) emit(h); }")  # v1.01 (entfallen)
         # self.element.on("dblclick", self._handle, js_handler="(e) => { const h = mllGraph.hit(e, true); if (h) emit(h); }")  # v1.01 (entfallen)
@@ -371,8 +380,11 @@ class GraphPanel:
             self._guard = False  # v1.07
         plant = mode == "plant"  # v1.07
         # for control in (self.image_button, self.fit_button, self.zoom_in, self.zoom_out, self.plant_hint):  # v1.10 (entfallen)
-        for control in (self.image_button, self.fit_button, self.zoom_in, self.zoom_out, self.plant_hint, self.size_label, self.size_slider, self.snap_box, self.undo_button, self.undo_label):  # v1.10
+        # for control in (self.image_button, self.fit_button, self.zoom_in, self.zoom_out, self.plant_hint, self.size_label, self.size_slider, self.snap_box, self.undo_button, self.undo_label):  # v1.13 (entfallen)
+        for control in (self.image_button, self.fit_button, self.zoom_in, self.zoom_out, self.plant_hint, self.snap_box):  # v1.13
             control.set_visibility(plant)  # v1.07
+        for control in (self.size_label, self.size_slider, self.undo_button, self.undo_label):          # Groesse und Rueckgaengig gibt es in beiden Ansichten (Ketten und Anlage)  # v1.13
+            control.set_visibility(True)  # v1.13
         self.image_remove.set_visibility(plant and bool(has_image))  # v1.07
         self.undo_button.set_enabled(bool(undo))  # v1.10
         self.undo_label.set_text(tr("Rückgängig: {aktion}", aktion=undo) if undo else "")  # v1.10
@@ -391,16 +403,23 @@ class GraphPanel:
         js = f"mllGraph.updateTree({json.dumps(TREE_ID)}, {json.dumps(nodes)}, {json.dumps(bool(open_all))}, {json.dumps(labels)})"  # v1.03
         self.element.client.run_javascript(js)  # v1.02
 
-    def set_visible(self, visible: bool) -> None:
+    # def set_visible(self, visible: bool) -> None:  # v1.13 (entfallen)
+    def set_visible(self, visible: bool, both: bool = False) -> None:  # v1.13
         # self.element.set_visibility(bool(visible))  # v1.02 (entfallen)
         self.wrap.set_visibility(bool(visible))  # v1.02
+        try:                                                                         # Trennlinie zwischen Grafik und Tabelle nur, wenn beide sichtbar sind (Ansicht Beides)  # v1.13
+            self.element.client.run_javascript(f"mllGraph.split({json.dumps(bool(visible and both))})")  # v1.13
+        except Exception:                                                            # noqa: BLE001  # v1.13
+            logger.debug("Trennlinie nicht geschaltet", exc_info=True)  # v1.13
 
     # def update(self, model: dict, selected_row=None) -> None:  # v1.07 (entfallen)
         # """Modell zeichnen (mit den Texten der Sprache); selected_row: markierte Zeile (0-basiert) oder None"""  # v1.07 (entfallen)
         # js = f"mllGraph.update({json.dumps(CONTAINER_ID)}, {json.dumps(view_model(model))}, {json.dumps(selected_row)})"  # v1.07 (entfallen)
-    def update(self, model: dict, selected_row=None, plant=None) -> None:  # v1.07
+    # def update(self, model: dict, selected_row=None, plant=None) -> None:  # v1.12 (entfallen)
+    def update(self, model: dict, selected_row=None, plant=None, chain_size=None) -> None:  # v1.12
         """Modell zeichnen (mit den Texten der Sprache); selected_row: markierte Zeile (0-basiert) oder None; plant: Daten der Anlagenansicht (plant_data) oder None (Ketten)"""  # v1.07
-        js = f"mllGraph.update({json.dumps(CONTAINER_ID)}, {json.dumps(view_model(model, plant))}, {json.dumps(selected_row)})"  # v1.07
+        # js = f"mllGraph.update({json.dumps(CONTAINER_ID)}, {json.dumps(view_model(model, plant))}, {json.dumps(selected_row)})"  # v1.12 (entfallen)
+        js = f"mllGraph.update({json.dumps(CONTAINER_ID)}, {json.dumps(view_model(model, plant, chain_size))}, {json.dumps(selected_row)})"  # v1.12
         self.element.client.run_javascript(js)
 
     def select(self, row: int) -> None:

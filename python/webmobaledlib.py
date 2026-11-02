@@ -1,9 +1,9 @@
-# Datei-Version: 2.59 (2026-10-30) - webmobaledlib.py
+# Datei-Version: 2.63 (2026-11-01) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        2.59
-# Last Update:    2026-10-30
+# Version:        2.63
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -129,6 +129,10 @@
 #   2.57  2026-10-30  Symbole in hoher Aufloesung: icons (64 Pixel) und icons_gross (200 Pixel) fuer die Grafik
 #   2.58  2026-10-30  Kette, Anlage und Tabelle zeigen die PNG-Symbole (die Formen der Tabelle heissen .bmp: es wurde die alte BMP-Datei geliefert)
 #   2.59  2026-10-30  Hilfe: Update Testversion (neuestes Release auf GitHub, auch Pre-Release, nach Rueckfrage)
+#   2.60  2026-11-01  Grafik: Groesse der Kaestchen auch in der Kette, mehrere markierte Kaestchen gemeinsam verschieben, Trennlinie zwischen Grafik und Tabelle
+#   2.61  2026-11-01  Grafik: Testtasten der Tabelle auch in der Kette und in der Anlage
+#   2.62  2026-11-01  Patterngenerator: Beschreibung des Blatts aus msoTextBox0, aenderbar, wird beim Speichern wieder als msoTextBox0 geschrieben
+#   2.63  2026-11-01  Programm Generator: Reiterfarben, Kontextmenue der Blattreiter (Umbenennen, Duplizieren, Verschieben, Reiterfarbe), Reiter mit Alt + Maustaste ziehen
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -208,7 +212,9 @@ REQUIRED_FILES = {  # v1.75
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.11", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.08", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.40 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.08", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.46 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.08", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.59 (entfallen)
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.09", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.59
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.16", "_web/web_pattgen.py": "1.20", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.09", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.62 (entfallen)
+    # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.12", "headless/headless_pattgen.py": "1.20", "_web/web_pattgen.py": "1.21", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.09", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.63 (entfallen)
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.14", "headless/headless_pattgen.py": "1.20", "_web/web_pattgen.py": "1.21", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.09", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.63
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.02", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.21 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.03", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.03", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.27 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.28 (entfallen)
@@ -263,7 +269,10 @@ REQUIRED_FILES = {  # v1.75
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.12", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.54 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.13", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.56 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.01", "_web/mll_graph.js": "1.10", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.14", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.57 (entfallen)
-    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.02", "_web/mll_graph.js": "1.11", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.14", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.57
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.03", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.06", "headless/headless_graph.py": "1.02", "_web/mll_graph.js": "1.11", "_web/web_graph.py": "1.11", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.14", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.60 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.04", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.07", "headless/headless_graph.py": "1.02", "_web/mll_graph.js": "1.12", "_web/web_graph.py": "1.13", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.14", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.61 (entfallen)
+    # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.04", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.07", "headless/headless_graph.py": "1.03", "_web/mll_graph.js": "1.13", "_web/web_graph.py": "1.13", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.14", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.63 (entfallen)
+    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "_web/mll_tabs.js": "1.00", "_web/web_sheet_tabs.py": "1.00", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.01", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.04", "_web/web_macro_tree.py": "1.05", "headless/headless_graph_ops.py": "1.07", "headless/headless_graph.py": "1.03", "_web/mll_graph.js": "1.13", "_web/web_graph.py": "1.13", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.14", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.03", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.04", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.01", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.63
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -696,6 +705,15 @@ def test_button_data(ws) -> dict:
     return data
 
 
+def graph_test_buttons(ws) -> dict:  # v2.61
+    """Testtasten je Zeile fuer die Grafik: {Zeile (0-basiert): [{n: Name, c: Farbe, t: Text}, ...]} in der Reihenfolge, die tb_shape (Ereignis mll_tb) benutzt:
+    nach Spalte, innerhalb einer Zelle von links nach rechts. Der Index in der Liste ist das k des Ereignisses."""
+    out: dict = {}  # v2.61
+    for (r, c), items in sorted(test_button_data(ws).items()):  # v2.61
+        out.setdefault(r, []).extend({"n": i["n"], "c": i["c"], "t": i["t"]} for i in items)  # v2.61
+    return out  # v2.61
+
+
 def toolbar_buttons():
     """(Symbol, Text, Tooltip, Befehl) wie Prog_GeneratorPage.create_button_list (ohne den Knopf "*Grafik")."""
     import proggen.F00_mainbuttons as F00
@@ -878,6 +896,10 @@ CSS_GRID = """
 .sheet-tabs { background: #dbe4ee; border: 1px solid #b8c7d8; border-top: 2px solid #8fa8c2; min-height: 30px; }
 .sheet-tabs .q-tab { text-transform: none; min-height: 28px; padding: 0 16px; color: #243b53; }
 .sheet-tabs .q-tab--active { background: #ffffff; color: #102a43; font-weight: 600; box-shadow: inset 0 3px 0 #1976d2; }
+.sheet-tabs { position: relative; }
+.sheet-tabs .q-tab[data-tabc] { background: var(--tab-color); color: var(--tab-fg); }
+.sheet-tabs .q-tab--active[data-tabc] { background: linear-gradient(to bottom, var(--tab-mid), var(--tab-light) 55%, #ffffff); color: #102a43; box-shadow: inset 0 3px 0 var(--tab-color); }
+.sheet-tabs .mll-tab-dragging { opacity: 0.45; }
 .mll-grid-wrap.mll-dropping { outline: 3px dashed #1976d2; outline-offset: -4px; }
 .mll-grid-wrap.mll-dropping::after { content: "MLL_PGF-Datei hier loslassen"; position: absolute; left: 50%; top: 40%; transform: translateX(-50%);
     background: rgba(25, 118, 210, 0.92); color: #fff; padding: 14px 26px; border-radius: 6px; font-size: 18px; pointer-events: none; z-index: 20; }
@@ -912,7 +934,11 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "2.59 (2026-10-30)"  # v2.59
+VERSION = "2.63 (2026-11-01)"  # v2.63
+# VERSION = "2.62 (2026-11-01)"  # v2.63 (entfallen)
+# VERSION = "2.61 (2026-11-01)"  # v2.62 (entfallen)
+# VERSION = "2.60 (2026-11-01)"  # v2.61 (entfallen)
+# VERSION = "2.59 (2026-10-30)"  # v2.60 (entfallen)
 # VERSION = "2.58 (2026-10-30)"  # v2.59 (entfallen)
 # VERSION = "2.57 (2026-10-30)"  # v2.58 (entfallen)
 # VERSION = "2.56 (2026-10-30)"  # v2.57 (entfallen)
@@ -2108,6 +2134,29 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 else:  # v2.45
                     plant_controls(ws_)                      # nur der Knopf Rueckgaengig  # v2.45
                 return  # v2.40
+            if cmd == "move_mixed":                          # markierte Kaestchen aus verschiedenen Ketten: nicht gezogen, nur eine Meldung  # v2.60
+                ui.notify(tr("Die markierten Kästchen liegen in verschiedenen Ketten und lassen sich nicht gemeinsam verschieben."), type="warning")  # v2.60
+                return  # v2.60
+            rows_move = [r_ for r_ in ((target or {}).get("rows") or []) if isinstance(r_, int)] if cmd == "move" else []  # v2.60
+            if cmd == "move" and len(rows_move) > 1:         # mehrere markierte Kaestchen einer Kette gemeinsam verschieben  # v2.60
+                plan, why = graph_ops.plan_move_many(model, rows_move, target or {})  # v2.60
+                if plan is None:  # v2.60
+                    if why == "gemischt":  # v2.60
+                        ui.notify(tr("Die markierten Kästchen liegen in verschiedenen Ketten und lassen sich nicht gemeinsam verschieben."), type="warning")  # v2.60
+                    return  # v2.60
+                try:  # v2.60
+                    await run_in_worker(lambda: graph_ops.move_many(ws_, plan, lambda: headless_graph.build_model(ws_)))  # v2.60
+                except Exception as ex:                      # noqa: BLE001  # v2.60
+                    logger.exception("Zeilen nicht verschoben")  # v2.60
+                    ui.notify(tr('Fehler beim Verschieben: {ex}', ex=ex), type="negative")  # v2.60
+                    show(ws_)  # v2.60
+                    return  # v2.60
+                show(ws_)  # v2.60
+                first_node = next((n for c in (graph_state.get("model") or {}).get("chains", []) for n in c["nodes"] if n["id"] == plan["ids"][0]), None)  # v2.60
+                if first_node is not None and state["ws"] is ws_:  # v2.60
+                    select_row(ws_, first_node["row"])  # v2.60
+                    graph_follow(first_node["row"])  # v2.60
+                return  # v2.60
             if cmd in ("up", "down"):  # v2.38
                 target = graph_ops.neighbour_target(model, row, cmd)  # v2.38
                 if target is None:  # v2.38
@@ -2178,6 +2227,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     mark("Tabelle angelegt")
 
     # ------------------------------------------------------------------ Blattreiter am unteren Tabellenrand (wie in Excel)
+    from _web import web_sheet_tabs as WT                                              # Reiterfarben, Kontextmenue, Verschieben  # v2.63  # v2.63
     tabs_guard = {"on": False}
     tab_names: list = []                          # Namen der angezeigten Reiter
 
@@ -2206,18 +2256,127 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     sheet_tabs = ui.tabs(on_change=on_sheet_tab).props("dense align=left no-caps active-color=primary "
                                                        "indicator-color=transparent").classes("w-full sheet-tabs")
 
+    def sheet_original_names():  # v2.63
+        """Namen der Blaetter des Programms (DCC, Selectrix, CAN, LNet und die Systemblaetter): sie lassen sich nicht umbenennen"""  # v2.63
+        return set(getattr(wb, "sheetdict", {}) or {})  # v2.63
+
+    def is_data_sheet(ws_):  # v2.63
+        try:  # v2.63
+            return bool(M28.Is_Data_Sheet(ws_))          # der Typ steht im Blatt selbst (erste Zeile)  # v2.63
+        except Exception:                                # noqa: BLE001  # v2.63
+            return False  # v2.63
+
     def rebuild_sheet_tabs():
         """Reiter neu aufbauen (Blattliste geaendert) bzw. den aktiven Reiter nachfuehren."""
         tabs_guard["on"] = True
         try:
+            load_sheet_dict()  # v2.63
             sheet_tabs.clear()
             tab_names[:] = visible_sheet_names()
+            originals = sheet_original_names()  # v2.63
             with sheet_tabs:
-                for name in tab_names:
-                    ui.tab(name, label=name)
+                # for name in tab_names:  # v2.63 (entfallen)
+                    # ui.tab(name, label=name)  # v2.63 (entfallen)
+                for i, name in enumerate(tab_names):  # v2.63
+                    ws_ = state["sheets"].get(name)  # v2.63
+                    WT.build_tab(ui, name, getattr(ws_, "tab_color", ""), WT.can_rename(name, originals), ws_ is not None and is_data_sheet(ws_),  # v2.63
+                                 i > 0, i < len(tab_names) - 1, tab_callbacks)  # v2.63
             sheet_tabs.set_value(state["ws"].Name)
         finally:
             tabs_guard["on"] = False
+
+    def tab_apply_order(new_order):  # v2.63
+        wb.reorder_sheets(new_order)  # v2.63
+        rebuild_sheet_tabs()  # v2.63
+
+    def tab_step(name, step):  # v2.63
+        """Reiter um einen sichtbaren Reiter nach links (-1) oder rechts (+1) verschieben (Kontextmenue, auch ohne Alt-Taste)"""  # v2.63
+        plan = WT.plan_step([w.Name for w in wb.sheets], tab_names, name, step)  # v2.63
+        if plan:  # v2.63
+            tab_apply_order(plan)  # v2.63
+
+    def on_tab_move(e):  # v2.63
+        """Ereignis mll_tab_move aus mll_tabs.js: Reiter name wurde mit Alt + Maustaste vor den Reiter before gezogen (None = ans Ende)"""  # v2.63
+        args = e.args if isinstance(getattr(e, "args", None), dict) else {}  # v2.63
+        name, before = args.get("name"), args.get("before")  # v2.63
+        if not isinstance(name, str) or not (before is None or isinstance(before, str)):  # v2.63
+            return  # v2.63
+        plan = WT.plan_move([w.Name for w in wb.sheets], tab_names, name, before)  # v2.63
+        if plan:  # v2.63
+            tab_apply_order(plan)  # v2.63
+
+    def tab_set_color(name, color):  # v2.63
+        ws_ = state["sheets"].get(name)  # v2.63
+        if ws_ is None:  # v2.63
+            return  # v2.63
+        ws_.set_tab_color(color)  # v2.63
+        rebuild_sheet_tabs()  # v2.63
+
+    async def tab_custom_color(name):  # v2.63
+        ws_ = state["sheets"].get(name)  # v2.63
+        if ws_ is None:  # v2.63
+            return  # v2.63
+        value = await WT.ask_color(ui, tr("Reiterfarbe"), getattr(ws_, "tab_color", ""))  # v2.63
+        if value:  # v2.63
+            tab_set_color(name, value)  # v2.63
+
+    async def tab_rename(name):  # v2.63
+        ws_ = state["sheets"].get(name)  # v2.63
+        if ws_ is None:  # v2.63
+            return  # v2.63
+        originals = sheet_original_names()  # v2.63
+        if not WT.can_rename(name, originals):  # v2.63
+            ui.notify(tr("Nur eigene Blätter (Kopien) lassen sich umbenennen."), type="warning")  # v2.63
+            return  # v2.63
+        names = [w.Name for w in wb.sheets]  # v2.63
+        new = await WT.ask_name(ui, tr("Blatt umbenennen"), tr("Neuer Name des Blattes"), name, lambda v: WT.validate_sheet_name(v, names, current=name, reserved=originals))  # v2.63
+        if not new or new == name:  # v2.63
+            return  # v2.63
+        try:  # v2.63
+            ws_.rename_sheet(new)  # v2.63
+        except Exception as ex:                          # noqa: BLE001  # v2.63
+            logger.exception("Blatt nicht umbenannt")  # v2.63
+            ui.notify(tr("Das Blatt konnte nicht umbenannt werden: {ex}", ex=ex), type="negative")  # v2.63
+            return  # v2.63
+        for key in ("pos", "view"):                      # Verzeichnisse der Grafik, die nach dem Namen des Blatts geordnet sind  # v2.63
+            table = graph_state.get(key)  # v2.63
+            if isinstance(table, dict) and name in table:  # v2.63
+                table[new] = table.pop(name)  # v2.63
+        rebuild_sheet_tabs()  # v2.63
+
+    def duplicate_sheet(src, new_name):  # v2.63
+        src.Copy(new_name, copydata=True)                # wie im Tk-Menue (XLA_Application.copy_tab); legt die Kopie am Ende an und macht sie zum aktiven Blatt  # v2.63
+        dst = wb.Sheets(new_name)  # v2.63
+        if getattr(src, "shapelist", None):              # Symbole und Testtasten gehoeren zur Zeile: Copy kopiert nur die Zellen  # v2.63
+            import copy as _copy  # v2.63
+            dst.setData(_copy.deepcopy(src.getData()), copyshapes=True)  # v2.63
+        dst.set_tab_color(getattr(src, "tab_color", ""))  # wie in Excel: die Kopie hat dieselbe Reiterfarbe  # v2.63
+        return dst  # v2.63
+
+    async def tab_duplicate(name):  # v2.63
+        ws_ = state["sheets"].get(name)  # v2.63
+        if ws_ is None:  # v2.63
+            return  # v2.63
+        if not is_data_sheet(ws_):  # v2.63
+            ui.notify(tr("Nur Datenblätter lassen sich duplizieren."), type="warning")  # v2.63
+            return  # v2.63
+        names = [w.Name for w in wb.sheets]  # v2.63
+        originals = sheet_original_names()  # v2.63
+        new = await WT.ask_name(ui, tr("Blatt duplizieren"), tr("Name der Kopie"), WT.unique_name(name, names), lambda v: WT.validate_sheet_name(v, names, reserved=originals))  # v2.63
+        if not new:  # v2.63
+            return  # v2.63
+        try:  # v2.63
+            new_ws = duplicate_sheet(ws_, new)  # v2.63
+        except Exception as ex:                          # noqa: BLE001  # v2.63
+            logger.exception("Blatt nicht dupliziert")  # v2.63
+            ui.notify(tr("Das Blatt konnte nicht dupliziert werden: {ex}", ex=ex), type="negative")  # v2.63
+            return  # v2.63
+        rebuild_sheet_tabs()  # v2.63
+        activate(new_ws)  # v2.63
+
+    tab_callbacks = {"rename": tab_rename, "duplicate": tab_duplicate, "step": tab_step, "color": tab_set_color, "color_custom": tab_custom_color}  # v2.63
+    ui.add_body_html("<script>" + WT.load_js() + "</script>")        # Ziehen der Reiter mit Alt + Maustaste  # v2.63
+    ui.on("mll_tab_move", on_tab_move)  # v2.63
 
     rebuild_sheet_tabs()
 
@@ -2421,7 +2580,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             finally:  # v2.29
                 graph_state["guard"] = False  # v2.29
         grid_wrap.set_visibility(web_graph.show_table(view))  # v2.29
-        graph_panel.set_visible(web_graph.show_graph(view))  # v2.29
+        # graph_panel.set_visible(web_graph.show_graph(view))  # v2.60 (entfallen)
+        graph_panel.set_visible(web_graph.show_graph(view), both=web_graph.show_graph(view) and web_graph.show_table(view))     # Beides: Trennlinie zwischen Grafik und Tabelle  # v2.60
 
     def graph_layout_of(ws):  # v2.40
         """Layout der Anlagenansicht des Blatts (Modus, Bild, Positionen); wird mit der Arbeitsmappe gesichert"""  # v2.40
@@ -2468,7 +2628,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     def plant_controls(ws):  # v2.45
         """Kopfzeile der Anlagenansicht: Ansicht, Bild, Groesse, Raster und die letzte rueckgaengig zu machende Aenderung"""  # v2.45
         layout = graph_layout_of(ws)  # v2.45
-        graph_panel.set_plant_controls(layout["mode"], bool(layout["image"]), layout["size"], layout["snap"], lundo_label(ws))  # v2.45
+        # graph_panel.set_plant_controls(layout["mode"], bool(layout["image"]), layout["size"], layout["snap"], lundo_label(ws))  # v2.60 (entfallen)
+        graph_panel.set_plant_controls(layout["mode"], bool(layout["image"]), layout["size"] if layout["mode"] == "plant" else layout["chain_size"], layout["snap"], lundo_label(ws))  # v2.60
 
     def lundo_stack(ws):  # v2.45
         """Journal fuer Rueckgaengig: nur Positionen, Ausrichten und Groesse der Anlagenansicht (je Blatt), keine Aenderungen an der Tabelle"""  # v2.45
@@ -2477,7 +2638,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     def lundo_push(ws, label):  # v2.45
         """Den Stand VOR einer Aenderung merken (alle Positionen und die Groesse; sie sind klein), hoechstens 30 Schritte"""  # v2.45
         stack = lundo_stack(ws)  # v2.45
-        stack.append({"label": label, "size": graph_layout_of(ws)["size"], "pos": dict(graph_state.setdefault("pos", {}).get(ws.Name) or {})})  # v2.45
+        # stack.append({"label": label, "size": graph_layout_of(ws)["size"], "pos": dict(graph_state.setdefault("pos", {}).get(ws.Name) or {})})  # v2.60 (entfallen)
+        stack.append({"label": label, "size": graph_layout_of(ws)["size"], "chain_size": graph_layout_of(ws)["chain_size"], "pos": dict(graph_state.setdefault("pos", {}).get(ws.Name) or {})})  # v2.60
         del stack[:-30]  # v2.45
 
     def lundo_label(ws):  # v2.45
@@ -2493,6 +2655,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         entry = stack.pop()  # v2.45
         layout = graph_layout_of(ws_)  # v2.45
         layout["size"] = entry["size"]  # v2.45
+        layout["chain_size"] = entry.get("chain_size", layout["chain_size"])  # v2.60
         graph_state.setdefault("pos", {})[ws_.Name] = dict(entry["pos"])  # v2.45
         layout_changed(ws_)  # v2.45
         refresh_graph(ws_, True)  # v2.45
@@ -2537,6 +2700,14 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         elif action == "size":                               # Schieber in der Kopfzeile: Groesse der Kaestchen  # v2.45
             if isinstance(value, (list, tuple)) and value:  # v2.45
                 value = value[0]  # v2.45
+            if layout["mode"] == "chains":                    # Ansicht Ketten: eigene Groesse der Kaestchen (je Blatt), getrennt von der Anlage  # v2.60
+                chain_size = GL.clamp_chain_size(value)  # v2.60
+                if chain_size != layout["chain_size"]:  # v2.60
+                    lundo_push(ws_, tr("Größe der Kästchen ändern"))  # v2.60
+                    layout["chain_size"] = chain_size  # v2.60
+                    layout_changed(ws_)  # v2.60
+                    refresh_graph(ws_, True)  # v2.60
+                return  # v2.60
             size = GL.clamp_size(value)  # v2.45
             if size != layout["size"]:  # v2.45
                 lundo_push(ws_, tr("Größe der Kästchen ändern"))  # v2.45
@@ -2620,14 +2791,16 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             return  # v2.29
         from headless import headless_graph  # v2.29
         # model = headless_graph.build_model(ws, collect_icons(ws), M09.Get_Display_Cells(ws))  # v2.57 (entfallen)
-        model = headless_graph.build_model(ws, collect_icons(ws), M09.Get_Display_Cells(ws), icon_large=icon_large_url)  # v2.57
+        # model = headless_graph.build_model(ws, collect_icons(ws), M09.Get_Display_Cells(ws), icon_large=icon_large_url)  # v2.61 (entfallen)
+        model = headless_graph.build_model(ws, collect_icons(ws), M09.Get_Display_Cells(ws), icon_large=icon_large_url, tests=graph_test_buttons(ws))  # v2.61
         graph_state["key"] = key  # v2.29
         graph_state["model"] = model                       # fuer die Operationen (Makro anhaengen)  # v2.32
         # graph_panel.update(model, selected_row(ws))  # v2.40 (entfallen)
         layout = graph_layout_of(ws)  # v2.40
         # graph_panel.set_plant_controls(layout["mode"], bool(layout["image"]))  # v2.45 (entfallen)
         plant_controls(ws)  # v2.45
-        graph_panel.update(model, selected_row(ws), plant_data_for(ws, model))  # v2.40
+        # graph_panel.update(model, selected_row(ws), plant_data_for(ws, model))  # v2.60 (entfallen)
+        graph_panel.update(model, selected_row(ws), plant_data_for(ws, model), layout["chain_size"])  # v2.60
         if tree_state["items"] is None and not tree_state["loading"]:  # v2.32
             tree_state["loading"] = True  # v2.32
             try:  # v2.32
@@ -3430,6 +3603,10 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     await run_in_worker(lambda: tb_press(ws_, shape))
                     t_tb2 = time.perf_counter()  # v1.49
                     show(ws_)                       # Umschalter aendern Name, Farbe und Text
+                    try:  # v2.61
+                        refresh_graph(ws_, True)    # auch in der Grafik (Kette und Anlage): die Farbe und der Text der Testtaste aendern sich, die Version der Tabelle nicht  # v2.61
+                    except Exception:               # noqa: BLE001  die Grafik darf die Testtaste nie stoeren  # v2.61
+                        logger.exception("Grafik nach der Testtaste nicht aktualisiert")  # v2.61
                     if TIMING_DEBUG:  # v1.49
                         logger.info("TIMING: Testtaste: Arduino-Befehl %d ms, Aktualisierung der Tabelle %d ms", (t_tb2 - t_tb) * 1000, (time.perf_counter() - t_tb2) * 1000)  # v1.49
                 elif phase == "up":
@@ -3837,7 +4014,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
     def workbook_signature():
         # return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or [])) for s in list(wb.sheets))  # v2.40 (entfallen)
-        return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0)) for s in list(wb.sheets))  # v2.40
+        # return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0)) for s in list(wb.sheets))  # v2.63 (entfallen)
+        return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0), s.Name, getattr(s, "tab_color", "")) for s in list(wb.sheets))  # v2.63 Name und Reiterfarbe  # v2.63
 
     def save_now():
         sync_all_sheets()

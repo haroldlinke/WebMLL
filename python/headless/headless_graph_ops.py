@@ -1,8 +1,8 @@
-# Datei-Version: 1.06 (2026-10-28) - headless_graph_ops.py
+# Datei-Version: 1.07 (2026-10-28) - headless_graph_ops.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph_ops.py
 # Path:           headless/headless_graph_ops.py
-# Version:        1.06
+# Version:        1.07
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -14,6 +14,7 @@
 #   1.04  2026-10-28  Stufe 2c: Verschieben nur innerhalb der eigenen Kette (plan_move, move_destination, neighbour_target, move_row) und Loeschen (delete_row)
 #   1.05  2026-10-28  plan_move: 'Ende der Kette' mit dem Kanal einer anderen Kette wird abgelehnt
 #   1.06  2026-10-28  macro_of_row: Makro einer Zeile (Name, Zeile in Lib_Macros) fuer Umschalt-Doppelklick
+#   1.07  2026-10-28  plan_move_many und move_many: mehrere markierte Knoten einer Kette gemeinsam verschieben
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht, Stufe 2: Operationen auf der Tabelle (Zeile einfuegen am Ende einer Kette, Zeile entfernen).
@@ -153,6 +154,70 @@ def plan_move(model: dict, row: int, target: dict):  # v1.04
     if kind not in ("before", "after") or target_row not in rows or target_row == row:  # v1.04
         return None  # v1.04
     return move_destination(row, kind, target_row)  # v1.04
+
+
+def plan_move_many(model: dict, rows, target: dict):  # v1.07
+    """Mehrere markierte Knoten EINER Kette gemeinsam verschieben (nur innerhalb der Kette, wie plan_move). Die Knoten behalten ihre Reihenfolge in der Kette
+    und stehen danach zusammen vor oder hinter dem Zielknoten (kind before|after) oder am Ende der Kette (kind end).
+    Rueckgabe (plan, grund): plan {"ids": [Kennungen in Kettenreihenfolge], "kind": before|after, "anchor": Kennung des Zielknotens} oder None;
+    grund '' (nichts zu tun oder ungueltig), 'gemischt' (die Knoten liegen in verschiedenen Ketten oder nicht in einer Kette), 'ziel' (das Ziel gehoert zur Auswahl)."""
+    try:  # v1.07
+        wanted = {int(r) for r in rows}  # v1.07
+    except (TypeError, ValueError):  # v1.07
+        return None, ""  # v1.07
+    chains = {}  # v1.07
+    for r in wanted:  # v1.07
+        chain = chain_of(model, r)  # v1.07
+        if chain is None:  # v1.07
+            return None, "gemischt"                         # ein Knoten ausserhalb der Ketten (Liste 'Andere') oder unbekannt  # v1.07
+        chains[id(chain)] = chain  # v1.07
+    if len(wanted) < 2 or len(chains) != 1:  # v1.07
+        return (None, "gemischt") if len(chains) > 1 else (None, "")  # v1.07
+    chain = next(iter(chains.values()))  # v1.07
+    nodes = chain["nodes"]  # v1.07
+    order = [n["row"] for n in nodes]  # v1.07
+    ids = {n["row"]: n["id"] for n in nodes}  # v1.07
+    selected = [r for r in order if r in wanted]  # v1.07
+    rest = [r for r in order if r not in wanted]  # v1.07
+    kind = str((target or {}).get("kind", ""))  # v1.07
+    if kind == "end":  # v1.07
+        if (target or {}).get("channel") is not None and str(target.get("channel")) != str(chain["channel"]):  # v1.07
+            return None, ""  # v1.07
+        if not rest:  # v1.07
+            return None, ""  # v1.07
+        kind, anchor = "after", rest[-1]  # v1.07
+    else:  # v1.07
+        try:  # v1.07
+            anchor = int(target.get("row"))  # v1.07
+        except (AttributeError, TypeError, ValueError):  # v1.07
+            return None, ""  # v1.07
+        if kind not in ("before", "after") or anchor not in order:  # v1.07
+            return None, ""  # v1.07
+        if anchor in wanted:  # v1.07
+            return None, "ziel"  # v1.07
+    i = rest.index(anchor)  # v1.07
+    new_order = rest[:i + (1 if kind == "after" else 0)] + selected + rest[i + (1 if kind == "after" else 0):]  # v1.07
+    if new_order == order:  # v1.07
+        return None, ""                                       # liegt schon so  # v1.07
+    return {"ids": [ids[r] for r in selected], "kind": kind, "anchor": ids[anchor]}, ""  # v1.07
+
+
+def move_many(ws, plan: dict, build) -> int:  # v1.07
+    """Fuehrt plan_move_many aus: Knoten fuer Knoten an den Zielknoten (vor ihm in der Reihenfolge, hinter ihm in umgekehrter Reihenfolge), mit frisch
+    gebautem Modell nach jedem Schritt (build() liefert es), weil sich die Zeilennummern aendern. Rueckgabe: Zahl der bewegten Zeilen"""
+    moved = 0  # v1.07
+    ids = list(plan["ids"]) if plan["kind"] == "before" else list(reversed(plan["ids"]))  # v1.07
+    for node_id in ids:  # v1.07
+        model = build()  # v1.07
+        row = next((n["row"] for c in model.get("chains", []) for n in c["nodes"] if n["id"] == node_id), None)  # v1.07
+        anchor = next((n["row"] for c in model.get("chains", []) for n in c["nodes"] if n["id"] == plan["anchor"]), None)  # v1.07
+        if row is None or anchor is None:  # v1.07
+            continue  # v1.07
+        move_to = plan_move(model, row, {"kind": plan["kind"], "row": anchor})  # v1.07
+        if move_to is not None:  # v1.07
+            move_row(ws, row, move_to)  # v1.07
+            moved += 1  # v1.07
+    return moved  # v1.07
 
 
 def neighbour_target(model: dict, row: int, direction: str):  # v1.04

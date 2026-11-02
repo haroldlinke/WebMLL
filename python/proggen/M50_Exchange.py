@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-28) - M50_Exchange.py
+# Datei-Version: 1.02 (2026-11-01) - M50_Exchange.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M50_Exchange.py
 # Path:           proggen/M50_Exchange.py
-# Version:        1.01
-# Last Update:    2026-10-28
+# Version:        1.02
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-28  Get_DestDir_All steht in M02a_Public, nicht in M02_Public
+#   1.02  2026-11-01  Abfrage des LED Kanals: Punkt 3 heisst 'Optionale LED Gruppe 3' (vom Entwickler von Hand korrigiert)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -101,7 +102,8 @@ def Write_Macro_to_Act_Row(MacroTxt, LEDs, InCnt, LocInCh, Comment="", WrapText=
     Row = P01.ActiveCell().Row
     if P01.Cells(Row, M25.LED_Cha_Col) == '':
         while not ResOk:
-            Res = G00.InputBox(M09.Get_Language_Str('Welcher LED Kanal soll verwendet werden?' + vbCr + '  0 = Standard LEDs' + vbCr + '  1 = Taster LEDs' + vbCr + '  2 = Optionale LED Gruppe 2' + vbCr + '  3 = Optionale LED Gruppe 2' + vbCr + vbCr + 'LED Kanal (0..3):'), M09.Get_Language_Str('Eingabe des LED Kanals'), 0)
+            #Res = G00.InputBox(M09.Get_Language_Str('Welcher LED Kanal soll verwendet werden?' + vbCr + '  0 = Standard LEDs' + vbCr + '  1 = Taster LEDs' + vbCr + '  2 = Optionale LED Gruppe 2' + vbCr + '  3 = Optionale LED Gruppe 2' + vbCr + vbCr + 'LED Kanal (0..3):'), M09.Get_Language_Str('Eingabe des LED Kanals'), 0) v2.61
+            Res = G00.InputBox(M09.Get_Language_Str('Welcher LED Kanal soll verwendet werden?' + vbCr + '  0 = Standard LEDs' + vbCr + '  1 = Taster LEDs' + vbCr + '  2 = Optionale LED Gruppe 2' + vbCr + '  3 = Optionale LED Gruppe 3' + vbCr + vbCr + 'LED Kanal (0..3):'), M09.Get_Language_Str('Eingabe des LED Kanals'), 0) #v2.61
             Res = Trim(Res)
             if Res == '':
                 return

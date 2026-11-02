@@ -1,8 +1,8 @@
-# Datei-Version: 1.12 (2026-10-28) - XLA_Application.py
+# Datei-Version: 1.14 (2026-10-28) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.12
+# Version:        1.14
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -19,6 +19,8 @@
 #   1.10  2026-10-21  LoadSheetfromExcelWorkbook: benannte Bereiche mit ungueltigem Bezug (#REF!) und Bereiche werden uebersprungen statt mit IndexError abzubrechen (die Excel-Datei 3.5.0K hat viele Namen mit #REF!)
 #   1.11  2026-10-21  LoadSheetfromExcelWorkbook: das Kuerzel _x000D_ (und andere _xHHHH_) aus Excel wird in das Zeichen umgewandelt (die Meldungen zeigten |_x000D_); find_in_col_ret_col_val: bei langen Texten (nur die ersten 50 Zeichen im Zwischenspeicher) muss die gefundene Zeile den ganzen Text enthalten, sonst genaue Suche (falsche Zeile mit gleichem Anfang in der Tabelle Languages)
 #   1.12  2026-10-28  Das Layout der Anlagenansicht (view_layout) wird mit dem Blatt gesichert und geladen (getData, setData)
+#   1.13  2026-11-01  RoundUp liefert eine ganze Zahl (int), nicht 1.0 (vom Entwickler von Hand korrigiert)
+#   1.14  2026-10-28  Reiterfarbe (tab_color, set_tab_color), Reihenfolge (reorder_sheets) und rename_sheet fuehrt auch den Reiter-Rahmen nach; SheetOrder und TabColors werden mit der Arbeitsmappe gesichert und geladen
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -844,6 +846,8 @@ class CWorkbook(object):
             saveData["Version"]=self.controller.ProgVersion
             saveData["DataVersion"] = self.controller.DataVersion
             saveData["Workbookdata"]= copy.deepcopy(workbookdata)
+            saveData["SheetOrder"] = [s.Name for s in self.sheets]                 # Reihenfolge der Reiter (auch der Kopien)  # v1.14
+            saveData["TabColors"] = {s.Name: s.tab_color for s in self.sheets if getattr(s, "tab_color", "")}      # Reiterfarben  # v1.14
             def _json_default(obj):  # v1.06
                 # Funktionen (Command der Steuerelemente) und andere Objekte kennt JSON nicht: nicht mitsichern statt die ganze Datei abzubrechen
                 logger.debug("Workbook sichern: Wert vom Typ %s wird nicht gesichert", type(obj).__name__)  # v1.06
@@ -860,6 +864,27 @@ class CWorkbook(object):
             logger.debug("Workbook: Save Workbook Error: "+filename)            
         return
     
+    def apply_sheet_layout(self, savedData):  # v1.14
+        """Reihenfolge (SheetOrder) und Farben (TabColors) der Reiter aus einer gesicherten Arbeitsmappe anwenden. Fehlt eines davon (Datei aus aelteren Versionen), bleibt alles, wie es ist."""  # v1.14
+        colors = savedData.get("TabColors") or {}  # v1.14
+        if isinstance(colors, dict):  # v1.14
+            for sheet in self.sheets:  # v1.14
+                if sheet.Name in colors:  # v1.14
+                    sheet.set_tab_color(colors[sheet.Name])  # v1.14
+        order = savedData.get("SheetOrder")  # v1.14
+        if isinstance(order, list) and order:  # v1.14
+            self.reorder_sheets([str(n) for n in order])  # v1.14
+
+    def reorder_sheets(self, names):  # v1.14
+        """Die Blaetter in die Reihenfolge der Namen bringen (Reihenfolge der Reiter und der Auswertung); Blaetter, die nicht in der Liste stehen, folgen in ihrer bisherigen Reihenfolge"""  # v1.14
+        by_name = {s.Name: s for s in self.sheets}  # v1.14
+        ordered = []  # v1.14
+        for name in names:  # v1.14
+            sheet = by_name.pop(name, None)  # v1.14
+            if sheet is not None:  # v1.14
+                ordered.append(sheet)  # v1.14
+        self.sheets[:] = ordered + [s for s in self.sheets if s.Name in by_name]  # v1.14
+
     def LoadWorkbook(self,filename: str,workbookname="", keep_filename=True):
         if shift_key:
             logger.debug("Load Workbook: Shift Key pressed:"+filename+" not loaded")
@@ -937,6 +962,7 @@ class CWorkbook(object):
                         sheet.refreshicons()
                     else:
                         pass #sheet.EventWSchanged(Cells(5,5))  # testHL
+            self.apply_sheet_layout(savedData)                                     # Reihenfolge und Farben der Reiter  # v1.14
         except BaseException as e:
             logger.debug(e, exc_info=True)            
             logger.debug("Workbook: Load Workbook Error"+filename)
@@ -1449,6 +1475,15 @@ class CWorksheet(object):
     def rename_sheet(self, newname):
         oldname = self.Name
         self.Name = newname
+        wb = getattr(self, "Workbook", None)                                       # auch die Verzeichnisse der Arbeitsmappe nachfuehren (Reiter-Rahmen), nicht nur global_worksheet_dict  # v1.14
+        frames = getattr(wb, "tabframedict", None)  # v1.14
+        if isinstance(frames, dict) and oldname in frames:  # v1.14
+            frame = frames.pop(oldname)  # v1.14
+            frames[newname] = frame  # v1.14
+            try:  # v1.14
+                frame.sheetname = newname  # v1.14
+            except Exception:                                                      # noqa: BLE001  # v1.14
+                pass  # v1.14
         global_worksheet_dict[self.Name] = global_worksheet_dict.pop(oldname) 
         
     def init_data(self):
@@ -1457,6 +1492,13 @@ class CWorksheet(object):
         #F00.worksheet_init(self)
         self.DataChanged=False
         
+    def set_tab_color(self, color):  # v1.14
+        """Reiterfarbe des Blatts als '#rrggbb' ('' = keine Farbe). Sie wird mit der Arbeitsmappe gesichert (TabColors); ungueltige Werte ergeben keine Farbe."""  # v1.14
+        text = str(color or "").strip().lower()  # v1.14
+        if len(text) == 4 and text[0] == "#" and all(c in "0123456789abcdef" for c in text[1:]):  # v1.14
+            text = "#" + "".join(c * 2 for c in text[1:])  # v1.14
+        self.tab_color = text if (len(text) == 7 and text[0] == "#" and all(c in "0123456789abcdef" for c in text[1:])) else ""  # v1.14
+
     def sheet_was_modified(self, event: dict):
         self.DataChanged=True
         
@@ -5030,7 +5072,8 @@ class CApplication(object):
         #print("RoundUp")
         if v2 == 0:
             if v1 == int(v1):
-                return v1
+                # return v1 # v2.61
+                return int(v1) # v2.61 result must be integer
             else:
                 return int(v1 + 1)
         else:

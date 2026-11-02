@@ -1,8 +1,8 @@
-# Datei-Version: 1.03 (2026-10-28) - headless_graph_layout.py
+# Datei-Version: 1.04 (2026-10-28) - headless_graph_layout.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph_layout.py
 # Path:           headless/headless_graph_layout.py
-# Version:        1.03
+# Version:        1.04
 # Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -11,6 +11,7 @@
 #   1.01  2026-10-28  image_bytes: ungueltige Base64-Daten werden erkannt (validate=True)
 #   1.02  2026-10-28  Stufe 3: Groesse begrenzen (clamp_size), Raster (snap_value, snap_pos) und Ausrichten (align_positions)
 #   1.03  2026-10-28  Bild ohne Pillow: Kopf lesen (sniff_image), Verkleinern im Browser; image_from_base64
+#   1.04  2026-10-28  Groesse der Kaestchen in der Ansicht Ketten (chain_size, Standard 140, Bereich 30 bis 300), je Blatt, auch in der Datei .MLL_view
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht, Stufe 3: Layout der Anlagenansicht (Hintergrundbild und Positionen der Kaestchen).
@@ -34,6 +35,7 @@ MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 NODE_SIZE = 90                              # Breite eines Kaestchens in Bildpixeln
 DEFAULT_STAGE = (1600, 900)                 # Groesse der Flaeche ohne Hintergrundbild
 MODES = ("chains", "plant")
+CHAIN_SIZE = 140                            # Breite eines Kaestchens in der Ansicht Ketten (Pixel auf dem Bildschirm; die Anlage hat NODE_SIZE)  # v1.04  # v1.04
 MIN_SIZE, MAX_SIZE = 30, 300                # Breite eines Kaestchens in Bildpixeln (Einstellung der Anlagenansicht)  # v1.02
 ALIGN_MODES = ("left", "right", "top", "bottom", "center_x", "center_y", "dist_x", "dist_y")  # v1.02
 
@@ -42,7 +44,8 @@ def new_layout() -> dict:
     # """Leeres Layout: Ansicht Ketten, kein Bild, keine Positionen"""  # v1.02 (entfallen)
     # return {"version": LAYOUT_VERSION, "mode": "chains", "image": None, "size": NODE_SIZE, "nodes": []}  # v1.02 (entfallen)
     """Leeres Layout: Ansicht Ketten, kein Bild, keine Positionen, Raster aus"""  # v1.02
-    return {"version": LAYOUT_VERSION, "mode": "chains", "image": None, "size": NODE_SIZE, "snap": False, "nodes": []}  # v1.02
+    # return {"version": LAYOUT_VERSION, "mode": "chains", "image": None, "size": NODE_SIZE, "snap": False, "nodes": []}  # v1.04 (entfallen)
+    return {"version": LAYOUT_VERSION, "mode": "chains", "image": None, "size": NODE_SIZE, "chain_size": CHAIN_SIZE, "snap": False, "nodes": []}  # v1.04
 
 
 def get_layout(ws) -> dict:
@@ -54,6 +57,7 @@ def get_layout(ws) -> dict:
     layout.setdefault("mode", "chains")
     layout.setdefault("size", NODE_SIZE)
     layout.setdefault("snap", False)  # v1.02
+    layout["chain_size"] = clamp_chain_size(layout.get("chain_size") or CHAIN_SIZE)  # v1.04
     layout.setdefault("nodes", [])
     layout.setdefault("image", None)
     return layout
@@ -140,6 +144,14 @@ def clamp_size(value) -> float:  # v1.02
         return float(max(MIN_SIZE, min(MAX_SIZE, round(float(value)))))  # v1.02
     except (TypeError, ValueError):  # v1.02
         return float(NODE_SIZE)  # v1.02
+
+
+def clamp_chain_size(value) -> float:  # v1.04
+    """Kaestchengroesse der Ansicht Ketten (gleicher Bereich wie die Anlage); Unsinn ergibt die Standardgroesse der Ketten"""  # v1.04
+    try:  # v1.04
+        return float(max(MIN_SIZE, min(MAX_SIZE, round(float(value)))))  # v1.04
+    except (TypeError, ValueError):  # v1.04
+        return float(CHAIN_SIZE)  # v1.04
 
 
 def snap_value(layout: dict) -> float:  # v1.02
@@ -329,4 +341,5 @@ def import_json(text: str) -> dict:
         image = None
     mode = layout.get("mode") if layout.get("mode") in MODES else "chains"
     # return {"version": LAYOUT_VERSION, "mode": mode, "image": image, "size": float(layout.get("size") or NODE_SIZE), "nodes": nodes}  # v1.02 (entfallen)
-    return {"version": LAYOUT_VERSION, "mode": mode, "image": image, "size": clamp_size(layout.get("size") or NODE_SIZE), "snap": bool(layout.get("snap")), "nodes": nodes}  # v1.02
+    # return {"version": LAYOUT_VERSION, "mode": mode, "image": image, "size": clamp_size(layout.get("size") or NODE_SIZE), "snap": bool(layout.get("snap")), "nodes": nodes}  # v1.04 (entfallen)
+    return {"version": LAYOUT_VERSION, "mode": mode, "image": image, "size": clamp_size(layout.get("size") or NODE_SIZE), "chain_size": clamp_chain_size(layout.get("chain_size") or CHAIN_SIZE), "snap": bool(layout.get("snap")), "nodes": nodes}  # v1.04

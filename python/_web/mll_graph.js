@@ -1,4 +1,10 @@
-// Datei-Version: 1.11 (2026-10-30) - mll_graph.js (gilt fuer webMobaLedLib 2.57)
+// Datei-Version: 1.13 (2026-11-01) - mll_graph.js (gilt fuer webMobaLedLib 2.61)
+// 1.13: Testtasten der Tabelle auch in der Kette und in der Anlage (n.tests, unter dem Symbol; erst ab 50 Pixel Kaestchengroesse): Maus runter und hoch gehen wie in der Tabelle
+//       als Ereignis mll_tb {row, k, phase} an den Server (Hoch ueber window, auch wenn das Kaestchen dabei neu gezeichnet wird); ein Druck auf eine Taste waehlt kein Kaestchen aus und zieht nichts
+// 1.12: (1) Groesse der Kaestchen in der Ansicht Ketten einstellbar (model.chain_size, Standard 140): CSS-Variable --cs am Behaelter .mll-g, Symbol, Schrift und Abstaende skalieren;
+// 1.12: (1) Groesse der Kaestchen in der Ansicht Ketten einstellbar (model.chain_size, Standard 140): CSS-Variable --cs am Behaelter .mll-g, Symbol, Schrift und Abstaende skalieren;
+//       (2) mehrere markierte Kaestchen einer Kette lassen sich gemeinsam ziehen (dragData.rows, Meldung mll_graph_cmd move mit target.rows; Kaestchen verschiedener Ketten: Meldung move_mixed);
+//       (3) Trennlinie zwischen Grafik und Tabelle in der Ansicht Beides (split, Stellung in localStorage mll_split)
 // 1.11: Symbole mit hoher Aufloesung (icons_gross, 200 Pixel): iconSrc nimmt n.icon_large, wenn die Anzeige mehr als 64 Geraetepixel braucht (Kette 48 Pixel, Anlage halbe Kaestchengroesse, mal devicePixelRatio), sonst das kleine Symbol
 // 1.10: Hintergrundbild ohne Pillow auf dem Server: pickImage waehlt die Datei, loadImageFile verkleinert sie im Browser (Canvas, hoechstens 2048 Pixel; JPEG, mit Transparenz PNG) und schickt sie per POST an /mll_view_upload; danach meldet emitEvent('mll_graph_image', {token}) oder {error}
 // 1.09: Mehrfachauswahl in Ketten- und Anlagenansicht (Strg-Klick, in der Anlage Umschalt-Ziehen mit Rahmen), mehrere Kaestchen gemeinsam ziehen (place_many), Ausrichten im Kontextmenue (align), Loeschen mehrerer Kaestchen (delete mit rows), Strg+Z meldet undo auch in der Anlage
@@ -17,21 +23,23 @@
 
   var CSS = [
     ".mll-g{display:flex;gap:28px;align-items:flex-start;padding:14px;min-width:max-content}",
-    ".mll-g-chain{display:flex;flex-direction:column;align-items:center;min-width:150px}",
+    ".mll-g-chain{display:flex;flex-direction:column;align-items:center;min-width:calc(var(--cs,140px) + 10px)}",
     ".mll-g-head{text-align:center;margin-bottom:4px;padding:2px 10px;border-bottom:2px solid #1976d2;line-height:1.2}",
     ".mll-g-head b{display:block}",
     ".mll-g-head span{font-size:12px;color:#616161}",
-    ".mll-g-node{position:relative;width:140px;box-sizing:border-box;border:1px solid #9e9e9e;border-radius:6px;background:#fff;color:#212121;padding:10px 6px;text-align:center;cursor:pointer;user-select:none}",
+    ".mll-g-node{position:relative;width:var(--cs,140px);box-sizing:border-box;border:1px solid #9e9e9e;border-radius:6px;background:#fff;color:#212121;padding:calc(var(--cs,140px) * 0.07) calc(var(--cs,140px) * 0.043);text-align:center;cursor:pointer;user-select:none}",
     ".mll-g-node:hover{border-color:#1976d2}",
     ".mll-g-node.mll-sel{border-color:#1976d2;background:#e3f2fd;box-shadow:0 0 0 3px rgba(25,118,210,.35)}",
     ".mll-g-pin{position:absolute;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#616161;border:2px solid #fff;box-sizing:content-box}",
     ".mll-g-in{top:-7px}",
     ".mll-g-out{bottom:-7px}",
-    ".mll-g-line{width:2px;height:20px;background:#616161}",
-    ".mll-g-icon{width:48px;height:48px;object-fit:contain;display:block;margin:0 auto 4px}",
-    ".mll-g-noicon{display:block;width:48px;height:48px;line-height:48px;margin:0 auto 4px;color:#9e9e9e;font-size:22px}",
-    ".mll-g-name{font-size:13px;font-weight:600;word-break:break-word}",
-    ".mll-g-leds{font-size:12px;color:#616161}",
+    ".mll-g-line{width:2px;height:calc(var(--cs,140px) * 0.143);background:#616161}",
+    ".mll-g-icon{width:calc(var(--cs,140px) * 0.343);height:calc(var(--cs,140px) * 0.343);object-fit:contain;display:block;margin:0 auto 4px}",
+    ".mll-g-noicon{display:block;width:calc(var(--cs,140px) * 0.343);height:calc(var(--cs,140px) * 0.343);line-height:calc(var(--cs,140px) * 0.343);margin:0 auto 4px;color:#9e9e9e;font-size:calc(var(--cs,140px) * 0.157)}",
+    ".mll-g-name{font-size:max(8px,calc(var(--cs,140px) * 0.093));font-weight:600;word-break:break-word}",
+    ".mll-g-leds{font-size:max(7px,calc(var(--cs,140px) * 0.086));color:#616161}",
+    ".mll-g-tests{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--cs,140px) * 0.02);margin-top:calc(var(--cs,140px) * 0.03)}",
+    ".mll-g-tb{display:inline-block;box-sizing:border-box;min-width:max(14px,calc(var(--cs,140px) * 0.13));height:max(14px,calc(var(--cs,140px) * 0.13));line-height:max(12px,calc(var(--cs,140px) * 0.115));padding:0 3px;border:1px solid #000;color:#000;text-align:center;font-size:max(8px,calc(var(--cs,140px) * 0.08));cursor:pointer;user-select:none;touch-action:none}",
     ".mll-g-other .mll-g-node{margin-bottom:8px}",
     ".mll-g-other .mll-g-pin{display:none}",
     ".mll-g-other .mll-g-head{border-bottom-color:#9e9e9e}",
@@ -92,32 +100,54 @@
     return (n.icon_large && cssPx * ratio > 64) ? n.icon_large : n.icon;
   }
 
-  function nodeHtml(n, selectedRow, movable) {
-    var cls = "mll-g-node" + (n.row === selectedRow ? " mll-sel" : "");
-    var icon = n.icon ? '<img class="mll-g-icon" src="' + esc(iconSrc(n, 48)) + '" alt="">' : '<span class="mll-g-noicon">?</span>';
-    return '<div class="' + cls + '"' + (movable ? ' draggable="true"' : "") + ' data-row="' + esc(n.row) + '" data-id="' + esc(n.id) + '" title="' + esc(n.tooltip || "") + '">' +
-      '<span class="mll-g-pin mll-g-in"></span>' + icon +
-      '<div class="mll-g-name">' + esc(n.label) + '</div>' +
-      (n.led_text ? '<div class="mll-g-leds">' + esc(n.led_text) + '</div>' : "") +
-      '<span class="mll-g-pin mll-g-out"></span></div>';
+  var CHAIN_BOX = 140, CHAIN_ICON = 0.343;                       // Standardbreite eines Kaestchens in der Kette und Anteil des Symbols (48 von 140 Pixeln)
+
+  function chainBox(model) {
+    var cs = model && parseFloat(model.chain_size);
+    return (cs >= 30 && cs <= 300) ? cs : CHAIN_BOX;
   }
 
-  function chainHtml(chain, selectedRow) {
-    var parts = ['<div class="mll-g-chain" data-channel="' + esc(chain.channel) + '"><div class="mll-g-head"><b>' + esc(chain.title) + '</b><span>' + esc(chain.subtitle) + '</span></div>'];
-    var nodes = chain.nodes || [];
-    for (var i = 0; i < nodes.length; i++) {
-      parts.push('<div class="mll-g-line"></div>');            // vor jedem Knoten eine Linie: vom Kopf der Kette bzw. vom Ausgang des vorigen Knotens zum Eingang
-      parts.push(nodeHtml(nodes[i], selectedRow, true));              // Knoten einer Kette sind ziehbar (nur innerhalb der Kette verschieben, auf den Papierkorb = loeschen)
+  // Testtasten der Tabelle (Shapes mit OnAction DCCSend) am Kaestchen: unter dem Symbol, in der Farbe und mit dem Text der Tabelle; ab TEST_MIN Pixel Kaestchengroesse
+  var TEST_MIN = 50;
+
+  function testsHtml(n, box) {
+    var tests = (n && n.tests) || [];
+    if (!tests.length || !(box >= TEST_MIN)) return "";
+    var parts = ['<div class="mll-g-tests">'];
+    for (var i = 0; i < tests.length; i++) {
+      var color = /^#[0-9a-fA-F]{3,8}$/.test(String(tests[i].c || "")) ? tests[i].c : "#ff8080";
+      parts.push('<span class="mll-g-tb" data-tb-row="' + esc(n.row) + '" data-tb-k="' + i + '" style="background:' + color + '" title="' + esc(tests[i].n || "") + '">' + esc(tests[i].t || "") + '</span>');
     }
     parts.push("</div>");
     return parts.join("");
   }
 
-  function otherHtml(model, selectedRow) {
+  function nodeHtml(n, selectedRow, movable, box) {
+    var cls = "mll-g-node" + (n.row === selectedRow ? " mll-sel" : "");
+    var icon = n.icon ? '<img class="mll-g-icon" src="' + esc(iconSrc(n, Math.round((box || CHAIN_BOX) * CHAIN_ICON))) + '" alt="">' : '<span class="mll-g-noicon">?</span>';
+    return '<div class="' + cls + '"' + (movable ? ' draggable="true"' : "") + ' data-row="' + esc(n.row) + '" data-id="' + esc(n.id) + '" title="' + esc(n.tooltip || "") + '">' +
+      '<span class="mll-g-pin mll-g-in"></span>' + icon +
+      '<div class="mll-g-name">' + esc(n.label) + '</div>' +
+      (n.led_text ? '<div class="mll-g-leds">' + esc(n.led_text) + '</div>' : "") + testsHtml(n, box || CHAIN_BOX) +
+      '<span class="mll-g-pin mll-g-out"></span></div>';
+  }
+
+  function chainHtml(chain, selectedRow, box) {
+    var parts = ['<div class="mll-g-chain" data-channel="' + esc(chain.channel) + '"><div class="mll-g-head"><b>' + esc(chain.title) + '</b><span>' + esc(chain.subtitle) + '</span></div>'];
+    var nodes = chain.nodes || [];
+    for (var i = 0; i < nodes.length; i++) {
+      parts.push('<div class="mll-g-line"></div>');            // vor jedem Knoten eine Linie: vom Kopf der Kette bzw. vom Ausgang des vorigen Knotens zum Eingang
+      parts.push(nodeHtml(nodes[i], selectedRow, true, box));              // Knoten einer Kette sind ziehbar (nur innerhalb der Kette verschieben, auf den Papierkorb = loeschen)
+    }
+    parts.push("</div>");
+    return parts.join("");
+  }
+
+  function otherHtml(model, selectedRow, box) {
     var nodes = model.other || [];
     if (!nodes.length) return "";
     var parts = ['<div class="mll-g-chain mll-g-other"><div class="mll-g-head"><b>' + esc(model.other_title) + '</b><span>' + esc(model.other_subtitle) + '</span></div>'];
-    for (var i = 0; i < nodes.length; i++) parts.push(nodeHtml(nodes[i], selectedRow, false));   // keine Linien und keine Anschluesse: keine Kette; nicht ziehbar
+    for (var i = 0; i < nodes.length; i++) parts.push(nodeHtml(nodes[i], selectedRow, false, box));   // keine Linien und keine Anschluesse: keine Kette; nicht ziehbar
     parts.push("</div>");
     return parts.join("");
   }
@@ -139,8 +169,8 @@
     var cls = "mll-p-node" + (n.row === selectedRow ? " mll-sel" : "");
     var icon = n.icon ? '<img class="mll-p-icon" src="' + esc(iconSrc(n, Math.round(s * 0.5))) + '" alt="" draggable="false" style="width:' + Math.round(s * 0.5) + 'px;height:' + Math.round(s * 0.5) + 'px">' : "";
     return '<div class="' + cls + '" data-row="' + esc(n.row) + '" data-id="' + esc(n.id) + '" data-inchain="' + (item.inChain ? "1" : "0") + '" title="' + esc(n.tooltip || "") +
-      '" style="left:' + pos[0] + 'px;top:' + pos[1] + 'px;width:' + s + 'px;font-size:' + Math.max(8, Math.round(s * 0.13)) + 'px">' + icon +
-      '<div class="mll-p-name">' + esc(n.label) + '</div>' + (n.led_text ? '<div class="mll-p-leds">' + esc(n.led_text) + '</div>' : "") + '</div>';
+      '" style="left:' + pos[0] + 'px;top:' + pos[1] + 'px;width:' + s + 'px;--cs:' + s + 'px;font-size:' + Math.max(8, Math.round(s * 0.13)) + 'px">' + icon +
+      '<div class="mll-p-name">' + esc(n.label) + '</div>' + (n.led_text ? '<div class="mll-p-leds">' + esc(n.led_text) + '</div>' : "") + testsHtml(n, s) + '</div>';
   }
 
   // Linien: je Kette ein Linienzug durch die Mitten der Kaestchen in der Reihenfolge der Kette (nur die Reihenfolge, keine Signalverbindung)
@@ -277,6 +307,76 @@
     return true;
   }
 
+  // ---- Trennlinie zwischen Grafik (oben) und Tabelle (unten) in der Ansicht Beides: ziehen mit Maus oder Finger, Doppelklick = Mitte; die Stellung gilt fuer alle Blaetter
+  var SPLIT_KEY = "mll_split", SPLIT_MIN = 0.12, SPLIT_MAX = 0.88, SPLIT_DEFAULT = 0.5;
+  var splitState = {both: false, installed: false, dragging: false};
+
+  function clampSplit(f) { return Math.max(SPLIT_MIN, Math.min(SPLIT_MAX, f)); }
+
+  function splitFraction() {
+    try {
+      var v = parseFloat(window.localStorage.getItem(SPLIT_KEY));
+      return (v >= SPLIT_MIN && v <= SPLIT_MAX) ? v : SPLIT_DEFAULT;
+    } catch (err) { return SPLIT_DEFAULT; }
+  }
+
+  function saveSplit(f) { try { window.localStorage.setItem(SPLIT_KEY, String(f)); } catch (err) { /* privater Modus */ } }
+
+  function splitParts() {
+    if (typeof document === "undefined") return null;
+    var bar = document.getElementById("mll-splitter"), top = document.querySelector(".mll-graph-wrap"), bottom = document.querySelector(".mll-grid-wrap");
+    return (bar && top && bottom) ? {bar: bar, top: top, bottom: bottom} : null;
+  }
+
+  // Hoehe der oberen Flaeche in Pixeln fuer den Anteil f, gemessen an der Gesamthoehe, die beide Flaechen und die Leiste zusammen haben
+  function splitApply(f) {
+    var p = splitParts();
+    if (!p) return false;
+    if (!splitState.both) { p.bar.style.display = "none"; p.top.style.flex = "1 1 0"; p.bottom.style.flex = "1 1 0"; return true; }
+    p.bar.style.display = "block";
+    p.top.style.flex = "1 1 0"; p.bottom.style.flex = "1 1 0";                         // erst gleichmaessig verteilen, dann die Gesamthoehe messen
+    var total = p.top.offsetHeight + p.bar.offsetHeight + p.bottom.offsetHeight, usable = total - p.bar.offsetHeight;
+    if (usable > 0) p.top.style.flex = "0 0 " + Math.round(usable * clampSplit(f === undefined ? splitFraction() : f)) + "px";
+    return true;
+  }
+
+  // Aufruf vom Server, wenn sich die Ansicht aendert: both = Grafik und Tabelle sind beide sichtbar
+  function split(both) {
+    splitState.both = !!both;
+    var p = splitParts();
+    if (!p) return false;
+    if (!splitState.installed) {
+      splitState.installed = true;
+      p.bar.addEventListener("pointerdown", function (e) {
+        if (!splitState.both || (e.button !== undefined && e.button !== 0)) return;
+        var parts = splitParts();
+        splitState.dragging = true;
+        if (parts.bar.setPointerCapture && e.pointerId !== undefined) { try { parts.bar.setPointerCapture(e.pointerId); } catch (err) { /* nicht noetig */ } }
+        if (e.preventDefault) e.preventDefault();
+      });
+      p.bar.addEventListener("pointermove", function (e) {
+        if (!splitState.dragging) return;
+        var parts = splitParts(), rect = parts.top.getBoundingClientRect();
+        var total = parts.top.offsetHeight + parts.bar.offsetHeight + parts.bottom.offsetHeight, usable = total - parts.bar.offsetHeight;
+        if (usable <= 0) return;
+        var f = clampSplit((e.clientY - rect.top - parts.bar.offsetHeight / 2) / usable);
+        parts.top.style.flex = "0 0 " + Math.round(usable * f) + "px";
+        splitState.fraction = f;
+      });
+      var end = function () {
+        if (!splitState.dragging) return;
+        splitState.dragging = false;
+        if (splitState.fraction !== undefined) saveSplit(splitState.fraction);
+        if (typeof window !== "undefined" && window.dispatchEvent && typeof Event === "function") window.dispatchEvent(new Event("resize"));      // die Tabelle passt ihre Groesse an
+      };
+      p.bar.addEventListener("pointerup", end);
+      p.bar.addEventListener("pointercancel", end);
+      p.bar.addEventListener("dblclick", function () { saveSplit(SPLIT_DEFAULT); splitApply(SPLIT_DEFAULT); if (typeof window !== "undefined" && window.dispatchEvent && typeof Event === "function") window.dispatchEvent(new Event("resize")); });
+      if (typeof window !== "undefined" && window.addEventListener) window.addEventListener("resize", function () { if (splitState.both && !splitState.dragging) splitApply(); });
+    }
+    return splitApply();
+  }
+
   function newChainHtml(model) {
     return '<div class="mll-g-newchain" data-drop="new">' + esc((model && model.new_chain_text) || "") + '</div>' +
       '<div class="mll-g-trash" data-drop="trash">' + esc((model && model.trash_text) || "") + '</div>';       // der Papierkorb erscheint nur, solange ein Kaestchen gezogen wird
@@ -288,9 +388,10 @@
     if (!model || (!chains.length && !(model.other || []).length)) {
       return '<div class="mll-g-empty">' + esc((model && model.empty_text) || "") + '</div>' + (model ? '<div class="mll-g" style="padding-top:0">' + newChainHtml(model) + '</div>' : "");
     }
-    var parts = ['<div class="mll-g">'];
-    for (var i = 0; i < chains.length; i++) parts.push(chainHtml(chains[i], selectedRow));
-    parts.push(otherHtml(model, selectedRow));
+    var box = chainBox(model);
+    var parts = ['<div class="mll-g" style="--cs:' + box + 'px">'];
+    for (var i = 0; i < chains.length; i++) parts.push(chainHtml(chains[i], selectedRow, box));
+    parts.push(otherHtml(model, selectedRow, box));
     parts.push(newChainHtml(model));
     parts.push("</div>");
     return parts.join("");
@@ -397,16 +498,34 @@
     if (!t || !dragData || dragData.kind !== "node") return false;
     if (t.kind === "trash") return true;
     if (t.kind === "end") return t.channel === dragData.channel;
-    if (t.kind === "before" || t.kind === "after") return t.channel === dragData.channel && t.row !== dragData.row;
+    var moving = dragData.rows || [dragData.row];                                    // ein Zug mit mehreren markierten Kaestchen: das Ziel darf keines davon sein
+    if (t.kind === "before" || t.kind === "after") return t.channel === dragData.channel && moving.indexOf(t.row) < 0;
     return false;
   }
 
   function nodeMessage(t) {
-    if (t.kind === "trash") return {cmd: "delete", row: dragData.row};
+    var multi = dragData.rows && dragData.rows.length > 1;
+    if (t.kind === "trash") return multi ? {cmd: "delete", row: dragData.row, target: {rows: dragData.rows}} : {cmd: "delete", row: dragData.row};
     var target = {kind: t.kind};
     if (t.row !== undefined && !isNaN(t.row)) target.row = t.row;
     if (t.channel !== undefined && !isNaN(t.channel)) target.channel = t.channel;
+    if (multi) target.rows = dragData.rows;                                          // alle markierten Kaestchen der Kette gemeinsam (in der Reihenfolge der Kette)
     return {cmd: "move", row: dragData.row, target: target};
+  }
+
+  // Die Zeilen, die mit dem gezogenen Kaestchen gehen: die Mehrfachauswahl, wenn das Kaestchen dazugehoert, sonst nur das Kaestchen.
+  // {rows, channel} oder {mixed: true}, wenn die markierten Kaestchen nicht alle in derselben Kette liegen
+  function dragRows(el, row, channel) {
+    var rows = multiRows(el);
+    if (rows.length < 2 || rows.indexOf(row) < 0) return {rows: [row], channel: channel};
+    var inChain = {};
+    var nodes = el.querySelectorAll ? el.querySelectorAll(".mll-g-node") : [];
+    for (var i = 0; i < nodes.length; i++) {
+      var r = parseInt(nodes[i].getAttribute("data-row"), 10), ch = nodes[i].closest ? nodes[i].closest(".mll-g-chain") : null;
+      if (rows.indexOf(r) >= 0) inChain[r] = (ch && ch.classList && !ch.classList.contains("mll-g-other")) ? parseInt(ch.getAttribute("data-channel"), 10) : null;
+    }
+    for (var k = 0; k < rows.length; k++) if (inChain[rows[k]] !== channel) return {mixed: true};
+    return {rows: rows.slice().sort(function (a, b) { return a - b; }), channel: channel};
   }
 
   function endNodeDrag(el) {
@@ -425,9 +544,19 @@
       if (!node || !chain || (chain.classList && chain.classList.contains("mll-g-other"))) return;
       var row = parseInt(node.getAttribute("data-row"), 10), channel = parseInt(chain.getAttribute("data-channel"), 10);
       if (isNaN(row) || isNaN(channel)) return;
-      dragData = {kind: "node", row: row, channel: channel};
+      var group = dragRows(el, row, channel);
+      if (group.mixed) {                                                              // markierte Kaestchen aus verschiedenen Ketten: nicht ziehen, Meldung
+        if (e.preventDefault) e.preventDefault();
+        if (typeof emitEvent === "function") emitEvent("mll_graph_cmd", {cmd: "move_mixed", row: row});
+        return;
+      }
+      dragData = {kind: "node", row: row, channel: channel, rows: group.rows.length > 1 ? group.rows : null};
       if (e.dataTransfer) { e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", "node"); } catch (err) { /* IE */ } }
       node.classList.add("mll-g-dragging");
+      if (dragData.rows && el.querySelectorAll) {                                      // alle mitgezogenen Kaestchen abblenden
+        var all = el.querySelectorAll(".mll-g-node");
+        for (var q = 0; q < all.length; q++) if (dragData.rows.indexOf(parseInt(all[q].getAttribute("data-row"), 10)) >= 0) all[q].classList.add("mll-g-dragging");
+      }
       if (el.classList) el.classList.add("mll-dragging-node");
     });
     el.addEventListener("dragend", function () {
@@ -632,6 +761,7 @@
     var drag = null, pan = null, band = null;
     el.addEventListener("pointerdown", function (e) {
       if (!el.__mllView || (e.button !== undefined && e.button !== 0)) return;
+      if (e.target && e.target.closest && e.target.closest(".mll-g-tb")) return;                  // Testtaste: kein Ziehen und kein Verschieben der Flaeche
       var node = e.target && e.target.closest ? e.target.closest(".mll-p-node") : null;
       if (node && (e.ctrlKey || e.metaKey)) return;                                       // Strg-Klick wählt nur aus (Klick-Ereignis), kein Ziehen
       if (node) {
@@ -787,9 +917,35 @@
   }
 
   // Die Ereignisse am Behaelter anmelden (einmal je Element; update ruft es bei jedem Zeichnen auf, das ist unschaedlich)
+  // Testtasten am Kaestchen: Maus runter und hoch gehen wie in der Tabelle als mll_tb an den Server. Hoch kommt ueber window, weil das Kaestchen beim Druck neu gezeichnet wird (die Farbe
+  // eines Umschalters aendert sich) und das Ereignis sonst verloren ginge.
+  function sendTest(phase, row, k) {
+    if (typeof emitEvent === "function") emitEvent("mll_tb", {row: row, k: k, phase: phase});
+  }
+
+  function installTests(el) {
+    el.addEventListener("pointerdown", function (e) {
+      var tb = e.target && e.target.closest ? e.target.closest(".mll-g-tb") : null;
+      if (!tb || (e.button !== undefined && e.button !== 0)) return;
+      var row = parseInt(tb.getAttribute("data-tb-row"), 10), k = parseInt(tb.getAttribute("data-tb-k"), 10);
+      if (isNaN(row) || isNaN(k)) return;
+      if (e.preventDefault) e.preventDefault();                                          // kein Ziehen des Kaestchens, kein Text markieren
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();                       // die Anlage darf daraus kein Ziehen machen
+      sendTest("down", row, k);
+      var haveWindow = typeof window !== "undefined" && window.addEventListener && window.removeEventListener;
+      var done = function () {
+        if (haveWindow) { window.removeEventListener("pointerup", done); window.removeEventListener("pointercancel", done); }
+        sendTest("up", row, k);
+      };
+      if (haveWindow) { window.addEventListener("pointerup", done); window.addEventListener("pointercancel", done); } else { done(); }
+    });
+  }
+
   function install(el) {
     if (!el || el.__mllGraphInstalled || !el.addEventListener) return false;
     el.__mllGraphInstalled = true;
+    installTests(el);                                                                      // zuerst: vor dem Ziehen in der Anlage
     installDrop(el);
     installKeys(el);
     installMenu(el);
@@ -846,13 +1002,14 @@
   function hit(e, dbl) {
     var t = e && e.target;
     if (!t || !t.closest) return null;
+    if (t.closest(".mll-g-tb")) return null;                                          // eine Testtaste waehlt kein Kaestchen aus
     var n = t.closest("[data-row]");
     if (!n) return null;
     var row = parseInt(n.getAttribute ? n.getAttribute("data-row") : n.dataset.row, 10);
     return isNaN(row) ? null : {row: row, dbl: !!dbl, shift: !!(e && e.shiftKey)};
   }
 
-  var api = {version: "1.11", iconSrc: iconSrc, css: CSS, escapeHtml: esc, render: render, update: update, select: select, hit: hit, install: install, emitHit: emitHit,
+  var api = {version: "1.13", testsHtml: testsHtml, installTests: installTests, iconSrc: iconSrc, chainBox: chainBox, dragRows: dragRows, split: split, splitFraction: splitFraction, splitApply: splitApply, clampSplit: clampSplit, css: CSS, escapeHtml: esc, render: render, update: update, select: select, hit: hit, install: install, emitHit: emitHit,
              renderTree: renderTree, updateTree: updateTree, treeHit: treeHit, installTree: installTree,
              fitSize: fitSize, loadImageFile: loadImageFile, uploadImage: uploadImage, pickImage: pickImage, plantHtml: plantHtml, installPlant: installPlant, multiRows: multiRows, setMulti: setMulti, toggleMulti: toggleMulti, applyMulti: applyMulti, fitView: fitView, zoomBy: zoomBy, zoomAt: zoomAt, applyView: applyView, updateLines: updateLines,
              fit: function (cid) { var el = (typeof document !== "undefined") ? document.getElementById(cid) : null; return el ? fitView(el) : false; },

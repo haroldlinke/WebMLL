@@ -1,9 +1,9 @@
-# Datei-Version: 1.16 (2026-10-26) - headless_pattgen.py
+# Datei-Version: 1.20 (2026-10-28) - headless_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_pattgen.py
 # Path:           headless/headless_pattgen.py
-# Version:        1.16
-# Last Update:    2026-10-26
+# Version:        1.20
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -25,6 +25,10 @@
 #   1.14  2026-10-23  Dateien im Pattern-Format aus dem Excel-Programm (cp1252) werden auch von sheet_names_in_file und object_lines_in_file richtig gelesen (Blattnamen, Textfelder und Formularknoepfe), nicht nur von Load_Sheets
 #   1.15  2026-10-26  Speichern im Pattern-Format: Datei wird (Programm Einstellungen, Standard an) in den Windows-Zeichensatz umgeschrieben, wenn alle Zeichen Platz haben (fuer das Excel-Programm)
 #   1.16  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
+#   1.17  2026-10-28  Beschreibung des Blatts = msoTextBox0: lesen (description_text) und ersetzen (set_description_lines, description, set_description)
+#   1.18  2026-10-28  Beschreibung: das laengste Textfeld msoTextBox0 (die formatierte Ueberschrift zaehlt nicht), das Format (fetter Anfang) bleibt, solange der Anfang des Textes gleich ist
+#   1.19  2026-10-28  eine einzeilige Ueberschrift mit Farbe ist nie die Beschreibung
+#   1.20  2026-10-28  Format {Attrib}: die zweite Zahl ist das ENDE (nicht die Laenge), das Format bleibt bei gleichem Anfang des Textes
 # ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Pattern_GeneratorPage: baut die Arbeitsmappe "PatternWorkbook" des Patterngenerators.
 
@@ -299,6 +303,121 @@ def col_index(letters):  # v1.01
     for ch in letters.upper():  # v1.01
         n = n * 26 + ord(ch) - 64  # v1.01
     return n - 1  # v1.01
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Beschreibung des Blatts = das Textfeld msoTextBox0 (Deutsch) der Datei .MLL_pcf. Die Web-Oberflaeche legt die Textfelder nicht an: die Zeilen werden beim Laden
+# gemerkt (pcf_objects) und beim Speichern wieder geschrieben. Hier wird aus diesen Zeilen die Beschreibung gelesen und ersetzt, ohne die uebrigen Zeilen
+# (Ueberschrift mit {Attrib}, Texte anderer Sprachen, Formularknoepfe) zu veraendern.
+TEXT_BOX = "msoTextBox"  # v1.17
+DEFAULT_GEOMETRY = "637.2;38.99992;522.3"          # links;oben;breite der Beschreibung auf einem Blatt, wenn die Datei noch keine hat  # v1.17
+
+
+def parse_text_boxes(lines):  # v1.17
+    """Die Textfelder (msoTextBox*) in den gemerkten Zeilen: [{head (msoTextBox0), lang ('0', '1' ... oder '' fuer eine alte Datei ohne Sprache), geo (links;oben;breite;hoehe),
+    text (Zeilen mit \\n verbunden, '|' als Zeilenumbruch gelesen), attrib (Text nach {Attrib} oder None), start, end (Zeilen start bis end-1), lines (Zahl der Textzeilen)}].
+    Folgezeilen sind Zeilen ohne Trennzeichen (mehrzeilige Texte)."""
+    sep = chr(M01.pcfSep)  # v1.17
+    boxes, i, n = [], 0, len(lines)  # v1.17
+    while i < n:  # v1.17
+        tokens = (lines[i] or "").replace("\t", sep).split(sep)  # v1.17
+        if tokens[0].startswith(TEXT_BOX):  # v1.17
+            j = i + 1  # v1.17
+            while j < n and sep not in (lines[j] or "").replace("\t", sep):  # v1.17
+                j += 1  # v1.17
+            full = "\n".join([sep.join(tokens[2:]) if len(tokens) > 2 else ""] + [lines[k] for k in range(i + 1, j)])  # v1.17
+            body, attrib = (full.split("{Attrib}", 1) + [None])[:2]  # v1.17
+            text = body.replace("| ", "|").replace("|", "\n")                     # wie M08.Load_Textbox: '|' ist ein Zeilenumbruch  # v1.17
+            boxes.append({"head": tokens[0], "lang": tokens[0][len(TEXT_BOX):], "geo": tokens[1] if len(tokens) > 1 else "", "text": text, "attrib": attrib,  # v1.17
+                          "start": i, "end": j, "lines": len(text.split("\n"))})  # v1.17
+            i = j  # v1.17
+        else:  # v1.17
+            i += 1  # v1.17
+    return boxes  # v1.17
+
+
+def description_box(boxes):  # v1.17
+    # plain = [b for b in boxes if b["lang"] in ("0", "") and b["attrib"] is None]  # v1.18 (entfallen)
+    # pool = [b for b in plain if b["lang"] == "0"] or plain  # v1.18 (entfallen)
+    """Das Textfeld, das die Beschreibung des Blatts ist: msoTextBox0 (alte Dateien: msoTextBox ohne Nummer). Eine einzeilige formatierte Ueberschrift
+    (Format F... aus {Attrib}, zum Beispiel 'Morsecode by Lorenz') ist keine Beschreibung (auch nicht, wenn es sie allein gibt); von den uebrigen gilt das mit dem laengsten Text. None, wenn es keines gibt.
+    msoTextBox0 hat Vorrang vor einem alten msoTextBox ohne Nummer. (Beschreibungen tragen oft ein Format, zum Beispiel einen fetten Anfang: {Attrib}B1,90.)"""
+    pool = [b for b in boxes if b["lang"] == "0"] or [b for b in boxes if b["lang"] == ""]  # v1.18
+    # if len(pool) > 1:  # v1.19 (entfallen)
+        # body = [b for b in pool if not (b["lines"] == 1 and (b["attrib"] or "").strip().startswith("F"))]  # v1.19 (entfallen)
+        # pool = body or pool  # v1.19 (entfallen)
+    pool = [b for b in pool if not (b["lines"] == 1 and (b["attrib"] or "").strip().startswith("F"))]             # eine einzeilige Ueberschrift mit Farbe ist nie die Beschreibung  # v1.19
+    return max(pool, key=lambda b: len(b["text"])) if pool else None  # v1.17
+
+
+def _kept_attrib(old_text, new_text, attrib):  # v1.18
+    """Das Format ({Attrib}: fett B oder Farbe F von Zeichen Anfang bis Ende) bleibt, wenn der neue Text bis zum letzten formatierten Zeichen derselbe ist (dann stimmen die
+    Positionen noch); sonst None. Die Zeilenumbrueche vor dem Ende zaehlen sicherheitshalber doppelt (Excel zaehlt sie je nach Version als ein oder zwei Zeichen)."""
+    if not attrib or not attrib.strip():  # v1.18
+        return None  # v1.18
+    end = 0  # v1.18
+    for token in attrib.split():  # v1.18
+        parts = token[1:].split(",")  # v1.18
+        try:  # v1.18
+            # end = max(end, int(float(parts[0])) + int(float(parts[1])) - 1)  # v1.20 (entfallen)
+            end = max(end, int(float(parts[1])))                                       # {Attrib}: Format, Anfang, ENDE (kein Laenge; wie M08.Load_Textbox)  # v1.20
+        except (ValueError, IndexError):  # v1.18
+            return None  # v1.18
+    # reach = end + old_text[:end].count("\n")  # v1.20 (entfallen)
+    # return attrib if end > 0 and old_text[:reach] == new_text[:reach] and len(new_text) >= end else None  # v1.20 (entfallen)
+    reach = min(len(old_text), end + old_text[:end].count("\n"))  # v1.20
+    return attrib if end > 0 and old_text[:reach] == new_text[:reach] and len(new_text) >= min(end, len(old_text)) else None  # v1.20
+
+
+def clean_description(text):  # v1.17
+    """Text fuer die Datei: Zeilenumbrueche als \\n, ohne Tabulator, ohne das Trennzeichen der Datei, ohne '|' (waere ein Zeilenumbruch) und ohne {Attrib}; ohne Leerraum am Ende"""  # v1.17
+    text = str(text or "").replace("\r\n", "\n").replace("\r", "\n").replace("\t", "    ")  # v1.17
+    text = text.replace(chr(M01.pcfSep), "-").replace("|", "/").replace("{Attrib}", "(Attrib)")  # v1.17
+    return "\n".join(line.rstrip() for line in text.split("\n")).rstrip()  # v1.17
+
+
+def _number(value):  # v1.17
+    return ("%.4f" % value).rstrip("0").rstrip(".")  # v1.17
+
+
+def description_text(lines):  # v1.17
+    """Beschreibung (Text von msoTextBox0) aus den gemerkten Zeilen eines Blatts, '' ohne"""  # v1.17
+    box = description_box(parse_text_boxes(lines or []))  # v1.17
+    return box["text"] if box else ""  # v1.17
+
+
+def set_description_lines(lines, text):  # v1.17
+    """Die Zeilen mit dem neuen Text als Beschreibung (msoTextBox0). Rueckgabe (neue Zeilen, geaendert). Ist der Text derselbe, bleiben die Zeilen unveraendert (auch ein
+    {Attrib}); sonst steht das Textfeld mit seiner Lage (die Hoehe waechst mit der Zahl der Zeilen), ohne Formate. Leerer Text entfernt das Textfeld. Gab es keines, entsteht
+    eins mit der Lage eines Beispielblatts. Alle anderen Zeilen bleiben, wie sie sind."""
+    sep = chr(M01.pcfSep)  # v1.17
+    lines = list(lines or [])  # v1.17
+    new_text = clean_description(text)  # v1.17
+    box = description_box(parse_text_boxes(lines))  # v1.17
+    old_text = clean_description(box["text"]) if box else ""  # v1.17
+    if new_text == old_text:  # v1.17
+        return lines, False  # v1.17
+    new_lines = new_text.split("\n") if new_text else []  # v1.17
+    if box is None:  # v1.17
+        height = max(20.8315, 15.6 * len(new_lines))  # v1.17
+        block = ["%s0%s%s;%s%s%s" % (TEXT_BOX, sep, DEFAULT_GEOMETRY, _number(height), sep, new_lines[0])] + new_lines[1:]  # v1.17
+        return lines + block, True  # v1.17
+    if not new_lines:  # v1.17
+        return lines[:box["start"]] + lines[box["end"]:], True  # v1.17
+    geo = box["geo"]  # v1.17
+    keep = _kept_attrib(clean_description(box["text"]), new_text, box["attrib"])  # v1.18
+    parts = geo.split(";")  # v1.17
+    if len(parts) == 4 and len(new_lines) != box["lines"]:                               # die Hoehe waechst und schrumpft mit der Zahl der Zeilen  # v1.17
+        try:  # v1.17
+            height = float(parts[3].replace(",", "."))  # v1.17
+            parts[3] = _number(max(20.8315, height * len(new_lines) / max(1, box["lines"])))  # v1.17
+            geo = ";".join(parts)  # v1.17
+        except ValueError:  # v1.17
+            pass  # v1.17
+    block = ["%s0%s%s%s%s" % (TEXT_BOX, sep, geo, sep, new_lines[0])] + new_lines[1:]  # v1.17
+    if keep:  # v1.18
+        block[-1] += "{Attrib}" + keep                                                    # wie Excel: das Format steht hinter dem Text  # v1.18
+    return lines[:box["start"]] + block + lines[box["end"]:], True  # v1.17
 
 
 class HeadlessPatternGeneratorPage:
@@ -893,6 +1012,24 @@ class HeadlessPatternGeneratorPage:
 
     def sheet(self, name):
         return self.workbook.SheetsDict[name]
+
+    def description(self, ws):  # v1.17
+        """Beschreibung des Blatts: der Text des Textfelds msoTextBox0 aus der Datei .MLL_pcf (siehe description_text); '' ohne"""  # v1.17
+        return description_text((getattr(ws, "persistent_controls_dict", None) or {}).get("pcf_objects"))  # v1.17
+
+    def set_description(self, ws, text):  # v1.17
+        """Neue Beschreibung des Blatts: wird beim Speichern als msoTextBox0 in die Datei .MLL_pcf geschrieben (siehe set_description_lines). True, wenn sich etwas aenderte"""  # v1.17
+        pcd = getattr(ws, "persistent_controls_dict", None)  # v1.17
+        if pcd is None:  # v1.17
+            pcd = ws.persistent_controls_dict = {}  # v1.17
+        new_lines, changed = set_description_lines(pcd.get("pcf_objects"), text)  # v1.17
+        if changed:  # v1.17
+            pcd["pcf_objects"] = new_lines  # v1.17
+            try:  # v1.17
+                ws.tksheet.persistent_controls_dict = pcd                          # das Sichern der Arbeitsmappe liest das Woerterbuch des tksheet  # v1.17
+            except Exception:                                                    # noqa: BLE001  # v1.17
+                logger.debug("Woerterbuch des Blatts nicht gesetzt", exc_info=True)  # v1.17
+        return changed  # v1.17
 
     def find_sheet(self, name):  # v1.01
         """Blatt mit dem Namen oder None (SheetsDict kennt kein get)"""  # v1.01

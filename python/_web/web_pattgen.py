@@ -1,9 +1,9 @@
-# Datei-Version: 1.20 (2026-10-27) - web_pattgen.py
+# Datei-Version: 1.21 (2026-10-28) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
-# Version:        1.20
-# Last Update:    2026-10-27
+# Version:        1.21
+# Last Update:    2026-10-28
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -29,6 +29,7 @@
 #   1.18  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 #   1.19  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 #   1.20  2026-10-27  cellStyle setzt Hinter- und Schriftfarbe immer ausdruecklich (leer = zuruecksetzen): AG Grid entfernt einen frueher gesetzten Stil nicht, wenn die Funktion null liefert
+#   1.21  2026-10-28  Beschreibung des Blatts aus msoTextBox0, aenderbar (Textfeld), wird beim Speichern wieder als msoTextBox0 geschrieben
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 
@@ -290,10 +291,16 @@ class PatternView:
             self.rgb = ui.checkbox("RGB LED", on_change=self.on_rgb)  # v1.01
             self.info = ui.label("").classes("text-caption text-grey-8")
 
-        text = page.info_text()  # v1.01
-        if text:  # v1.01
-            with ui.expansion("Beschreibung", icon="info").props("dense").classes("w-full mll-pattdesc"):  # v1.01
-                ui.label(text).style("white-space: pre-wrap").classes("text-caption")  # v1.01
+        # text = page.info_text()  # v1.21 (entfallen)
+        # if text:  # v1.21 (entfallen)
+            # with ui.expansion("Beschreibung", icon="info").props("dense").classes("w-full mll-pattdesc"):  # v1.21 (entfallen)
+                # ui.label(text).style("white-space: pre-wrap").classes("text-caption")  # v1.21 (entfallen)
+        # Beschreibung des Blatts: bei Datenblaettern der Text des Textfelds msoTextBox0 der Datei .MLL_pcf, aenderbar; wird beim Speichern wieder als msoTextBox0 geschrieben
+        self._desc_guard = False  # v1.21
+        self.desc_expansion = ui.expansion("Beschreibung", icon="info").props("dense").classes("w-full mll-pattdesc")  # v1.21
+        with self.desc_expansion:  # v1.21
+            self.desc_input = ui.textarea(placeholder="Beschreibung des Blatts (steht beim Speichern als msoTextBox0 in der Datei .MLL_pcf)").props("outlined dense autogrow debounce=600 input-class=text-caption").classes("w-full")  # v1.21
+            self.desc_input.on_value_change(self.on_description_change)  # v1.21
 
         self.grid_wrap = ui.element("div").classes("w-full mll-pgrid-wrap").style("flex: 1 1 0; min-height: 160px; position: relative")
         with self.grid_wrap:
@@ -848,6 +855,37 @@ class PatternView:
         if meta["shown_rows"] != meta["rows"]:
             text += f", {meta['shown_rows']} sichtbar"
         self.info.set_text(text)
+        try:  # v1.21
+            self.update_description(ws)  # v1.21
+        except Exception:                                    # noqa: BLE001  die Beschreibung darf die Tabelle nie stoeren  # v1.21
+            logger.debug("Beschreibung nicht angezeigt", exc_info=True)  # v1.21
+
+    def update_description(self, ws=None):  # v1.21
+        """Die Beschreibung des Blatts in das Feld: bei Datenblaettern der Text des Textfelds msoTextBox0 (aenderbar), sonst der Hilfetext der Seite (nur lesen)"""  # v1.21
+        ws = ws or self.ws  # v1.21
+        editable = bool(ws is not None and self.page.is_data_sheet(ws))  # v1.21
+        text = self.page.description(ws) if editable else self.page.info_text()  # v1.21
+        self._desc_guard = True  # v1.21
+        try:  # v1.21
+            self.desc_input.set_value(text)  # v1.21
+            if editable:  # v1.21
+                self.desc_input.props(remove="readonly")  # v1.21
+            else:  # v1.21
+                self.desc_input.props("readonly")  # v1.21
+            self.desc_expansion.set_visibility(editable or bool(text))  # v1.21
+        finally:  # v1.21
+            self._desc_guard = False  # v1.21
+
+    def on_description_change(self, e):  # v1.21
+        """Der Anwender hat die Beschreibung geaendert: sie gehoert jetzt zum Blatt (msoTextBox0) und kommt beim Speichern in die Datei"""  # v1.21
+        ws = self.ws  # v1.21
+        if self._desc_guard or ws is None or not self.page.is_data_sheet(ws):  # v1.21
+            return  # v1.21
+        try:  # v1.21
+            if self.page.set_description(ws, e.value):  # v1.21
+                logger.info("Patterngenerator: Beschreibung des Blatts %s geaendert", ws.Name)  # v1.21
+        except Exception:                                    # noqa: BLE001  # v1.21
+            logger.exception("Beschreibung nicht uebernommen")  # v1.21
 
     def apply_design(self, ws, rows, led_count=1):  # v1.14
         """Gestaltung wie im Excel-Patterngenerator: Farben der Kopfzeilen, Schrift der Ergebniszeilen, schwarze Rahmen, zentrierte Zahlen. Die Werte sind aus einem
