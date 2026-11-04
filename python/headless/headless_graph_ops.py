@@ -1,9 +1,9 @@
-# Datei-Version: 1.07 (2026-10-28) - headless_graph_ops.py
+# Datei-Version: 1.07 (2026-11-01) - headless_graph_ops.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph_ops.py
 # Path:           headless/headless_graph_ops.py
 # Version:        1.07
-# Last Update:    2026-10-28
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,7 +14,7 @@
 #   1.04  2026-10-28  Stufe 2c: Verschieben nur innerhalb der eigenen Kette (plan_move, move_destination, neighbour_target, move_row) und Loeschen (delete_row)
 #   1.05  2026-10-28  plan_move: 'Ende der Kette' mit dem Kanal einer anderen Kette wird abgelehnt
 #   1.06  2026-10-28  macro_of_row: Makro einer Zeile (Name, Zeile in Lib_Macros) fuer Umschalt-Doppelklick
-#   1.07  2026-10-28  plan_move_many und move_many: mehrere markierte Knoten einer Kette gemeinsam verschieben
+#   1.07  2026-11-01  plan_move_many und move_many: mehrere markierte Knoten einer Kette gemeinsam verschieben
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht, Stufe 2: Operationen auf der Tabelle (Zeile einfuegen am Ende einer Kette, Zeile entfernen).

@@ -1,4 +1,4 @@
-# Datei-Version: 1.09 (2026-10-28) - web_update.py
+# Datei-Version: 1.10 (2026-11-01) - web_update.py
 """Update der Web-Oberflaeche aus dem neuesten Release auf GitHub (Menue Hilfe -> Update webmobaledlib).
 
 Anders als das Update des Originals (komplettes Ueberschreiben des Programmordners, bei dem Virenscanner wegen der vielen Schreibzugriffe
@@ -97,12 +97,18 @@ class Plan:
     local_modified: list = field(default_factory=list)   # vom Anwender veraenderte Dateien, die ersetzt werden (sie werden gesichert)
     downgrade: bool = False                               # das ZIP hat eine aeltere Version als die installierte: nur nach ausdruecklicher Bestaetigung (apply allow_downgrade)  # v1.02
     first_update: bool = False                            # noch keine Liste der installierten Dateien: es wird nichts geloescht
+    confirm_delete: bool = False                          # mehr als MAX_DELETE Dateien werden geloescht: nur nach ausdruecklicher Bestaetigung (apply allow_many_delete)  # v1.10
     requirements_changed: bool = False
     pi_changed: bool = False
 
     @property
     def empty(self) -> bool:
         return not (self.new or self.changed or self.delete)
+
+    @property  # v1.10
+    def many_deletes(self) -> bool:  # v1.10
+        """Werden mehr als MAX_DELETE Dateien geloescht? Dann fragt die Oberflaeche den Anwender, ob das wirklich gewollt ist (zum Beispiel viele nicht mehr benutzte Symbole)"""  # v1.10
+        return len(self.delete) > MAX_DELETE  # v1.10
 
     @property
     def count(self) -> int:
@@ -380,7 +386,8 @@ def make_plan(project_dir: str, release: Release, version_old: str, manifest: di
         if len(plan.delete) > MAX_DELETE:  # v1.02
             # raise UpdateError(f"Das Update würde {len(plan.delete)} Dateien löschen (mehr als {MAX_DELETE}): Das ZIP ist vermutlich unvollständig oder gehört zu einer anderen "  # v1.08 (entfallen)
                               # "Version. Es wurde nichts verändert.")  # v1.08 (entfallen)
-            raise UpdateError(tr('Das Update würde {anzahl} Dateien löschen (mehr als {grenze}): Das ZIP ist vermutlich unvollständig oder gehört zu einer anderen Version. Es wurde nichts verändert.', anzahl=len(plan.delete), grenze=MAX_DELETE))  # v1.08
+            # raise UpdateError(tr('Das Update würde {anzahl} Dateien löschen (mehr als {grenze}): Das ZIP ist vermutlich unvollständig oder gehört zu einer anderen Version. Es wurde nichts verändert.', anzahl=len(plan.delete), grenze=MAX_DELETE))  # v1.10 (entfallen)
+            plan.confirm_delete = True                          # kein Abbruch mehr: der Anwender wird gefragt, ob wirklich so viele Dateien geloescht werden sollen (ein unvollstaendiges ZIP faengt die Pruefung auf die Zahl der Dateien ab)  # v1.10
     changed_all = set(plan.new) | set(plan.changed)
     plan.requirements_changed = bool(changed_all & {"install/requirements-web.txt", "pi/requirements-pi.txt"})
     plan.pi_changed = any(r.startswith("pi/") for r in changed_all | set(plan.delete))
@@ -490,15 +497,18 @@ def _verify(project_dir: str, release: Release, relpaths: list) -> None:  # v1.0
                     raise _Failed(relpath, f"Syntaxfehler ({ex})") from ex  # v1.03
 
 
-def apply(project_dir: str, release: Release, plan: Plan, progress=None, allow_downgrade: bool = False) -> Result:  # v1.02
+# def apply(project_dir: str, release: Release, plan: Plan, progress=None, allow_downgrade: bool = False) -> Result:  # v1.10 (entfallen)
+def apply(project_dir: str, release: Release, plan: Plan, progress=None, allow_downgrade: bool = False, allow_many_delete: bool = False) -> Result:  # v1.10
     """Plan ausfuehren, ALLES ODER NICHTS: sichern, Journal schreiben, neue und geaenderte Dateien schreiben, veraltete loeschen, alles pruefen, zuletzt recover.py,
     webmobaledlib.py und release_manifest.json, Journal loeschen, Liste der installierten Dateien erneuern. Schlaegt ein Schritt fehl, wird der alte Stand aus der
     Sicherung wiederhergestellt (UpdateError). Bricht der Prozess mittendrin ab, macht recover.py beim naechsten Start das Update rueckgaengig.
-    Ein ZIP mit aelterer Version wird nur mit allow_downgrade=True installiert (ausdrueckliche Bestaetigung des Anwenders)."""
+    Ein ZIP mit aelterer Version wird nur mit allow_downgrade=True installiert (ausdrueckliche Bestaetigung des Anwenders).
+    Werden mehr als MAX_DELETE Dateien geloescht, geschieht das nur mit allow_many_delete=True (ebenfalls nach ausdruecklicher Bestaetigung)."""
     if plan.downgrade and not allow_downgrade:  # v1.02
         # raise UpdateError(f"Das ZIP hat die ältere Version {plan.version_new} (installiert: {plan.version_old}). Ohne ausdrückliche Bestätigung wird nichts verändert.")  # v1.08 (entfallen)
         raise UpdateError(tr('Das ZIP hat die ältere Version {neue_version} (installiert: {installierte_version}). Ohne ausdrückliche Bestätigung wird nichts verändert.', neue_version=plan.version_new, installierte_version=plan.version_old))  # v1.08
-    if len(plan.delete) > MAX_DELETE:  # v1.02
+    # if len(plan.delete) > MAX_DELETE:  # v1.10 (entfallen)
+    if len(plan.delete) > MAX_DELETE and not allow_many_delete:  # v1.10
         # raise UpdateError(f"Das Update würde {len(plan.delete)} Dateien löschen (mehr als {MAX_DELETE}). Es wurde nichts verändert.")  # v1.08 (entfallen)
         raise UpdateError(tr('Das Update würde {anzahl} Dateien löschen (mehr als {grenze}). Es wurde nichts verändert.', anzahl=len(plan.delete), grenze=MAX_DELETE))  # v1.08
     result = Result()

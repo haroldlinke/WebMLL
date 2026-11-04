@@ -1,15 +1,16 @@
-# Datei-Version: 1.01 (2026-10-28) - web_sheet_tabs.py
+# Datei-Version: 1.02 (2026-11-01) - web_sheet_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_sheet_tabs.py
 # Path:           _web/web_sheet_tabs.py
-# Version:        1.01
-# Last Update:    2026-10-28
+# Version:        1.02
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-11-01  Neu: Reiterfarben (Kontrastfarbe der Schrift, hellerer Verlauf des gewaehlten Reiters), Kontextmenue der Blattreiter (Umbenennen, Duplizieren,
 #                     Nach links und rechts verschieben, Reiterfarbe), Regeln fuer Namen und Verschieben als reine Funktionen
-#   1.01  2026-10-28  Schriftfarbe nach WCAG-Kontrast (weiss ab 3:1, sonst schwarz); plan_move aendert nichts, wenn die Reihenfolge der sichtbaren Reiter gleich bleibt
+#   1.01  2026-11-01  Schriftfarbe nach WCAG-Kontrast (weiss ab 3:1, sonst schwarz); plan_move aendert nichts, wenn die Reihenfolge der sichtbaren Reiter gleich bleibt
+#   1.02  2026-11-01  Reiterfarbe: gemeinsame Farbwahl (web_dialogs.color_input)
 # ----------------------------------------------------------------------------------------------
 """Blattreiter des Programm Generators (Reiter am unteren Rand der Tabelle).
 
@@ -216,10 +217,12 @@ async def ask_name(ui, title, label, value, check):
 
 async def ask_color(ui, title, value):
     """Fenster zur Wahl einer beliebigen Reiterfarbe. Rueckgabe: '#rrggbb' oder None (Abbrechen)"""
-    from _web.web_dialogs import safe_delete
+    # from _web.web_dialogs import safe_delete  # v1.02 (entfallen)
+    from _web.web_dialogs import safe_delete, color_input  # v1.02
     with ui.dialog().props("persistent") as dlg, ui.card().classes("min-w-[320px]"):
         ui.label(title).classes("text-h6")
-        entry = ui.color_input(label=tr("Farbe"), value=normalize_color(value) or "#1976d2").classes("w-full")
+        # entry = ui.color_input(label=tr("Farbe"), value=normalize_color(value) or "#1976d2").classes("w-full")  # v1.02 (entfallen)
+        entry = color_input(ui, label=tr("Farbe"), value=normalize_color(value) or "#1976d2").classes("w-full")  # v1.02
         with ui.row().classes("justify-end w-full"):
             ui.button(tr("OK"), on_click=lambda: dlg.submit(normalize_color(entry.value))).classes("mll-default")
             ui.button(tr("Abbrechen"), on_click=lambda: dlg.submit(None)).props("flat").classes("mll-cancel")

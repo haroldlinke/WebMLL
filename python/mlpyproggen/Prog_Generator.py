@@ -1,9 +1,9 @@
-# Datei-Version: 1.06 (2026-10-28) - Prog_Generator.py
+# Datei-Version: 1.08 (2026-11-03) - Prog_Generator.py
 # ----------------------------------------------------------------------------------------------
 # Name:           Prog_Generator.py
 # Path:           mlpyproggen/Prog_Generator.py
-# Version:        1.06
-# Last Update:    2026-10-28
+# Version:        1.08
+# Last Update:    2026-11-03
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,6 +14,8 @@
 #   1.04  2026-10-28  _drain_output gibt die letzten Zeilen an die Auswertung weiter: UnknownPackageError steht meist in den letzten Zeilen, die erst nach dem Ende des Prozesses gelesen werden
 #   1.05  2026-10-28  Meldung mit Anleitung, wenn PlatformIO den Git-Client braucht (Pico) und er fehlt
 #   1.06  2026-10-28  Hinweis nennt den Knopf Git installieren
+#   1.07  2026-11-01  Hinweis bei fehlendem git nennt den Knopf Git installieren fuer alle Betriebssysteme und winget fuer Windows
+#   1.08  2026-11-03  start_ARDUINO_program_cmd: Parameter title ersetzt die Ueberschrift 'Kompilieren und Hochladen gestartet' (fertige Dateien werden nicht kompiliert)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -879,7 +881,8 @@ class Prog_GeneratorPage(tk.Frame):
             #Debug.Print('Compile and upload duration: ' + P01.Format(P01.Time() - Start, 'hh:mm:ss'))
             self.Show_Status_for_a_while(M09.Get_Language_Str('Programm erfolgreich hochgeladen. Kompilieren und Hochladen dauerte ') + P01.Format(self.upload_duration, 'hh:mm:ss'), '00:02:00')
     
-    def start_ARDUINO_program_cmd(self,startfile,arduino_type="Left", empty_text=True, show_intro=True):
+    # def start_ARDUINO_program_cmd(self,startfile,arduino_type="Left", empty_text=True, show_intro=True):  # v1.08 (entfallen)
+    def start_ARDUINO_program_cmd(self,startfile,arduino_type="Left", empty_text=True, show_intro=True, title=""):  # v1.08
         self.Update_Compile_Time(Start=True)
         macrodata = self.controller.MacroDef.data.get("ARDUINOMonitorPage",{})
         self.ARDUINO_message1 = macrodata.get("Message_1","")
@@ -893,7 +896,8 @@ class Prog_GeneratorPage(tk.Frame):
         
         Mode = arduino_type
         
-        self.arduinoMonitorPage.add_text_to_textwindow("\n\n*******************************************************\n"+self.ARDUINO_message1+"\n*******************************************************\n\n")
+        # self.arduinoMonitorPage.add_text_to_textwindow("\n\n*******************************************************\n"+self.ARDUINO_message1+"\n*******************************************************\n\n")  # v1.08 (entfallen)
+        self.arduinoMonitorPage.add_text_to_textwindow("\n\n*******************************************************\n"+(title if title else self.ARDUINO_message1)+"\n*******************************************************\n\n")        # eigene Ueberschrift statt "Kompilieren und Hochladen gestartet ... Kaffee" (zum Beispiel fuer einen Schritt des schnellen Bootloaders oder das Hochladen einer fertigen Datei)  # v1.08
         
         if show_intro:
             if (Mode == 'Left'):
@@ -1154,7 +1158,8 @@ class Prog_GeneratorPage(tk.Frame):
                 self.arduinoMonitorPage.add_text_to_textwindow("\n*****************************************************\n",highlight="Error")
                 if any("Please install Git" in l or "GitNotFound" in l for l in collected):                  # PlatformIO holt die Plattform des Pico aus GitHub und braucht dafuer den Git-Client  # v1.05
                     # self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("PlatformIO braucht für dieses Board den Git-Client (git), er ist auf diesem Rechner nicht installiert. Linux (Mint, Ubuntu, Debian, Raspberry Pi OS): im Terminal  sudo apt install git  eingeben. macOS: im Terminal  xcode-select --install  eingeben. Windows: Git von https://git-scm.com/download/win installieren und das Programm danach neu starten. Dann noch einmal übersetzen.") + "\n", highlight="Error")  # v1.06 (entfallen)
-                    self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("PlatformIO braucht für dieses Board den Git-Client (git), er ist auf diesem Rechner nicht installiert. Linux (Mint, Ubuntu, Debian, Raspberry Pi OS): in den Optionen (Entwicklungsumgebung) den Knopf Git installieren drücken oder im Terminal  sudo apt install git  eingeben. macOS: im Terminal  xcode-select --install  eingeben. Windows: Git von https://git-scm.com/download/win installieren und das Programm danach neu starten. Dann noch einmal übersetzen.") + "\n", highlight="Error")  # v1.06
+                    # self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("PlatformIO braucht für dieses Board den Git-Client (git), er ist auf diesem Rechner nicht installiert. Linux (Mint, Ubuntu, Debian, Raspberry Pi OS): in den Optionen (Entwicklungsumgebung) den Knopf Git installieren drücken oder im Terminal  sudo apt install git  eingeben. macOS: im Terminal  xcode-select --install  eingeben. Windows: Git von https://git-scm.com/download/win installieren und das Programm danach neu starten. Dann noch einmal übersetzen.") + "\n", highlight="Error")  # v1.07 (entfallen)
+                    self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("PlatformIO braucht für dieses Board den Git-Client (git), er ist auf diesem Rechner nicht installiert. In den Optionen (Entwicklungsumgebung) den Knopf Git installieren drücken (Linux, Windows, macOS). Von Hand: Linux (Mint, Ubuntu, Debian, Raspberry Pi OS): im Terminal  sudo apt install git  eingeben. macOS: im Terminal  xcode-select --install  eingeben. Windows: im Terminal  winget install --id Git.Git -e  eingeben oder Git von https://git-scm.com/download/win installieren; danach das Programm neu starten. Dann noch einmal übersetzen.") + "\n", highlight="Error")  # v1.07
                 if any("UnknownPackageError" in l for l in collected):  # v1.03
                     self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("Die Paketverwaltung von PlatformIO findet ein Paket nicht (UnknownPackageError, siehe oben). Das hilft meist: Internetverbindung prüfen und das Hochladen später noch einmal versuchen. Bleibt es dabei, bitte in einem Terminal 'pio pkg show' mit dem oben genannten Paket und 'pio --version' ausführen und die Ausgabe mit der Protokolldatei melden.") + "\n")  # v1.03
                 return M40.Failure

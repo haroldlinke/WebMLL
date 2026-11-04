@@ -3,7 +3,7 @@
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  Copyright (C) 2018 - 2021  Hardi Stengelin: MobaLedLib@gmx.de
- Copyright (C) 2020 - 2021  Juergen Winkler: MobaLedLib@gmx.at
+ Copyright (C) 2020 - 2026  Juergen Winkler: MobaLedLib@gmx.at
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -1520,6 +1520,7 @@ void MobaLedLib_C::Inc_cp(uint8_t Type)
      case RANDMUX_T             : IncCP_RandMux();       break;
 #                                                                                                                  endif
 #                                                                                                                  if _USE_WELDING
+     case WELDING_CONT_T        :                                                                                   // 26.10.26: Was missing => endless loop in InpChannel_used()
      case WELDING_T             : IncCP_Welding();       break;
 #                                                                                                                  endif
 #                                                                                                                  if _USE_COPYLED

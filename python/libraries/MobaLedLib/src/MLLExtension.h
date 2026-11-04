@@ -55,6 +55,7 @@ class MLLExtension
     // On multicore CPUs the additional loop. FastLED and MobaLedLib is always processed in main (=other) loop
     virtual void loop2(MobaLedLib_C& mobaLedLib) {};
 #endif    
+
 #ifdef USE_EXTENSIONS_V2
     // the callback is called every time an accessory command should be processed
     // receivedAddr: 1-2048
@@ -69,12 +70,14 @@ class MLLExtension
     // >0 .. continue core processing
     virtual uint16_t onAccessoryCommand(MobaLedLib_C& mobaLedLib, uint16_t receivedAddr, uint8_t direction, uint8_t outputPower, uint16_t channel, const Ext_Addr_T extAddrTable[], uint16_t extAddrCount) { return receivedAddr; }
 #endif
+    
   protected:
     CRGB* Get_LEDPtr(MobaLedLib_C& mobaLedLib, ledNr_t ledNr)
     {
         return &mobaLedLib.leds[ledNr];
     };
 };
+
 #ifdef USE_EXTENSIONS_V2
 class MLLExtensionV2 : public MLLExtension
 {
@@ -170,5 +173,6 @@ class ExtensionProcessor
     return receivedAddr;
   }
 #endif
+  
 };
 #endif

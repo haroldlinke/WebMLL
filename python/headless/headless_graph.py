@@ -1,16 +1,16 @@
-# Datei-Version: 1.03 (2026-10-28) - headless_graph.py
+# Datei-Version: 1.03 (2026-11-01) - headless_graph.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph.py
 # Path:           headless/headless_graph.py
 # Version:        1.03
-# Last Update:    2026-10-28
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-28  Neu: Modell der Ketten fuer die grafische Ansicht (Stufe 1)
 #   1.01  2026-10-28  LED Nr im Format Kanal-Nummer (1-5) wird gelesen; Makros mit Einzel-LEDs (C1-1, C2-1, ...) gehoeren in die Kette; mehrzeilige LEDs-Zellen
-#   1.02  2026-10-28  Knoten haben icon_large (Symbol mit hoher Aufloesung), wenn es eines gibt
-#   1.03  2026-10-28  Knoten haben tests (Testtasten der Zeile)
+#   1.02  2026-10-30  Knoten haben icon_large (Symbol mit hoher Aufloesung), wenn es eines gibt
+#   1.03  2026-11-01  Knoten haben tests (Testtasten der Zeile)
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht des Programm Generators, Stufe 1: das Modell der Ketten.

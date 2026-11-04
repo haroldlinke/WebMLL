@@ -1,4 +1,4 @@
-# Datei-Version: 1.05 (2026-10-21) - web_layout.py
+# Datei-Version: 1.08 (2026-11-03) - web_layout.py
 """Kompaktes Layout fuer kleine Bildschirme (Programm Einstellungen -> Darstellung).
 
 Drei Stufen: "normal" (Aus), "compact" (Ein) und "auto" (kompakt, wenn das Browserfenster niedriger als AUTO_HEIGHT Pixel ist). Die Umschaltung
@@ -28,6 +28,17 @@ CSS = """
 .mll-header { flex-wrap: wrap; }
 .mll-header > .mll-menu { order: 10; flex: 1 1 100%; }
 .mll-tool-text.mll-hide-normal { display: none; }
+/* Knoepfe der Werkzeugleiste (2.68): moderne Flaeche, Symbol ohne Text, uebersetzter Text; eingedrueckt beim Klicken und solange der Befehl laeuft (mll-pressed, web_toolbar.py) */
+.q-btn.mll-tool { background: linear-gradient(#ffffff, #eef2f6); border: 1px solid #cfd8dc; border-radius: 8px; padding: 4px 8px 3px; transition: background-color .12s, box-shadow .12s, border-color .12s; }
+.q-btn.mll-tool:hover { background: linear-gradient(#ffffff, #e3ecf5); border-color: #90a4ae; box-shadow: 0 1px 3px rgba(0, 0, 0, .18); }
+.q-btn.mll-tool:active, .q-btn.mll-tool.mll-pressed { background: #d6e0ea; border-color: #78909c; box-shadow: inset 0 2px 5px rgba(0, 0, 0, .32); }
+.q-btn.mll-tool:active .mll-tool-img, .q-btn.mll-tool.mll-pressed .mll-tool-img, .q-btn.mll-tool:active .mll-tool-text, .q-btn.mll-tool.mll-pressed .mll-tool-text { transform: translateY(1px); }
+.mll-tool-text { font-size: 11px; line-height: 1.15; text-align: center; color: #263238; min-height: 2.3em; }        /* immer zwei Zeilen hoch: alle Knoepfe gleich hoch, auch wenn ein Text (in einer Sprache) nur eine Zeile hat */
+.q-btn.mll-tool .q-btn__content { flex-direction: column; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 2px; }      /* Symbol oben, Text darunter (der Inhalt eines q-btn ist sonst eine Zeile) */
+.body--dark .q-btn.mll-tool { background: linear-gradient(#455a64, #37474f); border-color: #546e7a; }
+.body--dark .q-btn.mll-tool:hover { background: linear-gradient(#546e7a, #455a64); border-color: #78909c; }
+.body--dark .q-btn.mll-tool:active, .body--dark .q-btn.mll-tool.mll-pressed { background: #263238; border-color: #90a4ae; box-shadow: inset 0 2px 5px rgba(0, 0, 0, .6); }
+.body--dark .mll-tool-text { color: #eceff1; }
 .mll-connect { white-space: nowrap; }
 
 /* ---------- Kompaktes Layout (Klasse mll-compact am html-Element) ---------- */
@@ -51,7 +62,7 @@ CSS = """
 .mll-compact .mll-tool { min-height: 22px; padding: 0 7px; border: 1px solid #b7c0cc; border-radius: 3px; background: #f4f6f9; }
 .mll-compact .mll-tool-img { display: none !important; }
 .mll-compact .mll-tool-text.mll-hide-normal { display: block; }
-.mll-compact .mll-tool-text { font-size: 12px !important; white-space: nowrap !important; line-height: 1.2; }
+.mll-compact .mll-tool-text { font-size: 12px !important; white-space: nowrap !important; line-height: 1.2; min-height: 0 !important; }
 .mll-compact .mll-info { position: fixed; right: 10px; bottom: 3px; font-size: 11px; z-index: 5; pointer-events: none; }
 .mll-compact .sheet-tabs { min-height: 24px; }
 .mll-compact .sheet-tabs .q-tab { min-height: 22px; padding: 0 10px; font-size: 12px; }

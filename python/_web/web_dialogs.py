@@ -1,9 +1,9 @@
-# Datei-Version: 1.08 (2026-10-28) - web_dialogs.py
+# Datei-Version: 1.09 (2026-11-01) - web_dialogs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_dialogs.py
 # Path:           _web/web_dialogs.py
-# Version:        1.08
-# Last Update:    2026-10-28
+# Version:        1.09
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.06  2026-10-20  Web-Formular fuer UserForm_ConfirmLicense (LNet Lizenzbestimmungen): vorher Fehler 'HeadlessAppController' object has no attribute 'wait_window'
 #   1.07  2026-10-28  open_url: Adresse in einem neuen Tab des Webbrowsers oeffnen
 #   1.08  2026-10-28  show_busy und hide_busy: Hinweisfenster mit Drehzeichen fuer lange Aktionen
+#   1.09  2026-11-01  color_input: Farbwahl geht rechts neben dem Pipettenknopf auf, nicht ueber den Knoepfen OK und Abbrechen
 # ----------------------------------------------------------------------------------------------
 """Web-Dialoge fuer MsgBox und InputBox (NiceGUI) mit Bruecke aus dem Worker-Thread.
 
@@ -111,6 +112,17 @@ def page_gone(client=None) -> bool:
     """True, wenn die Seite (der Client) schon geloescht ist: neu geladen, Reiter geschlossen, Browser eingeschlafen"""
     client = client if client is not None else _bridge.get("client")
     return bool(getattr(client, "_deleted", False))
+
+
+def color_input(ui, **kwargs):  # v1.09
+    """ui.color_input mit einer Farbwahl, die RECHTS neben dem Pipettenknopf aufgeht und nicht darunter: darunter lag sie ueber den Knoepfen OK und Abbrechen des Fensters
+    (man musste erst irgendwo hinklicken, damit sie wieder verschwand). Die Farbwahl ist das Menue der Eingabe (color_input.picker); gibt es es in einer anderen Fassung von
+    NiceGUI nicht, bleibt alles wie in NiceGUI."""
+    entry = ui.color_input(**kwargs)  # v1.09
+    picker = getattr(entry, "picker", None)  # v1.09
+    if picker is not None and hasattr(picker, "props"):  # v1.09
+        picker.props('anchor="top right" self="top left"')  # v1.09
+    return entry  # v1.09
 
 
 def safe_delete(element) -> None:

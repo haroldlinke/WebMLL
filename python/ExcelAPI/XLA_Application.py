@@ -1,9 +1,9 @@
-# Datei-Version: 1.14 (2026-10-28) - XLA_Application.py
+# Datei-Version: 1.16 (2026-11-01) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.14
-# Last Update:    2026-10-28
+# Version:        1.16
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -20,7 +20,9 @@
 #   1.11  2026-10-21  LoadSheetfromExcelWorkbook: das Kuerzel _x000D_ (und andere _xHHHH_) aus Excel wird in das Zeichen umgewandelt (die Meldungen zeigten |_x000D_); find_in_col_ret_col_val: bei langen Texten (nur die ersten 50 Zeichen im Zwischenspeicher) muss die gefundene Zeile den ganzen Text enthalten, sonst genaue Suche (falsche Zeile mit gleichem Anfang in der Tabelle Languages)
 #   1.12  2026-10-28  Das Layout der Anlagenansicht (view_layout) wird mit dem Blatt gesichert und geladen (getData, setData)
 #   1.13  2026-11-01  RoundUp liefert eine ganze Zahl (int), nicht 1.0 (vom Entwickler von Hand korrigiert)
-#   1.14  2026-10-28  Reiterfarbe (tab_color, set_tab_color), Reihenfolge (reorder_sheets) und rename_sheet fuehrt auch den Reiter-Rahmen nach; SheetOrder und TabColors werden mit der Arbeitsmappe gesichert und geladen
+#   1.14  2026-11-01  Reiterfarbe (tab_color, set_tab_color), Reihenfolge (reorder_sheets) und rename_sheet fuehrt auch den Reiter-Rahmen nach; SheetOrder und TabColors werden mit der Arbeitsmappe gesichert und geladen
+#   1.15  2026-11-01  Mehrfachauswahl von Zeilen: CWorksheet.getSelectedRows und CSelection._selectedRow liefern alle markierten Zeilen (Block von der ersten bis zur letzten), nicht nur die erste
+#   1.16  2026-11-01  CSelection.EntireRow: die markierten Zeilen (vorher um eine Zeile nach oben verschoben: Zeile kopieren, ausblenden und loeschen wirkten auf die Zeile darueber)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -2049,6 +2051,11 @@ class CWorksheet(object):
             # return currently_selected[0]  # v1.01 (ersetzt: angezeigter Index, bei ausgeblendeten Zeilen falsch)
             return self.displayed_row_to_data(currently_selected[0])  # v1.01
         
+    def getSelectedRows(self):  # v1.15
+        """Alle markierten Zeilen als Datenindizes (0-basiert, aufsteigend): ganze markierte Zeilen und die Zeilen markierter Zellen. Leer, wenn nichts markiert ist."""  # v1.15
+        selected = self.tksheet.get_selected_rows(get_cells_as_rows=True, return_tuple=True)  # v1.15
+        return sorted({self.displayed_row_to_data(r) for r in selected})  # v1.15
+
     def getSelectedCell(self):
         currently_selected = list(self.tksheet.get_selected_cells())
         if currently_selected == []:
@@ -4208,12 +4215,19 @@ class CSelection(object):
     Cells = property(get_Cells, set_Cells, doc='Selection-Cells')    
     
     def _selectedRow(self):
-        return [self.ws.getSelectedRow()]
+        # return [self.ws.getSelectedRow()]  # v1.15 (entfallen)
+        # Excel: Selection.Rows ist der markierte Block von der ersten bis zur letzten Zeile (Zeile kopieren, loeschen und verschieben wirken auf alle markierten Zeilen);
+        # eine einzelne Zelle oder Zeile ergibt wie bisher genau eine Zeile
+        rows = self.ws.getSelectedRows() if hasattr(self.ws, "getSelectedRows") else []  # v1.15
+        if not rows:  # v1.15
+            return [self.ws.getSelectedRow()]  # v1.15
+        return list(range(rows[0], rows[-1] + 1))  # v1.15
     
     def get_entirerow(self):
         selectedrows = self._selectedRow()
         lastcolumn =  self.ws.tksheet.get_total_columns()
-        entirerow = CRange((selectedrows[0],1),(selectedrows[-1],lastcolumn),parenttype="EntireRow")
+        # entirerow = CRange((selectedrows[0],1),(selectedrows[-1],lastcolumn),parenttype="EntireRow")  # v1.16 (entfallen)
+        entirerow = CRange((selectedrows[0] + 1,1),(selectedrows[-1] + 1,lastcolumn),parenttype="EntireRow")      # _selectedRow liefert 0-basierte Zeilen, CRange rechnet 1-basiert: bisher war es die Zeile DARUEBER  # v1.16
         return entirerow
     def set_entirerow(self,param):
         pass

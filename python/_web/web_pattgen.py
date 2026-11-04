@@ -1,9 +1,9 @@
-# Datei-Version: 1.21 (2026-10-28) - web_pattgen.py
+# Datei-Version: 1.21 (2026-11-01) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
 # Version:        1.21
-# Last Update:    2026-10-28
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -29,7 +29,7 @@
 #   1.18  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 #   1.19  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 #   1.20  2026-10-27  cellStyle setzt Hinter- und Schriftfarbe immer ausdruecklich (leer = zuruecksetzen): AG Grid entfernt einen frueher gesetzten Stil nicht, wenn die Funktion null liefert
-#   1.21  2026-10-28  Beschreibung des Blatts aus msoTextBox0, aenderbar (Textfeld), wird beim Speichern wieder als msoTextBox0 geschrieben
+#   1.21  2026-11-01  Beschreibung des Blatts aus msoTextBox0, aenderbar (Textfeld), wird beim Speichern wieder als msoTextBox0 geschrieben
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 

@@ -1,9 +1,9 @@
-# Datei-Version: 1.20 (2026-10-28) - headless_pattgen.py
+# Datei-Version: 1.20 (2026-11-01) - headless_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_pattgen.py
 # Path:           headless/headless_pattgen.py
 # Version:        1.20
-# Last Update:    2026-10-28
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -25,10 +25,10 @@
 #   1.14  2026-10-23  Dateien im Pattern-Format aus dem Excel-Programm (cp1252) werden auch von sheet_names_in_file und object_lines_in_file richtig gelesen (Blattnamen, Textfelder und Formularknoepfe), nicht nur von Load_Sheets
 #   1.15  2026-10-26  Speichern im Pattern-Format: Datei wird (Programm Einstellungen, Standard an) in den Windows-Zeichensatz umgeschrieben, wenn alle Zeichen Platz haben (fuer das Excel-Programm)
 #   1.16  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
-#   1.17  2026-10-28  Beschreibung des Blatts = msoTextBox0: lesen (description_text) und ersetzen (set_description_lines, description, set_description)
-#   1.18  2026-10-28  Beschreibung: das laengste Textfeld msoTextBox0 (die formatierte Ueberschrift zaehlt nicht), das Format (fetter Anfang) bleibt, solange der Anfang des Textes gleich ist
-#   1.19  2026-10-28  eine einzeilige Ueberschrift mit Farbe ist nie die Beschreibung
-#   1.20  2026-10-28  Format {Attrib}: die zweite Zahl ist das ENDE (nicht die Laenge), das Format bleibt bei gleichem Anfang des Textes
+#   1.17  2026-11-01  Beschreibung des Blatts = msoTextBox0: lesen (description_text) und ersetzen (set_description_lines, description, set_description)
+#   1.18  2026-11-01  Beschreibung: das laengste Textfeld msoTextBox0 (die formatierte Ueberschrift zaehlt nicht), das Format (fetter Anfang) bleibt, solange der Anfang des Textes gleich ist
+#   1.19  2026-11-01  eine einzeilige Ueberschrift mit Farbe ist nie die Beschreibung
+#   1.20  2026-11-01  Format {Attrib}: die zweite Zahl ist das ENDE (nicht die Laenge), das Format bleibt bei gleichem Anfang des Textes
 # ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Pattern_GeneratorPage: baut die Arbeitsmappe "PatternWorkbook" des Patterngenerators.
 

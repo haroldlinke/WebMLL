@@ -1,9 +1,9 @@
-# Datei-Version: 1.13 (2026-10-28) - web_graph.py
+# Datei-Version: 1.13 (2026-11-01) - web_graph.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_graph.py
 # Path:           _web/web_graph.py
 # Version:        1.13
-# Last Update:    2026-10-28
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -19,8 +19,8 @@
 #   1.09  2026-10-28  Klick und Doppelklick melden die Umschalt-Taste an on_hit (Umschalt-Doppelklick = Dialog mit den Parametern)
 #   1.10  2026-10-28  Stufe 3: Groesse (Schieber), Raster, Rueckgaengig in der Kopfzeile; Befehle place_many, align, undo und delete mit mehreren Zeilen; Texte des Ausrichtens
 #   1.11  2026-10-28  Hintergrundbild ohne Pillow: Knopf oeffnet das Dateifenster im Browser, Upload per POST (mll_view_upload), Ereignis mll_graph_image
-#   1.12  2026-10-28  view_model und update bekommen chain_size (Groesse der Kaestchen in der Ansicht Ketten)
-#   1.13  2026-10-28  Groesse und Rueckgaengig in beiden Ansichten, Trennlinie zwischen Grafik und Tabelle (Ansicht Beides)
+#   1.12  2026-11-01  view_model und update bekommen chain_size (Groesse der Kaestchen in der Ansicht Ketten)
+#   1.13  2026-11-01  Groesse und Rueckgaengig in beiden Ansichten, Trennlinie zwischen Grafik und Tabelle (Ansicht Beides)
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht des Programm Generators, Stufe 1: Verbindung zwischen Modell, Seite und Browser.

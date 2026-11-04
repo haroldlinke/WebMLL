@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-10-28) - headless_graph_layout.py
+# Datei-Version: 1.04 (2026-11-01) - headless_graph_layout.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph_layout.py
 # Path:           headless/headless_graph_layout.py
 # Version:        1.04
-# Last Update:    2026-10-28
+# Last Update:    2026-11-01
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,7 +11,7 @@
 #   1.01  2026-10-28  image_bytes: ungueltige Base64-Daten werden erkannt (validate=True)
 #   1.02  2026-10-28  Stufe 3: Groesse begrenzen (clamp_size), Raster (snap_value, snap_pos) und Ausrichten (align_positions)
 #   1.03  2026-10-28  Bild ohne Pillow: Kopf lesen (sniff_image), Verkleinern im Browser; image_from_base64
-#   1.04  2026-10-28  Groesse der Kaestchen in der Ansicht Ketten (chain_size, Standard 140, Bereich 30 bis 300), je Blatt, auch in der Datei .MLL_view
+#   1.04  2026-11-01  Groesse der Kaestchen in der Ansicht Ketten (chain_size, Standard 140, Bereich 30 bis 300), je Blatt, auch in der Datei .MLL_view
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht, Stufe 3: Layout der Anlagenansicht (Hintergrundbild und Positionen der Kaestchen).

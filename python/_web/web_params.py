@@ -1,4 +1,4 @@
-# Datei-Version: 1.03 (2026-10-26) - web_params.py
+# Datei-Version: 1.05 (2026-11-01) - web_params.py
 """Web-Version von create_macroparam_frame/create_macroparam_content (pyMobaLedLib.py) fuer die Einstellungsseiten.
 
 Die Einstellungsseiten (ConfigurationPage "Programm Einstellungen", ProgGenConfigPage, ARDUINOConfigPage) sind nicht von
@@ -17,6 +17,8 @@ from __future__ import annotations
 import os
 import logging
 import types
+
+from _web import web_dialogs                    # color_input: Farbwahl neben dem Knopf  # v1.05
 try:  # v1.02
     from _web.web_i18n import tr  # v1.02
 except ImportError:  # v1.02                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.02
@@ -150,7 +152,8 @@ class ParamPanel:
             el._mll_values, el._mll_texts = list(values), list(texts)
             return el
         if ptype == "ChooseColor":
-            return ui.color_input(label=label, value=str(default) or "#FFFFFF").props("dense outlined").classes("w-full")
+            # return ui.color_input(label=label, value=str(default) or "#FFFFFF").props("dense outlined").classes("w-full")  # v1.04 (entfallen)
+            return web_dialogs.color_input(ui, label=label, value=str(default) or "#FFFFFF").props("dense outlined").classes("w-full")        # Farbwahl neben dem Knopf, nicht ueber den Knoepfen des Fensters  # v1.04
         logger.info("Parametertyp %r (%s) wird in der Web-Oberflaeche nicht unterstuetzt", ptype, key)
         # return ui.label(f"(Typ {ptype!r} wird im Web noch nicht unterstützt)").classes("text-grey-6")  # v1.02 (entfallen)
         return ui.label(tr('(Typ {ptype!r} wird im Web noch nicht unterstützt)', ptype=ptype)).classes("text-grey-6")  # v1.02

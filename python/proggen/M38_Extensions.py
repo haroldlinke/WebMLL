@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-21) - M38_Extensions.py
+# Datei-Version: 1.02 (2026-11-03) - M38_Extensions.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M38_Extensions.py
 # Path:           proggen/M38_Extensions.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.02
+# Last Update:    2026-11-03
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-21  Extensions-Schnittstelle V2: MinimumMobaLedLibVersion aus der JSON-Datei, #define USE_EXTENSIONS_V2 ab Mindestversion 3.5.0 (Version K des Excel-Programms)
+#   1.02  2026-11-03  Header: #include nur der benutzten Extensions (wie im VBA-Original), nicht aller installierten; unter PlatformIO fehlten die nicht benutzten in platformio.ini: fatal error P_ScheduleDuoMLX.h
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -532,7 +533,8 @@ def Write_Header_File_Extension_Before_Config(fp):
             VBFiles.writeText(fp, '// ----- at least one extion uses Externions API V2 -----', '\n')  # v1.01
             VBFiles.writeText(fp, '#define USE_EXTENSIONS_V2', '\n')  # v1.01
             VBFiles.writeText(fp, '', '\n')  # v1.01
-        for Extension in Extensions:
+        # for Extension in Extensions:  # v1.02 (entfallen)
+        for Extension in __ExtensionsActive.values():                  # nur die benutzten Extensions (wie im VBA-Original: ExtensionsActive.Items); vorher alle installierten  # v1.02
             if Extension.MacroIncludes != '':
                 if HeaderWritten == False:
                     VBFiles.writeText(fp, '// ----- dynamic extensions section begin -----', '\n')
@@ -561,7 +563,8 @@ def Write_Header_File_Extension_After_Config(fp):
         VBFiles.writeText(fp, '// ----- dynamic extensions section begin -----', '\n')
         VBFiles.writeText(fp, '#include <MLLExtension.h>', '\n')
         VBFiles.writeText(fp, '', '\n')
-        for Extension in Extensions:
+        # for Extension in Extensions:  # v1.02 (entfallen)
+        for Extension in __ExtensionsActive.values():                  # nur die benutzten Extensions (wie im VBA-Original: ExtensionsActive.Items); vorher alle installierten  # v1.02
             if Extension.Includes != '':
                 VBFiles.writeText(fp, '// Extension ' + Extension.Name, '\n')
                 for p_str in Split(Extension.Includes, ','):

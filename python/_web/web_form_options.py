@@ -1,4 +1,4 @@
-# Datei-Version: 1.14 (2026-10-28) - web_form_options.py
+# Datei-Version: 1.17 (2026-11-03) - web_form_options.py
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -20,6 +20,8 @@ import logging
 import os  # v1.10
 import sys
 import textwrap
+
+from headless import headless_git as HG                          # Git finden und installieren (Windows, macOS, Linux: Texte)  # v1.15  # v1.15
 
 from _web import web_dialogs as wd
 try:  # v1.04
@@ -370,13 +372,18 @@ def make_class(Base):
                              "buttons": [{"text": tr("PlatformIO prüfen"), "handler": "__Check_PIO_Button_Click", "disabled": False,  # v1.04
                                           # "label": tr("Zeigt, ob PlatformIO installiert ist, und seine Version")}]})  # v1.05 (entfallen)
                                           "label": tr("Zeigt, ob PlatformIO installiert ist, und seine Version")}] +  # v1.05
+                                        [{"text": tr("PlatformIO-Zwischenspeicher löschen"), "handler": "__Pio_Cache_Button_Click", "disabled": False,                     # v1.16  # v1.16
+                                          "label": tr("Löscht den Zwischenspeicher von PlatformIO (übersetzte Dateien und Kopien der Bibliotheken im Projekt, Download-Zwischenspeicher) und erzwingt beim nächsten Übersetzen einen vollständigen Neuaufbau. Sinnvoll, wenn PlatformIO nach einer Änderung der Bibliothek MobaLedLib noch die alte Fassung benutzt. Plattformen und Compiler bleiben erhalten.")}] +  # v1.16
                                         ([{"text": tr("USB-Zugriff für den Pico einrichten"), "handler": "__Pico_Udev_Button_Click", "disabled": False,  # v1.05
                                            "label": tr("Linux: richtet einmalig die Regel ein, mit der PlatformIO den Pico im BOOTSEL-Modus ansprechen darf (fragt nach dem Passwort). Ohne sie meldet das Hochladen: picotool was unable to connect.")}]  # v1.05
                                          # if sys.platform.startswith("linux") else [])})  # v1.13 (entfallen)
                                          if sys.platform.startswith("linux") else []) +  # v1.13
-                                        ([{"text": tr("Git installieren"), "handler": "__Install_Git_Button_Click", "disabled": False,          # nur Linux und nur, wenn git fehlt  # v1.13
-                                           "label": tr("Linux: installiert den Git-Client (git). PlatformIO braucht ihn für das Board Raspberry Pi Pico (fragt nach dem Passwort). Ohne git meldet das Übersetzen: Please install Git client.")}]  # v1.13
-                                         if sys.platform.startswith("linux") and not M08.Git_Installed() else [])})  # v1.13
+                                        # ([{"text": tr("Git installieren"), "handler": "__Install_Git_Button_Click", "disabled": False,          # nur Linux und nur, wenn git fehlt  # v1.15 (entfallen)
+                                           # "label": tr("Linux: installiert den Git-Client (git). PlatformIO braucht ihn für das Board Raspberry Pi Pico (fragt nach dem Passwort). Ohne git meldet das Übersetzen: Please install Git client.")}]  # v1.15 (entfallen)
+                                         # if sys.platform.startswith("linux") and not M08.Git_Installed() else [])})  # v1.15 (entfallen)
+                                        ([{"text": tr("Git installieren"), "handler": "__Install_Git_Button_Click", "disabled": False,          # unter Linux, Windows und macOS, nur wenn git fehlt  # v1.15
+                                           "label": tr(HG.button_label())}]  # v1.15
+                                         if not M08.Git_Installed() else [])})  # v1.15
                 tabs.append({"name": M09.Get_Language_Str("Update"), "kind": "list", "buttons": tab_buttons(
                     buttons, ["__Update_to_Arduino_Button_Click", "__Update_Beta_Button_Click",
                               "__Show_Lib_and_Board_Page_Button_Click"]),
@@ -387,7 +394,8 @@ def make_class(Base):
                 tabs.append({"name": M09.Get_Language_Str("Bootloader"), "kind": "list", "buttons": tab_buttons(
                     # buttons, ["__WLAN_Pico_Button_Click"] if wlan_inst else ["__FastBootloader_Button_Click"])})  # v1.07 (entfallen)
                     buttons, ["__WLAN_Pico_Button_Click"] if wlan_inst else ["__FastBootloader_Button_Click"]),  # v1.07
-                    "ide_only": not wlan_inst})                      # der schnelle Bootloader braucht ArduinoISP und avrdude der IDE; der Knopf fuer den WLAN-Pico nur eine Webseite  # v1.07
+                    # "ide_only": not wlan_inst})                      # der schnelle Bootloader braucht ArduinoISP und avrdude der IDE; der Knopf fuer den WLAN-Pico nur eine Webseite  # v1.17 (entfallen)
+                    "ide_only": False})                      # der schnelle Bootloader braucht ArduinoISP und avrdude der IDE; der Knopf fuer den WLAN-Pico nur eine Webseite  # v1.17
             lower = [dict(buttons[h][0], handler=h) for h in ("__HardiForum_Button_Click", "__Close_Button_Click") if h in buttons]
             return {"title": M09.Get_Language_Str("Optionen und spezielle Funktionien"), "tabs": tabs,
                     "pages": pages, "lower": lower}
@@ -456,19 +464,57 @@ def make_class(Base):
             else:  # v1.05
                 P01.MsgBox(tr("Die Regel konnte nicht eingerichtet werden.") + "\n\n" + text, vbCritical, "PlatformIO")  # v1.05
 
+        def _web_pio_cache(self):  # v1.16
+            """Knopf PlatformIO-Zwischenspeicher löschen: nach Rückfrage den Ordner .pio der Projekte dieses Programms und den Download-Zwischenspeicher von PlatformIO löschen;
+            das nächste Übersetzen baut alles neu auf (PlatformIO behält sonst Kopien der Bibliothek MobaLedLib, auch wenn sich eine .h-Datei geändert hat)"""
+            import proggen.M08_ARDUINO as M08  # v1.16
+            import headless.headless_pio_cache as HC  # v1.16
+            title = tr("PlatformIO-Zwischenspeicher löschen")  # v1.16
+            plan = M08.PIO_Cache_Plan()  # v1.16
+            if not plan:  # v1.16
+                P01.MsgBox(tr("Es gibt nichts zu löschen: PlatformIO hat noch keinen Zwischenspeicher angelegt."), ns["vbInformation"], title)  # v1.16
+                return  # v1.16
+            lines = []  # v1.16
+            for entry in plan:  # v1.16
+                if entry["kind"] == "project":  # v1.16
+                    lines.append("  " + tr("Übersetzte Dateien und Kopien der Bibliotheken im Projekt: {pfad} ({groesse})", pfad=entry["path"], groesse=HC.human_size(entry["size"])))  # v1.16
+                else:  # v1.16
+                    lines.append("  " + tr("Download-Zwischenspeicher von PlatformIO: {pfad} ({groesse})", pfad=entry["path"], groesse=HC.human_size(entry["size"])))  # v1.16
+            question = (tr("Der Zwischenspeicher von PlatformIO wird gelöscht, damit beim nächsten Übersetzen alles neu aufgebaut wird (zum Beispiel nach einer Änderung der Bibliothek MobaLedLib):")  # v1.16
+                        + "\n\n" + "\n".join(lines) + "\n\n"  # v1.16
+                        + tr("Die Plattformen und Compiler von PlatformIO bleiben erhalten. Das nächste Übersetzen dauert länger, weil die Bibliotheken neu geholt werden. Fortfahren?"))  # v1.16
+            if P01.MsgBox(question, ns.get("vbYesNo", 4) + ns.get("vbQuestion", 32), title) != ns.get("vbYes", 6):  # v1.16
+                return  # v1.16
+            busy = wd.show_busy(tr("Der Zwischenspeicher von PlatformIO wird gelöscht ..."), title)  # v1.16
+            try:  # v1.16
+                result = M08.PIO_Cache_Clean(plan)  # v1.16
+            finally:  # v1.16
+                wd.hide_busy(busy)  # v1.16
+            if not result["failed"]:  # v1.16
+                P01.MsgBox(tr("Der Zwischenspeicher wurde gelöscht ({groesse} freigegeben). Das nächste Übersetzen baut alles neu auf.", groesse=HC.human_size(result["freed"])), ns["vbInformation"], title)  # v1.16
+                return  # v1.16
+            details = "\n".join("  %s: %s" % (entry["path"], message) for entry, message in result["failed"])  # v1.16
+            P01.MsgBox(tr("Nicht alles konnte gelöscht werden:") + "\n\n" + details + "\n\n" + tr("Läuft gerade ein Übersetzen oder ist eine Datei geöffnet? Bitte danach noch einmal versuchen."), vbCritical, title)  # v1.16
+
         def _web_install_git(self):  # v1.13
-            """Knopf Git installieren (Linux): git mit pkexec installieren (install/install_git.sh); PlatformIO braucht den Git-Client fuer den Pico"""  # v1.13
+            # """Knopf Git installieren (Linux): git mit pkexec installieren (install/install_git.sh); PlatformIO braucht den Git-Client fuer den Pico"""  # v1.15 (entfallen)
+            """Knopf Git installieren: Linux pkexec mit install/install_git.sh, Windows winget oder das Installationsprogramm von Git for Windows, macOS Homebrew oder die Entwicklerwerkzeuge
+            von Apple (siehe headless/headless_git.py); PlatformIO braucht den Git-Client fuer den Pico"""
             import proggen.M08_ARDUINO as M08  # v1.13
             if M08.Git_Installed():  # v1.13
                 P01.MsgBox(tr("git ist schon installiert."), ns["vbInformation"], "PlatformIO")  # v1.13
                 return  # v1.13
             # ok, text = M08.Setup_Git()  # v1.14 (entfallen)
-            busy = wd.show_busy(tr("Git wird installiert. Das Betriebssystem fragt gleich nach dem Passwort. Die Installation kann mehrere Minuten dauern, bitte warten ..."), tr("Git installieren"))  # v1.14
+            # busy = wd.show_busy(tr("Git wird installiert. Das Betriebssystem fragt gleich nach dem Passwort. Die Installation kann mehrere Minuten dauern, bitte warten ..."), tr("Git installieren"))  # v1.15 (entfallen)
+            busy = wd.show_busy(tr(HG.busy_text()), tr("Git installieren"))  # v1.15
             try:  # v1.14
                 ok, text = M08.Setup_Git()  # v1.14
             finally:  # v1.14
                 wd.hide_busy(busy)  # v1.14
-            if ok:  # v1.13
+            # if ok:  # v1.15 (entfallen)
+            if ok is None:                                  # macOS: die Installation der Entwicklerwerkzeuge laeuft im Hintergrund weiter (Fenster von macOS)  # v1.15
+                P01.MsgBox(text, ns["vbInformation"], "PlatformIO")  # v1.15
+            elif ok:  # v1.15
                 P01.MsgBox(tr("git ist installiert. Das Übersetzen für den Raspberry Pi Pico kann jetzt wiederholt werden."), ns["vbInformation"], "PlatformIO")  # v1.13
             else:  # v1.13
                 P01.MsgBox(tr("git konnte nicht installiert werden.") + "\n\n" + text, vbCritical, "PlatformIO")  # v1.13
@@ -529,6 +575,9 @@ def make_class(Base):
                 if handler == "__Boot_Firmware_Button_Click":             # Firmware des Pico installieren (Version K des Excel-Programms)  # v1.09
                     self._web_pico_firmware()  # v1.09
                     continue  # v1.05
+                if handler == "__Pio_Cache_Button_Click":                 # gibt es nur im Web (kein Knopf des Originals)  # v1.16
+                    self._web_pio_cache()  # v1.16
+                    continue  # v1.16
                 if handler == "__Install_Git_Button_Click":               # gibt es nur im Web, nur unter Linux, nur wenn git fehlt  # v1.13
                     self._web_install_git()  # v1.13
                     continue  # v1.13

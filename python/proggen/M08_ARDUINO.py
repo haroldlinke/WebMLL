@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-10-28) - M08_ARDUINO.py
+# Datei-Version: 1.12 (2026-11-03) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.05
-# Last Update:    2026-10-28
+# Version:        1.12
+# Last Update:    2026-11-03
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,13 @@
 #   1.03  2026-10-26  PlatformIO unter Linux: pipx-Installation (~/.local/bin) wird gefunden, Installationshinweis je System, Hinweis und Einrichtung der udev-Regel fuer den Raspberry Pi Pico (picotool: unable to connect)
 #   1.04  2026-10-27  Pico oder ESP32 eingestellt, am Anschluss haengt ein Arduino Nano: statt der Fehlermeldung 'kein PICO angeschlossen' wird angeboten, das Board auf Arduino Nano umzustellen
 #   1.05  2026-10-28  Git_Installed, Git_Script, Setup_Git: git unter Linux mit pkexec installieren
+#   1.06  2026-11-01  Git_Installed und Setup_Git auch fuer Windows und macOS (headless_git)
+#   1.07  2026-11-01  PIO_Cache_Plan und PIO_Cache_Clean: Zwischenspeicher von PlatformIO loeschen; PIO_Projects merkt die Projekte, deren platformio.ini geschrieben wurde
+#   1.08  2026-11-03  platformio.ini: Umgebung pico bekommt die benutzten Extensions (lib_deps), sonst fehlte ihr Header beim Uebersetzen fuer den Pico
+#   1.09  2026-11-03  Prog. Installieren (DCC, Selectrix, LNet ARDUINO) mit PlatformIO: die fertige .hex-Datei aus libraries/MobaLedLib/firmware hochladen (pio run -t nobuild -t upload) statt die Quelldateien zu uebersetzen
+#   1.10  2026-11-03  Compile_and_Upload_Prog_to_Arduino gibt nach erfolgreichem Hochladen True zurueck (wie im VBA-Original)
+#   1.11  2026-11-03  Show_Hex_Missing: die Meldung 'fertig uebersetzte Datei fehlt' als eigene Funktion (auch fuer den schnellen Bootloader)
+#   1.12  2026-11-03  StepTitle und Ueberschrift 'fertig uebersetzte Datei wird hochgeladen' statt 'Kompilieren und Hochladen gestartet ... Kaffee' beim Hochladen einer .hex-Datei
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -433,6 +440,62 @@ def Create_PIO_Build_cmd(ResultName, ComPort, BuildOptions, InoName, Mode, SrcDi
     return cmd
     
 
+def PIO_Environment(BuildOptions):  # v1.09
+    # Umgebung der platformio.ini zur Platine der Auswahl (BuildOptions: --board arduino:avr:nano:cpu=...); wie in Create_PIO_Build_cmd
+    Environment = 'nano_new'  # v1.09
+    OptParts = Split(BuildOptions, ' ')  # v1.09
+    if UBound(OptParts) >= 1:  # v1.09
+        if OptParts(0) == '--board':  # v1.09
+            if InStr(BuildOptions, M02.BOARD_NANO_OLD):  # v1.09
+                Environment = 'nano_old'  # v1.09
+            elif InStr(BuildOptions, M02.BOARD_NANO_FULL):  # v1.09
+                Environment = 'nano_full'  # v1.09
+            elif InStr(BuildOptions, M02.BOARD_PICO):  # v1.09
+                Environment = "pico"  # v1.09
+            elif InStr(BuildOptions, M02.BOARD_ESP32):  # v1.09
+                Environment = "esp32"  # v1.09
+    return Environment  # v1.09
+
+
+def Right_Arduino_Hex(InoName):  # v1.09
+    # Die fertig uebersetzte Datei (.hex) zum Programm des rechten Arduino (DCC, Selectrix, LNet): gleicher Name wie die Quelldatei, Ordner libraries/MobaLedLib/firmware
+    # (unter dem Sketchbook-Pfad, bei PlatformIO der Python-Ordner), sonst der Ordner fuer fertige Firmware. '' wenn es sie nicht gibt.
+    import headless.headless_hex_upload as HX  # v1.09
+    return HX.find_hex(InoName, Right_Arduino_Hex_Dirs())  # v1.09
+
+
+def Show_Hex_Missing(InoName):  # v1.11
+    # Meldung: die fertig uebersetzte Datei (.hex) zum Programm fehlt (Name der Datei und die Ordner, in denen gesucht wurde)
+    P01.MsgBox(Replace(M09.Get_Language_Str('Die fertig übersetzte Datei #1# wurde nicht gefunden.'), '#1#', Replace(InoName, '.ino', '.hex')) + vbCr + vbCr + M09.Get_Language_Str('Mit PlatformIO werden die fertigen Programme (.hex) hochgeladen, die Quelldateien werden nicht übersetzt. Die Datei muss in einem dieser Ordner liegen:') + vbCr + vbCr + Join(Right_Arduino_Hex_Dirs(), vbCr), vbCritical, M09.Get_Language_Str('Datei nicht gefunden'))  # v1.11
+
+
+def Right_Arduino_Hex_Dirs():  # v1.09
+    import headless.headless_hex_upload as HX  # v1.09
+    return HX.firmware_dirs(M02a.Get_Sketchbook_Path(), M02a.Get_FirmwareDir())  # v1.09
+
+
+def Create_PIO_Hex_cmd(ResultName, ComPort, BuildOptions, HexFile):  # v1.09
+    # PlatformIO: die fertige Datei HexFile hochladen, ohne die Quelldateien zu uebersetzen (kleines Hilfsprojekt, Befehl: pio run -t nobuild -t upload)
+    import headless.headless_hex_upload as HX  # v1.09
+    pio = Find_PIO()  # v1.09
+    if pio == '':  # v1.09
+        P01.MsgBox(__PIO_Missing_Message(), vbCritical, 'PlatformIO')  # v1.09
+        return ''  # v1.09
+    scripts = os.path.dirname(pio)  # v1.09
+    if scripts != '' and scripts not in os.environ.get('PATH', '').split(os.pathsep):  # v1.09
+        os.environ['PATH'] += os.pathsep + scripts  # v1.09
+    if os.name == 'nt':  # v1.09
+        os.environ[M02.Env_USERPROFILE] = GetShortPath(Environ(M02.Env_USERPROFILE))  # v1.09
+    Environment = PIO_Environment(BuildOptions)  # v1.09
+    if Environment not in HX.BOARDS:                                                      # Pico und ESP32 haben keinen rechten Arduino  # v1.09
+        Environment = HX.DEFAULT_ENV  # v1.09
+    BoardsDir = None  # v1.09
+    if Environment == 'nano_full':                                                        # die eigene Platine Boards/nanoatmega328full.json im Python-Ordner  # v1.09
+        BoardsDir = HX._ci_child(M02a.Get_Project_Dir(), 'Boards') or None  # v1.09
+    Root = HX.prepare_project(HexFile, Environment, BoardsDir)  # v1.09
+    return HX.command(Environment, Root, ComPort)  # v1.09
+
+
 def PIO_Scripts_Dir():  # v1.02
     # Ordner, in dem PlatformIO sein Programm pio ablegt: Windows ...\\.platformio\\penv\\Scripts, sonst ~/.platformio/penv/bin (Linux, macOS, Raspberry Pi)
     if os.name == 'nt':  # v1.02
@@ -512,7 +575,9 @@ def Pico_Udev_Ok(dirs=None):  # v1.03
 
 def Git_Installed():  # v1.05
     # Gibt es den Git-Client (git)? PlatformIO braucht ihn fuer das Board Raspberry Pi Pico (die Plattform wird aus GitHub geklont).
-    return shutil.which('git') is not None  # v1.05
+    # return shutil.which('git') is not None  # v1.06 (entfallen)
+    import headless.headless_git as HG                                             # Windows, macOS und Linux; trägt einen frisch installierten git in PATH ein  # v1.06
+    return HG.git_installed()  # v1.06
 
 
 def Git_Script():  # v1.05
@@ -522,8 +587,11 @@ def Git_Script():  # v1.05
 def Setup_Git():  # v1.05
     # Linux: installiert git (install/install_git.sh) mit pkexec (fragt nach dem Passwort). Rueckgabe: (True/False, Text)
     script = Git_Script()  # v1.05
-    if not sys.platform.startswith('linux'):  # v1.05
-        return False, M09.Get_Language_Str("Das gibt es nur unter Linux.")  # v1.05
+    # if not sys.platform.startswith('linux'):  # v1.06 (entfallen)
+        # return False, M09.Get_Language_Str("Das gibt es nur unter Linux.")  # v1.06 (entfallen)
+    if not sys.platform.startswith('linux'):                                       # Windows und macOS: winget, Installationsprogramm, Homebrew, Entwicklerwerkzeuge von Apple  # v1.06
+        import headless.headless_git as HG  # v1.06
+        return HG.setup_git(translate=M09.Get_Language_Str)  # v1.06
     if Git_Installed():  # v1.05
         return True, M09.Get_Language_Str("git ist schon installiert.")  # v1.05
     if not os.path.isfile(script):  # v1.05
@@ -539,6 +607,28 @@ def Setup_Git():  # v1.05
     if res.returncode in (126, 127):  # v1.05
         return False, M09.Get_Language_Str("Die Einrichtung wurde abgebrochen oder ist nicht erlaubt. Bitte im Terminal ausführen:") + vbCr + "  sudo bash " + script  # v1.05
     return res.returncode == 0 and Git_Installed(), text  # v1.05
+
+
+PIO_Projects = set()                                   # Ordner der PlatformIO-Projekte (dort liegt platformio.ini), die in dieser Sitzung geschrieben wurden  # v1.07
+
+
+def PIO_Cache_Plan():  # v1.07
+    # Was beim Loeschen des Zwischenspeichers von PlatformIO geloescht wuerde: Liste {kind, path, size} (siehe headless/headless_pio_cache.py).
+    # Gesucht wird in den Projekten, die das Programm angelegt hat: in dieser Sitzung geschriebene und die ueblichen Orte (Beispiele der Bibliothek, Ordner der Arbeitsmappe).
+    import headless.headless_pio_cache as HC  # v1.07
+    candidates = list(PIO_Projects)  # v1.07
+    for guess in (lambda: M02a.Get_SrcDirExamp(), lambda: GetWorkbookPath() + '/../examples', lambda: PG.ThisWorkbook.Path + '/..', lambda: PG.ThisWorkbook.Path):  # v1.07
+        try:  # v1.07
+            candidates.append(os.path.abspath(guess()))  # v1.07
+        except Exception:                                  # noqa: BLE001  # v1.07
+            pass  # v1.07
+    return HC.plan_cleanup(HC.find_projects(candidates))  # v1.07
+
+
+def PIO_Cache_Clean(plan):  # v1.07
+    # Loescht den Zwischenspeicher nach dem Plan von PIO_Cache_Plan. Rueckgabe {removed, failed, freed}
+    import headless.headless_pio_cache as HC  # v1.07
+    return HC.clean(plan)  # v1.07
 
 
 def Pico_Udev_Script():  # v1.03
@@ -620,7 +710,9 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
         VBFiles.writeText(fp, '', '\n')    
     
     fp2 = FreeFile()
-    VBFiles.openFile(fp2, SrcDir + '..//platformio.ini', 'w') 
+    # VBFiles.openFile(fp2, SrcDir + '..//platformio.ini', 'w')  # v1.07 (entfallen)
+    VBFiles.openFile(fp2, SrcDir + '..//platformio.ini', 'w')  # v1.07
+    PIO_Projects.add(os.path.abspath(os.path.join(SrcDir, '..')))                    # fuer PIO_Cache_Plan: dort liegt .pio   # v1.07
     #Open Replace(SrcDir, "\LEDs_AutoProg\", "\platformio.inx") For Output As #fp2
     VBFiles.writeText(fp2, '; Created by '+ PG.ThisWorkbook.Name, '\n')
     VBFiles.writeText(fp2, '[platformio]', '\n')
@@ -663,6 +755,11 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, "framework = arduino", '\n')
     VBFiles.writeText(fp2, "board_build.core = earlephilhower", '\n')
     VBFiles.writeText(fp2, "build_src_filter = ${env.src_filter} -<pyProg_Generator_MobaLedLib/>", '\n') # 
+    if M38.ExtensionsActiveCount() > 0:                                                    # Extensions auch fuer den Pico (wie Nano und ESP32); ohne Extension bleibt die Umgebung unveraendert  # v1.08
+        VBFiles.writeText(fp2, "lib_deps = ${env.lib_deps}", '\n')  # v1.08
+        if not M38.Write_PIO_Extension(fp2):  # v1.08
+            VBFiles.closeFile(fp2)  # v1.08
+            return fn_return_value  # v1.08
     VBFiles.writeText(fp2, "lib_ignore =", '\n') # 
     VBFiles.writeText(fp2, "    FastLED", '\n') # )
     VBFiles.writeText(fp2, "    U8g2", '\n') # )
@@ -2063,7 +2160,9 @@ def Stop_Compile_Time_Display():
     Start_Compile_Time = 0
     P01.Unload(F00.StatusMsg_UserForm)
 
-def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, SrcDir,CreateFilesOnly=False, LEDsInUse=None): # 20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files
+# def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, SrcDir,CreateFilesOnly=False, LEDsInUse=None): # 20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files  # v1.09 (entfallen)
+# def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, SrcDir,CreateFilesOnly=False, LEDsInUse=None, HexFile=''): # 20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files  # v1.12 (entfallen)
+def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, SrcDir,CreateFilesOnly=False, LEDsInUse=None, HexFile='', StepTitle=''): # 20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files  # v1.12
     ComPort = String()
 
     BuildOptions = String()
@@ -2187,7 +2286,11 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
         else:
             CommandStr = Create_ARDUINO_IDE_Cmd(ResFile, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType)
     else:
-        CommandStr = Create_PIO_Build_cmd(ResFile, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType)
+        # CommandStr = Create_PIO_Build_cmd(ResFile, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType)  # v1.09 (entfallen)
+        if HexFile != '':                                                                  # fertige Datei hochladen, nichts uebersetzen  # v1.09
+            CommandStr = Create_PIO_Hex_cmd(ResFile, ComPort, BuildOptions, HexFile)  # v1.09
+        else:  # v1.09
+            CommandStr = Create_PIO_Build_cmd(ResFile, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType)  # v1.09
     
     
     # 02.11.19: Added Quotation marks to prevent Problems with special characters in the path like '&'
@@ -2208,7 +2311,8 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
         return fn_return_value
     
     Start = P01.Time()
-    if Dir(SrcDir + InoName) == '':
+    # if Dir(SrcDir + InoName) == '':  # v1.09 (entfallen)
+    if HexFile == '' and Dir(SrcDir + InoName) == '':  # v1.09
         P01.Unload(F00.StatusMsg_UserForm)
         P01.MsgBox(M09.Get_Language_Str('Fehler das Programm ') + InoName + M09.Get_Language_Str(' ist nicht vorhanden in: ') + vbCr + '  \'' + SrcDir + '\'', vbCritical, M09.Get_Language_Str('Fehler Ino-Programm nicht vorhanden'))
         M30.EndProg()
@@ -2231,7 +2335,14 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
             PG.global_controller.disconnect()
             #Res = M40.ShellAndWait(CommandStr, 0, vbNormalFocus, PromptUser)
             if type(CommandStr) == str:
-                Res = PG.dialog_parent.start_ARDUINO_program_cmd(CommandStr,arduino_type=Mode)
+                # Res = PG.dialog_parent.start_ARDUINO_program_cmd(CommandStr,arduino_type=Mode)  # v1.12 (entfallen)
+                Title = StepTitle  # v1.12
+                if Title == '' and HexFile != '':                                              # fertige Datei: nichts wird kompiliert, es dauert nur Sekunden  # v1.12
+                    Title = M09.Get_Language_Str('Hochladen gestartet. Die fertig übersetzte Datei wird hochgeladen (es wird nichts übersetzt).')  # v1.12
+                if Title != '':  # v1.12
+                    Res = PG.dialog_parent.start_ARDUINO_program_cmd(CommandStr,arduino_type=Mode, title=Title)  # v1.12
+                else:  # v1.12
+                    Res = PG.dialog_parent.start_ARDUINO_program_cmd(CommandStr,arduino_type=Mode)  # v1.12
             else:
                 show_intro = True
                 for command in CommandStr:
@@ -2268,6 +2379,8 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
         Debug.Print('Compile and upload duration: ' + P01.Format(P01.Time() - Start, 'hh:mm:ss'))
         M30.Show_Status_for_a_while(M09.Get_Language_Str('Programm erfolgreich hochgeladen. Kompilieren und Hochladen dauerte ') + P01.Format(P01.Time() - Start, 'hh:mm:ss'), '00:02:00')
         PG.global_controller.showFramebyName("ProgGeneratorPage")
+        fn_return_value = True                                                         # VBA: Compile_and_Upload_Prog_to_Arduino = True (fehlte in der Umstellung: 'R OK' wurde nie gesetzt)  # v1.10
+        return fn_return_value  # v1.10
         
 def GetCPUTypeFromSignature(DeviceSignature, DefaultType='ATMega328P'):
     _fn_return_value = False
@@ -2382,6 +2495,16 @@ def Compile_and_Upload_Prog_to_Right_Arduino(SkipPortSelection=False):
         #M07.ComPortPage().Cells(M02.SH_VARS_ROW, M25.COMPrtR_COL).Value = - P01.val(M07.ComPortPage().Cells(M02.SH_VARS_ROW, M25.COMPrtR_COL).Value)
         M07.ComPortPage().Cells(M02.SH_VARS_ROW, M25.COMPrtR_COL).Value = F00.port_set_busy(M07.ComPortPage().Cells(M02.SH_VARS_ROW, M25.COMPrtR_COL).Value)
         # Force to show the new COM Port dialog
+    if M28.Is_PlatformIO():                                                                # PlatformIO: die fertige .hex-Datei hochladen, die Quelldateien werden nicht uebersetzt  # v1.09
+        HexFile = Right_Arduino_Hex(InoName)  # v1.09
+        if HexFile == '':  # v1.09
+            # P01.MsgBox(Replace(M09.Get_Language_Str('Die fertig übersetzte Datei #1# wurde nicht gefunden.'), '#1#', Replace(InoName, '.ino', '.hex')) + vbCr + vbCr + M09.Get_Language_Str('Mit PlatformIO werden die fertigen Programme (.hex) hochgeladen, die Quelldateien werden nicht übersetzt. Die Datei muss in einem dieser Ordner liegen:') + vbCr + vbCr + Join(Right_Arduino_Hex_Dirs(), vbCr), vbCritical, M09.Get_Language_Str('Datei nicht gefunden'))  # v1.11 (entfallen)
+            Show_Hex_Missing(InoName)  # v1.11
+            return fn_return_value  # v1.09
+        if Compile_and_Upload_Prog_to_Arduino(InoName, M25.COMPrtR_COL, M25.BUILDOpRCOL, os.path.dirname(HexFile) + '/', HexFile=HexFile):  # v1.09
+            P01.CellDict[M02.SH_VARS_ROW, M25.R_UPLOD_COL] = 'R OK'  # v1.09
+            fn_return_value = True  # v1.09
+        return fn_return_value  # v1.09
     if Create_Config_Header_File(SrcDir + Replace(InoName, '.ino', '.h')) == False:
         return fn_return_value
         # 14.05.20:
