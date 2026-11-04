@@ -1,4 +1,4 @@
-# Datei-Version: 1.05 (2026-10-28) - web_macro_tree.py
+# Datei-Version: 1.10 (2026-11-04) - web_macro_tree.py
 """Web-Ersatz fuer die Makroauswahl (proggen/SelectMacrosTreeForm.py, Tk-Treeview).
 
 Ersetzt M09_SelectMacro_Treeview.SelectMacro_TreeView(SelectName). Die Daten kommen wie im
@@ -21,6 +21,11 @@ logger = logging.getLogger(__name__)
 
 ICON_URL_PREFIX = "/mll_icons"        # in webmobaledlib.py als statischer Pfad registriert
 _state = {"last_nr": 0, "original": None, "icons_dir": None}
+# Das markierte Makro in den sichtbaren Bereich der Liste scrollen. Der Baum steht beim ersten Aufbau noch nicht im Browser (der Dialog oeffnet sich erst danach), deshalb mehrere Versuche;
+# der erste, der den markierten Knoten findet, scrollt (in die Mitte) und beendet die Versuche, damit spaeteres Scrollen des Anwenders nicht gestoert wird.
+SCROLL_JS = ("(function () { let done = false; [100, 300, 700, 1500].forEach(ms => setTimeout(() => { if (done) return; "  # v1.06
+             "const e = document.querySelector('.q-tree__node-header.q-tree__node--selected') || document.querySelector('.q-tree__node--selected'); "  # v1.06
+             "if (e) { e.scrollIntoView({block: 'center'}); done = true; } }, ms)); })();")  # v1.06
 
 
 # ------------------------------------------------------------------ reine Logik (ohne NiceGUI)
@@ -207,6 +212,8 @@ async def _tree_async(items, info, preselect_row):
                 target = None
                 if select_row:
                     target = next((n for n in by_id.values() if n["leaf"] and n["row"] == select_row), None)
+                # if select_row and target is None and not text:  # v1.10 (entfallen)
+                    # logger.warning("Makroauswahl (Diagnose): Zeile %s steht nicht als Makro im Baum (Blaetter: %d)", select_row, sum(1 for n in by_id.values() if n["leaf"]))  # v1.10 (entfallen)
                 if target is None and nodes and not text:
                     tree.expand([nodes[0]["id"]])
                 if text:
@@ -215,6 +222,8 @@ async def _tree_async(items, info, preselect_row):
                     tree.expand(ancestors(by_id, target["id"]))
                     tree.select(target["id"])
                     on_select(target["id"])          # select() ruft on_select nicht auf: Zustand und Beschreibung selbst setzen
+                    if not text:  # v1.06
+                        ui.run_javascript(SCROLL_JS)             # das vorausgewaehlte Makro ins Bild holen (PatternConfig steht am Ende der langen Liste)  # v1.06
                 else:
                     ctx["selected"] = None
 
@@ -319,6 +328,39 @@ def graph_tree_nodes(items: list[dict], text: str = "") -> list[dict]:  # v1.04
     return convert(build_macro_dict(filter_items(items, text)))  # v1.04
 
 
+# def find_row_by_name(text: str, items: list) -> int:  # v1.09 (entfallen)
+def leaf_rows_of(items: list) -> set:  # v1.09
+    """Zeilen der Eintraege, die im Baum wirklich als Makro stehen. Kommt derselbe Name in derselben Gruppe mehrmals vor (zum Beispiel doppelte Zeilen in der Bibliothek), bleibt im Baum nur
+    der LETZTE (build_macro_dict ueberschreibt); die Suche ueber 'Find Name' liefert aber den ERSTEN: dessen Zeile steht dann nicht im Baum."""
+    by_id: dict = {}  # v1.09
+    macro_dict_to_nodes(build_macro_dict(items), lambda x: "", by_id=by_id)  # v1.09
+    return {int(n["row"]) for n in by_id.values() if n["leaf"]}  # v1.09
+
+
+def find_row_by_name(text: str, items: list, leaf_rows=None) -> int:  # v1.09
+    """Zeile des Makros, dessen NAME (Spalte Name in Lib_Macros) im Zellinhalt steht (Rueckfall, wenn die Suche ueber die Spalte 'Find Name' nichts oder eine Zeile ergibt, die im Baum nicht
+    steht): aus '// #ServoAnim(0,2,...' wird 'ServoAnim', aus '// Activation: Binary #ServoAnim(' ebenso, aus 'House(#LED, 4)' wird 'House'. Ausgeblendete Gruppen (*) zaehlen nicht."""
+    name = str(text).split("\n")[0]  # v1.07
+    for prefix in ("// Activation: Binary ", "// Activation: N_Buttons "):  # v1.07
+        name = name.replace(prefix, "")  # v1.07
+    name = name.split("(")[0].strip()  # v1.07
+    if name.startswith("//"):  # v1.07
+        name = name[2:].strip()  # v1.07
+    name = name.lstrip("#").strip()  # v1.07
+    if name == "":  # v1.07
+        return 0  # v1.07
+    best = 0  # v1.09
+    for it in items:  # v1.07
+        if it["name_cell"] == name and not str(it["group"]).lstrip().startswith("*"):  # v1.07
+            # return int(it["row"])  # v1.09 (entfallen)
+    # return 0  # v1.09 (entfallen)
+            if leaf_rows is None:  # v1.09
+                return int(it["row"])  # v1.09
+            if int(it["row"]) in leaf_rows:  # v1.09
+                best = int(it["row"])                                        # bei doppelten Zeilen gilt die, die im Baum steht (die letzte)  # v1.09
+    return best  # v1.09
+
+
 def web_select_macro_treeview(SelectName):
     forced = _state.pop("forced", None)  # v1.04
     if forced:  # v1.04
@@ -327,11 +369,28 @@ def web_select_macro_treeview(SelectName):
         return _state["original"](SelectName)
     import proggen.M09_Select_Macro as M09SM
     import ExcelAPI.XLA_Application as P01
+    # full_text = str(SelectName)                                       # fuer die Meldung (Diagnose)  # v1.10 (entfallen)
     if SelectName != "" and "(" in SelectName:
         SelectName = SelectName.split("(")[0] + "("
     items, info = collect_macro_rows()
     row = M09SM.Find_Macro_in_Lib_Macros_Sheet(SelectName) if SelectName != "" else 0
+    if SelectName != "":  # v1.07
+        # shown = {int(it["row"]) for it in items if not str(it["group"]).lstrip().startswith("*")}              # Zeilen, die als Makro im Baum stehen  # v1.09 (entfallen)
+        shown = leaf_rows_of(items)                                                                             # Zeilen, die als Makro im Baum stehen  # v1.09
+        if not row or row not in shown:                                                                         # nichts gefunden oder nicht im Baum: ueber den Namen des Makros suchen  # v1.07
+            # by_name = find_row_by_name(SelectName, items)  # v1.09 (entfallen)
+            by_name = find_row_by_name(SelectName, items, shown)  # v1.09
+            logger.warning("Makroauswahl: Suchtext %r ergab ueber 'Find Name' die Zeile %s (%s), ueber den Namen die Zeile %s", SelectName[:60], row,  # v1.07
+                           "im Baum" if row in shown else "nicht im Baum", by_name)  # v1.07
+            if by_name:  # v1.07
+                row = by_name  # v1.07
     preselect = row if row and row > 0 else _state["last_nr"]
+    # if full_text != "":                                               # Diagnose (vorlaeufig): was kommt an und was wird vorausgewaehlt  # v1.10 (entfallen)
+        # sel_item = next((it for it in items if int(it["row"]) == int(preselect or 0)), None)  # v1.10 (entfallen)
+        # same = [(int(it["row"]), it["group"], it["name"]) for it in items if sel_item and it["name_cell"] == sel_item["name_cell"]]     # gleicher Name mehrmals? (Zeile, Gruppe, angezeigter Name)  # v1.10 (entfallen)
+        # logger.warning("Makroauswahl (Diagnose): Zellinhalt %d Zeichen, erste Zeile %r, Suchtext %r -> Vorauswahl Zeile %s (%s), Eintraege %d, gleicher Name in Zeilen %s",  # v1.10 (entfallen)
+                       # len(full_text), full_text.split("\n")[0][:50], SelectName[:40], preselect,  # v1.10 (entfallen)
+                       # ("Name %r, Gruppe %r" % (sel_item["name_cell"], sel_item["group"])) if sel_item else "keine Zeile in der Liste", len(items), same)  # v1.10 (entfallen)
     res_row = wd.call_in_loop(_tree_async, items, info, preselect, default=None)
     P01.ActiveSheet.Redraw_table()
     if not res_row:

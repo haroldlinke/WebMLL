@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-10-23) - headless_gridmodel.py
+# Datei-Version: 1.05 (2026-11-04) - headless_gridmodel.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_gridmodel.py
 # Path:           headless/headless_gridmodel.py
-# Version:        1.04
-# Last Update:    2026-10-23
+# Version:        1.05
+# Last Update:    2026-11-04
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.02  2026-10-21  row_number_width: Breite der Spalte Zeilennummer passend zur groessten Zeilennummer (Programmgenerator); ohne Angabe bleibt sie 76 (Patterngenerator)
 #   1.03  2026-10-23  build_grid: Parameter display_cols (uebersetzte Anzeige einzelner Spalten, gespeichert bleibt der neutrale Wert)
 #   1.04  2026-10-23  build_grid: Parameter display_cells (einzelne Zellen uebersetzt anzeigen)
+#   1.05  2026-11-04  Zeile 2 (Ueberschriften) der Datenblaetter: Hintergrund RGB(26, 117, 210) = #1A75D2 statt reinem Blau #0000FF
 # ----------------------------------------------------------------------------------------------
 """Uebersetzt ein HeadlessSheet in Spalten- und Zeilendaten fuer AG Grid (ohne NiceGUI-Import,
 daher einzeln testbar)."""
@@ -127,7 +128,8 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
     last_head_col = max((c for c, v in enumerate(data[1]) if str(v).strip() != ""), default=-1) if header_rows else -1
     HEAD_STYLE = {0: {"backgroundColor": "#ffffff", "color": "#555555",
                      "fontSize": "calc(10px * var(--mll-small-scale, 1))"},
-                  1: {"backgroundColor": "#0000FF", "color": "#FFFFFF", "fontWeight": "bold",
+                  # 1: {"backgroundColor": "#0000FF", "color": "#FFFFFF", "fontWeight": "bold",  # v1.05 (entfallen)
+                  1: {"backgroundColor": "#1A75D2", "color": "#FFFFFF", "fontWeight": "bold",  # v1.05
                       "whiteSpace": "normal", "lineHeight": "1.15"}}
 
     def make_row(r: int, raw: list) -> dict[str, Any]:
