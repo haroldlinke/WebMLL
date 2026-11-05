@@ -1,8 +1,8 @@
-# Datei-Version: 1.01 (2026-11-04) - headless_servoanim.py
+# Datei-Version: 1.02 (2026-11-04) - headless_servoanim.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_servoanim.py
 # Path:           headless/headless_servoanim.py
-# Version:        1.01
+# Version:        1.02
 # Last Update:    2026-11-04
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -10,6 +10,7 @@
 #   1.00  2026-11-04  Neu: Logik des Servo-Animationsdialogs (Makro ServoAnim und ServoAnim2B) ohne Oberflaeche: Kurven berechnen (linear, Beschleunigung, individuell), Zeitstufen,
 #                     das Makro erzeugen (PatternT) und ein vorhandenes Makro wieder einlesen. Uebernommen aus proggen/Userform_Animation.py und Userform_ServoAnim.py (Tk)
 #   1.01  2026-11-04  Kurvenpunkte aus dem Makro lesen, wie es in der Tabelle steht (ohne $Kanal am Ende: Zeile endet mit ')'); Zeilenende \n, \r\n oder \r: die Kurve Individuell war beim Wiederoeffnen leer
+#   1.02  2026-11-04  Parameterliste und Vorgaben als Klassenwerte (PARAM_NAMES, DEFAULTS), damit die LED-Farb-Animation sie ersetzen kann
 # ----------------------------------------------------------------------------------------------
 """Logik des Servo-Animationsdialogs ohne Tk und ohne Browser.
 
@@ -57,7 +58,8 @@ class ServoAnim:
     def __init__(self, macro_name="ServoAnim", use_nbuttons=False, params=None):
         self.macro_name = macro_name
         self.use_nbuttons = bool(use_nbuttons)
-        self.p = dict(DEFAULTS)
+        # self.p = dict(DEFAULTS)  # v1.02 (entfallen)
+        self.p = dict(self.DEFAULTS)  # v1.02
         if params:
             self.set_params(**params)
         self.curve_points: list = []
@@ -68,12 +70,15 @@ class ServoAnim:
     # ------------------------------------------------------------------ Parameter
     def set_params(self, **kw):
         for key, value in kw.items():
-            if key not in DEFAULTS:
+            # if key not in DEFAULTS:  # v1.02 (entfallen)
+            if key not in self.DEFAULTS:  # v1.02
                 raise KeyError(key)
-            self.p[key] = _int(value, DEFAULTS[key])
+            # self.p[key] = _int(value, DEFAULTS[key])  # v1.02 (entfallen)
+            self.p[key] = _int(value, self.DEFAULTS[key])  # v1.02
 
     def param_list(self) -> list:
-        return [self.p[name] for name in PARAM_NAMES]
+        # return [self.p[name] for name in PARAM_NAMES]  # v1.02 (entfallen)
+        return [self.p[name] for name in self.PARAM_NAMES]  # v1.02
 
     def paramstring(self) -> str:
         """Die 16 Werte durch Komma getrennt (wie create_paramstring_from_param_list)"""
@@ -322,8 +327,10 @@ class ServoAnim:
         values = sub[0].split(",")
         if len(values) < MIN_PARAMS_IN_MACRO:
             return False
-        for name, value in zip(PARAM_NAMES, values):
-            self.p[name] = _int(value, DEFAULTS[name])
+        # for name, value in zip(PARAM_NAMES, values):  # v1.02 (entfallen)
+            # self.p[name] = _int(value, DEFAULTS[name])  # v1.02 (entfallen)
+        for name, value in zip(self.PARAM_NAMES, values):  # v1.02
+            self.p[name] = _int(value, self.DEFAULTS[name])  # v1.02
         if self.p["CurveType"] == CURVE_INDIV:
             self.curve_points = self.curve_points_from_macro(macro_str)
             self.last_t_ein, self.last_t_aus = self.t_ein(), self.t_aus()
@@ -395,3 +402,7 @@ class ServoAnim:
 
     def copy(self):
         return copy.deepcopy(self)
+
+
+ServoAnim.PARAM_NAMES = PARAM_NAMES                    # Parameterliste und Vorgaben als Klassenwerte: die LED-Farb-Animation (headless_ledcoloranim.py) hat andere  # v1.02
+ServoAnim.DEFAULTS = DEFAULTS  # v1.02

@@ -1,15 +1,16 @@
-# Datei-Version: 1.02 (2026-11-03) - M38_Extensions.py
+# Datei-Version: 1.03 (2026-11-04) - M38_Extensions.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M38_Extensions.py
 # Path:           proggen/M38_Extensions.py
-# Version:        1.02
-# Last Update:    2026-11-03
+# Version:        1.03
+# Last Update:    2026-11-04
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-21  Extensions-Schnittstelle V2: MinimumMobaLedLibVersion aus der JSON-Datei, #define USE_EXTENSIONS_V2 ab Mindestversion 3.5.0 (Version K des Excel-Programms)
 #   1.02  2026-11-03  Header: #include nur der benutzten Extensions (wie im VBA-Original), nicht aller installierten; unter PlatformIO fehlten die nicht benutzten in platformio.ini: fatal error P_ScheduleDuoMLX.h
+#   1.03  2026-11-04  Extensions: Makros mit dem Namen eines schon vorhandenen Makros (eingebaut oder einer anderen Erweiterung) werden abgewiesen, mit Meldung (vorher standen sie doppelt in der Liste)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -77,6 +78,7 @@ import proggen.M60_CheckColors as M60
 import proggen.M70_Exp_Libraries as M70
 import proggen.M80_Create_Multiplexer as M80
 import proggen.clsExtension as clsext
+import logging as _logging  # v1.03
 
 import mlpyproggen.Prog_Generator as PG
 
@@ -166,6 +168,8 @@ def Load_Extensions():
     MacroSheet = PG.ThisWorkbook.Sheets(M02.LIBMACROS_SH)
     MacroRow = M30.LastUsedRowIn(MacroSheet) + 1
     ParamRow = M30.LastUsedRowIn(ParamSheet) + 1
+    KnownNames, KnownFinds = __ExistingMacroNames(MacroSheet)  # v1.03
+    SkippedMacros = []  # v1.03
     for Extension in Extensions:
         for Constructor in Extension.Constructors:
             # TODO translate
@@ -226,6 +230,11 @@ def Load_Extensions():
             if Macro.Group == "": # pyMLL specific
                 Macro.Group = 'Erweiterungen'
         
+            Owner = __MacroConflict(KnownNames, KnownFinds, Macro.Name, FindName)  # v1.03
+            if Owner is not None:  # v1.03: Name oder Suchname gibt es schon: das Makro der Erweiterung wird nicht eingetragen
+                SkippedMacros.append((Extension.Name, Macro.Name, Owner))  # v1.03
+                continue  # v1.03
+            __RegisterMacro(KnownNames, KnownFinds, Macro.Name, FindName, "Erweiterung " + str(Extension.Name))  # v1.03
             MacroSheet.CellDict[MacroRow, M02.SM_Typ___COL] = Macro.Typ # EX.Macro.' + str(Extension.Id)
             MacroSheet.CellDict[MacroRow, M02.SM_Pic_N_COL] = 'Puzzle | IDE'
             MacroSheet.CellDict[MacroRow, M02.SM_LEDS__COL] = Macro.LEDs
@@ -240,8 +249,59 @@ def Load_Extensions():
             MacroSheet.CellDict[MacroRow, M02.SM_ShrtD_COL] = Macro.Texts.get('ShortDescription')
             MacroSheet.CellDict[MacroRow, M02.SM_DetailCOL] = Macro.Texts.get('DetailedDescription')
             MacroRow = MacroRow + 1
+    __ReportSkippedMacros(SkippedMacros)  # v1.03
     P01.Application.EnableEvents = OldEvents
     
+_ReportedConflicts = set()  # v1.03: Meldungen nur einmal je Erweiterung und Makro
+
+def __ExistingMacroNames(MacroSheet):  # v1.03
+    """Namen und Suchnamen der Makros, die schon in der Liste stehen (klein geschrieben): Wert '' = eingebaut"""
+    Names = {}
+    Finds = {}
+    for r in range(M02.SM_DIALOGDATA_ROW1, M30.LastUsedRowIn(MacroSheet) + 1):
+        Name = str(MacroSheet.Cells(r, M02.SM_Name__COL).Value or '').strip().lower()
+        Find = str(MacroSheet.Cells(r, M02.SM_FindN_COL).Value or '').strip().lower()
+        if Name != '':
+            Names.setdefault(Name, '')
+        if Find != '':
+            Finds.setdefault(Find, '')
+    return Names, Finds
+
+def __MacroConflict(Names, Finds, MacroName, FindName):  # v1.03
+    """None, wenn der Name und der Suchname noch frei sind, sonst wem sie gehoeren ('' = eingebautes Makro, sonst 'Erweiterung <Name>')"""
+    Key = str(MacroName or '').strip().lower()
+    FindKey = str(FindName or '').strip().lower()
+    if Key != '' and Key in Names:
+        return Names[Key]
+    if FindKey != '' and FindKey in Finds:
+        return Finds[FindKey]
+    return None
+
+def __RegisterMacro(Names, Finds, MacroName, FindName, Owner):  # v1.03
+    Key = str(MacroName or '').strip().lower()
+    FindKey = str(FindName or '').strip().lower()
+    if Key != '':
+        Names.setdefault(Key, Owner)
+    if FindKey != '':
+        Finds.setdefault(FindKey, Owner)
+
+def __ReportSkippedMacros(SkippedMacros):  # v1.03
+    """Meldung (und Eintrag im Protokoll) zu den abgewiesenen Makros; jede nur einmal je Programmlauf"""
+    Lines = []
+    for ExtName, MacroName, Owner in SkippedMacros:
+        _logging.getLogger(__name__).warning("Extension '%s': Makro '%s' wird ignoriert, es gibt es schon (%s)", ExtName, MacroName, Owner or 'eingebaut')
+        if (ExtName, MacroName) in _ReportedConflicts:
+            continue
+        _ReportedConflicts.add((ExtName, MacroName))
+        if Owner == '':
+            Text = M09.Get_Language_Str("Das Makro '#2#' der Erweiterung '#1#' ist schon eingebaut und wird ignoriert.")
+        else:
+            Text = M09.Get_Language_Str("Das Makro '#2#' der Erweiterung '#1#' ist schon in der '#3#' definiert und wird ignoriert.")
+            Text = Replace(Text, '#3#', str(Owner))
+        Lines.append(Replace(Replace(Text, '#1#', str(ExtName)), '#2#', str(MacroName)))
+    if len(Lines) > 0:
+        P01.MsgBox(str(vbCrLf).join(Lines) + vbCrLf + vbCrLf + M09.Get_Language_Str('Bitte die Erweiterung (Ordner im Ordner libraries) umbenennen oder entfernen.'), vbExclamation, 'MobaLedLib Extensions')
+
 def ConvertFastbuild():
     # 04.11.23: Juergen:
     return #*HL

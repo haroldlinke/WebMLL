@@ -1,4 +1,4 @@
-# Datei-Version: 1.10 (2026-11-04) - web_macro_tree.py
+# Datei-Version: 1.11 (2026-11-04) - web_macro_tree.py
 """Web-Ersatz fuer die Makroauswahl (proggen/SelectMacrosTreeForm.py, Tk-Treeview).
 
 Ersetzt M09_SelectMacro_Treeview.SelectMacro_TreeView(SelectName). Die Daten kommen wie im
@@ -121,7 +121,8 @@ def collect_macro_rows():
         return "" if v is None else str(v)
 
     items, info = [], {}
-    for row in range(M02.SM_DIALOGDATA_ROW1, sh.LastUsedRow):
+    # for row in range(M02.SM_DIALOGDATA_ROW1, sh.LastUsedRow):  # v1.11 (entfallen)
+    for row in range(M02.SM_DIALOGDATA_ROW1, sh.LastUsedRow + 1):                   # LastUsedRow ist die letzte benutzte Zeile: sie gehoert dazu (vorher fehlte das letzte Makro der Liste)  # v1.11
         name_cell = cell(row, M02.SM_Name__COL)
         if not (name_cell != "" or cell(row, M02.SM_ShrtD_COL) != "" or cell(row, M02.SM_DetailCOL) != ""):
             continue

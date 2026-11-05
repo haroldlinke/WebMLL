@@ -1,8 +1,8 @@
-# Datei-Version: 1.03 (2026-11-04) - web_form_servoanim.py
+# Datei-Version: 1.04 (2026-11-04) - web_form_servoanim.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_servoanim.py
 # Path:           _web/web_form_servoanim.py
-# Version:        1.03
+# Version:        1.04
 # Last Update:    2026-11-04
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -12,6 +12,7 @@
 #                     Grafik in mll_servocurve.js
 #   1.01  2026-11-04  Fenster verschiebbar und in der Groesse aenderbar (mllWindow, resize: both), groesser, die Grafik waechst mit; Layout bricht bei schmalem Fenster um
 #   1.03  2026-11-04  Frage nach dem ARDUINO: nach Abbrechen nicht mehr von selbst fragen (bis zum Neustart), nie gleichzeitig mehrmals; nur der Knopf Starte Test fragt wieder
+#   1.04  2026-11-04  harvest: Name der Fensterbeschreibung als Parameter (die LED Farb-Animation benutzt Main_Menu_Form_RSC)
 # ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/Userform_ServoAnim.py (Dialog zu den Makros ServoAnim und ServoAnim2B).
 
@@ -71,17 +72,20 @@ def js_text() -> str:
 
 
 # ------------------------------------------------------------------ Texte aus dem Original
-def harvest(Base) -> dict:
+# def harvest(Base) -> dict:  # v1.04 (entfallen)
+def harvest(Base, attr="Main_Menu_Form_RSC_grid") -> dict:  # v1.04
     """Beschriftungen und Listeneintraege aus dem Quelltext des Originals: {'texts': {Name: Caption}, 'lists': {Name: [Eintraege]}, 'title': Caption}"""
     src = textwrap.dedent(inspect.getsource(Base.__init__))
     tree = ast.parse(src)
     node = None
     for st in ast.walk(tree):
-        if isinstance(st, ast.Assign) and any(getattr(t, "attr", "") == "Main_Menu_Form_RSC_grid" for t in st.targets):
+        # if isinstance(st, ast.Assign) and any(getattr(t, "attr", "") == "Main_Menu_Form_RSC_grid" for t in st.targets):  # v1.04 (entfallen)
+        if isinstance(st, ast.Assign) and any(getattr(t, "attr", "") == attr for t in st.targets):  # v1.04
             node = st.value
             break
     if node is None:
-        raise RuntimeError("UserForm_ServoAnim: Beschreibung des Fensters nicht im Quelltext gefunden")
+        # raise RuntimeError("UserForm_ServoAnim: Beschreibung des Fensters nicht im Quelltext gefunden")  # v1.04 (entfallen)
+        raise RuntimeError("%s: Beschreibung des Fensters (%s) nicht im Quelltext gefunden" % (Base.__name__, attr))  # v1.04
 
     class _Self:                                      # self.xyz im Quelltext (Befehle der Knoepfe): nur der Name
         def __getattr__(self, name):

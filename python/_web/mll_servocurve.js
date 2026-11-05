@@ -1,4 +1,5 @@
-// Datei-Version: 1.02 (2026-11-04) - mll_servocurve.js
+// Datei-Version: 1.03 (2026-11-04) - mll_servocurve.js
+// 1.03: mehrere Kurven (spec.curves: [{points, color, active}], LED Farb-Animation mit Rot, Gruen, Blau): alle werden gezeichnet, Punkte hat und zieht nur die aktive Kurve
 // 1.02: Meldungen per emitEvent('mll_servo', ...) (globales Ereignis wie die anderen Seiten; getElement(...).$emit gibt es in dieser NiceGUI-Fassung nicht: 'is not a function');
 //       mllWindow: Groesse und Lage werden nur nach einer Bedienung durch den Anwender gemerkt (Ziehen am Titel, am Rand unten rechts) und wieder eingestellt, wenn die Seite den Stil
 //       der Karte zuruecksetzt (MutationObserver); vorher ueberschrieb ein Zuruecksetzen oder der erste Aufbau die gemerkte Groesse
@@ -63,7 +64,13 @@
   function render(id, spec) {
     const host = document.getElementById(id);
     if (!host) return;
-    spec = Object.assign({editX: [], editY: false, selected: -1, cursor: null, onoff: null, bridge: null}, spec);
+    spec = Object.assign({editX: [], editY: false, selected: -1, cursor: null, onoff: null, bridge: null, curves: null}, spec);
+    let others = [];                                                        // weitere Kurven (nur gezeichnet); die aktive ist spec.points
+    if (spec.curves && spec.curves.length) {
+      const act = spec.curves.find(c => c.active) || spec.curves[0];
+      spec.points = act.points; spec.activeColor = act.color;
+      others = spec.curves.filter(c => c !== act);
+    }
     host._spec = spec;
     host.innerHTML = '';
     const svg = el('svg', {viewBox: '0 0 ' + W + ' ' + H, width: '100%', style: 'display:block; height:auto; touch-action:none; user-select:none'}, host);
@@ -79,7 +86,8 @@
       el('text', {x: PAD.l - 6, y: g.y(v) + 3, 'text-anchor': 'end', 'font-size': 10, fill: '#546e7a'}, svg).textContent = v;
     }
     if (spec.onoff) el('line', {x1: g.x(spec.onoff), y1: PAD.t, x2: g.x(spec.onoff), y2: PAD.t + g.ph, stroke: '#8e24aa', 'stroke-width': 1.5, 'stroke-dasharray': '5 4'}, svg);
-    const line = el('polyline', {points: spec.points.map(p => g.x(p[0]) + ',' + g.y(p[1])).join(' '), fill: 'none', stroke: '#1a75d2', 'stroke-width': 2}, svg);
+    for (const c of others) el('polyline', {points: c.points.map(p => g.x(p[0]) + ',' + g.y(p[1])).join(' '), fill: 'none', stroke: c.color || '#78909c', 'stroke-width': 1.5, 'stroke-opacity': 0.55}, svg);
+    const line = el('polyline', {points: spec.points.map(p => g.x(p[0]) + ',' + g.y(p[1])).join(' '), fill: 'none', stroke: spec.activeColor || '#1a75d2', 'stroke-width': others.length ? 2.5 : 2}, svg);
     const cursor = el('line', {x1: 0, y1: PAD.t, x2: 0, y2: PAD.t + g.ph, stroke: '#e53935', 'stroke-width': 1.5, visibility: 'hidden'}, svg);
     host._cursor = cursor; host._g = g;
     const circles = [];

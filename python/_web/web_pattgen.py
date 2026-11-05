@@ -1,9 +1,9 @@
-# Datei-Version: 1.21 (2026-11-01) - web_pattgen.py
+# Datei-Version: 1.22 (2026-11-04) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
-# Version:        1.21
-# Last Update:    2026-11-01
+# Version:        1.22
+# Last Update:    2026-11-04
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -30,6 +30,7 @@
 #   1.19  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 #   1.20  2026-10-27  cellStyle setzt Hinter- und Schriftfarbe immer ausdruecklich (leer = zuruecksetzen): AG Grid entfernt einen frueher gesetzten Stil nicht, wenn die Funktion null liefert
 #   1.21  2026-11-01  Beschreibung des Blatts aus msoTextBox0, aenderbar (Textfeld), wird beim Speichern wieder als msoTextBox0 geschrieben
+#   1.22  2026-11-04  Knopf Test Pattern: das Muster der Seite auf dem Bildschirm abspielen (LED-Kreise, Zeiten, PingPong, Goto), wie im Excel-Programm (web_pattern_test, headless_pattern_test)
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 
@@ -279,6 +280,7 @@ class PatternView:
 
         with ui.row().classes("items-center gap-2 w-full mll-pattbar"):  # v1.01
             # web_fullscreen.button()                              # Vollbild ein und aus (entfallen: ein Knopf in der Kopfzeile)  # v1.17
+            ui.button("Test Pattern", on_click=self.on_test).props("dense outline no-caps").tooltip("Das Muster auf dem Bildschirm abspielen (die LEDs als Kreise)")  # v1.22
             ui.button("Neues Blatt", on_click=self.on_new_sheet).props("dense outline no-caps").tooltip("Kopie des aktuellen Blatts anlegen")  # v1.01
             ui.button("Aktualisieren", on_click=self.on_update).props("dense outline no-caps").tooltip("Grafik (Balken) neu aufbauen")  # v1.01
             ui.button("Neu berechnen", on_click=self.on_recalc).props("dense outline no-caps").tooltip("Formeln neu berechnen")  # v1.01
@@ -487,6 +489,22 @@ class PatternView:
 
     async def on_update(self):  # v1.01
         await self.action(self.page.update_grafik)  # v1.01
+
+    async def on_test(self):  # v1.22
+        """Test Pattern: das Muster des Blatts zerlegen (im Arbeitsthread) und im Fenster abspielen"""
+        holder = {}  # v1.22
+
+        def work(ws):  # v1.22
+            from headless.headless_pattern_test import build_test_data  # v1.22
+            holder["data"] = build_test_data(self.page, ws)  # v1.22
+        if not await self.action(work, refresh="never"):  # v1.22
+            return  # v1.22
+        data = holder.get("data")  # v1.22
+        if not data or not data.get("ok"):  # v1.22
+            ui.notify(tr("Das Blatt enthält kein gültiges Muster."), type="warning")  # v1.22
+            return  # v1.22
+        from _web import web_pattern_test  # v1.22
+        await web_pattern_test.show_pattern_test(data, self.client)  # v1.22
 
     async def on_export(self):  # v1.06
         """Pruefung und Zeilenauswahl: danach schaltet der Browser zum Programm Generator (Hinweisband, web_form_exchange)"""  # v1.06
