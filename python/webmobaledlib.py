@@ -1,8 +1,8 @@
-# Datei-Version: 2.90 (2026-11-04) - webmobaledlib.py
+# Datei-Version: 2.97 (2026-11-06) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        2.90
+# Version:        2.97
 # Last Update:    2026-11-04
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -161,6 +161,13 @@
 #   2.88  2026-11-04  Dialog LED Farb-Animation (LEDColorAnim) im Browser; MultiLEDColorAnim aus der Makroliste entfernt; letzte Zeile der Makroliste
 #   2.89  2026-11-04  Erweiterungen: Makros mit dem Namen eines schon vorhandenen Makros werden abgewiesen, mit Meldung (M38_Extensions 1.03)
 #   2.90  2026-11-04  Patterngenerator: Knopf Test Pattern (web_pattgen 1.22, web_pattern_test, headless_pattern_test)
+#   2.91  2026-11-04  Niederlaendischer Tester: Verbindungsstatus (Nicht verbunden, Verbunden COMx - EFFECT Mode) wird uebersetzt; Ueberschriften der Spalten Name bis LED/ Sound Kanal und ihre Tooltips (M09_Language 1.05); Menue Raspberry Pi herunterfahren und neu starten (Katalog)
+#   2.92  2026-11-05  PlatformIO ist der Standard: die Installationsskripte (Windows, macOS, Linux, Raspberry Pi) installieren es immer mit (abschaltbar), und in neuen Installationen ist es als Entwicklungsumgebung eingestellt (headless_proggen 1.09)
+#   2.93  2026-11-05  Tester-Idee: Leertaste (und Kontextmenue Zeilen aktivieren/deaktivieren) schaltet den Haken der Spalte Aktiv aller markierten Zeilen um; die erste markierte Zeile bestimmt, alle Zeilen in einem Rutsch mit einer Neuberechnung der LED-Nummern
+#   2.94  2026-11-05  Niederlaendischer Tester: Programm Einstellungen in Gruppen mit Ueberschrift (Allgemeine Einstellungen, Programm Generator, Farb Test Einstellungen, Zugriff aus dem Netz, Spezialeinstellungen), Check for Updates entfaellt; Beschreibungstexte aller Seiten und die Texte der Seiten Programm Einstellungen, ARDUINO Einstellungen und Farb Test uebersetzt
+#   2.95  2026-11-05  Korrektur des Entwicklers (Fehlermeldung eines Testers): Makros mit Farbparametern (zum Beispiel PushButton_RGB_0_3) wurden mit True statt der Farbwerte erzeugt (Userform_Other 1.02); Parameter vom Typ Mode werden nicht mehr gegen eine Liste geprueft (web_form_other 1.07)
+#   2.96  2026-11-05  Anfaenger Modus (Programm Einstellungen, Allgemeine Einstellungen): eine Neuinstallation startet als Anfaenger, im Anfaenger Modus fehlen die Reiter Patterngenerator, Z21 Simulator und ProgGenerator Einstellungen, der Knopf Zeilen Faerben und die Makros der Liste csv/Beginner_Hidden_Macros.csv
+#   2.97  2026-11-06  Werkzeug install/align_icon_names.py: gleicht die Schreibweise der Dateinamen gelieferter Symbole an die Namen der Makrotabelle an (Linux und macOS finden sonst Symbole nicht); make_web_icons.py 1.01 mit Hinweis
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -245,7 +252,7 @@ REQUIRED_FILES = {  # v1.75
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.14", "headless/headless_pattgen.py": "1.20", "_web/web_pattgen.py": "1.21", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.09", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.65 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.14", "headless/headless_pattgen.py": "1.20", "_web/web_pattgen.py": "1.21", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.10", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.67 (entfallen)
     # "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.16", "headless/headless_pattgen.py": "1.20", "_web/web_pattgen.py": "1.21", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.10", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.04", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.78 (entfallen)
-    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.16", "headless/headless_pattgen.py": "1.20", "_web/web_pattgen.py": "1.22", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.09", "_web/web_update.py": "1.10", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.02", "headless/headless_gridmodel.py": "1.05", "_web/web_soundtest.py": "1.01", "_web/web_dcckeyboard.py": "1.01", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.01", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.78
+    "ExcelAPI/headless_sheet.py": "1.02", "ExcelAPI/XLA_Application.py": "1.16", "headless/headless_pattgen.py": "1.20", "_web/web_pattgen.py": "1.22", "_web/web_fullscreen.py": "1.02", "_web/web_tabs.py": "1.12", "_web/web_update.py": "1.10", "release_tools.py": "1.07", "recover.py": "1.00", "repair.py": "1.03", "_web/web_z21.py": "1.03", "headless/headless_gridmodel.py": "1.05", "_web/web_soundtest.py": "1.02", "_web/web_dcckeyboard.py": "1.02", "_web/web_servotest.py": "2.06", "_web/web_servotest2.py": "1.02", "_web/web_serial.py": "1.04",  # v1.76 (headless_pattgen 1.13)  # v2.78
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.01", "_web/web_form_comport.py": "1.03", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.02", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.21 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.03", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.03", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.27 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.00", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.05", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.06", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.04", "mlpyproggen/Prog_Generator.py": "1.02", "proggen/M08_ARDUINO.py": "1.04", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.28 (entfallen)
@@ -262,7 +269,7 @@ REQUIRED_FILES = {  # v1.75
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.09", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.07", "proggen/M08_ARDUINO.py": "1.08", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.72 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.09", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.07", "proggen/M08_ARDUINO.py": "1.10", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.74 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.09", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.07", "proggen/M08_ARDUINO.py": "1.11", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.75 (entfallen)
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.09", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.08", "proggen/M08_ARDUINO.py": "1.12", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.75
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.12", "_web/web_colorcheck.py": "1.05", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.09", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.08", "proggen/M08_ARDUINO.py": "1.12", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.75
     # "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.98 (entfallen)
     # "proggen/M06_Write_Header.py": "1.03", "proggen/M20_PageEvents_a_Functions.py": "1.03", "proggen/M18_Save_Load.py": "1.01",  # v2.03 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.12 (entfallen)
@@ -336,7 +343,7 @@ REQUIRED_FILES = {  # v1.75
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "headless/headless_ssl.py": "1.00", "_web/mll_servocurve.js": "1.02", "headless/headless_servoanim.py": "1.01", "_web/web_form_servoanim.py": "1.03", "headless/headless_isp.py": "1.00", "headless/headless_hex_upload.py": "1.01", "_web/web_layout.py": "1.08", "_web/web_toolbar.py": "1.03", "headless/headless_pio_cache.py": "1.00", "headless/headless_git.py": "1.01", "_web/mll_tabs.js": "1.00", "_web/web_sheet_tabs.py": "1.02", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.03", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.04", "_web/web_macro_tree.py": "1.08", "headless/headless_graph_ops.py": "1.07", "headless/headless_graph.py": "1.03", "_web/mll_graph.js": "1.13", "_web/web_graph.py": "1.13", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.17", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.05", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.05", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.02", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.87 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "headless/headless_ssl.py": "1.00", "_web/mll_servocurve.js": "1.02", "headless/headless_servoanim.py": "1.01", "_web/web_form_servoanim.py": "1.03", "headless/headless_isp.py": "1.00", "headless/headless_hex_upload.py": "1.01", "_web/web_layout.py": "1.08", "_web/web_toolbar.py": "1.03", "headless/headless_pio_cache.py": "1.00", "headless/headless_git.py": "1.01", "_web/mll_tabs.js": "1.00", "_web/web_sheet_tabs.py": "1.02", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.03", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.04", "_web/web_macro_tree.py": "1.09", "headless/headless_graph_ops.py": "1.07", "headless/headless_graph.py": "1.03", "_web/mll_graph.js": "1.13", "_web/web_graph.py": "1.13", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.17", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.05", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.05", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.02", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.87 (entfallen)
     # "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "headless/headless_ssl.py": "1.00", "_web/mll_servocurve.js": "1.02", "headless/headless_servoanim.py": "1.01", "_web/web_form_servoanim.py": "1.03", "headless/headless_isp.py": "1.00", "headless/headless_hex_upload.py": "1.01", "_web/web_layout.py": "1.08", "_web/web_toolbar.py": "1.03", "headless/headless_pio_cache.py": "1.00", "headless/headless_git.py": "1.01", "_web/mll_tabs.js": "1.00", "_web/web_sheet_tabs.py": "1.02", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.03", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.04", "_web/web_macro_tree.py": "1.10", "headless/headless_graph_ops.py": "1.07", "headless/headless_graph.py": "1.03", "_web/mll_graph.js": "1.13", "_web/web_graph.py": "1.13", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.17", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.05", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.05", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.02", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.88 (entfallen)
-    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.07", "headless/headless_pattern_test.py": "1.00", "_web/web_pattern_test.py": "1.00", "headless/headless_ledcoloranim.py": "1.00", "_web/web_form_ledcoloranim.py": "1.00", "headless/headless_ssl.py": "1.00", "_web/mll_servocurve.js": "1.03", "headless/headless_servoanim.py": "1.02", "_web/web_form_servoanim.py": "1.04", "headless/headless_isp.py": "1.00", "headless/headless_hex_upload.py": "1.01", "_web/web_layout.py": "1.08", "_web/web_toolbar.py": "1.03", "headless/headless_pio_cache.py": "1.00", "headless/headless_git.py": "1.01", "_web/mll_tabs.js": "1.00", "_web/web_sheet_tabs.py": "1.02", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.03", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.04", "_web/web_macro_tree.py": "1.11", "headless/headless_graph_ops.py": "1.07", "headless/headless_graph.py": "1.03", "_web/mll_graph.js": "1.13", "_web/web_graph.py": "1.13", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.17", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.05", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.05", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.04", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.03", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.01", "_web/web_form_other.py": "1.06",  # v2.88
+    "proggen/M02_Public.py": "1.02", "proggen/M02a_Public.py": "1.02", "proggen/M03_Dialog.py": "1.01", "proggen/M06_Write_Header_LED2Var.py": "1.01", "_web/web_i18n.py": "1.08", "headless/headless_pattern_test.py": "1.00", "_web/web_pattern_test.py": "1.00", "headless/headless_ledcoloranim.py": "1.00", "_web/web_form_ledcoloranim.py": "1.00", "headless/headless_ssl.py": "1.00", "_web/mll_servocurve.js": "1.03", "headless/headless_servoanim.py": "1.02", "_web/web_form_servoanim.py": "1.04", "headless/headless_isp.py": "1.00", "headless/headless_hex_upload.py": "1.01", "_web/web_layout.py": "1.08", "_web/web_toolbar.py": "1.03", "headless/headless_pio_cache.py": "1.00", "headless/headless_git.py": "1.01", "_web/mll_tabs.js": "1.00", "_web/web_sheet_tabs.py": "1.02", "proggen/M70_Exp_Libraries.py": "1.01", "proggen/M08_Install_FastBootLoader.py": "1.03", "proggen/M07_COM_Port_New.py": "1.03", "headless/headless_pico.py": "1.02", "_web/web_form_firmware.py": "1.00", "_web/web_auth.py": "1.04", "headless/headless_graph_layout.py": "1.04", "_web/web_macro_tree.py": "1.12", "headless/headless_graph_ops.py": "1.07", "headless/headless_graph.py": "1.03", "_web/mll_graph.js": "1.13", "_web/web_graph.py": "1.13", "proggen/DieseArbeitsmappe.py": "1.01", "proggen/F00_mainbuttons.py": "1.01", "proggen/M28_Diverse.py": "1.01", "_web/web_pi_status.py": "1.00", "_web/web_logging.py": "1.05", "_web/web_log.py": "1.05", "_web/web_form_house.py": "1.05", "proggen/UserForm_Options.py": "1.02", "mlpyproggen/DefaultConstants.py": "1.01", "_web/web_form_options.py": "1.17", "vb2py/vbclasses.py": "1.03", "_web/web_params.py": "1.07", "_web/web_form_exchange.py": "1.01", "headless/headless_gridmodel.py": "1.05", "proggen/M06_Write_Header_SW.py": "1.04", "proggen/M07_COM_Port.py": "1.04", "proggen/M09_Language.py": "1.05", "proggen/M10_Par_Description.py": "1.02", "proggen/M30_Tools.py": "1.02", "proggen/M32_DCC.py": "1.01", "proggen/M38_Extensions.py": "1.03", "proggen/clsExtension.py": "1.01", "proggen/Userform_Other.py": "1.02", "_web/web_form_other.py": "1.07",  # v2.88
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -429,6 +436,46 @@ try:  # v2.79
 except Exception:                                     # noqa: BLE001  # v2.79
     logger.debug("headless_ssl nicht benutzbar", exc_info=True)  # v2.79
 
+
+def translate_connect_status(text):  # v2.91
+    """Verbindungsstatus (kommt aus dem Controller auf Deutsch: 'Nicht verbunden', 'Nicht Verbunden', 'Verbunden COM5 - EFFECT Mode') in der eingestellten Sprache"""  # v2.91
+    t = str(text or "")  # v2.91
+    if t.strip().lower() == "nicht verbunden":  # v2.91
+        return tr("Nicht verbunden")  # v2.91
+    m = re.fullmatch(r"Verbunden (.+) - (EFFECT|DIRECT) Mode", t)  # v2.91
+    if m:  # v2.91
+        return tr("Verbunden {port} - " + m.group(2) + " Mode", port=m.group(1))  # v2.91
+    return tr(t) if t.strip() else t  # v2.91
+
+
+def plan_active_toggle(rows, active_of, has_content, hook="*"):  # v2.93
+    """Leertaste in der Tabelle: Welcher Wert kommt in die Spalte Aktiv, und in welche Zeilen?
+    rows: die markierten Zeilen; active_of(r): Inhalt der Zelle Aktiv; has_content(r): False bei ganz leeren Zeilen (die bleiben unveraendert).
+    Massgeblich ist die oberste markierte Zeile mit Inhalt: hat sie einen Haken, wird er bei allen entfernt, sonst bei allen gesetzt.
+    Rueckgabe: (neuer Wert, Zeilen, die geschrieben werden muessen)"""  # v2.93
+    rows = sorted(set(rows))  # v2.93
+    first = next((r for r in rows if has_content(r)), None)  # v2.93
+    if first is None:  # v2.93
+        return hook, []  # v2.93
+    target = "" if str(active_of(first)).strip() != "" else hook  # v2.93
+    todo = [r for r in rows if has_content(r) and (str(active_of(r)).strip() != "") != (target != "")]  # v2.93
+    return target, todo  # v2.93
+
+
+def apply_active_toggle(ws, rows, ec, value, X02, M20, M25):  # v2.93
+    """Schreibt value in die Spalte Aktiv (0-basiert ec) der Zeilen (0-basiert). Ohne Ereignisse je Zelle (jedes Ereignis rechnet die LED-Nummern neu);
+    danach EINE Neuberechnung wie in Global_Worksheet_SelectionChange des Excel-Programms."""  # v2.93
+    ws.Activate()  # v2.93
+    old_events = X02.Application.EnableEvents  # v2.93
+    X02.Application.EnableEvents = False  # v2.93
+    try:  # v2.93
+        for r in rows:  # v2.93
+            X02.CRange(r + 1, ec + 1, ws=ws).Value = value  # v2.93
+    finally:  # v2.93
+        X02.Application.EnableEvents = old_events  # v2.93
+    M25.Make_sure_that_Col_Variables_match(ws)  # v2.93
+    M20.Update_Start_LedNr()  # v2.93
+
 # Tk: Die Python-UserForms legen Tk-Variablen an (siehe headless/headless_start.py). Standard auf ALLEN Systemen: der Ersatz no_tk, es wird weder
 # Tk noch ein Bildschirm des Servers gebraucht (wie auf dem Raspberry Pi als Dienst). MLL_TK_ROOT=1 versucht stattdessen, ein unsichtbares
 # echtes Tk-Wurzelfenster anzulegen (nur zum Vergleichen bei Fehlern; ohne tkinter oder Display gilt wieder der Ersatz).
@@ -492,6 +539,8 @@ def start_backend():
     web_dialogs.install()                        # MsgBox/InputBox als Browser-Dialoge
     from _web import web_macro_tree
     web_macro_tree.install(icons_dir=os.path.join(here, "icons"))      # Makroauswahl als Baum im Browser
+    from _web import web_tabs as _web_tabs_beginner  # v2.96
+    web_macro_tree.set_beginner_check(lambda: _web_tabs_beginner.is_beginner_mode(ctrl))  # v2.96: im Anfaenger Modus fehlen die Makros der Liste (csv/Beginner_Hidden_Macros.csv)
     from _web import web_form_other
     web_form_other.install()                     # Parameterformular (UserForm_Other) im Browser
     from _web import web_form_house
@@ -1020,7 +1069,14 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "2.90 (2026-11-04)"  # v2.90
+VERSION = "2.97 (2026-11-06)"  # v2.97
+# VERSION = "2.96 (2026-11-05)"  # v2.97 (entfallen)
+# VERSION = "2.95 (2026-11-05)"  # v2.96 (entfallen)
+# VERSION = "2.94 (2026-11-05)"  # v2.95 (entfallen)
+# VERSION = "2.93 (2026-11-05)"  # v2.94 (entfallen)
+# VERSION = "2.92 (2026-11-05)"  # v2.93 (entfallen)
+# VERSION = "2.91 (2026-11-04)"  # v2.92 (entfallen)
+# VERSION = "2.90 (2026-11-04)"  # v2.91 (entfallen)
 # VERSION = "2.89 (2026-11-04)"  # v2.90 (entfallen)
 # VERSION = "2.88 (2026-11-04)"  # v2.89 (entfallen)
 # VERSION = "2.87 (2026-11-04)"  # v2.88 (entfallen)
@@ -1476,6 +1532,25 @@ document.addEventListener('dblclick', function (e) {
 </script>
 """
 
+JS_SPACE_KEY = """
+<script>
+// Leertaste in der Tabelle (nur die Zelle hat den Fokus, kein Eingabefeld, kein Dialog offen): Haken der markierten Zeilen umschalten (Server: mll_space).
+// Die Capture-Phase faengt die Taste vor AG Grid ab, sonst schaltet AG Grid die Auswahl der Zeile um.
+document.addEventListener('keydown', function (e) {
+  if (e.key !== ' ' || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+  if (document.querySelector('.q-dialog')) return;
+  const cell = e.target;
+  if (!cell || !cell.classList || !cell.classList.contains('ag-cell') || cell.classList.contains('ag-cell-inline-editing')) return;
+  const col = cell.getAttribute('col-id');
+  const row = cell.closest('.ag-row');
+  const r = row ? parseInt(row.getAttribute('row-id'), 10) : NaN;
+  if (!col || isNaN(r)) return;
+  e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
+  emitEvent('mll_space', {r: r, col: col});
+}, true);
+</script>
+"""  # v2.93
+
 JS_DIALOG_KEYS = """
 <script>
 // Enter = Standardknopf (mll-default), Esc = Abbrechen (mll-cancel) des obersten Dialogs.
@@ -1537,6 +1612,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     _wt.apply_param_overrides(ctrl)                    # Text der Option "DM Servo Einstellungen anzeigen" (vorher: Programmgenerator anzeigen), bevor die Einstellungsseiten entstehen  # v1.96
     ui.add_head_html(JS_DIALOG_KEYS)
     ui.add_head_html(JS_DBLCLICK)
+    ui.add_head_html(JS_SPACE_KEY)  # v2.93
     ui.add_head_html("<script>" + JS_COPY_HELPER + "</script>")
     ui.add_css(CSS_GRID)
     from _web import web_layout                        # kompaktes Layout fuer kleine Bildschirme (Programm Einstellungen)
@@ -1623,8 +1699,10 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     # ------------------------------------------------------------------ Registerkarten (wie im Tk-Hauptfenster)
     with ui.tabs(value="pg").props("dense align=left no-caps active-color=primary").classes("w-full main-tabs") as tabs:
         ui.tab("pg", label="Programm Generator")
-        ui.tab("patt", label="Patterngenerator")   # v1.39
-        ui.tab("progcfg", label="ProgGenerator Einstellungen")
+        # ui.tab("patt", label="Patterngenerator")   # v1.39 (entfallen)
+        # ui.tab("progcfg", label="ProgGenerator Einstellungen")  # v2.96 (entfallen)
+        patt_tab = ui.tab("patt", label="Patterngenerator")   # v1.39 / v2.96: im Anfaenger Modus ausgeblendet
+        progcfg_tab = ui.tab("progcfg", label="ProgGenerator Einstellungen")  # v2.96: im Anfaenger Modus ausgeblendet
         ui.tab("farb", label="Farb Test")
         ui.tab("servo1", label="Servo Einstellungen")  # v1.96
         servo2_tab = ui.tab("servo2", label="DM Servo Einstellungen")  # v1.96
@@ -1635,7 +1713,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         ui.tab("arduinocfg", label="ARDUINO Einstellungen")
         ui.tab("config", label="Programm Einstellungen")
     # optional_tabs = {"servo2": servo2_tab}               # Reiter mit Option in den Programm Einstellungen (web_tabs.OPTIONAL_TABS)  # v2.05 (entfallen)
-    optional_tabs = {"servo2": servo2_tab, "z21": z21_tab}               # Reiter mit Option in den Programm Einstellungen (web_tabs.OPTIONAL_TABS)  # v2.05
+    # optional_tabs = {"servo2": servo2_tab, "z21": z21_tab}               # Reiter mit Option in den Programm Einstellungen (web_tabs.OPTIONAL_TABS)  # v2.05 (entfallen)
+    optional_tabs = {"servo2": servo2_tab, "z21": z21_tab, "patt": patt_tab, "progcfg": progcfg_tab}  # Reiter mit Option in den Programm Einstellungen (web_tabs.OPTIONAL_TABS) oder im Anfaenger Modus (web_tabs.BEGINNER_HIDDEN_TABS)  # v2.96
 
     def apply_optional_tabs():  # v1.96
         """Reiter mit Option ein- oder ausblenden; ist der ausgeblendete gerade offen, zurueck zum Programm Generator"""  # v1.96
@@ -1849,7 +1928,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if status_label.text != text:
             status_label.set_text(text)
         status_label.style(f"color: {color}")
-        conn = getattr(ctrl, "connectstatus_text", "")
+        # conn = getattr(ctrl, "connectstatus_text", "")  # v2.91 (entfallen)
+        conn = translate_connect_status(getattr(ctrl, "connectstatus_text", ""))  # v2.91
         if conn_label.text != conn:
             conn_label.set_text(conn)
         conn_label.style("color: " + STATUS_COLORS.get(str(getattr(ctrl, "connectstatus_fg", "")).lower(), "#616161"))
@@ -3589,6 +3669,46 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         elif a.get("op") == "paste":
             await op_paste(types.SimpleNamespace(args=a))
 
+    async def op_toggle_active(r):  # v2.93
+        """Haken der Spalte Aktiv der markierten Zeilen umschalten (Leertaste, Kontextmenue)"""  # v2.93
+        ws = state["ws"]  # v2.93
+        if state["busy"]:  # v2.93
+            ui.notify("Es läuft noch ein Vorgang - bitte warten.", type="warning")  # v2.93
+            return  # v2.93
+        ec = enable_column(ws)  # v2.93
+        if ec is None or is_libraries_sheet(ws):  # v2.93: nur Datenblaetter
+            return  # v2.93
+        data = ws.tksheet.data  # v2.93
+        floor = first_data_row0()  # v2.93
+        shown_rows = getattr(ws.tksheet, "displayed_rows", None)  # v2.93: versteckte Zeilen bleiben unveraendert
+        shown_set = set(shown_rows) if shown_rows else None  # v2.93
+        rows = [x for x in await ctx_rows(int(r)) if floor <= x < len(data) and (shown_set is None or x in shown_set)]  # v2.93
+
+        def active_of(x):  # v2.93
+            return data[x][ec] if ec < len(data[x]) else ""  # v2.93
+
+        def has_content(x):  # v2.93
+            return any(str(v).strip() != "" for i, v in enumerate(data[x]) if i != ec)  # v2.93
+        value, todo = plan_active_toggle(rows, active_of, has_content, hook=chr(M02.Hook_CHAR))  # v2.93
+        if not todo:  # v2.93
+            return  # v2.93
+        try:  # v2.93
+            await run_in_worker(lambda: apply_active_toggle(ws, todo, ec, value, X02, M20, M25))  # v2.93
+        except Exception as ex:                      # noqa: BLE001  # v2.93
+            logger.exception("Aktiv umschalten fehlgeschlagen")  # v2.93
+            ui.notify(tr('Fehler beim Schreiben: {ex}', ex=ex), type="negative")  # v2.93
+        show(ws)  # v2.93
+
+    async def on_space(e):  # v2.93: Leertaste in der Tabelle
+        a = e.args or {}  # v2.93
+        if a.get("r") is None:  # v2.93
+            return  # v2.93
+        await op_toggle_active(int(a["r"]))  # v2.93
+
+    async def op_toggle_active_ctx():  # v2.93: Eintrag im Kontextmenue
+        if ctx_ok():  # v2.93
+            await op_toggle_active(int(ctx_state["r"]))  # v2.93
+
     async def op_set_color():
         if not ctx_ok():
             return
@@ -3650,6 +3770,9 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             with ui.menu_item(on_click=op_clear):
                 menu_row("Löschen", "Entf")
             ui.separator()
+            with ui.menu_item(on_click=op_toggle_active_ctx):  # v2.93
+                menu_row("Zeilen aktivieren/deaktivieren", "Leertaste")  # v2.93
+            ui.separator()  # v2.93
             with ui.menu_item(on_click=op_set_color):
                 menu_row("Farbe setzen")
             with ui.menu_item(on_click=op_remove_color):
@@ -3672,6 +3795,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     ui.on("mll_ctx", on_ctx)
     ui.on("mll_dblmacro", on_dblmacro)
     ui.on("mll_cell_op", on_cell_op)
+    ui.on("mll_space", on_space)  # v2.93
 
     # ------------------------------------------------------------------ Testtasten (DCCSend)
     # Maus runter: Befehl "@Adresse Richtung 01" an den Arduino (M32.DCCSend). Maus hoch: bei Tasten (S...) "00" als Ende
@@ -4356,6 +4480,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             lbl.style(f"font-size: {web_toolbar.label_px(px)}px")  # v2.68
 
     from _web import web_toolbar                       # Knoepfe der Werkzeugleiste: Symbol ohne Text, uebersetzter Text, eingedrueckt waehrend der Befehl laeuft  # v2.68
+    beginner_buttons = []  # v2.96: Knoepfe, die im Anfaenger Modus fehlen (Zeilen Faerben)
     with toolbar_slot:
         for icon, text, tooltip, func in toolbar_buttons():
             # label = M09.Get_Language_Str(text)  # v2.68 (entfallen)
@@ -4374,6 +4499,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             # b.tooltip(M09.Get_Language_Str(tooltip))  # v2.68 (entfallen)
             b = web_toolbar.build_tool_button(ui, icon, label, M09.Get_Language_Str(tooltip), run_command(func, web_toolbar.single_line(label)),  # v2.68
                                               os.path.join(here, "images_btn"), icon_dir, toolbar_icons, toolbar_labels)     # Symbol (images_btn, ohne Text) und uebersetzter Text; eingedrueckt, solange der Befehl laeuft  # v2.68
+            if icon == "Btn_Color_Row.png":  # v2.96
+                beginner_buttons.append(b)  # v2.96
             if is_wiki:  # v2.54
                 import json as _json  # v2.54
                 import proggen.M20_PageEvents_a_Functions as _M20  # v2.54
@@ -4390,6 +4517,13 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             cols_label = ui.label("Alle\nSpalten").classes("text-xs text-center mll-tool-text").style("white-space: pre-line")  # v1.56
             cols_tip = ui.tooltip("Auch die Spalten hinter Q anzeigen (zum Beispiel die LED-Zahlen der Kanäle 1 bis 9 in Zeile 1)")  # v1.56
         b_cols.set_visibility(web_toolbar.hidden_tables_on(ctrl.getConfigData("ShowHiddentables")))     # der Knopf ist nur zum Testen da: nur mit "Programmgenerator versteckte Tabellen anzeigen"  # v2.77
+    def apply_beginner_buttons():  # v2.96
+        """Im Anfaenger Modus fehlt der Knopf Zeilen Faerben (der Reiter ProgGenerator Einstellungen, in dem man die Farben festlegt, auch)"""  # v2.96
+        from _web import web_tabs  # v2.96
+        show_expert = not web_tabs.is_beginner_mode(ctrl)  # v2.96
+        for element in beginner_buttons:  # v2.96
+            element.set_visibility(show_expert)  # v2.96
+    apply_beginner_buttons()  # v2.96
     apply_icon_size()
 
     pg_container.__exit__(None, None, None)
@@ -4455,6 +4589,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             cols_label.set_text("Alle\nSpalten")  # v2.77
             cols_tip.set_text("Auch die Spalten hinter Q anzeigen (zum Beispiel die LED-Zahlen der Kanäle 1 bis 9 in Zeile 1)")  # v2.77
         apply_optional_tabs()                          # DM Servo Einstellungen anzeigen: Reiter ein- oder ausblenden, ohne Neustart  # v1.96
+        apply_beginner_buttons()                       # Anfaenger Modus: Knopf Zeilen Faerben  # v2.96
         rebuild_sheet_tabs()                           # versteckte Tabellen als Reiter ein-/ausblenden
         scales = font_scales(ctrl)
         ui.run_javascript("let s=document.getElementById('mll-fonts'); if(!s){s=document.createElement('style'); "
@@ -4651,7 +4786,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     tabs.on_value_change(on_tab)
     if start_tab != "pg" and not _web_tabs.tab_enabled(start_tab, ctrl):                       # Adresse eines ausgeschalteten Reiters (/ServoTest2)  # v1.96
         # ui.notify(f"Der Reiter {_web_tabs.TAB_TITLES.get(start_tab, start_tab)} ist ausgeschaltet. Einschalten: Programm Einstellungen, \"DM Servo Einstellungen anzeigen\".", type="warning")  # v2.16 (entfallen)
-        ui.notify(tr('Der Reiter {reiter} ist ausgeschaltet. Einschalten: Programm Einstellungen, "DM Servo Einstellungen anzeigen".', reiter=_web_tabs.TAB_TITLES.get(start_tab, start_tab)), type="warning")  # v2.16
+        # ui.notify(tr('Der Reiter {reiter} ist ausgeschaltet. Einschalten: Programm Einstellungen, "DM Servo Einstellungen anzeigen".', reiter=_web_tabs.TAB_TITLES.get(start_tab, start_tab)), type="warning")  # v2.16 (entfallen)
+        if start_tab in _web_tabs.BEGINNER_HIDDEN_TABS and _web_tabs.is_beginner_mode(ctrl):  # v2.96
+            ui.notify(tr('Der Reiter {reiter} gibt es im Anfänger Modus nicht. Umschalten: Programm Einstellungen, Allgemeine Einstellungen, Haken "Anfänger Modus" entfernen.', reiter=_web_tabs.TAB_TITLES.get(start_tab, start_tab)), type="warning")  # v2.96
+        else:  # v2.96
+            ui.notify(tr('Der Reiter {reiter} ist ausgeschaltet. Einschalten: Programm Einstellungen, "DM Servo Einstellungen anzeigen".', reiter=_web_tabs.TAB_TITLES.get(start_tab, start_tab)), type="warning")  # v2.16
     elif start_tab != "pg":                                 # Adresse eines Reiters (zum Beispiel /Farbtest): wie ein Klick auf den Reiter  # v1.96
         tabs.set_value(start_tab)  # v1.82
     if fullscreen:                                        # Knopf und Beschriftung nach dem Aufbau der Seite angleichen  # v1.82

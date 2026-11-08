@@ -1,13 +1,14 @@
-# Datei-Version: 1.00 (2026-10-30) - make_web_icons.py
+# Datei-Version: 1.01 (2026-11-06) - make_web_icons.py
 # ----------------------------------------------------------------------------------------------
 # Name:           make_web_icons.py
 # Path:           install/make_web_icons.py
-# Version:        1.00
-# Last Update:    2026-10-28
+# Version:        1.01
+# Last Update:    2026-11-06
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-30  Neu: Symbole der Web-Oberflaeche in zwei Groessen (64 und 200 Pixel) aus hochaufgeloesten Vorlagen erzeugen
+#   1.01  2026-11-06  Hinweis im Kopf: vorher align_icon_names.py, damit die Schreibweise der Dateinamen zu den Namen passt, die das Programm erwartet (Linux, macOS)
 # ----------------------------------------------------------------------------------------------
 
 """Erzeugt die Symbole der Web-Oberflaeche in zwei Groessen aus den hochaufgeloesten Vorlagen (PNG mit Alphakanal, zum Beispiel 400 x 400).
@@ -21,6 +22,9 @@ ein voll deckender Alphakanal ergaenzt. Vorlagen ohne Gegenstueck behalten ihr a
 das Programm nimmt dann das kleine). Die alten Dateien in icons/ werden nur ueberschrieben, wenn es eine neue Vorlage gibt.
 
 Aufruf:  python make_web_icons.py <Ordner mit den Vorlagen> [<Ordner python>]       (Standard fuer den Zielordner: der Ordner ueber install)
+
+VORHER: python align_icon_names.py <Ordner mit den Vorlagen> [<Ordner python>]   Die Dateinamen der gelieferten Symbole haben oft eine andere Schreibweise (ampel.png statt Ampel.png).
+Unter Linux und macOS findet das Programm ein Symbol nur bei exakt gleicher Schreibweise wie in der Makrotabelle; align_icon_names.py benennt die Vorlagen entsprechend um.
 Braucht Pillow (steht NICHT in requirements-web.txt): pip install Pillow
 """
 import os

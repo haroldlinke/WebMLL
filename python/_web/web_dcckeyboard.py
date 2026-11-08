@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-23) - web_dcckeyboard.py
+# Datei-Version: 1.02 (2026-11-05) - web_dcckeyboard.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_dcckeyboard.py
 # Path:           _web/web_dcckeyboard.py
-# Version:        1.01
-# Last Update:    2026-10-23
+# Version:        1.02
+# Last Update:    2026-11-05
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-21  Neu: Reiter DCC Keyboard (mlpyproggen/DCC_KeyboardPage.py ohne Tk): 32 Schalter mit rotem und gruenem Knopf, Basisadresse, Kommando @ AAA CC 01
 #   1.01  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
+#   1.02  2026-11-05  Beschreibungstext der Seite wird uebersetzt (description_text)
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "DCC Keyboard" (mlpyproggen/DCC_KeyboardPage.py, Klasse DCCKeyboardPage, ohne Tk).
 
@@ -31,6 +32,12 @@ try:  # v1.01
 except ImportError:  # v1.01                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.01
     def tr(text, **values):  # v1.01
         return text.format(**values) if values else text  # v1.01
+
+try:  # v1.02
+    from _web.web_i18n import description_text  # v1.02
+except ImportError:  # v1.02                                   # aeltere Installation ohne web_i18n.py: Text bleibt deutsch
+    def description_text(text, fallback=""):  # v1.02
+        return str(text or fallback or "").replace("\r", "").strip()  # v1.02
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +144,8 @@ def build(ctrl, is_active=None):
     model = DCCModel(ctrl)
     macro = ctrl.MacroDef.data.get("DCCKeyboardPage", {}) if getattr(ctrl, "MacroDef", None) else {}
     title = macro.get("Title") or "DCC-Keyboard"
-    description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or ""
+    # description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or ""  # v1.02 (entfallen)
+    description = description_text(macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung"))  # v1.02
     ui.add_head_html("<style>" + CSS + "</style>")
     refs: dict = {"red": [], "guard": False}
     desc = {"open": False}

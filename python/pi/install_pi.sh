@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.10 (2026-10-27) - install_pi.sh
+# Datei-Version: 1.11 (2026-11-05) - install_pi.sh
 # Installiert die Web-Oberflaeche von webMobaLedLib als Dienst (systemd) auf einem Raspberry Pi (Raspberry Pi OS Bookworm/Trixie)
 # oder einem anderen Debian/Ubuntu und legt ein Desktop-Symbol zum Starten an.
 #
@@ -13,6 +13,7 @@
 #   --with-arduino-ide  ARDUINO IDE 1.8.19 herunterladen und nach /opt/arduino-1.8.19 installieren
 #                       (installiert danach auch die Bibliothek MobaLedLib samt Abhaengigkeiten)
 #   --with-arduino-libs nur die Bibliothek MobaLedLib samt Abhaengigkeiten installieren (IDE ist schon da)
+#   --no-platformio     PlatformIO NICHT installieren (seit der Version vom 2026-11-05 ist PlatformIO der Standard)
 #   --with-platformio   PlatformIO (Ersatz fuer die ARDUINO IDE) fuer den Dienstbenutzer in ~/.platformio/penv installieren (install/install_platformio.sh)
 #   --desktop-icon      Desktop-Symbol auch ohne erkannten Desktop anlegen
 #   --no-desktop-icon   kein Desktop-Symbol
@@ -26,7 +27,7 @@ NEWHOST=""
 RUN_CHECK=1
 WITH_IDE=0
 WITH_LIBS=0
-WITH_PIO=0
+WITH_PIO=1
 DESKTOP_ICON=auto
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -37,10 +38,11 @@ while [ $# -gt 0 ]; do
     --with-arduino-ide) WITH_IDE=1; WITH_LIBS=1; shift ;;
     --with-arduino-libs) WITH_LIBS=1; shift ;;
     --with-platformio) WITH_PIO=1; shift ;;
+    --no-platformio) WITH_PIO=0; shift ;;
     --desktop-icon) DESKTOP_ICON=1; shift ;;
     --no-desktop-icon) DESKTOP_ICON=0; shift ;;
     --no-check) RUN_CHECK=0; shift ;;
-    -h|--help) sed -n '3,19p' "$0"; exit 0 ;;
+    -h|--help) sed -n '3,20p' "$0"; exit 0 ;;
     *) echo "Unbekannte Option: $1"; exit 1 ;;
   esac
 done

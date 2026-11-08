@@ -1,0 +1,8 @@
+# Beginner_Hidden_Macros.csv  Version 1.00 (2026-11-05)  gilt für webMobaLedLib 2.96
+# Makros, die im ANFÄNGER MODUS in der Makroauswahl, in der Suche und in der Grafik fehlen. Im Experten Modus ist immer alles sichtbar.
+# Aufbau (UTF-8, Trennzeichen Semikolon; Zeilen mit # am Anfang und leere Zeilen sind Kommentar):
+#   Makro;<Name des Makros>      zum Beispiel  Makro;PushButton_RGB_0_3   (Spalte Name der Tabelle Lib_Macros; Groß-/Kleinschreibung egal)
+#   Gruppe;<Gruppe>             zum Beispiel  Gruppe;Dynamik                (Spalte Group der Tabelle Lib_Macros; Untergruppen gehören dazu; Ebenen mit | getrennt)
+# Makros, die schon in der Tabelle stehen, bleiben dort wie sie sind. Ausgeblendet wird nur die Auswahl neuer Makros.
+# Die Liste ist noch leer: Welche Makros für Anfänger fehlen sollen, ist in Diskussion. Änderungen gelten ohne Neustart beim nächsten Öffnen der Makroauswahl.
+Typ;Eintrag;Bemerkung

@@ -1,4 +1,14 @@
-# Datei-Version: 1.11 (2026-11-04) - web_macro_tree.py
+# Datei-Version: 1.12 (2026-11-05) - web_macro_tree.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_macro_tree.py
+# Path:           _web/web_macro_tree.py
+# Version:        1.12
+# Last Update:    2026-11-05
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.12  2026-11-05  Anfaenger Modus: Makros aus csv/Beginner_Hidden_Macros.csv (Makro oder Gruppe) werden im Anfaenger Modus nicht angezeigt (Makrobaum, Suche, Grafik); set_beginner_check, load_hidden_rules, filter_beginner (fruehere Versionen ohne Eintrag)
+# ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer die Makroauswahl (proggen/SelectMacrosTreeForm.py, Tk-Treeview).
 
 Ersetzt M09_SelectMacro_Treeview.SelectMacro_TreeView(SelectName). Die Daten kommen wie im
@@ -20,7 +30,60 @@ from _web import web_dialogs as wd
 logger = logging.getLogger(__name__)
 
 ICON_URL_PREFIX = "/mll_icons"        # in webmobaledlib.py als statischer Pfad registriert
-_state = {"last_nr": 0, "original": None, "icons_dir": None}
+_state = {"last_nr": 0, "original": None, "icons_dir": None, "is_beginner": None}  # v1.12: is_beginner: Funktion, die sagt, ob der Anfaenger Modus gilt
+HIDDEN_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "csv", "Beginner_Hidden_Macros.csv")  # v1.12
+
+
+def set_beginner_check(func) -> None:  # v1.12
+    """func() liefert True, wenn der Anfaenger Modus eingeschaltet ist (Programm Einstellungen)"""  # v1.12
+    _state["is_beginner"] = func  # v1.12
+
+
+def _group_parts(text: str) -> list:  # v1.12
+    return [p.strip().lower() for p in str(text or "").replace(">", "|").split("|") if p.strip()]  # v1.12
+
+
+def load_hidden_rules(path: str | None = None) -> tuple:  # v1.12
+    """Liste der Makros, die im Anfaenger Modus fehlen. Datei csv/Beginner_Hidden_Macros.csv (UTF-8, Trennzeichen ;): Zeilen 'Makro;<Name>' oder 'Gruppe;<Gruppe>'
+    (Gruppe wie in der Spalte Group der Tabelle Lib_Macros, mit | zwischen den Ebenen; eine Gruppe gilt mit allen Untergruppen); Zeilen mit # am Anfang und leere Zeilen sind Kommentar.
+    Rueckgabe: (Menge der Makronamen klein geschrieben, Liste der Gruppen als Teile)"""  # v1.12
+    names, groups = set(), []  # v1.12
+    try:  # v1.12
+        with open(path or HIDDEN_FILE, encoding="utf-8-sig") as fh:  # v1.12
+            lines = fh.read().splitlines()  # v1.12
+    except OSError:  # v1.12: ohne Datei wird nichts ausgeblendet
+        return names, groups  # v1.12
+    for line in lines:  # v1.12
+        if not line.strip() or line.lstrip().startswith("#"):  # v1.12
+            continue  # v1.12
+        parts = [p.strip() for p in line.split(";")]  # v1.12
+        if len(parts) < 2 or not parts[1]:  # v1.12
+            continue  # v1.12
+        kind = parts[0].lower()  # v1.12
+        if kind in ("makro", "macro"):  # v1.12
+            names.add(parts[1].lower())  # v1.12
+        elif kind in ("gruppe", "group"):  # v1.12
+            groups.append(_group_parts(parts[1]))  # v1.12
+    return names, groups  # v1.12
+
+
+def hidden_for_beginner(item: dict, rules: tuple) -> bool:  # v1.12
+    """Ist das Makro (Eintrag aus collect_macro_rows) im Anfaenger Modus ausgeblendet? Nach dem Namen des Makros oder nach der Gruppe (die deutsche Gruppe der Tabelle, Anfang genuegt)"""  # v1.12
+    names, groups = rules  # v1.12
+    name = str(item.get("name_cell") or "").strip().lower()  # v1.12
+    if name and name in names:  # v1.12
+        return True  # v1.12
+    parts = _group_parts(item.get("group_raw"))  # v1.12
+    return any(g and parts[:len(g)] == g for g in groups)  # v1.12
+
+
+def filter_beginner(items: list, info: dict, rules: tuple | None = None) -> tuple:  # v1.12
+    """Makros fuer den Anfaenger Modus: die Eintraege der Liste (Makro oder Gruppe) weglassen"""  # v1.12
+    rules = rules if rules is not None else load_hidden_rules()  # v1.12
+    if not rules[0] and not rules[1]:  # v1.12
+        return items, info  # v1.12
+    kept = [it for it in items if not hidden_for_beginner(it, rules)]  # v1.12
+    return kept, {row: info[row] for row in (int(it["row"]) for it in kept) if row in info}  # v1.12
 # Das markierte Makro in den sichtbaren Bereich der Liste scrollen. Der Baum steht beim ersten Aufbau noch nicht im Browser (der Dialog oeffnet sich erst danach), deshalb mehrere Versuche;
 # der erste, der den markierten Knoten findet, scrollt (in die Mitte) und beendet die Versuche, damit spaeteres Scrollen des Anwenders nicht gestoert wird.
 SCROLL_JS = ("(function () { let done = false; [100, 300, 700, 1500].forEach(ms => setTimeout(() => { if (done) return; "  # v1.06
@@ -138,8 +201,17 @@ def collect_macro_rows():
                      "group_path": cell(row, M02.SM_Group_COL).replace("|", " > ")}
         items.append({"row": row, "name": str(name), "name_cell": name_cell, "group": str(group),
                       # "short": str(short), "icon": icon})  # v1.05 (entfallen)
-                      "short": str(short), "icon": icon, "find_name": cell(row, M02.SM_FindN_COL)})        # find_name: Spalte "Find Name for detection" (zum Beispiel "House("), so findet die Makroauswahl das Makro einer Zeile wieder  # v1.05
-    return items, info
+                      # "short": str(short), "icon": icon, "find_name": cell(row, M02.SM_FindN_COL)})        # find_name: Spalte "Find Name for detection" (zum Beispiel "House("), so findet die Makroauswahl das Makro einer Zeile wieder  # v1.05  # v1.12 (entfallen)
+                      "short": str(short), "icon": icon, "find_name": cell(row, M02.SM_FindN_COL), "group_raw": cell(row, M02.SM_Group_COL)})        # find_name: Spalte "Find Name for detection" (zum Beispiel "House("), so findet die Makroauswahl das Makro einer Zeile wieder  # v1.05  # v1.12: group_raw: Gruppe der Tabelle (deutsch) fuer die Liste des Anfaenger Modus
+    # return items, info  # v1.12 (entfallen)
+    check = _state.get("is_beginner")  # v1.12
+    try:  # v1.12
+        beginner = bool(check()) if check else False  # v1.12
+    except Exception:                                  # noqa: BLE001  # v1.12
+        beginner = False  # v1.12
+    if beginner:  # v1.12: im Anfaenger Modus fehlen die Makros der Liste (Makrobaum, Suche und Grafik benutzen diese Funktion)
+        items, info = filter_beginner(items, info)  # v1.12
+    return items, info  # v1.12
 
 
 # ------------------------------------------------------------------ Dialog (Event-Loop)

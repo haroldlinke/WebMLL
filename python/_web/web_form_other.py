@@ -1,4 +1,14 @@
-# Datei-Version: 1.06 (2026-10-28) - web_form_other.py
+# Datei-Version: 1.07 (2026-11-05) - web_form_other.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_form_other.py
+# Path:           _web/web_form_other.py
+# Version:        1.07
+# Last Update:    2026-11-05
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.07  2026-11-05  Die Auswahlpruefung (Wert in der Liste, sonst Rueckfall auf den Standardwert mit Meldung) gilt nur fuer den Typ List, nicht fuer Mode (Flags wie OptCtrPar haben keine feste Liste; Korrektur des Entwicklers) (fruehere Versionen ohne Eintrag)
+# ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/Userform_Other.py (Parameterformular fuer Makros ohne Sonderformular).
 
 Die Klasse WebUserFormOther erbt von UserForm_Other und ersetzt nur Show_UserForm_Other:
@@ -236,7 +246,8 @@ def make_class(Base):
                     if ParVal == "":
                         ParVal = Def
                         validListEntry = True
-                    if Typ == "List" or Typ == "Mode":
+                    # if Typ == "List" or Typ == "Mode":  # v1.07 (entfallen)
+                    if Typ == "List":  # v1.07: Mode hat keine feste Auswahl (OptCtrPar: Flags und Zahlen)
                         if not validListEntry:
                             P01.MsgBox(Replace(Replace(Replace(M09.Get_Language_Str(
                                 "Fehler: Der Parameter '#1#' hat einen ungültigen Wert #2#. Der Parameter wird auf den "

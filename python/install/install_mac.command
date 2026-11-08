@@ -1,11 +1,12 @@
 #!/bin/bash
-# Datei-Version: 1.10 (2026-10-27) - install_mac.command
+# Datei-Version: 1.11 (2026-11-05) - install_mac.command
 # Installiert die Web-Oberflaeche von webMobaLedLib unter macOS: Python-Umgebung, Pakete, Programmsymbol und ein Programm
 # "webMobaLedLib" auf dem Schreibtisch (Doppelklick startet die Oberflaeche und oeffnet den Browser).
 #
 # Aufruf: im Finder doppelklicken, oder im Terminal:   bash install_mac.command [--nocheck] [--with-arduino-libs]
 #   --with-arduino-ide    ARDUINO IDE 1.8.19 von arduino.cc laden und in Programme kopieren (die IDE 2.x wird NICHT unterstuetzt), dazu --with-arduino-libs
 #   --with-arduino-libs   Bibliothek MobaLedLib (und FastLED in der geforderten Version) mit der ARDUINO IDE installieren
+#   --no-platformio       PlatformIO NICHT installieren (seit der Version dieser Datei vom 2026-11-05 ist PlatformIO der Standard)
 #   --with-platformio     PlatformIO (Ersatz fuer die ARDUINO IDE) in eine eigene Python-Umgebung ~/.platformio/penv installieren (install_platformio.sh)
 #   --nocheck             ohne den Test der Installation am Ende
 # (Ist die Datei nicht ausfuehrbar:  chmod +x install_mac.command)
@@ -18,13 +19,14 @@ APP="${MLL_APP_DIR:-$HOME/Desktop}/webMobaLedLib.app"
 CHECK=1
 WITH_LIBS=0
 WITH_IDE=0
-WITH_PIO=0
+WITH_PIO=1
 IDE_URL="${MLL_IDE_URL:-https://downloads.arduino.cc/arduino-1.8.19-macosx.zip}"
 FASTLED_VERSION="${MLL_FASTLED_VERSION:-3.9.12}"
 for a in "$@"; do
   [ "$a" = "--nocheck" ] && CHECK=0
   [ "$a" = "--with-arduino-libs" ] && WITH_LIBS=1
   [ "$a" = "--with-platformio" ] && WITH_PIO=1
+  [ "$a" = "--no-platformio" ] && WITH_PIO=0
   [ "$a" = "--with-arduino-ide" ] && { WITH_IDE=1; WITH_LIBS=1; }
 done
 
@@ -205,7 +207,7 @@ if [ "$WITH_LIBS" = "1" ]; then
   fi
 fi
 
-# --- PlatformIO (nur mit --with-platformio)
+# --- PlatformIO (Standard, ausser mit --no-platformio)
 if [ "$WITH_PIO" = "1" ]; then
   MLL_PYTHON="$PY" bash "$HERE/install_platformio.sh" || echo "(PlatformIO: siehe Meldungen oben; Nachholen: bash install_platformio.sh)"
 fi

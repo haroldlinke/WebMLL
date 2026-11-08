@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-21) - web_soundtest.py
+# Datei-Version: 1.02 (2026-11-05) - web_soundtest.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_soundtest.py
 # Path:           _web/web_soundtest.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.02
+# Last Update:    2026-11-05
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-21  Neu: Reiter Sound Test (mlpyproggen/SoundCheckPage.py ohne Tk): Adresse, LED Kanal, Impulslaenge, R/G/B, Senden mit Impuls, Direktmodus
 #   1.01  2026-10-21  Die Taste Verbinden entfaellt: verbunden wird mit der Taste Mit ARDUINO verbinden in der Kopfzeile fuer alle Reiter; neu SoundPage.on_connected (Direktmodus nach dem Verbinden)
+#   1.02  2026-11-05  Beschreibungstext der Seite wird uebersetzt (description_text)
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Sound Test" (mlpyproggen/SoundCheckPage.py, Klasse SoundCheckPage, ohne Tk).
 
@@ -32,6 +33,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+
+try:  # v1.02
+    from _web.web_i18n import description_text  # v1.02
+except ImportError:  # v1.02                                   # aeltere Installation ohne web_i18n.py: Text bleibt deutsch
+    def description_text(text, fallback=""):  # v1.02
+        return str(text or fallback or "").replace("\r", "").strip()  # v1.02
 
 logger = logging.getLogger(__name__)
 
@@ -269,7 +276,8 @@ def build(ctrl, is_active=None, connect=None):
     model = SoundModel(ctrl)
     macro = ctrl.MacroDef.data.get("SoundCheckPage", {}) if getattr(ctrl, "MacroDef", None) else {}
     title = macro.get("Title") or "Sound-Test"
-    description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or ""
+    # description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or ""  # v1.02 (entfallen)
+    description = description_text(macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung"))  # v1.02
     send_text = (macro.get("Button_1") or "Sound an ARDUINO schicken").replace("\n", " ")
     ui.add_head_html("<style>" + CSS + "</style>")
     refs: dict = {"fields": {}, "guard": False}

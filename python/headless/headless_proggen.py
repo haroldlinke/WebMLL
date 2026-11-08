@@ -1,13 +1,15 @@
-# Datei-Version: 1.08 (2026-10-17) - headless_proggen.py
+# Datei-Version: 1.10 (2026-11-05) - headless_proggen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_proggen.py
 # Path:           headless/headless_proggen.py
-# Version:        1.08
-# Last Update:    2026-10-17
+# Version:        1.10
+# Last Update:    2026-11-05
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.08  2026-10-17  Web-Formulare Select_ProgGen_Dest_Form und Select_ProgGen_Src_Form (Export/Import des Patterngenerators) installieren; davor bis 1.07 (2026-10-15), nicht erfasst
+#   1.09  2026-11-05  Erster Start einer Neuinstallation (noch keine gespeicherte Tabelle im Datenordner): PlatformIO wird als Entwicklungsumgebung eingestellt, wenn es gefunden wird (neue Funktion new_install_defaults)
+#   1.10  2026-11-05  Erster Start einer Neuinstallation: zusaetzlich Anfaenger Modus einschalten (new_install_defaults(controller) setzt BeginnerMode = 1)
 # ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Prog_GeneratorPage: baut die Arbeitsmappe "ProgGenerator".
 
@@ -127,6 +129,7 @@ class HeadlessProgGeneratorPage:
                 logger.exception("Web-Formulare konnten nicht installiert werden")
         F00.init_UserForms = _init_userforms_headless
 
+        new_install = not os.path.exists(temp_workbook_filename)  # v1.09: noch keine gespeicherte Tabelle: erster Start einer Neuinstallation
         self.workbook = self.Application.Workbooks.Open(
             ParentFrame=None,                          # kein Tk-Frame: Headless-Betrieb
             FileName=temp_workbook_filename,
@@ -147,6 +150,9 @@ class HeadlessProgGeneratorPage:
 
         self.workbook.SetInitWorkbookFunction(F00.workbook_init)
         PG.ThisWorkbook = self.workbook
+        if new_install:  # v1.09
+            # new_install_defaults()  # v1.09 (entfallen)
+            new_install_defaults(controller)  # v1.10
         PG.dialog_parent = self                          # M08/M06 rufen die Methoden der Seite ueber dialog_parent auf
         self.workbook.activate_sheet(PG.start_sheet)
 
@@ -158,6 +164,26 @@ class HeadlessProgGeneratorPage:
         PG.ThisWorkbook = value
 
     ThisWorkbook = property(fget=get_ThisWorkbook, fset=set_ThisWorkbook)
+
+
+def new_install_defaults(controller=None):  # v1.09 / v1.10: controller fuer den Anfaenger Modus
+    """Erster Start einer Neuinstallation: PlatformIO ist die Entwicklungsumgebung, wenn es gefunden wird (die Installationsskripte installieren es mit).
+    Bestehende Installationen (gespeicherte Tabelle vorhanden) behalten ihre Einstellung; ohne PlatformIO bleibt die ARDUINO IDE die Entwicklungsumgebung."""  # v1.09
+    try:  # v1.09
+        import proggen.M08_ARDUINO as M08  # v1.09
+        import proggen.M28_Diverse as M28  # v1.09
+        if M08.Find_PIO():  # v1.09
+            M28.Set_String_Config_Var("Use_PlatformIO", "1")  # v1.09
+            logger.info("Neuinstallation: PlatformIO ist die Entwicklungsumgebung")  # v1.09
+    except Exception:  # noqa: BLE001  # v1.09
+        logger.debug("Standard der Entwicklungsumgebung nicht gesetzt", exc_info=True)  # v1.09
+    if controller is not None:  # v1.10: eine Neuinstallation startet im Anfaenger Modus (Programm Einstellungen, Haken Anfaenger Modus; bestehende Installationen bleiben im Experten Modus)
+        try:  # v1.10
+            controller.setConfigData("BeginnerMode", "1")  # v1.10
+            controller.SaveConfigData()  # v1.10
+            logger.info("Neuinstallation: Anfaenger Modus ist eingeschaltet")  # v1.10
+        except Exception:  # noqa: BLE001  # v1.10
+            logger.debug("Anfaenger Modus nicht gesetzt", exc_info=True)  # v1.10
 
 
 # ----------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-# Datei-Version: 1.04 (2026-10-26) - M09_Language.py
+# Datei-Version: 1.05 (2026-11-04) - M09_Language.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M09_Language.py
 # Path:           proggen/M09_Language.py
@@ -12,6 +12,7 @@
 #   1.02  2026-10-23  Language_Changed (Zwischenspeicher nach einem Sprachwechsel leeren); Probe neutrale Tokens: CANONICAL_TOKENS (Standard aus), Token_Display, Token_Canonical
 #   1.03  2026-10-23  Get_Display_Cells: Spaltenkoepfe (mit Tooltip aus den Zeilen Cell und Comment der Tabelle Languages) und Namensspalte (aus Lib_Macros) in der eingestellten Sprache anzeigen, ohne die Zellen zu aendern
 #   1.04  2026-10-26  Get_Language_Str: Fehlt der Text in der Tabelle Languages, wird im Katalog der Web-Oberflaeche (csv/Web_Languages.csv) nachgeschlagen
+#   1.05  2026-11-04  Kopfzeilen der Datenblaetter: die Uebersetzung wird ueber den TEXT der Ueberschrift gefunden, nicht ueber die Adresse in der Tabelle Languages (J2 ...): im Web sind die Spalten Icon und Name eingefuegt, die Adressen stimmten nicht mehr (Name, Beleuchtung ..., Start LedNr ... und ihre Tooltips blieben deutsch); Spalten ohne Eintrag (Name, LED/ Sound Kanal) aus dem Katalog der Web-Oberflaeche
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -839,6 +840,16 @@ def __Cell_Pos(Addr):  # v1.03
     return int(m.group(2)) - 1, col - 1  # v1.03
 
 
+def __Find_Header_Pos(Data, Pos, Texts, Used):  # v1.05
+    # Position der Ueberschrift: die Adresse der Tabelle Languages, wenn dort der Text steht; sonst die erste Zelle der Zeile mit diesem Text (im Web sind Spalten eingefuegt: Icon, Name)  # v1.05
+    row = Data[Pos[0]]  # v1.05
+    candidates = [Pos[1]] + [c for c in range(len(row)) if c != Pos[1]]  # v1.05
+    for c in candidates:  # v1.05
+        if c < len(row) and (Pos[0], c) not in Used and __Norm(str(row[c]).partition('§')[0]) in Texts:  # v1.05
+            return (Pos[0], c)  # v1.05
+    return None  # v1.05
+
+
 def __Header_Cells(Sh, Lang):  # v1.03
     # {(Zeile, Spalte): Text} der Kopfzeilen eines Datenblatts in der Sprache Lang (0-basiert). Nur Zellen, deren Text noch einer der Texte der Tabelle Languages ist (nicht vom Anwender geaendert).
     result = {}  # v1.03
@@ -851,14 +862,22 @@ def __Header_Cells(Sh, Lang):  # v1.03
         if len(row) > 3 and str(row[0]) in comment_types and str(row[1]).strip() != '':  # v1.03
             comments[str(row[1]).split('§')[0].strip().upper()] = row  # v1.03
     data = Sh.tksheet.data  # v1.03
+    used = set()  # v1.05
     for row in rows[FirstLangRow - 1:]:  # v1.03
         if len(row) > 3 and str(row[0]) in cell_types and str(row[1]).strip() != '':  # v1.03
             pos = __Cell_Pos(row[1])  # v1.03
-            if pos is None or pos[0] >= len(data) or pos[1] >= len(data[pos[0]]):  # v1.03
+            # if pos is None or pos[0] >= len(data) or pos[1] >= len(data[pos[0]]):  # v1.05 (entfallen)
+            if pos is None or pos[0] >= len(data):  # v1.05
                 continue  # v1.03
+            texts = {__Norm(str(row[2 + i]).split('§')[0]) for i in range(len(row) - 2)}  # v1.05
+            pos = __Find_Header_Pos(data, pos, texts, used)  # v1.05
+            if pos is None:  # v1.05
+                continue  # v1.05
+            used.add(pos)  # v1.05
             cur = str(data[pos[0]][pos[1]])  # v1.03
             label, _, tip = cur.partition('§')  # v1.03
-            if label.strip() == '' or __Norm(label) not in {__Norm(str(row[2 + i]).split('§')[0]) for i in range(len(row) - 2)}:  # v1.03
+            # if label.strip() == '' or __Norm(label) not in {__Norm(str(row[2 + i]).split('§')[0]) for i in range(len(row) - 2)}:  # v1.05 (entfallen)
+            if label.strip() == '':  # v1.05
                 continue  # v1.03
             new = __Pick(row, Lang)  # v1.03
             if new == '':  # v1.03
@@ -868,6 +887,22 @@ def __Header_Cells(Sh, Lang):  # v1.03
                 new_tip = __Pick(crow, Lang) if crow is not None else ''  # v1.03
                 new = new + '§' + (new_tip if new_tip != '' else tip)  # v1.03
             result[pos] = new  # v1.03
+    try:  # v1.05: Ueberschriften ohne Eintrag in der Tabelle Languages (Name, LED/ Sound Kanal ...): Katalog der Web-Oberflaeche
+        from _web.web_i18n import catalog_text  # v1.05
+        for r in ({p[0] for p in result} or {1}):  # v1.05
+            for c in range(len(data[r]) if r < len(data) else 0):  # v1.05
+                if (r, c) in result:  # v1.05
+                    continue  # v1.05
+                cur = str(data[r][c])  # v1.05
+                label, _, tip = cur.partition('§')  # v1.05
+                flat = re.sub(r'\s+', ' ', label).strip()  # v1.05
+                if flat == '':  # v1.05
+                    continue  # v1.05
+                new = catalog_text(flat, Lang)  # v1.05
+                if new and new != flat:  # v1.05
+                    result[(r, c)] = new + ('§' + tip if '§' in cur else '')  # v1.05
+    except Exception:  # noqa: BLE001  # v1.05
+        pass  # v1.05
     return result  # v1.03
 
 

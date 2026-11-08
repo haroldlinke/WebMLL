@@ -1,9 +1,9 @@
-# Datei-Version: 1.11 (2026-10-26) - web_access.py
+# Datei-Version: 1.12 (2026-11-05) - web_access.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_access.py
 # Path:           _web/web_access.py
-# Version:        1.11
-# Last Update:    2026-10-26
+# Version:        1.12
+# Last Update:    2026-11-05
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,6 +14,7 @@
 #   1.09  2026-10-19  Einschalten von Zugriff aus dem Netz legt unter Windows die Firewall-Regel an (ensure_firewall_for_lan); Warnung zur Adresse des Servers nennt den Schalter statt MLL_HOST
 #   1.10  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 #   1.11  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
+#   1.12  2026-11-05  Zusatzkarten einzeln aufbaubar (build_layout, build_table, build_network) und als Plaetze (slots) fuer die Gruppen der Seite Programm Einstellungen
 # ----------------------------------------------------------------------------------------------
 """Zusatzfelder der Seite Programm Einstellungen: Passwort fuer den Zugriff auf die Web-Oberflaeche aus dem Netz aendern und (nur auf
 dem Raspberry Pi mit installiertem Hilfsprogramm) den Namen des Rechners im Netz aendern.
@@ -92,13 +93,32 @@ class WebAccess:
                 values.update(part.collect())
         return values
 
-    def build(self):
+    def slots(self) -> dict:  # v1.12
+        """Plaetze der Zusatzkarten fuer die Gruppen der Seite Programm Einstellungen (web_params.SETTINGS_GROUPS)"""  # v1.12
+        return {"@layout": self.build_layout, "@table": self.build_table, "@network": self.build_network}  # v1.12
+
+    def build_layout(self):  # v1.12
+        from _web import web_layout  # v1.12
+        self.layout = web_layout.LayoutSetting(self.ctrl)  # v1.12
+        self.layout.build()  # v1.12
+
+    def build_table(self):  # v1.12
+        from _web import web_layout  # v1.12
+        self.table = web_layout.TableSetting(self.ctrl)  # v1.12
+        self.table.build()  # v1.12
+
+    def build(self):  # v1.12: alle Karten hintereinander (ohne Gruppen)
+        self.build_layout()  # v1.12
+        self.build_table()  # v1.12
+        self.build_network()  # v1.12
+
+    def build_network(self):  # v1.12: Zugriff aus dem Netz erlauben und Passwort
         from nicegui import ui
-        from _web import web_layout
-        self.layout = web_layout.LayoutSetting(self.ctrl)
-        self.layout.build()
-        self.table = web_layout.TableSetting(self.ctrl)
-        self.table.build()
+        # from _web import web_layout  # v1.12 (entfallen)
+        # self.layout = web_layout.LayoutSetting(self.ctrl)  # v1.12 (entfallen)
+        # self.layout.build()  # v1.12 (entfallen)
+        # self.table = web_layout.TableSetting(self.ctrl)  # v1.12 (entfallen)
+        # self.table.build()  # v1.12 (entfallen)
         if not os.environ.get("INVOCATION_ID"):                                 # nicht beim Dienst (Raspberry Pi): dort steht die Adresse in der Einstellungsdatei des Dienstes  # v1.08
             self.build_lan()  # v1.08
         with ui.card().props("flat bordered").classes("w-full gap-2"):

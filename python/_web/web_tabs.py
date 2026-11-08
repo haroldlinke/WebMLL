@@ -1,9 +1,9 @@
-# Datei-Version: 1.10 (2026-10-28) - web_tabs.py
+# Datei-Version: 1.12 (2026-11-05) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.10
-# Last Update:    2026-10-28
+# Version:        1.12
+# Last Update:    2026-11-05
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -18,6 +18,8 @@
 #   1.08  2026-10-28  Neue Option Standardansicht des Programm Generators (Tabelle, Grafik, Beides) in den Programm Einstellungen
 #   1.09  2026-10-28  Seite fuer unbekannte Adressen in der eingestellten Sprache
 #   1.10  2026-10-28  Adresse nur einmal maskieren (vorher doppelt)
+#   1.11  2026-11-05  Option Check for Updates (CheckVersion, ohne Funktion) entfaellt auf der Seite Programm Einstellungen (PARAM_REMOVALS)
+#   1.12  2026-11-05  Anfaenger Modus: Einstellung BeginnerMode (Programm Einstellungen), is_beginner_mode, BEGINNER_HIDDEN_TABS (Patterngenerator, Z21 Simulator, ProgGenerator Einstellungen); tab_enabled beachtet den Modus
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -71,11 +73,16 @@ PARAM_ADDITIONS = {"SaveExcelCharset": ({"ParName": "SaveExcelCharset", "Cnt": "
                                        "ConfigName": ["graphdefaultview", "graphdefaultviewnumber"], "Min": "0", "Max": "255", "Default": "Tabelle",  # v1.08
                                        "Input Text": "Standardansicht des Programm Generators",  # v1.08
                                        "Hint": "Ansicht, mit der ein Blatt des Programm Generators geöffnet wird: Tabelle, Grafik (Ketten der Makros) oder Beides (Grafik oben, Tabelle unten). Mit den Knöpfen über der Tabelle kann man jederzeit umschalten."},  # v1.08
-                                      "SaveExcelCharset")}  # v1.08
+                                      "SaveExcelCharset"),  # v1.08
+                 "BeginnerMode": ({"ParName": "BeginnerMode", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "BeginnerMode", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.12
+                                   "Input Text": "Anfänger Modus",  # v1.12
+                                   "Hint": "Mit Haken (Anfänger Modus) werden Funktionen ausgeblendet, die für den Einstieg nicht nötig sind: die Reiter Patterngenerator, Z21 Simulator und ProgGenerator Einstellungen, der Knopf Zeilen Färben und einige Makros in der Makroauswahl. Ohne Haken (Experten Modus) ist alles sichtbar. Eine neue Installation startet im Anfänger Modus."},  # v1.12
+                                  "Language")}  # v1.12
 
 
 # Optionen des Tk-Programms, die im Web keine Wirkung haben und deshalb nicht angezeigt werden: Der Reiter Patterngenerator ist immer da
-PARAM_REMOVALS = ("ShowPatternGenerator",)  # v1.07
+# PARAM_REMOVALS = ("ShowPatternGenerator",)  # v1.07 (entfallen)
+PARAM_REMOVALS = ("ShowPatternGenerator", "CheckVersion")  # v1.11
 
 
 def is_enabled(value) -> bool:  # v1.04
@@ -83,8 +90,22 @@ def is_enabled(value) -> bool:  # v1.04
     return str(value if value is not None else "").strip().lower() in ("1", "true", "ja", "yes", "an", "ein", "on")  # v1.04
 
 
+BEGINNER_PARAM = "BeginnerMode"  # v1.12
+BEGINNER_HIDDEN_TABS = ("patt", "progcfg", "z21")  # v1.12: im Anfaenger Modus nicht sichtbar (Patterngenerator, ProgGenerator Einstellungen, Z21 Simulator)
+
+
+def is_beginner_mode(ctrl) -> bool:  # v1.12
+    """Ist der Anfaenger Modus eingeschaltet (Programm Einstellungen, Haken Anfaenger Modus)? Ohne Eintrag: nein (Experten Modus, so bleiben bestehende Installationen unveraendert)"""  # v1.12
+    try:  # v1.12
+        return is_enabled(ctrl.getConfigData(BEGINNER_PARAM))  # v1.12
+    except Exception:                                      # noqa: BLE001  # v1.12
+        return False  # v1.12
+
+
 def tab_enabled(tab: str, ctrl) -> bool:  # v1.04
-    """Ist der Reiter sichtbar? Reiter ohne Option immer, die anderen nach der Option in den Programm Einstellungen."""  # v1.04
+    """Ist der Reiter sichtbar? Im Anfaenger Modus fehlen die Reiter in BEGINNER_HIDDEN_TABS; sonst Reiter ohne Option immer, die anderen nach der Option in den Programm Einstellungen."""  # v1.12
+    if tab in BEGINNER_HIDDEN_TABS and is_beginner_mode(ctrl):  # v1.12
+        return False  # v1.12
     key = OPTIONAL_TABS.get(tab)  # v1.04
     if key is None:  # v1.04
         return True  # v1.04

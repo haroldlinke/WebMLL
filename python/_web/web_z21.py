@@ -1,15 +1,16 @@
-# Datei-Version: 1.02 (2026-10-26) - web_z21.py
+# Datei-Version: 1.03 (2026-11-05) - web_z21.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_z21.py
 # Path:           _web/web_z21.py
-# Version:        1.02
-# Last Update:    2026-10-26
+# Version:        1.03
+# Last Update:    2026-11-05
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-21  Neu: Reiter Z21 Simulator (mlpyproggen/Z21MonitorPage.py ohne Tk), Phase 1: Z21-Protokoll ueber UDP 21105 mit einem Arduino (Start, Stop, Taster-Adressen, Protokollfenster)
 #   1.01  2026-10-21  Phase 2: Rueckmeldung (RMBUS) vom Arduino an die Z21-Clients (Zuhoerer fuer die Zeilen JSON:{RMBUS}, zyklische Abfrage ?*, notifyZ21_RMBUS_DATA), LAN_RMBUS_GETDATA antwortet dem Anfragenden, Status mit der Zahl der Clients
 #   1.02  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
+#   1.03  2026-11-05  Beschreibungstext der Seite wird uebersetzt (description_text)
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Z21 Simulator" (mlpyproggen/Z21MonitorPage.py, Klasse Z21MonitorPage, ohne Tk).
 
@@ -50,6 +51,12 @@ try:  # v1.02
 except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.02
     def tr(text, **values):  # v1.02
         return text.format(**values) if values else text  # v1.02
+
+try:  # v1.03
+    from _web.web_i18n import description_text  # v1.03
+except ImportError:  # v1.03                                   # aeltere Installation ohne web_i18n.py: Text bleibt deutsch
+    def description_text(text, fallback=""):  # v1.03
+        return str(text or fallback or "").replace("\r", "").strip()  # v1.03
 
 logger = logging.getLogger(__name__)
 
@@ -634,7 +641,8 @@ def build(ctrl, is_active=None, simulator=None):
     sim = simulator or get_simulator(ctrl)
     macro = ctrl.MacroDef.data.get("Z21MonitorPage", {}) if getattr(ctrl, "MacroDef", None) else {}
     title = macro.get("Title") or "Z21 Simulator"
-    description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or ""
+    # description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or ""  # v1.03 (entfallen)
+    description = description_text(macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung"))  # v1.03
     texts = [(macro.get(k) or d).replace("\n", " ") for k, d in (("Button_1", "Start Simulator"), ("Button_2", "Stop Simulator"), ("Button_3", "Zeige Taster-Adressen"))]
     ui.add_head_html("<style>" + CSS + "</style>")
     refs: dict = {"seen": 0}

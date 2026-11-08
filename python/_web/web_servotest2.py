@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-21) - web_servotest2.py
+# Datei-Version: 1.02 (2026-11-05) - web_servotest2.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_servotest2.py
 # Path:           _web/web_servotest2.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.02
+# Last Update:    2026-11-05
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-20  Neu: Seite Servo Test 2 (ServoTestPage2.py ohne Tk), Teil A: direkte Steuerung von Direct Mode Servos (Betriebsarten 1 bis 10, ENTER, Regler 0 bis 255, Zeitgeber mit CRC4). Ohne Programmieren des ATtiny (Teil B und C)
 #   1.01  2026-10-21  Neu Servo2Page.on_connected: nach dem Verbinden (Taste Mit ARDUINO verbinden in der Kopfzeile oder Menue) den Direktmodus neu starten
+#   1.02  2026-11-05  Beschreibungstext der Seite wird uebersetzt (description_text; zugeklappt steht die erste Zeile der uebersetzten Beschreibung)
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Servo Test 2" (mlpyproggen/ServoTestPage2.py, Klasse ServoTestPage2, ohne Tk): Servos im Direct Mode (Variante von Eckhart, ein ATtiny
 statt des WS2811-Chips, Kommandos mit CRC4-Pruefsumme).
@@ -38,6 +39,12 @@ Unterschiede zum Tk-Original (siehe HOC_intern.md, Version 1.91):
 from __future__ import annotations
 
 import logging
+
+try:  # v1.02
+    from _web.web_i18n import description_text  # v1.02
+except ImportError:  # v1.02                                   # aeltere Installation ohne web_i18n.py: Text bleibt deutsch
+    def description_text(text, fallback=""):  # v1.02
+        return str(text or fallback or "").replace("\r", "").strip()  # v1.02
 
 logger = logging.getLogger(__name__)
 
@@ -370,7 +377,8 @@ def build(ctrl, is_active=None):
     model = Servo2Model(ctrl)
     macro = ctrl.MacroDef.data.get("ServoTestPage2", {}) if getattr(ctrl, "MacroDef", None) else {}
     title = macro.get("Title") or "MobaLedLib LED-Servotester für Direct Mode Servos"
-    description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or TEXT_FALLBACK
+    # description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or TEXT_FALLBACK  # v1.02 (entfallen)
+    description = description_text(macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung"), TEXT_FALLBACK)  # v1.02
     ui.add_head_html("<style>" + CSS + "</style>")
     refs: dict = {}
     desc = {"open": False}

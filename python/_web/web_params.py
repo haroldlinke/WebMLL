@@ -1,4 +1,15 @@
-# Datei-Version: 1.05 (2026-11-01) - web_params.py
+# Datei-Version: 1.07 (2026-11-05) - web_params.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_params.py
+# Path:           _web/web_params.py
+# Version:        1.07
+# Last Update:    2026-11-05
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.06  2026-11-05  Einstellungsseite Programm Einstellungen in Gruppen mit Ueberschrift (SETTINGS_GROUPS, Plaetze @layout, @table, @network fuer die Zusatzkarten); Beschreibungstext wird uebersetzt (description_text) (fruehere Versionen ohne Eintrag)
+#   1.07  2026-11-05  Anfaenger Modus: der Haken steht als erste Einstellung in den Allgemeinen Einstellungen
+# ----------------------------------------------------------------------------------------------
 """Web-Version von create_macroparam_frame/create_macroparam_content (pyMobaLedLib.py) fuer die Einstellungsseiten.
 
 Die Einstellungsseiten (ConfigurationPage "Programm Einstellungen", ProgGenConfigPage, ARDUINOConfigPage) sind nicht von
@@ -25,7 +36,24 @@ except ImportError:  # v1.02                                   # aeltere Install
     def tr(text, **values):  # v1.02
         return text.format(**values) if values else text  # v1.02
 
+try:  # v1.06
+    from _web.web_i18n import description_text  # v1.06
+except ImportError:  # v1.06                                   # aeltere Installation ohne web_i18n.py: Text bleibt deutsch
+    def description_text(text, fallback=""):  # v1.06
+        return str(text or fallback or "").replace("\r", "").strip()  # v1.06
+
 logger = logging.getLogger(__name__)
+
+# Gruppen der Seite Programm Einstellungen: (Ueberschrift, Parameter); "@name" ist ein Platz fuer eine Zusatzkarte (WebAccess.slots), None = alle uebrigen Parameter  # v1.06
+SETTINGS_GROUPS = {  # v1.06
+    "ConfigurationPage": [  # v1.06
+        # ("Allgemeine Einstellungen", ["Language", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.06 (entfallen)
+        ("Allgemeine Einstellungen", ["BeginnerMode", "Language", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.07
+        ("Programm Generator", ["GraphDefaultView", "ShowHiddentables", "@table"]),  # v1.06
+        ("Farb Test Einstellungen", ["Farbauswahl", "LEDColourCorrection"]),  # v1.06
+        ("Zugriff aus dem Netz", ["@network"]),  # v1.06
+        ("Spezialeinstellungen", None)],  # v1.06
+}  # v1.06
 
 LABEL_W = 260                                   # Breite der Beschriftungsspalte in Pixeln (CONFIGPage)
 
@@ -55,14 +83,37 @@ class ParamPanel:
         return self.ctrl.MacroParamDef.data.get(key, {}) if getattr(self.ctrl, "MacroParamDef", None) else {}
 
     # ------------------------------------------------------------------ Aufbau
-    def build(self, hidecondition: bool = False):
+    def build(self, hidecondition: bool = False, slots: dict | None = None):  # v1.06: slots
         from nicegui import ui
-        description = self.macrodata.get("Ausführliche Beschreibung") or self.macrodata.get("Kurzbeschreibung") or ""
+        # description = self.macrodata.get("Ausführliche Beschreibung") or self.macrodata.get("Kurzbeschreibung") or ""  # v1.06 (entfallen)
+        description = description_text(self.macrodata.get("Ausführliche Beschreibung") or self.macrodata.get("Kurzbeschreibung"))  # v1.06
         if description:
             ui.label(description).style("white-space: pre-line; font-size: 13px").classes("w-full")
+        groups = SETTINGS_GROUPS.get(self.macro)  # v1.06
+        if groups:  # v1.06
+            self._build_groups(groups, hidecondition, slots or {})  # v1.06
+            return  # v1.06
         with ui.column().classes("gap-1 w-full"):
             for key in self.macrodata.get("Params", []):
                 self._build_param(key, (), hidecondition)
+
+    def _build_groups(self, groups, hidecondition, slots):  # v1.06
+        """Die Parameter in Gruppen mit Ueberschrift; Parameter, die in keiner Gruppe stehen, kommen in die Gruppe mit None (am Ende)"""  # v1.06
+        from nicegui import ui  # v1.06
+        keys = [k for k in self.macrodata.get("Params", []) if not str(k).startswith("!")]  # v1.06
+        named = {m for _, members in groups if members is not None for m in members if not m.startswith("@")}  # v1.06
+        for heading, members in groups:  # v1.06
+            wanted = [k for k in keys if k not in named] if members is None else members  # v1.06
+            parts = [m for m in wanted if (m in slots if m.startswith("@") else m in keys)]  # v1.06
+            if not parts:  # v1.06
+                continue  # v1.06
+            ui.label(heading).classes("text-h6").style("width: 100%; margin-top: 14px; padding-bottom: 2px; color: #1565c0; border-bottom: 2px solid #1976d2")  # v1.06
+            with ui.column().classes("gap-1 w-full"):  # v1.06
+                for m in parts:  # v1.06
+                    if m.startswith("@"):  # v1.06
+                        slots[m]()  # v1.06
+                    else:  # v1.06
+                        self._build_param(m, (), hidecondition)  # v1.06
 
     @staticmethod
     def _hidden(d, ptype, hidecondition):
@@ -345,9 +396,13 @@ def build_settings_page(ctrl, macro: str, on_save=None, buttons=None, extra=None
         ui.label(title.replace("\n", " ")).classes("text-h5 q-pa-sm").style("border: 1px solid #999")
         with ui.card().classes("w-[1000px] max-w-full gap-2"):
             ui.button(save_text, on_click=save).props("color=primary no-caps").style("align-self: flex-end")
-            panel.build()
-            if extra is not None:
-                extra.build()
+            # panel.build()  # v1.06 (entfallen)
+            # if extra is not None:  # v1.06 (entfallen)
+                # extra.build()  # v1.06 (entfallen)
+            grouped = bool(SETTINGS_GROUPS.get(macro)) and extra is not None and hasattr(extra, "slots")  # v1.06: die Zusatzkarten stehen in den Gruppen
+            panel.build(slots=extra.slots() if grouped else None)  # v1.06
+            if extra is not None and not grouped:  # v1.06
+                extra.build()  # v1.06
     panel.load_from_config()
     mark_saved()
     return types.SimpleNamespace(panel=panel, save=save, changed=changed, mark_saved=mark_saved, title=title)

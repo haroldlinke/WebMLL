@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-21) - Userform_Other.py
+# Datei-Version: 1.02 (2026-11-05) - Userform_Other.py
 # ----------------------------------------------------------------------------------------------
 # Name:           Userform_Other.py
 # Path:           proggen/Userform_Other.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.02
+# Last Update:    2026-11-05
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-21  Version K des Excel-Programms: Parametertypen LED#OrName und LEDName (Check_Variable_Name), Option pf=<Praefix> (ValToParVal, ParValToVal, Prefix)
+#   1.02  2026-11-05  Check_Par_with_ErrMsg: Parametertyp RGB und RGB2 liefert den geprueften Farbwert zurueck (vorher True/False: im Makro stand 'True, True, True, True' statt der Farben); bei Fehler None (Korrektur des Entwicklers, im Programm 2.95); Check_RGB_List: die Fehlermeldung bei ungueltigen Farbwerten nennt jetzt den Parameter (vorher Abbruch mit NameError: Controls)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -345,7 +346,8 @@ class UserForm_Other():
             if not Err:
                 Err = P01.val(s) < 0 or P01.val(s) > 255 or InStr(Value, '.') > 0
             if Err:
-                P01.MsgBox(Replace(M09.Get_Language_Str('Fehler der Parameter \'#1#\' ist ungültig.' + vbCr + 'Die Farbwerte müssen im Bereich von 0 bis 255 liegen'), '#1#', Controls('LabelPar' + ParNr)), vbCritical, M09.Get_Language_Str('Ungültiger RGB Parameter'))
+                # P01.MsgBox(Replace(M09.Get_Language_Str('Fehler der Parameter \'#1#\' ist ungültig.' + vbCr + 'Die Farbwerte müssen im Bereich von 0 bis 255 liegen'), '#1#', Controls('LabelPar' + ParNr)), vbCritical, M09.Get_Language_Str('Ungültiger RGB Parameter'))  # v1.02 (entfallen: Controls gibt es in Python nicht, die Meldung brach mit NameError ab)
+                P01.MsgBox(Replace(M09.Get_Language_Str('Fehler der Parameter \'#1#\' ist ungültig.' + vbCr + 'Die Farbwerte müssen im Bereich von 0 bis 255 liegen'), '#1#', self.ParName[ParNr - 1]), vbCritical, M09.Get_Language_Str('Ungültiger RGB Parameter'))  # v1.02
                 return fn_return_value
         fn_return_value = Value
         return fn_return_value
@@ -416,7 +418,10 @@ class UserForm_Other():
             Debug.Print('ToDo: Check parameter typ \'' + self.TypA(ParNr - 1) + '\'')
         elif (select_1 == 'RGB') or (select_1 == 'RGB2'):
             value = self.Check_RGB_List(self.TypA(ParNr - 1), Replace(Trim(M30.Replace_Multi_Space(Replace(value, ',', ' '))), ' ', ', '), ParNr)
-            fn_return_value = ( value != '' )
+            # fn_return_value = ( value != '' )  # v1.02 (entfallen)
+            if value == "":  # v1.02: leere Eingabe ist ein Fehler (None)
+                value = None  # v1.02
+            fn_return_value = value  # v1.02: gibt den geprueften Farbwert zurueck (Check_RGB_List liefert bei einem Fehler None)
             return fn_return_value
         elif (select_1 == 'CmpMod'):
             if InStr(' ' + M02.L2V_COM_OPERATORS + ' ', ' ' + value + ' ') == 0:

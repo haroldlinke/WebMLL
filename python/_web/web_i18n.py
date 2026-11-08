@@ -1,9 +1,9 @@
-# Datei-Version: 1.07 (2026-10-28) - web_i18n.py
+# Datei-Version: 1.08 (2026-11-05) - web_i18n.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_i18n.py
 # Path:           _web/web_i18n.py
-# Version:        1.07
-# Last Update:    2026-10-28
+# Version:        1.08
+# Last Update:    2026-11-05
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -15,6 +15,7 @@
 #   1.05  2026-10-26  Uebersetzung wird mit den Leerzeichen des Textes eingesetzt; vor einem Satzzeichen entfaellt das vordere Leerzeichen (_fit)
 #   1.06  2026-10-26  tr(): gewaehlte Sprache zuerst im Katalog, dann in der Tabelle Languages, erst danach English (ein englischer Katalogtext verdraengte vorher eine vorhandene niederlaendische Uebersetzung der Tabelle)
 #   1.07  2026-10-28  use_language: feste Seiten (Programm beendet, Raspberry Pi faehrt herunter) in der Sprache des Programms, auch wenn es schon beendet ist
+#   1.08  2026-11-05  Neu description_text(): Beschreibungstext einer Seite (MacroDef) von Wagenruecklaeufen befreien und uebersetzen (Programm Einstellungen, Farb Test, Servo, Sound, DCC Keyboard, Z21)
 # ----------------------------------------------------------------------------------------------
 """Mehrsprachige Web-Oberflaeche (Konzept siehe HOC_intern.md, Version 2.14).
 
@@ -144,6 +145,13 @@ def tr(text, **values):
                         # break  # v1.06 (entfallen)
                 break  # v1.06
     return out.format(**values) if values else out
+
+
+def description_text(text, fallback=""):  # v1.08
+    """Beschreibungstext einer Seite aus MacroDef (\\r entfernen, mehr als eine Leerzeile zu einer, Leerraum am Rand weg) in der eingestellten Sprache.
+    Der Katalog enthaelt den bereinigten Text (mit seinen Zeilenumbruechen: zum Beispiel zeigt der Reiter Servo Einstellungen 2 zugeklappt nur die erste Zeile)."""  # v1.08
+    cleaned = re.sub(r"\n{3,}", "\n\n", str(text or fallback or "").replace("\r", "")).strip()  # v1.08
+    return tr(cleaned) if cleaned else cleaned  # v1.08
 
 
 def catalog_text(text: str, lang: int = -1):  # v1.04

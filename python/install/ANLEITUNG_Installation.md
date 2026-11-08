@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 3.45 (2026-11-04), gilt für webMobaLedLib 2.90*
+*Datei-Version: 3.50 (2026-11-05), gilt für webMobaLedLib 2.96*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -15,35 +15,34 @@ Diese Anleitung gilt für alle vier Systeme. **Eilige lesen nur den Schnellstart
    Direkter Download der neuesten Version: <https://github.com/haroldlinke/WebMLL/releases/latest/download/webmobaledlib.zip>
 2. Einen **neuen Ordner `mobaledlib`** anlegen (zum Beispiel im eigenen Benutzerordner), die ZIP-Datei dort hineinkopieren und **entpacken**: Windows Rechtsklick →
    *Alle extrahieren* (im vorgeschlagenen Zielpfad ein angehängtes `\webmobaledlib` löschen), Linux und Mac „Hier entpacken“. Danach liegt der Ordner `python` direkt in `mobaledlib`.
-3. Die **Komplettinstallation** mit einem Befehl starten (Tabelle unten). Sie richtet alles ein: die Python-Umgebung, die richtige **ARDUINO IDE 1.8.19** (nicht 2.x), die
-   Bibliotheken und ein Symbol zum Starten. Das Fenster zeigt den Fortschritt; es dauert einige Minuten.
+3. Die **Komplettinstallation** mit einem Befehl starten (Tabelle unten). Sie richtet alles ein: die Python-Umgebung, **PlatformIO** (übersetzt und lädt das Programm auf den Arduino; seit 2.92 der Standard) und ein Symbol zum Starten. Die **ARDUINO IDE 1.8.19** (nicht 2.x) ist nur noch optional (Option `/ide` bzw. `--with-arduino-ide`, siehe 2.2). Das Fenster zeigt den Fortschritt; es dauert einige Minuten.
 4. **Starten:** Symbol **„webMobaLedLib“** (Windows: „webMobaLedLib“) doppelklicken. Nach 20 bis 60 Sekunden öffnet sich der Browser mit dem Programm.
 
 | System | Komplettinstallation |
 |---|---|
-| **Windows 10/11** | Ordner `mobaledlib\python\install` öffnen, oben in die Adressleiste des Explorers `cmd` tippen und Enter drücken. Dort eingeben: `install_windows.bat /ide`. Windows fragt nach der Erlaubnis. Wird dabei Python neu installiert, **den PC neu starten** und den Befehl noch einmal eingeben. |
-| **Linux** (Mint, Debian, Ubuntu) | Terminal: `cd ~/mobaledlib/python/install` und dann `bash install_linux.sh --with-arduino-ide`. Danach einmal ab- und wieder anmelden. |
-| **macOS** (ab 10.13, wenig getestet, siehe Kapitel 4) | Terminal: `cd ~/mobaledlib/python/install` und dann `bash install_mac.command --with-arduino-ide`. |
+| **Windows 10/11** | Ordner `mobaledlib\python\install` öffnen, oben in die Adressleiste des Explorers `cmd` tippen und Enter drücken. Dort eingeben: `install_windows.bat`. Windows fragt nach der Erlaubnis. Wird dabei Python neu installiert, **den PC neu starten** und den Befehl noch einmal eingeben. |
+| **Linux** (Mint, Debian, Ubuntu) | Terminal: `cd ~/mobaledlib/python/install` und dann `bash install_linux.sh`. Danach einmal ab- und wieder anmelden. |
+| **macOS** (ab 10.13, wenig getestet, siehe Kapitel 4) | Terminal: `cd ~/mobaledlib/python/install` und dann `bash install_mac.command`. |
 | **Raspberry Pi** | siehe unten |
 
 **Die Befehle zum Kopieren** (jeweils eine Zeile, im Terminal bzw. in der Eingabeaufforderung im Ordner `install`):
 
 ```bash
 # Windows (Eingabeaufforderung im Ordner mobaledlib\python\install)
-install_windows.bat /ide
+install_windows.bat
 
 # Linux (Mint, Debian, Ubuntu)
 cd ~/mobaledlib/python/install
-bash install_linux.sh --with-arduino-ide
+bash install_linux.sh
 
 # macOS
 cd ~/mobaledlib/python/install
-bash install_mac.command --with-arduino-ide
+bash install_mac.command
 ```
 
 **Tipp zum Eingeben:** Die Dateinamen enthalten einen Unterstrich (`_`). Beim Kopieren aus einem PDF kann es passieren, dass der Befehl im Terminal auf **zwei Zeilen** erscheint oder der
 Unterstrich fehlt, dann meldet das Terminal nur einen Fehler. In dem Fall den Namen nicht kopieren, sondern **vorne eintippen und mit der Tab-Taste ergänzen lassen**: `bash install_m`
-tippen (Linux: `bash install_l`, Pi: `sudo bash install_p`), dann die **Tab-Taste** drücken. Das Terminal schreibt den Dateinamen zu Ende, danach ` --with-arduino-ide` anhängen und Enter drücken.
+tippen (Linux: `bash install_l`, Pi: `sudo bash install_p`), dann die **Tab-Taste** drücken. Das Terminal schreibt den Dateinamen zu Ende, danach Enter drücken.
 
 **Raspberry Pi: Besonderheiten und einfachster Weg**
 
@@ -55,7 +54,7 @@ Der Pi läuft als **Dienst im Dauerbetrieb**: Das Programm startet beim Hochfahr
 3. Terminal öffnen und die Komplettinstallation starten:
    ```bash
    cd ~/mobaledlib/python/pi
-   sudo bash install_pi.sh --with-arduino-ide
+   sudo bash install_pi.sh
    ```
 4. Danach: Desktop-Symbol **„webMobaLedLib“** (öffnet das Programm auf dem Pi). Von einem anderen Rechner im Netz: `http://raspberrypi.local:8080` (statt `raspberrypi` der im Imager gewählte Rechnername), Benutzer `mobaledlib`,
    Passwort `mobaledlib` (im Programm unter „Programm Einstellungen“ änderbar). Der Pi wird über das Menü **Datei → Raspberry Pi herunterfahren** ausgeschaltet, nicht durch Ziehen des Steckers.
@@ -318,6 +317,9 @@ Die Knöpfe der Symbolleiste **Zeilen duplizieren** (früher „Kopiere Zeilen�
 
 **Farbe wählen:** Im Fenster **„Hintergrundfarbe der Zelle“**, im Fenster **„Reiterfarbe“** und bei Farbfeldern in den Formularen geht die Farbwahl (Klick auf die **Pipette**) jetzt **rechts neben dem Knopf** auf und verdeckt die Knöpfe **OK** und **Abbrechen** nicht mehr (vorher musste man erst irgendwo klicken, damit sie verschwand).
 
+
+**Zeilen aktivieren und deaktivieren (2.93):** Mit der **Leertaste** schaltet man den **Haken** der Spalte **Aktiv** aller **markierten Zeilen** um (Zeilen über die Zeilennummern markieren oder eine Zelle der Zeile wählen). **Maßgeblich ist die oberste markierte Zeile mit Inhalt:** Hat sie einen Haken, wird er bei allen markierten Zeilen entfernt, sonst bei allen gesetzt (auch wenn die markierten Zeilen vorher verschieden waren). Ganz **leere Zeilen** und **ausgeblendete Zeilen** bleiben unverändert. Dasselbe macht der Eintrag **Zeilen aktivieren/deaktivieren** im **Kontextmenü** (rechte Maustaste), auch auf Tablet und Smartphone ohne Leertaste. Die LED-Nummern werden **einmal** für alle Zeilen neu berechnet. Beim **Bearbeiten einer Zelle**, in Eingabefeldern und bei geöffnetem Dialog bleibt die Leertaste unverändert (Leerzeichen). Auf dem Blatt **Libraries** gibt es die Funktion nicht (dort wirkt der Klick auf die Spalte **Select**). Nützlich, um **ein ganzes Haus** für Wartungsarbeiten oder Erweiterungen vorübergehend abzuschalten (Idee eines Testers).
+
 ### 2.9c Die Knöpfe der Werkzeugleiste (2.68)
 
 Die Knöpfe der Werkzeugleiste des Programm Generators (Dialog Wizard, Setup übertragen, Zeile einfügen, Zeilen löschen, Zeilen verschieben, Zeilen duplizieren, Aus- oder Einblenden, Alle Einblenden, Tabelle löschen, Neue Tabelle, Optionen Werkzeuge, Online Wiki, Zeilen Färben) bestehen aus einem **Symbol ohne Text** und einer **Beschriftung unter dem Symbol in der eingestellten Sprache** (jeder Knopf ist nur so breit wie sein Symbol): Die Texte kommen aus demselben Blatt „Languages“ wie im Excel-Programm (Deutsch, Englisch, Niederländisch, Französisch, Italienisch, Spanisch, Dänisch); vorher stand der deutsche Text im Bild und blieb in jeder Sprache deutsch. Der Tooltip (Hinweis beim Darüberfahren) ist ebenfalls übersetzt.
@@ -503,6 +505,10 @@ Der Reiter **Z21 Simulator** (`/Z21Simulator`) gibt sich gegenüber Modellbahn-S
 ### 2.15 Sprache der Oberfläche
 
 In den **Programm Einstellungen** wählt man unter **Sprache**: Auto (die Sprache des Rechners, auf dem das Programm läuft), Deutsch, English, Nederlands, French, Italian, Spanish oder Denmark. Nach dem **Speichern** wirkt die Auswahl **sofort**:
+
+**Aufbau der Seite Programm Einstellungen (seit 2.94):** Die Einstellungen stehen in **Gruppen mit Überschrift**: **Allgemeine Einstellungen** (Anfänger Modus, Sprache, Darstellung auf kleinen Bildschirmen, Schriftgröße, Schrift von ProgGen/PattGen, Icon Größe), **Programm Generator** (Standardansicht, versteckte Tabellen anzeigen, Bedienung der Tabelle), **Farb Test Einstellungen** (Farbauswahl, LED-Farbkorrektur), **Zugriff aus dem Netz** (Schalter und Passwort) und **Spezialeinstellungen** (alles andere: DM Servo Einstellungen anzeigen, Z21 Simulator anzeigen, IP Upload Timeout, RMBUS-Interval, Dateien für das Excel-Programm speichern). Die Option **Check for Updates** hatte keine Funktion und entfällt. Die **Beschreibungstexte** der Seiten (zum Beispiel unter der Überschrift von Programm Einstellungen, ARDUINO Einstellungen, Farb Test, DCC Keyboard, Sound Test, Servo Einstellungen 2 und Z21 Simulator) sowie die Beschriftungen der Seiten Programm Einstellungen, ARDUINO Einstellungen und Farb Test werden in der eingestellten Sprache angezeigt.
+
+**Anfänger Modus und Experten Modus (seit 2.96):** Eine **neue Installation** startet im **Anfänger Modus**. Er blendet aus, was für den Einstieg nicht nötig ist: die Reiter **Patterngenerator**, **Z21 Simulator** und **ProgGenerator Einstellungen**, den Knopf **Zeilen Färben** und die Makros der Liste `csv/Beginner_Hidden_Macros.csv` in der **Makroauswahl**, in der Suche und in der Grafik. Umschalten: **Programm Einstellungen → Allgemeine Einstellungen → Haken „Anfänger Modus“** (Haken weg = **Experten Modus**, alles sichtbar), danach **Speichern**; die Reiter und der Knopf erscheinen und verschwinden sofort, der Makrobaum beim nächsten Öffnen. **Bestehende Installationen** bleiben nach einem Update im Experten Modus. Der Z21 Simulator und der Reiter DM Servo Einstellungen erscheinen im Experten Modus wie bisher nur mit ihrer Option. Ruft man die Adresse eines ausgeblendeten Reiters auf (zum Beispiel `/Patterngenerator`), öffnet sich der Programm Generator mit einem Hinweis. **Makros**, die schon in der Tabelle stehen, bleiben und lassen sich weiter öffnen; ausgeblendet wird nur die Auswahl neuer Makros. Die **Liste** der ausgeblendeten Makros ist eine Textdatei (Zeilen `Makro;<Name>` oder `Gruppe;<Gruppe>`, Beschreibung am Anfang der Datei); sie ist zunächst **leer** (welche Makros für Anfänger fehlen, wird noch besprochen) und braucht keinen Neustart.
 Die Seite wird in allen Browsern neu geladen, und alle Texte erscheinen in der neuen Sprache. Ein Neustart ist nicht nötig.
 
 - **Was übersetzt wird:** alle Texte der Oberfläche: Menüs, Reiter, Knöpfe, Hinweise, die Texte und Beschreibungen in den Formularen (zum Beispiel „Verteiler und Stecker Nummer“, „Optionen und spezielle Funktionen“) und in den **Programm Einstellungen**, die Meldungen des Programm Generators und des Patterngenerators, die **Spaltenköpfe** mit ihren Hinweisen, die **Namensspalte** und die **Typen** in der Tabelle. Die Texte stehen an zwei Stellen: Die Texte, die es schon im Excel-Programm gab, kommen wie dort aus der Tabelle Languages der Excel-Datei; alles, was es nur im Web-Programm gibt, steht im Katalog `python/csv/Web_Languages.csv`. Fehlt ein Text in der Tabelle Languages, wird im Katalog nachgesehen. Stand: **English** ist vollständig (Entwurf), die anderen Sprachen sind nur dort übersetzt, wo die Tabelle Languages eine Übersetzung hat (sonst erscheint English).
@@ -609,7 +615,8 @@ Das Programm beruht auf dem Excel-Programm **3.5.0-K-long** der MobaLedLib. Es e
 |---|---|
 | `/ide` | ARDUINO IDE 1.8.19 laden und installieren, dazu `/libs` |
 | `/libs` | Bibliotheken FastLED (3.9.12) und MobaLedLib mit `arduino_debug.exe` installieren |
-| `/platformio` | PlatformIO (Ersatz für die ARDUINO IDE) in eine eigene Python-Umgebung `%USERPROFILE%\.platformio\penv` installieren (siehe 2.16) |
+| `/platformio` | PlatformIO in eine eigene Python-Umgebung `%USERPROFILE%\.platformio\penv` installieren (siehe 2.16); **seit 2.92 der Standard**, die Option bleibt gültig |
+| `/nopio` | PlatformIO **nicht** installieren (wer nur die ARDUINO IDE benutzt) |
 | `/nocheck` | ohne den Test der Installation am Ende |
 
 **Starten:** Verknüpfung auf dem Desktop doppelklicken (oder `install\start_windows.bat`). Es öffnet sich ein (minimiertes) Konsolenfenster und nach 20 bis
@@ -640,7 +647,8 @@ nicht:** Für diese Systeme gibt es keine fertigen Pakete (zum Beispiel `orjson`
 |---|---|
 | `--with-arduino-ide` | ARDUINO IDE 1.8.19 laden und installieren, dazu `--with-arduino-libs` |
 | `--with-arduino-libs` | Bibliotheken FastLED (3.9.12) und MobaLedLib mit der IDE installieren |
-| `--with-platformio` | PlatformIO in eine eigene Python-Umgebung `~/.platformio/penv` installieren (siehe 2.16) |
+| `--with-platformio` | PlatformIO in eine eigene Python-Umgebung `~/.platformio/penv` installieren (siehe 2.16); **seit 2.92 der Standard**, die Option bleibt gültig |
+| `--no-platformio` | PlatformIO **nicht** installieren (wer nur die ARDUINO IDE benutzt) |
 | `--nocheck` | ohne den Test der Installation am Ende |
 
 **Starten:** `webMobaLedLib` auf dem Schreibtisch doppelklicken. Beim ersten Mal fragt macOS eventuell: Rechtsklick → *Öffnen* → *Öffnen*. Die Oberfläche
@@ -675,7 +683,8 @@ Das Skript erledigt der Reihe nach:
 |---|---|
 | `--with-arduino-ide` | IDE 1.8.19 laden, dazu `--with-arduino-libs` |
 | `--with-arduino-libs` | nur die Bibliotheken (die IDE ist schon da) |
-| `--with-platformio` | PlatformIO in eine eigene Python-Umgebung `~/.platformio/penv` installieren (siehe 2.16) |
+| `--with-platformio` | PlatformIO in eine eigene Python-Umgebung `~/.platformio/penv` installieren (siehe 2.16); **seit 2.92 der Standard**, die Option bleibt gültig |
+| `--no-platformio` | PlatformIO **nicht** installieren (wer nur die ARDUINO IDE benutzt) |
 | `--no-desktop-icon` | kein Symbol auf dem Schreibtisch |
 | `--no-dialout` | die Gruppe `dialout` nicht eintragen |
 | `--no-check` | ohne den Test der Installation |

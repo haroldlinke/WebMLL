@@ -1,22 +1,24 @@
 @echo off
-REM Datei-Version: 1.09 (2026-10-27) - install_windows.bat
+REM Datei-Version: 1.10 (2026-11-05) - install_windows.bat
 REM Installiert die Web-Oberflaeche von webMobaLedLib unter Windows: Python-Umgebung, Pakete, Programmsymbol und
 REM eine Verknuepfung "webMobaLedLib" auf dem Desktop.
 REM Aufruf: Doppelklick, oder mit Optionen:
 REM   /ide       ARDUINO IDE 1.8.19 von arduino.cc laden und installieren (die IDE 2.x wird NICHT unterstuetzt), dazu /libs
 REM   /libs      Bibliothek MobaLedLib (und FastLED in der geforderten Version) mit der ARDUINO IDE installieren
-REM   /platformio PlatformIO (Ersatz fuer die ARDUINO IDE) in eine eigene Python-Umgebung %USERPROFILE%\.platformio\penv installieren
+REM   /platformio PlatformIO (Ersatz fuer die ARDUINO IDE) in eine eigene Python-Umgebung %USERPROFILE%\.platformio\penv installieren (seit 1.10 der STANDARD, die Option bleibt gueltig)
+REM   /nopio     PlatformIO NICHT installieren (zum Beispiel wer nur die ARDUINO IDE benutzt)
 REM   /nocheck   ohne den Test der Installation am Ende
 setlocal EnableExtensions
 set "NOCHECK=0"
 set "WITHIDE=0"
 set "WITHLIBS=0"
-set "WITHPIO=0"
+set "WITHPIO=1"
 set "FASTLED=3.9.12"
 for %%A in (%*) do (
   if /i "%%A"=="/nocheck" set "NOCHECK=1"
   if /i "%%A"=="/libs" set "WITHLIBS=1"
   if /i "%%A"=="/platformio" set "WITHPIO=1"
+  if /i "%%A"=="/nopio" set "WITHPIO=0"
   if /i "%%A"=="/ide" set "WITHIDE=1"
   if /i "%%A"=="/ide" set "WITHLIBS=1"
 )
@@ -158,7 +160,7 @@ echo Keine ARDUINO IDE gefunden. Bitte die IDE 1.8.19 installieren (arduino.cc, 
 echo und install_windows.bat /libs noch einmal starten (oder gleich install_windows.bat /ide), oder MobaLedLib in der IDE installieren.
 
 :nolibs
-REM --- PlatformIO (nur mit /platformio): eigene Python-Umgebung wie beim Installer von platformio.org
+REM --- PlatformIO (Standard, ausser mit /nopio): eigene Python-Umgebung wie beim Installer von platformio.org
 if "%WITHPIO%"=="0" goto :nopio
 set "PIOHOME=%USERPROFILE%\.platformio"
 if defined MLL_PIO_HOME set "PIOHOME=%MLL_PIO_HOME%"
@@ -177,7 +179,7 @@ if errorlevel 1 goto :pio_fehler
 if not exist "%PIOHOME%\penv\Scripts\pio.exe" goto :pio_fehler
 echo PlatformIO ist installiert: %PIOHOME%\penv\Scripts\pio.exe
 "%PIOHOME%\penv\Scripts\pio.exe" --version
-echo Als Entwicklungsumgebung einstellen: Optionen, Optionen und spezielle Funktionen, Entwicklungsumgebung.
+echo PlatformIO ist die Entwicklungsumgebung des Programms (umschaltbar: Optionen, Optionen und spezielle Funktionen, Entwicklungsumgebung).
 echo Das erste Hochladen laedt die Compiler und Bibliotheken nach (Internet noetig): etwa 5 Minuten beim Nano, etwa 10 Minuten beim Pico. Danach geht es schnell.
 echo Raspberry Pi Pico: einmalig den USB-Treiber WinUSB mit Zadig installieren (Anleitung, Kapitel 2.16).
 goto :nopio
@@ -207,10 +209,9 @@ echo ============================================================
 echo  Fertig. Starten: Desktop-Symbol "webMobaLedLib"
 echo  oder  %~dp0start_windows.bat
 echo.
-echo  Hinweis: Fuer das Kompilieren und Hochladen werden die ARDUINO IDE 1.8.19
-echo  (NICHT die IDE 2.x) und die Bibliothek MobaLedLib benoetigt. Mit
-echo  install_windows.bat /ide  werden beide installiert (siehe ANLEITUNG_Installation,
-echo  Kapitel 2.2 und 3).
+echo  Hinweis: Das Kompilieren und Hochladen laeuft mit PlatformIO (wurde mit
+echo  installiert). Die ARDUINO IDE 1.8.19 (NICHT die IDE 2.x) ist nur noch
+echo  optional: install_windows.bat /ide  (siehe ANLEITUNG_Installation, Kapitel 2.2 und 3).
 echo ============================================================
 pause
 exit /b 0

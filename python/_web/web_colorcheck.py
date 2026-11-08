@@ -1,4 +1,14 @@
-# Datei-Version: 1.04 (2026-10-15) - web_colorcheck.py
+# Datei-Version: 1.05 (2026-11-05) - web_colorcheck.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_colorcheck.py
+# Path:           _web/web_colorcheck.py
+# Version:        1.05
+# Last Update:    2026-11-05
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.05  2026-11-05  Beschreibungstext der Seite wird uebersetzt (description_text) (fruehere Versionen ohne Eintrag)
+# ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Farb Test" (ColorCheckPage + ColorWheel + LightGradientBar ohne Tk).
 
 Teile:
@@ -21,6 +31,12 @@ import time
 import zlib
 
 from _web import web_dialogs as wd
+
+try:  # v1.05
+    from _web.web_i18n import description_text  # v1.05
+except ImportError:  # v1.05                                   # aeltere Installation ohne web_i18n.py: Text bleibt deutsch
+    def description_text(text, fallback=""):  # v1.05
+        return str(text or fallback or "").replace("\r", "").strip()  # v1.05
 
 logger = logging.getLogger(__name__)
 
@@ -429,7 +445,8 @@ def build(ctrl, goto_generator=None, is_active=None, run_command=None):
     model = ColorCheckModel(ctrl)
     macro = ctrl.MacroDef.data.get("ColorCheckPage", {}) if getattr(ctrl, "MacroDef", None) else {}
     title = macro.get("Title", "Farben Test")
-    description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or ""
+    # description = macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung") or ""  # v1.05 (entfallen)
+    description = description_text(macro.get("Ausführliche Beschreibung") or macro.get("Kurzbeschreibung"))  # v1.05
     button_text, button_tip = "Palette an SetColTab-Macro übergeben\nund Farbtester beenden", ""
     for key in macro.get("Params", []):                                  # der Knopf ist ein Parameter des Makros
         d = ctrl.MacroParamDef.data.get(key, {}) if getattr(ctrl, "MacroParamDef", None) else {}
