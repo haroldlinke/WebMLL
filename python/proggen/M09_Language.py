@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-11-04) - M09_Language.py
+# Datei-Version: 1.06 (2026-11-09) - M09_Language.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M09_Language.py
 # Path:           proggen/M09_Language.py
-# Version:        1.04
-# Last Update:    2026-10-26
+# Version:        1.06
+# Last Update:    2026-11-09
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,7 @@
 #   1.03  2026-10-23  Get_Display_Cells: Spaltenkoepfe (mit Tooltip aus den Zeilen Cell und Comment der Tabelle Languages) und Namensspalte (aus Lib_Macros) in der eingestellten Sprache anzeigen, ohne die Zellen zu aendern
 #   1.04  2026-10-26  Get_Language_Str: Fehlt der Text in der Tabelle Languages, wird im Katalog der Web-Oberflaeche (csv/Web_Languages.csv) nachgeschlagen
 #   1.05  2026-11-04  Kopfzeilen der Datenblaetter: die Uebersetzung wird ueber den TEXT der Ueberschrift gefunden, nicht ueber die Adresse in der Tabelle Languages (J2 ...): im Web sind die Spalten Icon und Name eingefuegt, die Adressen stimmten nicht mehr (Name, Beleuchtung ..., Start LedNr ... und ihre Tooltips blieben deutsch); Spalten ohne Eintrag (Name, LED/ Sound Kanal) aus dem Katalog der Web-Oberflaeche
+#   1.06  2026-11-09  Tooltips der Kopfzeilen (Text nach dem §): Ohne Eintrag in der Tabelle Languages wird der Text im Katalog der Web-Oberflaeche gesucht (Name, LED/ Sound Kanal, LNet, Selectrix); vorher blieben sie deutsch
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -850,6 +851,19 @@ def __Find_Header_Pos(Data, Pos, Texts, Used):  # v1.05
     return None  # v1.05
 
 
+def __Tip_From_Catalog(Tip, Lang):  # v1.06
+    # Tooltip einer Ueberschrift in der Sprache Lang aus dem Katalog der Web-Oberflaeche (Schluessel: der Text mit einfachen Leerzeichen); sonst unveraendert  # v1.06
+    try:  # v1.06
+        from _web.web_i18n import catalog_text  # v1.06
+        flat = re.sub(r'\s+', ' ', str(Tip)).strip()  # v1.06
+        if flat == '':  # v1.06
+            return Tip  # v1.06
+        found = catalog_text(flat, Lang)  # v1.06
+        return found if found and found != flat else Tip  # v1.06
+    except Exception:  # noqa: BLE001  # v1.06
+        return Tip  # v1.06
+
+
 def __Header_Cells(Sh, Lang):  # v1.03
     # {(Zeile, Spalte): Text} der Kopfzeilen eines Datenblatts in der Sprache Lang (0-basiert). Nur Zellen, deren Text noch einer der Texte der Tabelle Languages ist (nicht vom Anwender geaendert).
     result = {}  # v1.03
@@ -885,7 +899,8 @@ def __Header_Cells(Sh, Lang):  # v1.03
             if '§' in cur:  # v1.03
                 crow = comments.get(str(row[1]).split('§')[0].strip().upper())  # v1.03
                 new_tip = __Pick(crow, Lang) if crow is not None else ''  # v1.03
-                new = new + '§' + (new_tip if new_tip != '' else tip)  # v1.03
+                # new = new + '§' + (new_tip if new_tip != '' else tip)  # v1.03 (entfallen)
+                new = new + '§' + (new_tip if new_tip != '' else __Tip_From_Catalog(tip, Lang))  # v1.06: ohne Eintrag in Languages der Text aus dem Katalog
             result[pos] = new  # v1.03
     try:  # v1.05: Ueberschriften ohne Eintrag in der Tabelle Languages (Name, LED/ Sound Kanal ...): Katalog der Web-Oberflaeche
         from _web.web_i18n import catalog_text  # v1.05
@@ -899,8 +914,10 @@ def __Header_Cells(Sh, Lang):  # v1.03
                 if flat == '':  # v1.05
                     continue  # v1.05
                 new = catalog_text(flat, Lang)  # v1.05
-                if new and new != flat:  # v1.05
-                    result[(r, c)] = new + ('§' + tip if '§' in cur else '')  # v1.05
+                new_tip = __Tip_From_Catalog(tip, Lang) if '§' in cur else tip  # v1.06
+                if (new and new != flat) or (new_tip != tip):  # v1.06: die Ueberschrift und/oder der Tooltip stehen im Katalog
+                    # result[(r, c)] = new + ('§' + tip if '§' in cur else '')  # v1.05 (entfallen)
+                    result[(r, c)] = (new if new and new != flat else label) + ('§' + new_tip if '§' in cur else '')  # v1.06
     except Exception:  # noqa: BLE001  # v1.05
         pass  # v1.05
     return result  # v1.03

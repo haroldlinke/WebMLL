@@ -1,4 +1,14 @@
-# Datei-Version: 1.08 (2026-10-15) - headless_app_controller.py
+# Datei-Version: 1.09 (2026-11-08) - headless_app_controller.py
+# ----------------------------------------------------------------------------------------------
+# Name:           headless_app_controller.py
+# Path:           headless/headless_app_controller.py
+# Version:        1.09
+# Last Update:    2026-11-08
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.09  2026-11-08  Die Suche nach der ARDUINO IDE schreibt keine Warnung mehr ins Protokoll, wenn PlatformIO installiert ist (Standard seit 2.92): dann nur eine Info (fruehere Versionen ohne Eintrag)
+# ----------------------------------------------------------------------------------------------
 """HeadlessAppController: Tk-freier Ersatz fuer pyMobaLedLibapp (Startprogramm).
 
 Uebernimmt aus pyMobaLedLibapp nur, was die Excel-Schicht und der Programmgenerator
@@ -160,10 +170,21 @@ class HeadlessAppController(SerialMixin, HeadlessController):
             self._arduino_ide_miss = time.monotonic()
             if not self._arduino_ide_logged:                       # nur einmal melden, mit den Orten, die geprueft wurden
                 self._arduino_ide_logged = True
-                logger.warning("ARDUINO IDE nicht gefunden. Gesucht in: MLL_ARDUINO_EXE=%s; %s; im Suchpfad (arduino). "
-                               "Pfad in 'ARDUINO Einstellungen' eintragen oder die IDE 1.8.19 nach ~/arduino-1.8.19 legen.",
-                               os.environ.get("MLL_ARDUINO_EXE", "(nicht gesetzt)"), "; ".join(self.arduino_ide_patterns()))
+                if self.platformio_available():  # v1.09: mit PlatformIO wird die IDE nicht gebraucht: keine Warnung
+                    logger.info("Keine ARDUINO IDE gefunden (nicht noetig: PlatformIO ist installiert).")  # v1.09
+                else:  # v1.09
+                    logger.warning("ARDUINO IDE nicht gefunden. Gesucht in: MLL_ARDUINO_EXE=%s; %s; im Suchpfad (arduino). "
+                                   "Pfad in 'ARDUINO Einstellungen' eintragen oder die IDE 1.8.19 nach ~/arduino-1.8.19 legen.",
+                                   os.environ.get("MLL_ARDUINO_EXE", "(nicht gesetzt)"), "; ".join(self.arduino_ide_patterns()))
         return self._arduino_ide_cache
+
+    @staticmethod
+    def platformio_available() -> bool:  # v1.09
+        """Ist PlatformIO installiert (Befehl pio im Suchpfad oder in der eigenen Umgebung ~/.platformio/penv, siehe install_platformio)? Dann wird die ARDUINO IDE nicht gebraucht."""  # v1.09
+        import shutil  # v1.09
+        home = os.environ.get("MLL_PIO_HOME") or os.path.join(os.path.expanduser("~"), ".platformio")  # v1.09
+        candidates = [shutil.which("pio") or "", os.path.join(home, "penv", "bin", "pio"), os.path.join(home, "penv", "Scripts", "pio.exe")]  # v1.09
+        return any(x and os.path.isfile(x) for x in candidates)  # v1.09
 
     @staticmethod
     def arduino_ide_version(start_file: str) -> str:

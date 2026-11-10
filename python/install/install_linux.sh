@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.07 (2026-11-05) - install_linux.sh
+# Datei-Version: 1.08 (2026-11-08) - install_linux.sh
 # Installiert die Web-Oberflaeche von webMobaLedLib auf einem Linux-Desktop (Debian, Ubuntu, Linux Mint, Fedora, Arch ...):
 # im eigenen Benutzerkonto, ohne Systemdienst. Es entsteht eine Python-Umgebung im Projektordner (venv_web), ein Starter im
 # Anwendungsmenue und ein Symbol auf dem Schreibtisch. (Raspberry Pi als Dienst: pi/install_pi.sh)
@@ -147,8 +147,9 @@ if [ -n "$IDE_EXE" ]; then
     echo "Bibliothek MobaLedLib installieren (dauert einige Minuten) ..."
     MLL_ARDUINO_EXE="$IDE_EXE" bash "$APPDIR/pi/install_arduino_libs.sh" || echo "(Bibliotheken: siehe Meldungen oben; Nachholen: Optionen, Update, Status der Bibliotheken; siehe Anleitung 2.3)"
   fi
-else
-  echo "Keine ARDUINO IDE gefunden. Installieren mit:  bash install_linux.sh --with-arduino-ide"
+# elif-Zweig statt else (v1.08): Mit PlatformIO (Standard) wird die ARDUINO IDE nicht gebraucht, dann keine Meldung
+elif [ "$WITH_PIO" != "1" ]; then
+  echo "Keine ARDUINO IDE gefunden. Installieren mit:  bash install_linux.sh --with-arduino-ide   (oder PlatformIO: bash install_linux.sh --with-platformio)"
 fi
 
 # --- 5b. PlatformIO (Standard, ausser mit --no-platformio)

@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-27) - DieseArbeitsmappe.py
+# Datei-Version: 1.02 (2026-11-08) - DieseArbeitsmappe.py
 # ----------------------------------------------------------------------------------------------
 # Name:           DieseArbeitsmappe.py
 # Path:           proggen/DieseArbeitsmappe.py
-# Version:        1.01
-# Last Update:    2026-10-27
+# Version:        1.02
+# Last Update:    2026-11-08
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-27  PlatformIO: keine Pruefung der ARDUINO IDE und der Bibliotheken beim Start, Sketchbook-Pfad = Python-Ordner, Erweiterungen werden geladen
+#   1.02  2026-11-08  Workbook_Open: erster Start einer Neuinstallation: die Voreinstellungen (PlatformIO, Anfaenger Modus) kommen aus first_start_hook vor der Pruefung der ARDUINO IDE (vorher Meldung 'Die ARDUINO IDE wurde nicht gefunden' trotz PlatformIO)
 # ----------------------------------------------------------------------------------------------
 from vb2py.vbfunctions import *
 from vb2py.vbdebug import *
@@ -102,6 +103,10 @@ def Workbook_Open():
     M09.__Update_Language_in_All_Sheets()
     M28.Clear_COM_Port_Check_and_Set_Cursor_in_all_Sheets(False)
     M01.Set_Config_Default_Values_at_Program_Start()
+    first_start_hook = getattr(P01, "first_start_hook", None)  # v1.02: erster Start einer Neuinstallation (headless_proggen): PlatformIO und Anfaenger Modus einstellen, BEVOR die ARDUINO IDE gesucht wird
+    if first_start_hook:  # v1.02
+        P01.first_start_hook = None  # v1.02
+        first_start_hook()  # v1.02
     
     # ARDUINO_exe = M08.Find_ArduinoExe()  # v1.01 (entfallen)
     # if ARDUINO_exe !="":  # v1.01 (entfallen)

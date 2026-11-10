@@ -1,9 +1,9 @@
-# Datei-Version: 1.07 (2026-10-26) - release_tools.py
+# Datei-Version: 1.08 (2026-11-08) - release_tools.py
 # ----------------------------------------------------------------------------------------------
 # Name:           release_tools.py
 # Path:           release_tools.py
-# Version:        1.07
-# Last Update:    2026-10-26
+# Version:        1.08
+# Last Update:    2026-11-08
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -15,6 +15,7 @@
 #   1.05  2026-10-26  platformio.ini im Ordner python (wird beim Hochladen mit PlatformIO neu geschrieben) zaehlt wie LEDs_AutoProg.h zu den vom Programm geaenderten Dateien (VOLATILE_PATHS)
 #   1.06  2026-10-26  Ordner .pio (PlatformIO, mehrere hundert MB) gehoert nicht ins Release (SKIP_DIRS); Warnung, wenn das ZIP entpackt ungewoehnlich gross ist (BIG_UNPACKED_MB)
 #   1.07  2026-10-26  Neu: Befehl zip (ZIP mit UTF-8-Kennzeichen fuer Umlaute) und Pruefung, dass Dateinamen mit Umlauten das UTF-8-Kennzeichen haben (tar von Windows schreibt es nicht: Pi entpackt falsch)
+#   1.08  2026-11-08  Alte Schreibweisen von Dateinamen (install/legacy_names.txt, Zeilen 'alter Name = neuer Name'): Pruefliste und ZIP enthalten sie als zusaetzliche Eintraege mit dem Inhalt der neuen Datei. Das Update einer aelteren Version (deren Update-Code Dateien in anderer Schreibweise loescht) loescht unter Windows und macOS sonst die neu geschriebenen Symbole und bricht mit 'nach dem Schreiben nicht lesbar' ab
 # ----------------------------------------------------------------------------------------------
 """Pruefliste (Manifest) und Pruefungen fuer das Release von webMobaLedLib. Nur Standardbibliothek: laeuft auch, wenn das Programm selbst nicht mehr startet.
 
@@ -131,12 +132,41 @@ def iter_files(root: str):
     return out
 
 
+# --------------------------------------------------------------------------- Alte Schreibweisen
+LEGACY_NAMES_FILE = "install/legacy_names.txt"  # v1.08
+
+
+def read_legacy_names(root: str) -> dict:  # v1.08
+    """{alter Name: neuer Name} aus install/legacy_names.txt (Zeilen 'alter Name = neuer Name', # am Anfang = Kommentar). Es sind Dateien, die frueher in anderer Schreibweise geliefert
+    wurden (icons/InfoB.png, jetzt icons/infoB.png). Der Update-Code AELTERER Versionen loescht alle Dateien, die das neue Release nicht kennt, mit dem alten Namen: Unter Windows und
+    macOS ist das dieselbe Datei wie der neue Name, die neu geschriebene Datei verschwindet, und das Update bricht mit 'nach dem Schreiben nicht lesbar' ab (und stellt den alten Stand wieder
+    her). Deshalb enthaelt das Release (Pruefliste und ZIP) auch den alten Namen, mit dem Inhalt der neuen Datei. Unter Linux liegen dann beide Dateien im Ordner (der alte Name wird nicht benutzt);
+    das Update dieser Version loescht nichts mehr, was nur in der Schreibweise abweicht (web_update.same_file_other_spelling). Eintraege streichen, wenn keine aeltere Version mehr im Umlauf ist."""  # v1.08
+    path = os.path.join(root, *LEGACY_NAMES_FILE.split("/"))  # v1.08
+    out = {}  # v1.08
+    try:  # v1.08
+        with open(path, encoding="utf-8-sig") as fh:  # v1.08
+            for line in fh:  # v1.08
+                line = line.strip()  # v1.08
+                if not line or line.startswith("#") or "=" not in line:  # v1.08
+                    continue  # v1.08
+                old, new = (part.strip().replace("\\", "/") for part in line.split("=", 1))  # v1.08
+                if old and new and old != new and old.lower() == new.lower():  # v1.08: nur Namen, die sich nur in der Schreibweise unterscheiden
+                    out[old] = new  # v1.08
+    except OSError:  # v1.08
+        pass  # v1.08
+    return out  # v1.08
+
+
 # --------------------------------------------------------------------------- Pruefliste erzeugen
 def build_manifest(root: str) -> dict:
     files = {}
     for rel in iter_files(root):
         path = os.path.join(root, *rel.split("/"))
         files[rel] = {"sha256": sha256_file(path), "size": os.path.getsize(path)}
+    for old_name, new_name in read_legacy_names(root).items():  # v1.08: alter Name = Inhalt der neuen Datei
+        if new_name in files and old_name not in files:  # v1.08
+            files[old_name] = dict(files[new_name])  # v1.08
     main = os.path.join(root, "webmobaledlib.py")
     version = version_of(open(main, "rb").read()) if os.path.isfile(main) else ""
     return {"program": PROGRAM, "format": MANIFEST_FORMAT, "type": "full", "version": version, "created": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -417,15 +447,17 @@ def build_zip(folder: str, zip_path: str) -> int:  # v1.07
     if os.path.exists(zip_path):  # v1.07
         os.remove(zip_path)  # v1.07
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as zf:  # v1.07
-        for rel in sorted(set(rels)):  # v1.07
-            path = os.path.join(folder, *rel.split("/"))  # v1.07
+        legacy = {old: new for old, new in read_legacy_names(folder).items() if new in set(rels) and old not in set(rels)}  # v1.08: alte Schreibweisen als zusaetzliche Eintraege
+        for rel in sorted(set(rels) | set(legacy)):  # v1.08
+            source = legacy.get(rel, rel)  # v1.08: ein alter Name liest den Inhalt der neuen Datei
+            path = os.path.join(folder, *source.split("/"))  # v1.07
             info = zipfile.ZipInfo.from_file(path, prefix + "/" + rel)  # v1.07
             info.compress_type = zipfile.ZIP_DEFLATED  # v1.07
             info.create_system = 3                                                              # Unix: die Rechte unten gelten beim Entpacken  # v1.07
             info.external_attr = (0o100755 if rel.endswith((".sh", ".command")) else 0o100644) << 16  # v1.07
             with open(path, "rb") as fh:  # v1.07
                 zf.writestr(info, fh.read())  # v1.07
-    print(f"ZIP geschrieben: {zip_path} ({len(set(rels))} Dateien)")  # v1.07
+    print(f"ZIP geschrieben: {zip_path} ({len(set(rels)) + len(legacy)} Dateien, davon {len(legacy)} alte Schreibweisen aus {LEGACY_NAMES_FILE})")  # v1.08
     return 0  # v1.07
 
 

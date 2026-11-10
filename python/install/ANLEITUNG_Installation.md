@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 3.50 (2026-11-05), gilt für webMobaLedLib 2.96*
+*Datei-Version: 3.55 (2026-11-10), gilt für webMobaLedLib 3.08*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -114,7 +114,7 @@ Die IDE 2.x und die Version 1.0.5 aus der Paketverwaltung (`apt install arduino`
 - **Linux und Raspberry Pi:** in dieser Reihenfolge: ein gültiger Pfad in „ARDUINO Einstellungen“, die Umgebungsvariable `MLL_ARDUINO_EXE`, `/opt/arduino-1.8*/arduino`,
   `/opt/arduino*/arduino`, `/usr/local/arduino*/arduino`, `~/arduino-1.8*/arduino`, `~/arduino*/arduino`, **eine Ebene tiefer** in `~/*/arduino-1.8*/arduino` (zum Beispiel
   `~/Downloads/arduino-1.8.19/arduino`) und zuletzt der Suchpfad (`arduino` im Terminal). Von mehreren Treffern gilt der mit der höchsten Nummer. Die Treffer
-  stehen im Protokoll. Wird nichts gefunden, steht dort „ARDUINO IDE nicht gefunden“ mit allen geprüften Orten. Ein Misserfolg wird nur 10 Sekunden gemerkt: Eine
+  stehen im Protokoll. Wird nichts gefunden, steht dort „ARDUINO IDE nicht gefunden“ mit allen geprüften Orten. **Ist PlatformIO installiert (Standard seit 2.92), gibt es diese Warnung nicht** (nur eine Info im Protokoll), ebenso keine Meldung „Keine ARDUINO IDE gefunden“ am Ende der Installationsskripte und im Test `pi_check.py` (der meldet dann die Entwicklungsumgebung PlatformIO). Ein Misserfolg wird nur 10 Sekunden gemerkt: Eine
   danach installierte IDE wird ohne Neustart gefunden.
 
 **Am sichersten:** Die IDE 1.8.19 nach `~/arduino-1.8.19` entpacken (das macht `install_linux.sh --with-arduino-ide`). Dann findet das Programm sie ohne Einstellung.
@@ -863,6 +863,8 @@ Von einem anderen Rechner brauchst du die Adresse des Pi. Die einfachsten Wege, 
 | Linux-Desktop | `venv_web/bin/pip install -U -r install/requirements-web.txt`, oder `install_linux.sh` noch einmal | `bash install/uninstall_linux.sh` (mit `--purge` auch `venv_web`) |
 | Raspberry Pi | `sudo bash ~/mobaledlib/python/pi/install_pi.sh --no-check` (aktualisiert auch die Python-Pakete und die Dienstdatei) | `sudo bash ~/mobaledlib/python/pi/uninstall_pi.sh` |
 
+**Update von einer älteren Version (Windows und macOS):** Das Update führt der **Update-Code der installierten Version** aus. Versionen **bis 2.97** löschen am Ende alle Dateien, die das neue Release nicht kennt, auch wenn dieselbe Datei dort nur in **anderer Schreibweise** steht (Symbole wie `InfoB.png` und `infoB.png`; unter Windows und macOS ist das **dieselbe Datei**). Dann verschwindet die gerade geschriebene Datei, das Update meldet **„nach dem Schreiben nicht lesbar“** und stellt den **alten Stand wieder her** (es ist nichts verändert; die Meldung nennt die Datei, zum Beispiel `icons_gross/Ampel.png`). **Ab Version 3.00** enthält das Release die alten Schreibweisen zusätzlich (Liste `install/legacy_names.txt`), ein Update aus älteren Versionen klappt dann ohne Meldung; Version 2.98 und neuer löschen solche Dateien nie. **Wenn die Meldung trotzdem erscheint** (Release ohne diese Liste): Programm beenden und das ZIP **von Hand** in den Projektordner entpacken (Ordner `python` ersetzen, Anleitung 7.2), danach ist das Update-Programm neu genug.
+
 Beim Deinstallieren bleiben Projektordner, ARDUINO IDE und Bibliotheken erhalten.
 
 **Sichern:** den Datenordner (Konfiguration, Sicherungen der Tabellen, siehe 2.6) und deine Anlagendateien. Die Daten der Tabelle speicherst du
@@ -913,11 +915,12 @@ und zeigt, was sich ändert: neue, geänderte und zu löschende Dateien, mit Ver
 
 ### 7.1a Testversion (Hilfe → Update Testversion …)
 
-Für Tester und für den Entwickler lädt **Hilfe → Update Testversion …** das **neueste Release auf GitHub, egal ob Pre-Release oder fertiges Release**, damit man immer die neueste Fassung hat. Das normale **Update webMobaLedLib …** lädt weiter nur das letzte **fertige** Release (GitHub liefert Pre-Releases dafür nie aus).
+Für Tester und für den Entwickler lädt **Hilfe → Update Testversion …** eine Version **von GitHub, die man selbst aus einer Liste aussucht** (**Pre-Release oder fertiges Release**; **vorgewählt ist die neueste**), damit man immer die neueste Fassung hat oder gezielt eine bestimmte ausprobieren kann (seit 3.04). Das normale **Update webMobaLedLib …** lädt weiter nur das letzte **fertige** Release (GitHub liefert Pre-Releases dafür nie aus).
 
 - **Rückfrage:** Zuerst fragt das Programm, ob man wirklich eine Testversion installieren möchte (nicht fertig geprüft, kann Fehler enthalten). Erst nach **Testversion suchen** wird GitHub gefragt. Die Rückfrage bietet **Abbrechen** als Standard an.
-- **Anzeige:** Nach der Suche zeigt das Fenster, welche Version gefunden wurde (**Testversion: Name (Pre-Release oder Release, veröffentlicht am Datum)**), die neue Versionsnummer und die Liste der Dateien. Erst nach **Aktualisieren** passiert etwas; danach läuft alles **wie beim normalen Update** (Sicherung der Tabellen, Prüfliste, alles oder nichts, automatisches Zurückgehen bei einem Abbruch, Neustart).
-- **Auswahl:** Das Programm liest die Liste der Releases (`https://api.github.com/repos/haroldlinke/WebMLL/releases`, ohne Konto, 60 Abfragen je Stunde) und nimmt das **neueste nach Veröffentlichungsdatum**, das den Anhang `webmobaledlib.zip` hat. Entwürfe (Draft) gelten nicht, Releases ohne diesen Anhang werden übersprungen.
+- **Anzeige:** Nach **Version laden** zeigt das Fenster, welche Version gefunden wurde (**Testversion: Name (Pre-Release oder Release, veröffentlicht am Datum)**), die neue Versionsnummer und die Liste der Dateien. Erst nach **Aktualisieren** passiert etwas; danach läuft alles **wie beim normalen Update** (Sicherung der Tabellen, Prüfliste, alles oder nichts, automatisches Zurückgehen bei einem Abbruch, Neustart).
+- **Auswahl der Version (seit 3.04):** Nach **Testversion suchen** liest das Programm die Liste der Releases (`https://api.github.com/repos/haroldlinke/WebMLL/releases`, ohne Konto, 60 Abfragen je Stunde) und zeigt **die letzten 15** in einer Auswahlliste, **das neueste zuerst und vorgewählt**: Name, **Pre-Release** oder **Release** und Datum, dazu **neueste Version**, **installiert** (die laufende Version) und **ältere Version**. **Version laden** lädt die gewählte (ein Klick, wenn man die neueste will); **Abbrechen** schließt das Fenster, ohne etwas zu ändern. Aufgeführt werden nur Releases mit dem Anhang `webmobaledlib.zip`; Entwürfe (Draft) gelten nicht.
+- **Ältere Version wählen:** Wählt man eine **ältere** als die installierte Version, zeigt das Fenster nach dem Laden in **roter Schrift** die Warnung „**ACHTUNG: Dieses ZIP hat eine ÄLTERE Version als die installierte!**“ und bietet **Trotzdem auf Version … zurückgehen** an (Abbrechen ist die Vorgabe). Einstellungen und Dateien können sich beim Zurückgehen ändern; die Tabellen werden vorher gesichert.
 - **Nach einer Testversion:** Das normale Update lädt später das letzte fertige Release. Ist dessen Version **älter** als die installierte Testversion, fragt das Programm ausdrücklich zurück, ob man zurückgehen möchte (wie sonst bei einer älteren Version).
 - **Fehler:** Ohne Netz, hinter einem Proxy oder bei überschrittener Abfragegrenze (GitHub: 60 je Stunde) steht eine Meldung im Fenster; es wird nichts verändert.
 - **Für den Entwickler:** Das Release auf GitHub als **Pre-Release** kennzeichnen (Haken „Set as a pre-release“) und die Datei `webmobaledlib.zip` (von `zip_erstellen.bat`) anhängen. Zum Prüfen mit einer eigenen Liste kann die Umgebungsvariable `MLL_UPDATE_API_URL` die Adresse der Release-Liste ersetzen.
@@ -932,6 +935,10 @@ einem Passwort geschützt. Beim Aufruf von einem anderen Rechner fragt der Brows
 **Passwort ändern (empfohlen, sobald der Pi im Netz erreichbar ist):** In der Oberfläche **Programm Einstellungen** öffnen, im Block **„Zugriff über das Netz
 (Web-Oberfläche)“** das neue Passwort zweimal eingeben (mindestens 4 Zeichen) und **„Passwort ändern“** drücken. Es gilt sofort, ohne Neustart. Von einem anderen Rechner
 fragt der Browser beim nächsten Aufruf nach dem neuen Passwort. Solange noch das Standardpasswort gilt, zeigt der Block eine Warnung.
+
+**iPad und iPhone (seit 3.05):** Alle Browser auf dem iPad und iPhone (Safari, Chrome, Firefox) benutzen dieselbe Browser-Engine von Apple (WebKit) und senden die **Anmeldung** (HTTP Basic) **nicht beim Aufbau der Dauerverbindung** (WebSocket) mit. Das Programm wies diese Verbindung deshalb ab; die Seite lief zunächst über eine Ersatzverbindung und brach bei größeren Aktionen (zum Beispiel beim **Wechsel des Tabellenblatts**) mit „Connection lost“ ab. Seit **3.05** setzt das Programm nach der Anmeldung ein **Sitzungs-Cookie** (`mllsession`, HttpOnly, 24 Stunden); Cookies werden beim Aufbau der Verbindung mitgesendet. Das Cookie gilt nur im **laufenden Programm**: Nach einem **Neustart** oder einer **Passwortänderung** meldet man sich neu an. **Cookies müssen erlaubt sein** (nicht „Alle Cookies blockieren“). Eine abgewiesene Verbindung steht im Protokoll einmal je Adresse („WebSocket-Verbindung von … abgewiesen: weder Anmeldung noch Sitzungs-Cookie“).
+
+**Firefox oder Chrome auf dem iPad/iPhone: gar keine Verbindung und keine Anmeldung?** iOS verlangt für Apps die Berechtigung **Lokales Netzwerk**: **Einstellungen → Datenschutz & Sicherheit → Lokales Netzwerk** und den Browser einschalten (oder Safari benutzen). Auf einem echten iPad nicht geprüft.
 
 - Das neue Passwort steht nicht im Klartext auf dem Pi, sondern nur als Hash in der Datei `web_password.json` im Datenordner (2.6). Sie geht dem Passwort aus
   `/etc/mobaledlib-web.env` vor.

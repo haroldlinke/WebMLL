@@ -1,4 +1,14 @@
-# Datei-Version: 1.05 (2026-10-26) - web_form_house.py
+# Datei-Version: 1.06 (2026-11-10) - web_form_house.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_form_house.py
+# Path:           _web/web_form_house.py
+# Version:        1.06
+# Last Update:    2026-11-10
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.06  2026-11-10  Der Schalter Einfuegen/Ersetzen (ui.toggle) wird uebersetzt: 'Einfuegen' mit dem Kontext Raum (nicht 'aus der Zwischenablage einfuegen'), der Wert bleibt der deutsche Text (fruehere Versionen ohne Eintrag)
+# ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/Userform_House.py (House und GasLights).
 
 Das Original baut das Tk-Fenster schon im Konstruktor; deshalb wird hier die ganze Klasse ersetzt
@@ -24,7 +34,11 @@ import textwrap
 from _web import web_dialogs as wd
 try:  # v1.05
     from _web.web_i18n import tr  # v1.05
+    from _web.web_i18n import tr_ctx  # v1.06
 except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.05
+    def tr_ctx(text, context, **values):  # v1.06
+        return text  # v1.06
+
     def tr(text, **values):  # v1.05
         return text.format(**values) if values else text  # v1.05
 
@@ -243,7 +257,8 @@ async def _house_async(spec: dict, st: dict):
             ui.label(spec["description"]).classes("mll-desc").style("white-space: pre-line; border: 1px solid #ccc; padding: 6px")
             with ui.row().classes("items-center gap-4"):
                 ui.label(T.get("Label_Beleuchtungstypen_txt", "")).classes("text-bold")
-                edit_mode = ui.toggle(["Einfügen", "Ersetzen"], value="Einfügen").props("dense no-caps")     # nicht "mode": das ist House/GasLights
+                # edit_mode = ui.toggle(["Einfügen", "Ersetzen"], value="Einfügen").props("dense no-caps")     # nicht "mode": das ist House/GasLights  # v1.06 (entfallen)
+                edit_mode = ui.toggle({"Einfügen": tr_ctx("Einfügen", "Raum"), "Ersetzen": tr("Ersetzen")}, value="Einfügen").props("dense no-caps")  # v1.06: der Wert bleibt der deutsche Text (edit_mode.value == "Ersetzen"), angezeigt wird die Übersetzung; nicht "mode": das ist House/GasLights
                 ui.label("Ersetzen: der markierte Raum wird durch den gewählten Typ ersetzt (nur bei gleichem LED-Kanal)."
                          ).classes("text-caption text-grey-8")
             with ui.column().classes("gap-1"):

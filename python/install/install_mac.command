@@ -1,5 +1,5 @@
 #!/bin/bash
-# Datei-Version: 1.11 (2026-11-05) - install_mac.command
+# Datei-Version: 1.12 (2026-11-08) - install_mac.command
 # Installiert die Web-Oberflaeche von webMobaLedLib unter macOS: Python-Umgebung, Pakete, Programmsymbol und ein Programm
 # "webMobaLedLib" auf dem Schreibtisch (Doppelklick startet die Oberflaeche und oeffnet den Browser).
 #
@@ -226,7 +226,7 @@ echo " (beim ersten Mal ggf. Rechtsklick > Oeffnen)  oder  $HERE/start_mac.comma
 echo
 if find_ide >/dev/null; then
   echo " ARDUINO IDE gefunden: $(find_ide)"
-else
+elif [ "$WITH_PIO" != "1" ]; then                      # v1.12: mit PlatformIO (Standard) wird die ARDUINO IDE nicht gebraucht, dann kein Hinweis
   echo " Hinweis: Fuer das Kompilieren und Hochladen werden die ARDUINO IDE 1.8.19 (NICHT die IDE 2.x) und die Bibliothek"
   echo " MobaLedLib benoetigt. Mit  bash install_mac.command --with-arduino-ide  werden beide installiert"
   echo " (siehe ANLEITUNG_Installation, Kapitel 2.2 und 4)."

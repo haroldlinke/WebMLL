@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Datei-Version: 1.11 (2026-11-05) - install_pi.sh
+# Datei-Version: 1.12 (2026-11-08) - install_pi.sh
 # Installiert die Web-Oberflaeche von webMobaLedLib als Dienst (systemd) auf einem Raspberry Pi (Raspberry Pi OS Bookworm/Trixie)
 # oder einem anderen Debian/Ubuntu und legt ein Desktop-Symbol zum Starten an.
 #
@@ -180,15 +180,15 @@ if [ "$WITH_IDE" = "1" ]; then
   install_arduino_ide
 elif ls /opt/arduino*/arduino >/dev/null 2>&1; then
   echo "Gefunden: $(ls /opt/arduino*/arduino | head -1)"
-else
-  echo "Keine ARDUINO IDE gefunden. Installieren mit:  sudo bash install_pi.sh --with-arduino-ide   (oder von Hand, Anleitung, Kapitel 2.2)"
+elif [ "$WITH_PIO" != "1" ]; then                       # v1.12: mit PlatformIO (Standard) wird die ARDUINO IDE nicht gebraucht, dann keine Meldung
+  echo "Keine ARDUINO IDE gefunden. Installieren mit:  sudo bash install_pi.sh --with-arduino-ide   (oder von Hand, Anleitung, Kapitel 2.2; oder PlatformIO: sudo bash install_pi.sh --with-platformio)"
 fi
 
 if [ "$WITH_LIBS" = "1" ]; then
   echo; echo "Bibliothek MobaLedLib und Abhaengigkeiten installieren (als Benutzer $SERVICE_USER, dauert einige Minuten) ..."
   sudo -u "$SERVICE_USER" env HOME="$USER_HOME" bash "$APPDIR/pi/install_arduino_libs.sh" || \
     echo "Die Installation der Bibliotheken meldet Probleme (siehe oben). Nachholen:  bash $APPDIR/pi/install_arduino_libs.sh"
-else
+elif [ "$WITH_PIO" != "1" ]; then                       # v1.12: PlatformIO bringt die Bibliothek MobaLedLib mit (Ordner libraries im Projekt), dann kein Hinweis
   echo "Die ARDUINO-Bibliothek MobaLedLib fehlt evtl. noch:  bash $APPDIR/pi/install_arduino_libs.sh   (ohne sudo; --pico und --esp32 fuer die Boards)"
 fi
 

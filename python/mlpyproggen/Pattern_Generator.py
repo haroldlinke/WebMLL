@@ -1,14 +1,15 @@
-# Datei-Version: 1.00 (2026-10-17) - Pattern_Generator.py
+# Datei-Version: 1.01 (2026-11-08) - Pattern_Generator.py
 # -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------------------------
 # Name:           Pattern_Generator.py
 # Path:           mlpyproggen/Pattern_Generator.py
-# Version:        1.00
-# Last Update:    2026-10-17
+# Version:        1.01
+# Last Update:    2026-11-08
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-17  Arbeitsmappe aus __init__ in build_workbook_dict() herausgeloest (gemeinsame Quelle fuer headless/headless_pattgen.py); davor Version 4.03 des Originals, nicht erfasst
+#   1.01  2026-11-08  Calc_Worksheet wird erst in wscalculationcallback importiert (nicht beim Laden des Moduls): Der Ringimport ExcelAPI.XLA_Application -> P01_Worksheetcalc -> pattgen ... -> Pattern_Generator -> P01_Worksheetcalc hing von der Ladereihenfolge ab und brach mit 'cannot import name Calc_Worksheet from partially initialized module' ab, wenn XLF_FormGenerator vorher nicht geladen werden konnte
 # ----------------------------------------------------------------------------------------------
 #
 #         Pattern_Generator
@@ -61,7 +62,7 @@ import pattgen.M08_Load_Sheet_Data as M08
 import pattgen.M03_Analog_Trend as M03
 import pattgen.M65_Special_Modules as M65
 import pattgen.M16_Add_Del_Columns as M16
-from ExcelAPI.P01_Worksheetcalc import Calc_Worksheet
+# from ExcelAPI.P01_Worksheetcalc import Calc_Worksheet  # v1.01 (entfallen: erst in wscalculationcallback, sonst Ringimport mit ExcelAPI.XLA_Application)
 import pattgen.DieseArbeitsmappe as AM
 import pattgen.Tabelle9 as T09
 import pattgen.D00_Forms as D00
@@ -1089,6 +1090,7 @@ def wsselectedcallback(changedcell):
     M02.Global_Worksheet_SelectionChange(changedcell)    
    
 def wscalculationcallback(worksheet,cell=None):
+    from ExcelAPI.P01_Worksheetcalc import Calc_Worksheet  # v1.01: hier statt beim Laden des Moduls (Ringimport)
     Calc_Worksheet(worksheet,cell=cell)
     
 def SheetInitDataProc(sheet):

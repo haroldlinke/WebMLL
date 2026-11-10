@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-10-26) - web_serial.py
+# Datei-Version: 1.05 (2026-11-09) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.04
-# Last Update:    2026-10-26
+# Version:        1.05
+# Last Update:    2026-11-09
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.02  2026-10-20  tx_idle (Keep-Alive der Seite Servo Test nur bei leerer Sendewarteschlange)
 #   1.03  2026-10-21  rx_listeners: Funktionen, die jede Zeile vom Arduino bekommen (Rueckmeldung des Z21 Simulators)
 #   1.04  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
+#   1.05  2026-11-09  Der Verbindungsstatus wird uebersetzt (Nicht Verbunden, Verbunden <Port> - DIRECT/EFFECT Mode)
 # ----------------------------------------------------------------------------------------------
 """Serielle Verbindung zum Arduino/Pico ohne Tk (Mixin fuer HeadlessAppController).
 
@@ -462,7 +463,8 @@ class SerialMixin:
         self.direct_mode_active = True
         if self.is_connection_open():
             self.send_active = False
-            self._set_connect_status("Verbunden " + self.ARDUINO_current_portname + " - DIRECT Mode", "green")
+            # self._set_connect_status("Verbunden " + self.ARDUINO_current_portname + " - DIRECT Mode", "green")  # v1.05 (entfallen)
+            self._set_connect_status(tr("Verbunden") + " " + self.ARDUINO_current_portname + " - DIRECT Mode", "green")  # v1.05
             self.send_to_ARDUINO("#BEGIN\n" if self.mobaledlib_version == 1 else "#?\n")
             time.sleep(_const("ARDUINO_WAITTIME", 0.02))
             self.led_off()
@@ -473,7 +475,8 @@ class SerialMixin:
         if self.is_connection_open():
             self.send_active = False
             self.led_off()
-            self._set_connect_status("Verbunden " + self.ARDUINO_current_portname + " - EFFECT Mode", "green")
+            # self._set_connect_status("Verbunden " + self.ARDUINO_current_portname + " - EFFECT Mode", "green")  # v1.05 (entfallen)
+            self._set_connect_status(tr("Verbunden") + " " + self.ARDUINO_current_portname + " - EFFECT Mode", "green")  # v1.05
             self.send_to_ARDUINO("#END\n" if self.mobaledlib_version == 1 else "#X\n")
 
     # ------------------------------------------------------------------ Verbinden
@@ -486,6 +489,7 @@ class SerialMixin:
         return self.connect(port=port)
 
     def _set_connect_status(self, text, fg="black"):
+        text = tr(text)  # v1.05: feste Texte wie 'Nicht Verbunden' in der eingestellten Sprache (zusammengesetzte Texte sind schon uebersetzt oder bleiben)
         self.connect_status = (text, fg)
         self.set_connectstatusmessage(text, fg=fg)
 

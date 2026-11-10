@@ -1,0 +1,65 @@
+# Datei-Version: 1.00 (2026-11-08) - legacy_names.txt
+# Gilt für webMobaLedLib 2.99
+#
+# Alte Schreibweisen von Dateinamen: 'alter Name = neuer Name' (nur Namen, die sich in der Gross-/Kleinschreibung unterscheiden).
+# release_tools.py nimmt die alten Namen als zusaetzliche Eintraege (Inhalt der neuen Datei) in die Pruefliste und das ZIP des Releases auf. Grund: Der Update-Code AELTERER
+# Versionen loescht alle Dateien, die das neue Release nicht kennt, unter dem alten Namen. Unter Windows und macOS ist das dieselbe Datei wie der neue Name: Die gerade
+# geschriebene Datei verschwindet, das Update bricht mit 'nach dem Schreiben nicht lesbar' ab und stellt den alten Stand wieder her.
+# Erzeugen und ergaenzen: python install/make_legacy_names.py <aelteres Release-ZIP> [weitere ZIP] (nach dem Angleichen der Symbolnamen mit align_icon_names.py).
+# Eintraege streichen, wenn keine aeltere Version mehr im Umlauf ist (die Version mit web_update 1.11 oder neuer braucht sie nicht).
+icons/Bluelight.png = icons/BlueLight.png
+icons/Bluelight2.png = icons/BlueLight2.png
+icons/InfoB.png = icons/infoB.png
+icons/InfoC.png = icons/infoC.png
+icons/InfoG.png = icons/infoG.png
+icons/InfoK.png = icons/infoK.png
+icons/InfoR.png = icons/infoR.png
+icons/InfoY.png = icons/infoY.png
+icons/MonoB.png = icons/monoB.png
+icons/MonoC.png = icons/monoC.png
+icons/MonoG.png = icons/monoG.png
+icons/MonoK.png = icons/monoK.png
+icons/MonoM.png = icons/monoM.png
+icons/MonoR.png = icons/monoR.png
+icons/MonoY.png = icons/monoY.png
+icons/PinB.png = icons/pinB.png
+icons/PinC.png = icons/pinC.png
+icons/PinG.png = icons/pinG.png
+icons/PinGrey.png = icons/pinGrey.png
+icons/PinK.png = icons/pinK.png
+icons/PinM.png = icons/pinM.png
+icons/PinR.png = icons/pinR.png
+icons/PinY.png = icons/pinY.png
+icons/ampel.png = icons/Ampel.png
+icons/candle.png = icons/Candle.png
+icons/manipulation.png = icons/Manipulation.png
+icons/neon.png = icons/Neon.png
+icons/pattern.png = icons/Pattern.png
+icons_gross/Bluelight.png = icons_gross/BlueLight.png
+icons_gross/Bluelight2.png = icons_gross/BlueLight2.png
+icons_gross/InfoB.png = icons_gross/infoB.png
+icons_gross/InfoC.png = icons_gross/infoC.png
+icons_gross/InfoG.png = icons_gross/infoG.png
+icons_gross/InfoK.png = icons_gross/infoK.png
+icons_gross/InfoR.png = icons_gross/infoR.png
+icons_gross/InfoY.png = icons_gross/infoY.png
+icons_gross/MonoB.png = icons_gross/monoB.png
+icons_gross/MonoC.png = icons_gross/monoC.png
+icons_gross/MonoG.png = icons_gross/monoG.png
+icons_gross/MonoK.png = icons_gross/monoK.png
+icons_gross/MonoM.png = icons_gross/monoM.png
+icons_gross/MonoR.png = icons_gross/monoR.png
+icons_gross/MonoY.png = icons_gross/monoY.png
+icons_gross/PinB.png = icons_gross/pinB.png
+icons_gross/PinC.png = icons_gross/pinC.png
+icons_gross/PinG.png = icons_gross/pinG.png
+icons_gross/PinGrey.png = icons_gross/pinGrey.png
+icons_gross/PinK.png = icons_gross/pinK.png
+icons_gross/PinM.png = icons_gross/pinM.png
+icons_gross/PinR.png = icons_gross/pinR.png
+icons_gross/PinY.png = icons_gross/pinY.png
+icons_gross/ampel.png = icons_gross/Ampel.png
+icons_gross/candle.png = icons_gross/Candle.png
+icons_gross/manipulation.png = icons_gross/Manipulation.png
+icons_gross/neon.png = icons_gross/Neon.png
+icons_gross/pattern.png = icons_gross/Pattern.png

@@ -1,9 +1,9 @@
-# Datei-Version: 1.08 (2026-11-05) - web_i18n.py
+# Datei-Version: 1.11 (2026-11-10) - web_i18n.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_i18n.py
 # Path:           _web/web_i18n.py
-# Version:        1.08
-# Last Update:    2026-11-05
+# Version:        1.11
+# Last Update:    2026-11-10
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -16,6 +16,9 @@
 #   1.06  2026-10-26  tr(): gewaehlte Sprache zuerst im Katalog, dann in der Tabelle Languages, erst danach English (ein englischer Katalogtext verdraengte vorher eine vorhandene niederlaendische Uebersetzung der Tabelle)
 #   1.07  2026-10-28  use_language: feste Seiten (Programm beendet, Raspberry Pi faehrt herunter) in der Sprache des Programms, auch wenn es schon beendet ist
 #   1.08  2026-11-05  Neu description_text(): Beschreibungstext einer Seite (MacroDef) von Wagenruecklaeufen befreien und uebersetzen (Programm Einstellungen, Farb Test, Servo, Sound, DCC Keyboard, Z21)
+#   1.09  2026-11-09  Die Auswahlfelder (ui.select) uebersetzen auch ihre Eintraege (Standardansicht Tabelle/Grafik/Beides, Kompaktes Layout: Aus/Ein/Automatisch); der gespeicherte Wert bleibt der urspruengliche Text; die Liste der Sprachen bleibt unuebersetzt
+#   1.10  2026-11-10  ui.item_label wird uebersetzt (Eintraege der Kontextmenues der Tabelle und des Patterngenerators standen vorher deutsch)
+#   1.11  2026-11-10  tr_ctx(text, context): Uebersetzung fuer gleiche deutsche Woerter mit verschiedener Bedeutung (Katalogeintrag 'Text [Kontext]', sonst wie tr); Deutsch bleibt unveraendert
 # ----------------------------------------------------------------------------------------------
 """Mehrsprachige Web-Oberflaeche (Konzept siehe HOC_intern.md, Version 2.14).
 
@@ -147,6 +150,16 @@ def tr(text, **values):
     return out.format(**values) if values else out
 
 
+def tr_ctx(text, context, **values):  # v1.11
+    """Wie tr, aber fuer ein deutsches Wort, das je nach Stelle etwas anderes bedeutet (Einfuegen: aus der Zwischenablage einfuegen oder einen Raum einfuegen).
+    Der Katalog enthaelt dann je Bedeutung einen Eintrag: 'Einfuegen' (Standard) und 'Einfuegen [Raum]' (Kontext Raum). Fehlt der Eintrag mit Kontext, gilt tr(text).
+    Auf Deutsch (und ohne Eintrag) bleibt der Text unveraendert; der Kontext wird nie angezeigt."""  # v1.11
+    key = "%s [%s]" % (text, context)  # v1.11
+    if tr(key) != key:                                 # es gibt einen Eintrag mit Kontext (ohne Werte geprueft: sonst wuerde tr den Platzhalter im Schluessel ersetzen und 'unterschiedlich' melden)  # v1.11
+        return tr(key, **values)  # v1.11
+    return tr(text, **values)  # v1.11
+
+
 def description_text(text, fallback=""):  # v1.08
     """Beschreibungstext einer Seite aus MacroDef (\\r entfernen, mehr als eine Leerzeile zu einer, Leerraum am Rand weg) in der eingestellten Sprache.
     Der Katalog enthaelt den bereinigten Text (mit seinen Zeilenumbruechen: zum Beispiel zeigt der Reiter Servo Einstellungen 2 zugeklappt nur die erste Zeile)."""  # v1.08
@@ -218,7 +231,27 @@ ELEMENT_TEXTS = {
     "menu_item": ((0,), ("text",)), "link": ((0,), ("text",)), "badge": ((0,), ("text",)), "chip": ((0,), ("text",)), "tab": ((), ("label",)),
     "input": ((0,), ("label", "placeholder")), "number": ((0,), ("label", "placeholder")), "textarea": ((0,), ("label", "placeholder")),
     "select": ((), ("label",)), "tooltip": ((0,), ("text",)),
+    "item_label": ((0,), ("text",)),  # v1.10: Eintraege der Kontextmenues (menu_row) und Kuerzel
 }
+
+
+LANGUAGE_LIST_ENTRIES = {"Auto", "Deutsch", "English"}  # v1.09: die Liste der Sprachen (Programm Einstellungen) bleibt unuebersetzt, damit man seine Sprache findet (nicht LANGUAGE_NAMES: das ist die Liste der Sprachen fuer use_language)
+
+
+def _translate_options(options):  # v1.09
+    """Eintraege eines Auswahlfelds uebersetzen: bei einem Woerterbuch {Wert: Text} der Text, bei einer Liste von Texten wird daraus {Text: uebersetzter Text} (der Wert bleibt der urspruengliche Text)"""  # v1.09
+    try:  # v1.09
+        if isinstance(options, dict):  # v1.09
+            return {k: (tr(v) if isinstance(v, str) else v) for k, v in options.items()}  # v1.09
+        if isinstance(options, (list, tuple)) and options and all(isinstance(o, str) for o in options):  # v1.09
+            if LANGUAGE_LIST_ENTRIES & set(options):  # v1.09
+                return options  # v1.09
+            translated = [tr(o) for o in options]  # v1.09
+            if translated != list(options):  # v1.09
+                return dict(zip(options, translated))  # v1.09
+    except Exception:                                  # noqa: BLE001  # v1.09
+        logger.debug("web_i18n: Eintraege nicht uebersetzt", exc_info=True)  # v1.09
+    return options  # v1.09
 
 
 def _subclass(cls, positions, keywords):
@@ -231,6 +264,11 @@ def _subclass(cls, positions, keywords):
             for key in keywords:
                 if isinstance(kwargs.get(key), str):
                     kwargs[key] = tr(kwargs[key])
+            if cls.__name__ == "Select":  # v1.09: die Eintraege des Auswahlfelds (erstes Positionsargument oder options=)
+                if args:  # v1.09
+                    args[0] = _translate_options(args[0])  # v1.09
+                elif "options" in kwargs:  # v1.09
+                    kwargs["options"] = _translate_options(kwargs["options"])  # v1.09
             super().__init__(*args, **kwargs)
 
         if hasattr(cls, "set_text"):

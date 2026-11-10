@@ -1,9 +1,9 @@
-# Datei-Version: 2.06 (2026-10-26) - web_servotest.py
+# Datei-Version: 2.07 (2026-11-09) - web_servotest.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_servotest.py
 # Path:           _web/web_servotest.py
-# Version:        2.06
-# Last Update:    2026-10-26
+# Version:        2.07
+# Last Update:    2026-11-09
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -15,6 +15,7 @@
 #   2.04  2026-10-21  Die dritte Taste im Zustand Einstellen (Verbinden) entfaellt: verbunden wird mit der Taste Mit ARDUINO verbinden in der Kopfzeile fuer alle Reiter; neu ServoPage.on_connected (Direktmodus und Servo waehlen nach dem Verbinden)
 #   2.05  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 #   2.06  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
+#   2.07  2026-11-09  Die Beschreibung wird uebersetzt, bevor die erste Zeile fuer die zugeklappte Anzeige genommen wird (zugeklappt stand sie auf Deutsch, aufgeklappt in der Sprache)
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Servo Test 1" nach dem Excel-Dialog "Servo Test und Einstellung" (UserForm der Excel-Fassung, Stand Oktober 2026).
 
@@ -650,7 +651,9 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
     def refresh_description():  # v2.01
         """Beschreibung: zugeklappt nur die erste Zeile (Smartphone), aufgeklappt der ganze Text"""  # v2.01
         opened = desc["open"]  # v2.01
-        refs["description"].set_text(model.description if opened else model.description.split("\n")[0])  # v2.01
+        # refs["description"].set_text(model.description if opened else model.description.split("\n")[0])  # v2.01 (entfallen)
+        description = tr(model.description)  # v2.07: erst uebersetzen, dann die erste Zeile nehmen (der Katalog kennt den ganzen Text, nicht die einzelne Zeile)
+        refs["description"].set_text(description if opened else description.split("\n")[0])  # v2.07
         shape = "white-space: pre-line; overflow: visible; text-overflow: clip" if opened else "white-space: nowrap; overflow: hidden; text-overflow: ellipsis"  # v2.01
         refs["description"].style(f"background: {model.description_color}; padding: 6px 10px; border: 1px solid #aaa; min-width: 0; {shape}")  # v2.01
         refs["desc_toggle"].props(f"icon={'expand_less' if opened else 'expand_more'}")  # v2.01

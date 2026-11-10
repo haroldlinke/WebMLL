@@ -1,9 +1,9 @@
-# Datei-Version: 1.16 (2026-11-01) - XLA_Application.py
+# Datei-Version: 1.17 (2026-11-08) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.16
-# Last Update:    2026-11-01
+# Version:        1.17
+# Last Update:    2026-11-08
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -23,6 +23,7 @@
 #   1.14  2026-11-01  Reiterfarbe (tab_color, set_tab_color), Reihenfolge (reorder_sheets) und rename_sheet fuehrt auch den Reiter-Rahmen nach; SheetOrder und TabColors werden mit der Arbeitsmappe gesichert und geladen
 #   1.15  2026-11-01  Mehrfachauswahl von Zeilen: CWorksheet.getSelectedRows und CSelection._selectedRow liefern alle markierten Zeilen (Block von der ersten bis zur letzten), nicht nur die erste
 #   1.16  2026-11-01  CSelection.EntireRow: die markierten Zeilen (vorher um eine Zeile nach oben verschoben: Zeile kopieren, ausblenden und loeschen wirkten auf die Zeile darueber)
+#   1.17  2026-11-08  Das Scheitern der Importe von headless_sheet und XLF_FormGenerator wird ins Protokoll geschrieben (vorher wurde der ImportError verschluckt; die eigentliche Ursache war nicht zu sehen und es folgte der Ringimport mit P01_Worksheetcalc)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -81,8 +82,9 @@ except ImportError:
     Sheet = tk = ttk = None
 try:  # HEADLESS
     from .headless_sheet import HeadlessSheet
-except ImportError:
+except ImportError as _import_error:  # v1.17
     HeadlessSheet = None
+    logger.warning("headless_sheet nicht geladen: %s", _import_error, exc_info=True)  # v1.17: der Fehler wurde bisher verschluckt
 
 from vb2py.vbconstants import *
 from vb2py.vbfunctions import *
@@ -93,8 +95,9 @@ import os, csv
 
 try:  # HEADLESS: der Tk-Formulargenerator wird im Headless-Betrieb nicht benoetigt
     from .XLF_FormGenerator import generate_controls
-except ImportError:
+except ImportError as _import_error:  # v1.17
     generate_controls = None
+    logger.warning("XLF_FormGenerator nicht geladen: %s", _import_error, exc_info=True)  # v1.17: der Fehler wurde bisher verschluckt (danach kam der Ringimport mit P01_Worksheetcalc)
 from .XLC_Excel_Consts import *
 from .P01_Worksheetcalc import Calc_Worksheet
 from pathlib import Path

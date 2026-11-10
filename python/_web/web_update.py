@@ -1,4 +1,15 @@
-# Datei-Version: 1.10 (2026-11-01) - web_update.py
+# Datei-Version: 1.12 (2026-11-09) - web_update.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_update.py
+# Path:           _web/web_update.py
+# Version:        1.12
+# Last Update:    2026-11-09
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.11  2026-11-08  Das Update loescht keine Datei mehr, die das neue Release in anderer Schreibweise enthaelt und die auf diesem Rechner dieselbe Datei ist (Windows und macOS: ampel.png und Ampel.png sind eine Datei); vorher fehlten danach die neu geschriebenen Dateien (Symbole), das Programm meldete sie als fehlend (fruehere Versionen ohne Eintrag)
+#   1.12  2026-11-09  Testversion: Die Liste der Releases von GitHub (release_entries, available_releases, release_choices) fuer die Auswahl der Version im Dialog; newest_release liest die Antwort ueber _fetch_releases_json
+# ----------------------------------------------------------------------------------------------
 """Update der Web-Oberflaeche aus dem neuesten Release auf GitHub (Menue Hilfe -> Update webmobaledlib).
 
 Anders als das Update des Originals (komplettes Ueberschreiben des Programmordners, bei dem Virenscanner wegen der vielen Schreibzugriffe
@@ -157,6 +168,21 @@ def is_protected(rel: str) -> bool:
     return any(fnmatch.fnmatch(parts[-1], pattern) for pattern in PROTECTED_FILES)
 
 
+def same_file_other_spelling(project_dir: str, relpath: str, release_lower: dict) -> bool:  # v1.11
+    """True, wenn das neue Release dieselbe Datei in anderer Schreibweise enthaelt (zum Beispiel icons/InfoB.png alt, icons/infoB.png neu) UND beide Namen auf diesem Rechner dieselbe
+    Datei sind (Windows und macOS: die Schreibweise zaehlt nicht). Eine solche Datei darf nicht geloescht werden: Sie wird mit der neuen Schreibweise ueberschrieben, das Loeschen des alten
+    Namens wuerde die neue Datei entfernen. Unter Linux sind es zwei Dateien, die alte wird geloescht."""  # v1.11
+    other = release_lower.get(relpath.lower())  # v1.11
+    if not other or other == relpath:  # v1.11
+        return False  # v1.11
+    old_path = os.path.join(project_dir, *relpath.split("/"))  # v1.11
+    new_path = os.path.join(project_dir, *other.split("/"))  # v1.11
+    try:  # v1.11
+        return os.path.exists(old_path) and os.path.exists(new_path) and os.path.samefile(old_path, new_path)  # v1.11
+    except OSError:  # v1.11
+        return False  # v1.11
+
+
 def is_volatile(rel: str) -> bool:  # v1.05
     """Vom Programm spaeter geaenderte Datei (siehe VOLATILE_PATHS)"""  # v1.05
     return any(fnmatch.fnmatchcase(rel.lower(), pattern.lower()) for pattern in VOLATILE_PATHS)  # v1.05
@@ -243,8 +269,8 @@ def pick_release(releases) -> dict:  # v1.09
             "date": when[:10], "url": str(asset["browser_download_url"]), "size": int(asset.get("size") or 0)}  # v1.09
 
 
-def newest_release(timeout: float = 30.0) -> dict:  # v1.09
-    """Fragt GitHub nach den Releases und liefert das neueste (siehe pick_release). Ohne Konto, 60 Abfragen je Stunde und Adresse."""  # v1.09
+def _fetch_releases_json(timeout: float = 30.0) -> list:  # v1.12: aus newest_release herausgeloest
+    """Fragt GitHub nach den Releases (die letzten 30). Ohne Konto, 60 Abfragen je Stunde und Adresse."""  # v1.12
     url = api_url()  # v1.09
     url += ("&" if "?" in url else "?") + "per_page=30"  # v1.09
     request = urllib.request.Request(url, headers={"User-Agent": "webmobaledlib-updater", "Accept": "application/vnd.github+json"})  # v1.09
@@ -259,7 +285,64 @@ def newest_release(timeout: float = 30.0) -> dict:  # v1.09
         raise UpdateError(tr('Die Liste der Releases konnte nicht gelesen werden: {ex}', ex=ex)) from ex  # v1.09
     if not isinstance(data, list):  # v1.09
         raise UpdateError(tr('Die Liste der Releases konnte nicht gelesen werden: {ex}', ex="unerwartete Antwort"))  # v1.09
-    return pick_release(data)  # v1.09
+    return data  # v1.12
+
+
+def newest_release(timeout: float = 30.0) -> dict:  # v1.09
+    """Fragt GitHub nach den Releases und liefert das neueste (siehe pick_release)."""  # v1.09
+    return pick_release(_fetch_releases_json(timeout))  # v1.12
+
+
+def release_entries(releases, limit: int = 15) -> list:  # v1.12
+    """Die Releases der GitHub-Antwort fuer die Auswahl: ohne Entwuerfe, nur mit dem Anhang webmobaledlib.zip, das NEUESTE zuerst, hoechstens limit.
+    Jeder Eintrag: {"tag", "name", "prerelease", "date" (JJJJ-MM-TT), "url", "size"} wie pick_release."""  # v1.12
+    found = []  # v1.12
+    for rel in releases or []:  # v1.12
+        if not isinstance(rel, dict) or rel.get("draft"):  # v1.12
+            continue  # v1.12
+        asset = next((a for a in (rel.get("assets") or []) if isinstance(a, dict) and a.get("name") == ASSET_NAME  # v1.12
+                      and str(a.get("browser_download_url") or "").lower().startswith("https://")), None)  # v1.12
+        if asset is None:  # v1.12
+            continue  # v1.12
+        when = str(rel.get("published_at") or rel.get("created_at") or "")  # v1.12
+        found.append((when, {"tag": str(rel.get("tag_name") or ""), "name": str(rel.get("name") or ""), "prerelease": bool(rel.get("prerelease")),  # v1.12
+                             "date": when[:10], "url": str(asset["browser_download_url"]), "size": int(asset.get("size") or 0)}))  # v1.12
+    found.sort(key=lambda item: item[0], reverse=True)  # v1.12
+    return [entry for _, entry in found[:max(1, int(limit))]]  # v1.12
+
+
+def available_releases(timeout: float = 30.0, limit: int = 15) -> list:  # v1.12
+    """Die letzten Releases von GitHub (siehe release_entries); UpdateError, wenn es keines gibt oder GitHub nicht antwortet."""  # v1.12
+    entries = release_entries(_fetch_releases_json(timeout), limit)  # v1.12
+    if not entries:  # v1.12
+        raise UpdateError(tr('Auf GitHub gibt es kein Release mit dem Anhang {datei}.', datei=ASSET_NAME))  # v1.12
+    return entries  # v1.12
+
+
+def version_key(text) -> tuple:  # v1.12
+    """Versionsnummer aus einem Text wie 'v3.04', '3.04 (2026-11-09)' oder 'webMobaLedLib 3.04' als (3, 4); () ohne Nummer"""  # v1.12
+    m = re.search(r"(\d+)\.(\d+)", str(text or ""))  # v1.12
+    return (int(m.group(1)), int(m.group(2))) if m else ()  # v1.12
+
+
+def release_choices(entries: list, installed_version: str) -> list:  # v1.12
+    """Auswahl fuer den Dialog: [{"label", "entry", "newest", "installed", "older"}]. Das neueste Release (erster Eintrag) steht zuerst; markiert werden die installierte Version
+    und aeltere Versionen (ein Rueckgang, der im Dialog zusaetzlich bestaetigt werden muss)."""  # v1.12
+    installed = version_key(installed_version)  # v1.12
+    choices = []  # v1.12
+    for index, entry in enumerate(entries):  # v1.12
+        key = version_key(entry.get("tag")) or version_key(entry.get("name"))  # v1.12
+        is_installed = bool(key) and key == installed  # v1.12
+        is_older = bool(key) and bool(installed) and key < installed  # v1.12
+        label = "%s  -  %s, %s" % (entry.get("tag") or entry.get("name") or "?", tr("Pre-Release") if entry.get("prerelease") else tr("Release"), entry.get("date") or "")  # v1.12
+        if index == 0:  # v1.12
+            label += "  -  " + tr("neueste Version")  # v1.12
+        if is_installed:  # v1.12
+            label += "  -  " + tr("installiert")  # v1.12
+        elif is_older:  # v1.12
+            label += "  -  " + tr("ältere Version")  # v1.12
+        choices.append({"label": label, "entry": entry, "newest": index == 0, "installed": is_installed, "older": is_older})  # v1.12
+    return choices  # v1.12
 
 
 # ------------------------------------------------------------------ Release pruefen
@@ -374,9 +457,12 @@ def make_plan(project_dir: str, release: Release, version_old: str, manifest: di
         plan.changed.append(relpath)
         if relpath in known and known[relpath] != local_hash:
             plan.local_modified.append(relpath)
+    release_lower = {name.lower(): name for name in release.entries}  # v1.11
     for relpath in sorted(known):
         # if relpath not in release.entries and not is_protected(relpath) and os.path.isfile(os.path.join(project_dir, *relpath.split("/"))):  # v1.05 (entfallen)
-        if relpath not in release.entries and not is_protected(relpath) and not is_volatile(relpath) and os.path.isfile(os.path.join(project_dir, *relpath.split("/"))):  # v1.05
+        # if relpath not in release.entries and not is_protected(relpath) and not is_volatile(relpath) and os.path.isfile(os.path.join(project_dir, *relpath.split("/"))):  # v1.05 (entfallen)
+        if relpath not in release.entries and not is_protected(relpath) and not is_volatile(relpath) and os.path.isfile(os.path.join(project_dir, *relpath.split("/"))) \
+                and not same_file_other_spelling(project_dir, relpath, release_lower):  # v1.11
             plan.delete.append(relpath)
     if known:                                                                      # Schutz vor einem unvollstaendigen oder falschen ZIP  # v1.02
         if len(release.entries) < MIN_RATIO_KNOWN * len(known):  # v1.02

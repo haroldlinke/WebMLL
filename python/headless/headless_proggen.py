@@ -1,15 +1,16 @@
-# Datei-Version: 1.10 (2026-11-05) - headless_proggen.py
+# Datei-Version: 1.11 (2026-11-08) - headless_proggen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_proggen.py
 # Path:           headless/headless_proggen.py
-# Version:        1.10
-# Last Update:    2026-11-05
+# Version:        1.11
+# Last Update:    2026-11-08
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.08  2026-10-17  Web-Formulare Select_ProgGen_Dest_Form und Select_ProgGen_Src_Form (Export/Import des Patterngenerators) installieren; davor bis 1.07 (2026-10-15), nicht erfasst
 #   1.09  2026-11-05  Erster Start einer Neuinstallation (noch keine gespeicherte Tabelle im Datenordner): PlatformIO wird als Entwicklungsumgebung eingestellt, wenn es gefunden wird (neue Funktion new_install_defaults)
 #   1.10  2026-11-05  Erster Start einer Neuinstallation: zusaetzlich Anfaenger Modus einschalten (new_install_defaults(controller) setzt BeginnerMode = 1)
+#   1.11  2026-11-08  Erster Start einer Neuinstallation: Die Voreinstellungen (PlatformIO, Anfaenger Modus) werden schon in Workbook_Open gesetzt (Haken first_start_hook), vor der Pruefung der ARDUINO IDE; vorher kam beim ersten Start die Meldung 'Die ARDUINO IDE wurde nicht gefunden', obwohl PlatformIO installiert war
 # ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Prog_GeneratorPage: baut die Arbeitsmappe "ProgGenerator".
 
@@ -130,6 +131,8 @@ class HeadlessProgGeneratorPage:
         F00.init_UserForms = _init_userforms_headless
 
         new_install = not os.path.exists(temp_workbook_filename)  # v1.09: noch keine gespeicherte Tabelle: erster Start einer Neuinstallation
+        import ExcelAPI.XLA_Application as _X02_first  # v1.11
+        _X02_first.first_start_hook = (lambda: new_install_defaults(controller)) if new_install else None  # v1.11: Workbook_Open (DieseArbeitsmappe) ruft ihn vor der Pruefung der ARDUINO IDE auf
         self.workbook = self.Application.Workbooks.Open(
             ParentFrame=None,                          # kein Tk-Frame: Headless-Betrieb
             FileName=temp_workbook_filename,
@@ -150,9 +153,13 @@ class HeadlessProgGeneratorPage:
 
         self.workbook.SetInitWorkbookFunction(F00.workbook_init)
         PG.ThisWorkbook = self.workbook
-        if new_install:  # v1.09
-            # new_install_defaults()  # v1.09 (entfallen)
-            new_install_defaults(controller)  # v1.10
+        # if new_install:  # v1.09 (entfallen)
+        #     # new_install_defaults()  # v1.09 (entfallen)
+        #     new_install_defaults(controller)  # v1.10 (entfallen: schon in Workbook_Open, siehe first_start_hook)
+        hook = getattr(_X02_first, "first_start_hook", None)  # v1.11: Workbook_Open hat ihn nicht aufgerufen (zum Beispiel weil der Ereignisaufruf ausblieb): jetzt nachholen
+        if new_install and hook:  # v1.11
+            _X02_first.first_start_hook = None  # v1.11
+            hook()  # v1.11
         PG.dialog_parent = self                          # M08/M06 rufen die Methoden der Seite ueber dialog_parent auf
         self.workbook.activate_sheet(PG.start_sheet)
 
