@@ -368,6 +368,12 @@ class PatternView:
                 with ui.menu_item().on("click", None, js_handler=JS_MENU_DELETE):  # v1.03
                     menu_row("Löschen", "Entf")  # v1.03
 
+                with ui.menu_item().on("click", None, js_handler="""() => {
+                    const c = window.mllPCtx;
+                    if (c) emitEvent('mll_pcell_op', {op: 'color', r: c.r, col: c.col});
+                }"""):
+                    menu_row("LED-Farbe wählen")
+
         self.sheet_tabs = ui.tabs(on_change=self.on_sheet_tab).props(
             "dense align=left no-caps active-color=primary indicator-color=transparent").classes("w-full sheet-tabs").style("flex-shrink: 0")
         self.rebuild_tabs()
@@ -457,12 +463,56 @@ class PatternView:
             ui.notify("Es laeuft noch ein Vorgang - bitte warten.", type="warning")  # v1.03
             return  # v1.03
         self._last_click = None  # v1.03
-        if a.get("op") == "delete":  # v1.03
+        if a.get("op") == "color":
+            await self.choose_led_color(r, c)
+        elif a.get("op") == "delete":  # v1.03
             await self.action(lambda ws: self.page.clear_cell(ws, r, c))  # v1.03
         elif a.get("op") == "paste":  # v1.03
             text = str(a.get("text") or "")  # v1.03
             if text:  # v1.03
                 await self.action(lambda ws: self.page.paste_text(ws, r, c, text))  # v1.03
+
+    async def choose_led_color(self, row, col):
+        ws = self.ws
+        first = DESIGN_FIRST_LED_ROW
+        count = self.page.led_row_count(ws)
+        if not first <= row < first + count or not 5 <= col <= ws.tksheet.get_total_columns():
+            ui.notify("Bitte eine LED-Namenszelle oder einen Pattern-Schritt auswählen.", type="info")
+            return
+
+        rgb = bool(ws.RGB_LED_CheckBox.Value)
+        if col >= 6 and not rgb:
+            ui.notify("Eine Schrittfarbe benötigt den RGB-Modus.", type="info")
+            return
+        initial = (ws.tksheet.getColorAt(row - 1, 4) or "#ffffff") if col == 5 else "#ffffff"
+        with ui.dialog().props("persistent") as dialog, ui.card().classes("w-[420px] max-w-full"):
+            ui.label("LED-Farbe wählen" if col == 5 else f"RGB-Farbe für Schritt {col - 5}").classes("text-h6")
+            color = web_dialogs.color_input(ui, label="Farbe", value=initial).classes("w-full")
+            step = None
+            if col == 5 and rgb:
+                step = ui.number("Pattern-Schritt", value=1, min=1,
+                                 max=ws.tksheet.get_total_columns() - 5, precision=0)
+            with ui.row().classes("justify-end w-full"):
+                ui.button("Abbrechen", on_click=lambda: dialog.submit(None)).props("flat")
+                if step is not None:
+                    ui.button("Nur Zeilenfarbe", on_click=lambda: dialog.submit((color.value, 5))).props("flat")
+                def apply():
+                    target = col
+                    if step is not None:
+                        if step.value is None or not 1 <= step.value <= ws.tksheet.get_total_columns() - 5:
+                            ui.notify("Bitte einen gültigen Pattern-Schritt auswählen.", type="warning")
+                            return
+                        target = int(step.value) + 5
+                    dialog.submit((color.value, target))
+                ui.button("Übernehmen", on_click=apply)
+        chosen = await dialog
+        web_dialogs.safe_delete(dialog)
+        if chosen and chosen[0] and self.ws is ws:
+            chosen, col = chosen
+            if col == 5:
+                await self.action(lambda sheet: self.page.set_led_color(sheet, row, chosen))
+            else:
+                await self.action(lambda sheet: self.page.set_step_color(sheet, row, col, chosen))
 
     async def on_cell_dbl(self, e):  # v1.10
         """Doppelklick auf eine Zelle mit Dialog (Spezial Mode, RGB Modul Nr): der Dialog erscheint im Browser, das Ergebnis wird eingetragen"""  # v1.10

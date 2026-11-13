@@ -46,6 +46,7 @@
     #define WIFI_DNS_NAME "MobaLedLib"
     #undef Sec
 #endif
+#include <atomic>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #ifndef MLL_OTA_SAVED_WIFI
@@ -76,7 +77,7 @@ UserInterface ui(getUserInterface);
 
 #ifdef USE_WIFI
 bool isConnected = false;
-bool isInOTA = false;
+std::atomic<bool> isInOTA{false};
 #ifdef USE_OTA
 static bool otaRestartPending = false;
 #endif
@@ -116,8 +117,8 @@ void setConnected(bool connected)
 
 			// NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
 			Serial.println("Start updating " + type);
-			FastLED.setBrightness(0); // turn leds off
-			FastLED.clear(256);
+
+
 		})
 		.onEnd([]() {
 			Serial.println("\nOTA abgeschlossen, Neustart folgt.");
@@ -135,7 +136,7 @@ void setConnected(bool connected)
 			else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
 			else if (error == OTA_END_ERROR) Serial.println("End Failed");
                         isInOTA = false;
-			FastLED.setBrightness(255); // turn leds on
+
 		});
 
 #ifdef MLL_OTA_PASSWORD

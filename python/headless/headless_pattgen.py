@@ -697,6 +697,41 @@ class HeadlessPatternGeneratorPage:
             X02.Application.EnableEvents = events  # v1.04
         ws.EventWSchanged(X02.Cells(5, 5))  # v1.04
 
+    def set_led_color(self, ws, row, color):
+        self.use(ws)
+        first = M01.LEDsTAB_R
+        count = self.led_row_count(ws)
+        size = 3 if ws.RGB_LED_CheckBox.Value else 1
+        group_start = first + (row - first) // size * size
+        for channel in range(group_start, min(group_start + size, first + count)):
+            X02.CRange(channel, 5, ws=ws).Interior.Color = color
+        self.update_grafik(ws)
+
+    def set_step_color(self, ws, row, col, color):
+        if not re.fullmatch(r"#[0-9a-fA-F]{6}", color):
+            raise ValueError("Bitte eine gültige RGB-Farbe wählen.")
+        first = M01.LEDsTAB_R
+        count = self.led_row_count(ws)
+        if not ws.RGB_LED_CheckBox.Value or not first <= row < first + count:
+            return
+        if not M01.Dauer_Col1 <= col <= ws.tksheet.get_total_columns():
+            return
+        self.use(ws)
+        bits = max(1, min(8, int(float(str(X02.Range(M01.BitsVal_Rng))))))
+        maximum = (1 << bits) - 1
+        start = first + (row - first) // 3 * 3
+        rgb = [int(color[i:i + 2], 16) for i in (1, 3, 5)]
+        values = [round(channel * maximum / 255) for channel in rgb]
+        events = X02.Application.EnableEvents
+        X02.Application.EnableEvents = False
+        try:
+            for channel, value in zip(range(start, min(start + 3, first + count)), values):
+                X02.CRange(channel, col, ws=ws).Value = str(value) if value else ""
+        finally:
+            X02.Application.EnableEvents = events
+        ws.EventWSchanged(X02.Cells(start, col))
+        self.update_grafik(ws)
+
     def set_rgb_led(self, ws, value):  # v1.01
         self.use(ws)  # v1.01
         ws.RGB_LED_CheckBox.Value = bool(value)  # v1.01
