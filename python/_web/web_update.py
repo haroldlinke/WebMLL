@@ -1,14 +1,15 @@
-# Datei-Version: 1.12 (2026-11-09) - web_update.py
+# Datei-Version: 1.13 (2026-11-12) - web_update.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_update.py
 # Path:           _web/web_update.py
-# Version:        1.12
-# Last Update:    2026-11-09
+# Version:        1.13
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.11  2026-11-08  Das Update loescht keine Datei mehr, die das neue Release in anderer Schreibweise enthaelt und die auf diesem Rechner dieselbe Datei ist (Windows und macOS: ampel.png und Ampel.png sind eine Datei); vorher fehlten danach die neu geschriebenen Dateien (Symbole), das Programm meldete sie als fehlend (fruehere Versionen ohne Eintrag)
 #   1.12  2026-11-09  Testversion: Die Liste der Releases von GitHub (release_entries, available_releases, release_choices) fuer die Auswahl der Version im Dialog; newest_release liest die Antwort ueber _fetch_releases_json
+#   1.13  2026-11-12  Update Testversion: Releases, deren Tag oder Name mit 'test' beginnt (zum Beispiel test1: Tests des Entwicklers), stehen am Ende der Liste (hoechstens 5), werden nie vorgewaehlt und tragen den Zusatz 'Entwicklertest'; pick_release nimmt sie nur, wenn es nichts anderes gibt
 # ----------------------------------------------------------------------------------------------
 """Update der Web-Oberflaeche aus dem neuesten Release auf GitHub (Menue Hilfe -> Update webmobaledlib).
 
@@ -250,6 +251,15 @@ def api_url() -> str:  # v1.09
     return os.environ.get("MLL_UPDATE_API_URL", "").strip() or API_URL  # v1.09
 
 
+TEST_RELEASE_RE = re.compile(r"(?i)^\s*v?test")  # v1.13: Tag oder Name beginnt mit 'test' (Tests des Entwicklers, zum Beispiel 'test1')
+TEST_RELEASES_MAX = 5  # v1.13: so viele Tests des Entwicklers stehen hoechstens am Ende der Liste
+
+
+def is_test_release(tag, name="") -> bool:  # v1.13
+    """True, wenn Tag oder Name eines Releases mit 'test' beginnt (Gross-/Kleinschreibung und ein vorangestelltes v egal)"""  # v1.13
+    return bool(TEST_RELEASE_RE.match(str(tag or "")) or TEST_RELEASE_RE.match(str(name or "")))  # v1.13
+
+
 def pick_release(releases) -> dict:  # v1.09
     """Aus der Liste der GitHub-Releases das NEUESTE (Pre-Release oder normales, keine Entwuerfe), das den Anhang webmobaledlib.zip hat.
     Rueckgabe {"tag", "name", "prerelease", "date" (JJJJ-MM-TT), "url", "size"}; UpdateError, wenn es keines gibt."""
@@ -264,7 +274,9 @@ def pick_release(releases) -> dict:  # v1.09
         found.append((str(rel.get("published_at") or rel.get("created_at") or ""), rel, asset))  # v1.09
     if not found:  # v1.09
         raise UpdateError(tr('Auf GitHub gibt es kein Release mit dem Anhang {datei}.', datei=ASSET_NAME))  # v1.09
-    when, rel, asset = max(found, key=lambda item: item[0])  # v1.09
+    normal = [item for item in found if not is_test_release(item[1].get("tag_name"), item[1].get("name"))]  # v1.13: Tests des Entwicklers nur, wenn es nichts anderes gibt
+    # when, rel, asset = max(found, key=lambda item: item[0])  # v1.09 (entfallen)
+    when, rel, asset = max(normal or found, key=lambda item: item[0])  # v1.13
     return {"tag": str(rel.get("tag_name") or ""), "name": str(rel.get("name") or ""), "prerelease": bool(rel.get("prerelease")),  # v1.09
             "date": when[:10], "url": str(asset["browser_download_url"]), "size": int(asset.get("size") or 0)}  # v1.09
 
@@ -308,7 +320,10 @@ def release_entries(releases, limit: int = 15) -> list:  # v1.12
         found.append((when, {"tag": str(rel.get("tag_name") or ""), "name": str(rel.get("name") or ""), "prerelease": bool(rel.get("prerelease")),  # v1.12
                              "date": when[:10], "url": str(asset["browser_download_url"]), "size": int(asset.get("size") or 0)}))  # v1.12
     found.sort(key=lambda item: item[0], reverse=True)  # v1.12
-    return [entry for _, entry in found[:max(1, int(limit))]]  # v1.12
+    # return [entry for _, entry in found[:max(1, int(limit))]]  # v1.12 (entfallen)
+    normal = [entry for _, entry in found if not is_test_release(entry["tag"], entry["name"])]  # v1.13: Tests des Entwicklers ans Ende
+    tests = [entry for _, entry in found if is_test_release(entry["tag"], entry["name"])]  # v1.13
+    return normal[:max(1, int(limit))] + tests[:TEST_RELEASES_MAX]  # v1.13
 
 
 def available_releases(timeout: float = 30.0, limit: int = 15) -> list:  # v1.12
@@ -335,13 +350,16 @@ def release_choices(entries: list, installed_version: str) -> list:  # v1.12
         is_installed = bool(key) and key == installed  # v1.12
         is_older = bool(key) and bool(installed) and key < installed  # v1.12
         label = "%s  -  %s, %s" % (entry.get("tag") or entry.get("name") or "?", tr("Pre-Release") if entry.get("prerelease") else tr("Release"), entry.get("date") or "")  # v1.12
-        if index == 0:  # v1.12
+        is_test = is_test_release(entry.get("tag"), entry.get("name"))  # v1.13
+        if index == 0 and not is_test:  # v1.12 (v1.13: ein Test des Entwicklers ist nie die neueste Version)
             label += "  -  " + tr("neueste Version")  # v1.12
+        if is_test:  # v1.13
+            label += "  -  " + tr("Entwicklertest")  # v1.13
         if is_installed:  # v1.12
             label += "  -  " + tr("installiert")  # v1.12
         elif is_older:  # v1.12
             label += "  -  " + tr("ältere Version")  # v1.12
-        choices.append({"label": label, "entry": entry, "newest": index == 0, "installed": is_installed, "older": is_older})  # v1.12
+        choices.append({"label": label, "entry": entry, "newest": index == 0 and not is_test, "installed": is_installed, "older": is_older, "test": is_test})  # v1.12 (v1.13: test)
     return choices  # v1.12
 
 

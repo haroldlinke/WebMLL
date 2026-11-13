@@ -1,9 +1,9 @@
-# Datei-Version: 1.03 (2026-11-01) - M02_Public.py
+# Datei-Version: 1.05 (2026-11-12) - M02_Public.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M02_Public.py
 # Path:           proggen/M02_Public.py
-# Version:        1.03
-# Last Update:    2026-11-01
+# Version:        1.05
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,8 @@
 #   1.01  2026-10-21  Version K des Excel-Programms: Test_Suffix K; neue Konstanten (DEFAULT_TX_PAUSE, FirmwareDir, MLLFORUM_*, MLLSHOP_LINK, SF_PRO_SOUND_LED, SF_NAME_LED_NUMBER, SF_NAME_LED_OFFSET, SCT_*, SMT_*, PAT_ExtensionName, PAT_LEDVariableName, VT_LEDOrName, VT_LEDName)
 #   1.02  2026-10-26  Excel-Programm 3.5.0-K-long (bis zu 2048 Eingaenge): Test_Suffix K-long (Aenderung des Entwicklers)
 #   1.03  2026-11-01  Excel-Programm 3.5.0-L: Test_Suffix L (Aenderung des Entwicklers, Zeile 77)
+#   1.04  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26)
+#   1.05  2026-11-12  Excel-Programm 3.5.0L3: Test_Suffix L3 (Bibliothek MobaLedLib 3.5.0-L3)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -75,7 +77,8 @@ from ExcelAPI.XLC_Excel_Consts import *
 Lib_Version_Nr = '3.5.0'                                   # If changed check also "Exp_Prog_Gen_Version" in Pattern_Configurator
 # Test_Suffix = 'C1'                                          # The Excel programs use the same version number than the library to avoid confusion  # v1.01 (entfallen)
 # Test_Suffix = 'K'                                           # The Excel programs use the same version number than the library to avoid confusion  # v1.02 (entfallen)
-Test_Suffix = 'L'                                           # The Excel programs use the same version number than the library to avoid confusion  # v2.65
+# Test_Suffix = 'L'                                           # The Excel programs use the same version number than the library to avoid confusion  # v2.65  # v1.05 (entfallen)
+Test_Suffix = 'L3'                                          # The Excel programs use the same version number than the library to avoid confusion  # v1.05
 Prog_Version = 'Ver. ' + Lib_Version_Nr + Test_Suffix       # A sufix could be used for beta version
 Prog_Version_Nr = Lib_Version_Nr + Test_Suffix              # Call Gen_Release_Version() to update all sheets
 DEBUG_CHANGEEVENT = False
@@ -264,7 +267,7 @@ MouseHook_Store_Page = 'Start'                      # This page is used to store
 BOARD_NANO_OLD = '--board arduino:avr:nano:cpu=atmega328old'
 BOARD_NANO_FULL = '--board arduino:avr:nano:cpu=atmega328fullmem'
 BOARD_NANO_NEW = '--board arduino:avr:nano:cpu=atmega328'
-BOARD_NANO_EVERY = '--board arduino:megaavr:nona4809:mode=off'
+# BOARD_NANO_EVERY = '--board arduino:megaavr:nona4809:mode=off'  # v1.04 (entfallen: Nano Every wird nicht mehr unterstuetzt, Excel 3.5.0L3)
 BOARD_UNO_NORM = '--board arduino:avr:uno'
 BOARD_ESP32 = '--board esp32:esp32:esp32:PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none'
 BOARD_PICO = '--board rp2040:rp2040:rpipico:flash=2097152_0,freq=125,dbgport=Disabled,dbglvl=None'

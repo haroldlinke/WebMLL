@@ -522,11 +522,46 @@ class HeadlessPatternGeneratorPage:
 
     # ------------------------------------------------------------------ Aktionen der Werkzeugleiste und der Tabelle
     # Sie laufen im Worker-Thread (Dialoge der Makros erscheinen im Browser) und innerhalb von activated().
-    def attach_controls(self):  # v1.01
-        """Haken RGB LED: pattgen liest ihn als Eigenschaft des Blatts; die Tk-Steuerelemente gibt es hier nicht"""  # v1.01
-        for ws in self.workbook.sheets:  # v1.01
-            if not hasattr(ws, "RGB_LED_CheckBox"):  # v1.01
-                ws.RGB_LED_CheckBox = HeadlessControl("RGB_LED_CheckBox")  # v1.01
+    @staticmethod
+    def rgb_modes_in_file(path):
+        modes = {}
+        sheet = None
+        separator = chr(M01.pcfSep)
+        with open(path, encoding=HeadlessPatternGeneratorPage.file_encoding(path), errors="replace") as file:
+            for line in file:
+                key, _, value = line.partition(separator)
+                if key == "SheetName":
+                    sheet = value.strip()
+                elif key == "RGB_LED_CheckBox" and sheet:
+                    modes.setdefault(sheet, value.strip().split(separator)[0].strip() == "1")
+        return modes
+
+    @staticmethod
+    def remember_rgb_mode(ws, enabled):
+        if getattr(ws, "persistent_controls_dict", None) is None:
+            ws.persistent_controls_dict = {}
+        ws.persistent_controls_dict["pattern_rgb"] = bool(enabled)
+        ws.tksheet.persistent_controls_dict = ws.persistent_controls_dict
+
+    def attach_controls(self):
+        missing = []
+        for ws in self.workbook.sheets:
+            if not hasattr(ws, "RGB_LED_CheckBox"):
+                ws.RGB_LED_CheckBox = HeadlessControl("RGB_LED_CheckBox")
+            stored = (getattr(ws, "persistent_controls_dict", None) or {}).get("pattern_rgb")
+            if stored is not None:
+                ws.RGB_LED_CheckBox.Value = stored
+            elif self.is_data_sheet(ws):
+                missing.append(ws)
+        if missing:
+            modes = {}
+            for name, _ in self.example_collections():
+                path = os.path.join(self.example_dir(), name + ".MLL_pcf")
+                modes.update(self.rgb_modes_in_file(path))
+            for ws in missing:
+                if ws.Name in modes:
+                    ws.RGB_LED_CheckBox.Value = modes[ws.Name]
+                    self.remember_rgb_mode(ws, modes[ws.Name])
 
     def apply_column_widths(self, ws):  # v1.02
         """Breitere Spalten fuer Beschriftung, Eingabe und Muster (die Breiten der Blattdefinition sind fuer Excel gedacht und im Browser zu schmal)"""  # v1.02
@@ -574,7 +609,8 @@ class HeadlessPatternGeneratorPage:
     def ensure_grafik(self, ws):  # v1.07
         """Balken zeichnen, wenn das Blatt keine hat. Die Formen werden nicht gesichert (LoadWorkbook laedt PatternWorkbook ohne Formen): nach einem
         Neustart haben die wiederhergestellten Blaetter keine Balken, bis jemand Aktualisieren drueckt."""
-        if any(str(getattr(s, "Type", "")) == "5" for s in (getattr(ws, "shapelist", None) or [])):  # v1.07
+        if any(str(getattr(s, "Name", "")).startswith("Analog_Trend")
+               for s in (getattr(ws, "shapelist", None) or [])):  # v1.07
             return  # v1.07
         self.update_grafik(ws)  # v1.07
 
@@ -665,6 +701,7 @@ class HeadlessPatternGeneratorPage:
         self.use(ws)  # v1.01
         ws.RGB_LED_CheckBox.Value = bool(value)  # v1.01
         T09.RGB_LED_CheckBox_Click()  # v1.01
+        self.remember_rgb_mode(ws, value)
 
     # ------------------------------------------------------------------ Beispiele, Laden, Speichern, Loeschen (Optionen)
     def example_dir(self):  # v1.06
@@ -752,6 +789,7 @@ class HeadlessPatternGeneratorPage:
             loaded = "".join(ws.Name + "\t" for ws in self.workbook.sheets)          # Load_Sheets ueberspringt Namen aus Loaded_Sheets  # v1.06
             for path in paths:  # v1.06
                 names = self.sheet_names_in_file(path)  # v1.06
+                rgb_modes = self.rgb_modes_in_file(path)
                 objects = self.object_lines_in_file(path)  # v1.06
                 skipped += [n for n in names if ("\t" + loaded).find("\t" + n + "\t") >= 0]  # v1.06
                 before = {ws.Name for ws in self.workbook.sheets}  # v1.06
@@ -759,6 +797,8 @@ class HeadlessPatternGeneratorPage:
                 new_names = [ws.Name for ws in self.workbook.sheets if ws.Name not in before]  # v1.06
                 added += new_names  # v1.06
                 for name in new_names:                                                 # Textfelder und Formularknoepfe merken (werden mit dem Blatt gesichert)  # v1.06
+                    if name in rgb_modes:
+                        self.remember_rgb_mode(self.find_sheet(name), rgb_modes[name])
                     if name in objects:  # v1.06
                         ws = self.find_sheet(name)  # v1.06
                         if getattr(ws, "persistent_controls_dict", None) is None:  # v1.06
@@ -785,7 +825,7 @@ class HeadlessPatternGeneratorPage:
         """Hochgeladene Datei laden: .MLL_pcf oder .zip (mit der Datei und den Bildern dazu). Rueckgabe wie load_files"""  # v1.06
         if not path.lower().endswith(".zip"):  # v1.06
             return self.load_files([path])  # v1.06
-        folder = tempfile.mkdtemp(prefix="mll_pcf_up_")  # v1.06
+        folder = tempfile.mkdtemp(prefix="pcf_", dir=self.picture_dir())  # v1.06
         with zipfile.ZipFile(path) as zf:  # v1.06
             for info in zf.infolist():  # v1.06
                 name = os.path.basename(info.filename)                                 # nur Dateinamen: keine Pfade aus der ZIP-Datei uebernehmen  # v1.06

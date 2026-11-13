@@ -1,4 +1,17 @@
-# Datei-Version: 1.17 (2026-11-03) - web_form_options.py
+# Datei-Version: 1.21 (2026-11-12) - web_form_options.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_form_options.py
+# Path:           _web/web_form_options.py
+# Version:        1.21
+# Last Update:    2026-11-12
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.18  2026-11-12  Excel-Programm 3.5.0L3: Der Knopf Firmware installieren steht fuer ALLE Boards im Reiter LED ARDUINO (vorher nur beim Raspberry Pi Pico und nur mit Firmware-Dateien im Ordner); der Firmware-Ordner wird bei Bedarf angelegt (fruehere Versionen ohne Eintrag)
+#   1.19  2026-11-12  Excel-Programm 3.5.0L3: Firmware installieren oeffnet die Auswahl auch ohne Firmware-Dateien; der Knopf Firmware laden holt Firmware aus dem Internet (web_form_firmware_download, headless_firmware_dl) und waehlt sie danach vor
+#   1.20  2026-11-12  Reiter LED ARDUINO: der Kommentar zum Knopf Firmware installieren steht unter dem Knopf (schmal) statt daneben; die Auswahl des Boards behaelt ihre Breite (keine umbrochenen Beschriftungen) und rutscht auf schmalen Bildschirmen unter die Knoepfe
+#   1.21  2026-11-12  Knopf im Dialog Firmware installieren: 'Firmware herunterladen' (vorher 'Firmware laden')
+# ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
 WebOptions erbt von CUserForm_Options. Die Handler des Originals (Port erkennen, Bootloader,
@@ -91,6 +104,7 @@ def tab_buttons(buttons: dict, handlers: list[str], frame_hint: str | None = Non
 # ------------------------------------------------------------------ Dialog (Event-Loop)
 async def _options_async(spec: dict, st: dict):
     from nicegui import ui
+    from _web.web_esp32_ota import settings_panel
     vals = dict(st)
 
     with wd._bridge["client"]:
@@ -116,9 +130,17 @@ async def _options_async(spec: dict, st: dict):
                 for r_ in pico_rows:  # v1.09
                     r_.set_visibility(show)  # v1.09
 
-            def button_row(b):
+            def button_row(b, compact=False):  # v1.20: compact (Reiter LED ARDUINO): der Kommentar steht unter dem Knopf, nicht daneben (er nahm der Auswahl des Boards den Platz)
                 # with ui.row().classes("items-center w-full no-wrap"):  # v1.09 (entfallen)
-                with ui.row().classes("items-center w-full no-wrap") as row_el:  # v1.09
+                if compact:  # v1.20
+                    with ui.column().classes("gap-0") as row_el:  # v1.20
+                        btn = ui.button(wd.clean_text(b["text"]), on_click=action(b["handler"])).props("outline no-caps").classes("w-64")  # v1.20
+                        if b.get("disabled"):  # v1.20
+                            btn.disable()  # v1.20
+                        if b.get("label"):  # v1.20
+                            ui.label(b["label"]).classes("text-caption text-grey-7").style("width: 16rem; white-space: pre-line")  # v1.20: so breit wie der Knopf
+                else:  # v1.20
+                  with ui.row().classes("items-center w-full no-wrap") as row_el:  # v1.09
                     btn = ui.button(wd.clean_text(b["text"]), on_click=action(b["handler"])).props("outline no-caps").classes("w-64")
                     if b.get("disabled"):
                         btn.disable()
@@ -172,7 +194,8 @@ async def _options_async(spec: dict, st: dict):
             def board_group(side, tab):
                 p = spec["pages"][side]
                 key = "L" if side == "left" else "R"
-                with ui.column().classes("gap-0"):
+                # with ui.column().classes("gap-0"):  # v1.20 (entfallen)
+                with ui.column().classes("gap-0 shrink-0").style("min-width: 20rem"):  # v1.20: behaelt ihre Breite, die Beschriftungen (zum Beispiel Nano Normal (old Bootloader)) brechen nicht um
                     ui.checkbox(p["auto_text"], value=bool(vals["auto_" + key]),
                                 # on_change=lambda e, k=key: vals.__setitem__("auto_" + k, bool(e.value)))  # v1.06 (entfallen)
                                 on_change=lambda e, k=key: (vals.__setitem__("auto_" + k, bool(e.value)), update_dcc_tab()))  # v1.06
@@ -185,7 +208,8 @@ async def _options_async(spec: dict, st: dict):
                         if e.value is None:
                             return
                         vals[k] = e.value
-                        update_pico_buttons()  # v1.09
+                        update_pico_buttons()
+                        ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)  # v1.09
                         update_dcc_tab()  # v1.06
                         other = g["b"] if which == "a" else g["a"]
                         if other is not None:
@@ -202,6 +226,7 @@ async def _options_async(spec: dict, st: dict):
                         g["b"] = None
                     boards.append((p, g))  # v1.08
 
+            esp32_value = spec["pages"]["left"].get("esp32_value")
             with ui.tabs().classes("w-full") as tabs:
                 tab_objs = [ui.tab(t["name"]) for t in spec["tabs"]]
                 for t, tab_obj in zip(spec["tabs"], tab_objs):  # v1.06
@@ -211,14 +236,19 @@ async def _options_async(spec: dict, st: dict):
                     if t.get("nano_only"):  # v1.06
                         dcc["tab"], dcc["initial"] = tab_obj, bool(t.get("visible", True))  # v1.06
                         set_tab_visible(tab_obj, dcc["initial"])  # v1.06
+                ota_tab = ui.tab("OTA")
+                ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)
             with ui.tab_panels(tabs, value=tab_objs[0]).classes("w-full"):
+                with ui.tab_panel(ota_tab):
+                    settings_panel()
                 for t, tab in zip(spec["tabs"], tab_objs):
                     with ui.tab_panel(tab):
                         if t["kind"] == "arduino":
-                            with ui.row().classes("items-start no-wrap w-full"):
-                                with ui.column():
+                            # with ui.row().classes("items-start no-wrap w-full"):  # v1.20 (entfallen)
+                            with ui.row().classes("items-start w-full").style("flex-wrap: wrap; gap: 1rem 2rem"):  # v1.20: auf schmalen Bildschirmen rutscht die Auswahl des Boards unter die Knoepfe
+                                with ui.column().classes("grow"):  # v1.20
                                     for b in t["buttons"]:
-                                        button_row(b)
+                                        button_row(b, compact=True)  # v1.20
                                 board_group(t["side"], tab)
                         elif t["kind"] == "ide":  # v1.04
                             ui.label(t["intro"]).classes("text-grey-8").style("white-space: pre-line")  # v1.04
@@ -328,7 +358,7 @@ def make_class(Base):
             left = [dict(port_btn, handler="__Detect_LED_Port_Button_Click")]
             if wlan_device and buttons.get("__Detect_LED_IP_Button_Click"):
                 left.append(dict(buttons["__Detect_LED_IP_Button_Click"][0], handler="__Detect_LED_IP_Button_Click"))
-            left.append({"text": tr("Firmware installieren"), "handler": "__Boot_Firmware_Button_Click", "disabled": False, "pico_only": True,       # nur mit dem Pico (wie im Excel-Programm)  # v1.09
+            left.append({"text": tr("Firmware installieren"), "handler": "__Boot_Firmware_Button_Click", "disabled": False,  # v1.18: nicht mehr nur Pico (pico_only entfallen),       # nur mit dem Pico (wie im Excel-Programm)  # v1.09
                          "label": tr("Schreibt eine fertige Firmware (UF2-Datei aus dem Ordner MobaLedLib/firmware) auf den Raspberry Pi Pico")})  # v1.09
             subtitle = M09.Get_Language_Str("Für andere Hauptplatine")
             auto_text = M09.Get_Language_Str("Automatisch erkennen")
@@ -539,12 +569,29 @@ def make_class(Base):
             title = tr("Firmware installieren")  # v1.09
             # folder = M02a.Get_FirmwareDir()  # v1.11 (entfallen)
             folder = HP.resolve_firmware_dir(M02a.Get_FirmwareDir())                      # auch Firmware statt firmware (Linux)  # v1.11
-            groups = HP.scan_firmware(folder, HP.language_id(current_language()))  # v1.09
-            if not groups:  # v1.09
-                P01.MsgBox(tr("Im Ordner {ordner} gibt es keine Firmware-Dateien (*.uf2). Die fertigen Firmware-Dateien gehören in diesen Ordner (Unterordner MobaLedLib/firmware des Sketchbook-Ordners).", ordner=folder),  # v1.09
-                           ns.get("vbInformation", 64), title)  # v1.09
-                return  # v1.09
-            path = wd.call_in_loop(WFF.firmware_async, groups, folder, default=None)  # v1.09
+            try:  # v1.18: wie CreateFolder Get_FirmwareDir() im Excel-Programm 3.5.0L3
+                os.makedirs(folder, exist_ok=True)  # v1.18
+            except OSError:                                                            # noqa: BLE001  # v1.18
+                logger.debug("Firmware-Ordner nicht angelegt", exc_info=True)  # v1.18
+            lang_id = HP.language_id(current_language())  # v1.19
+            groups = HP.scan_firmware(folder, lang_id)  # v1.09
+            # if not groups:  # v1.09 (entfallen v1.19: die Auswahl oeffnet auch ohne Firmware-Dateien, mit Hinweis und dem Knopf Firmware laden)
+            #     P01.MsgBox(tr("Im Ordner {ordner} gibt es keine Firmware-Dateien (*.uf2). Die fertigen Firmware-Dateien gehören in diesen Ordner (Unterordner MobaLedLib/firmware des Sketchbook-Ordners).", ordner=folder),  # v1.09
+            #                ns.get("vbInformation", 64), title)  # v1.09
+            #     return  # v1.09
+            import headless.headless_firmware_dl as HFD  # v1.19
+            from _web import web_form_firmware_download as WFD  # v1.19
+            download_texts = WFD.translated_texts(M09.Get_Language_Str)                  # im Worker-Thread uebersetzen (Sprachtabelle des Excel-Programms)  # v1.19
+                        # fw_texts = {"download": M09.Get_Language_Str("Firmware laden")}  # v1.19 (entfallen)
+            fw_texts = {"download": M09.Get_Language_Str("Firmware herunterladen")}  # v1.21
+
+            async def download():  # v1.19: Dialog Firmware Herunterladen (Liste von GitHub, Download, Entpacken)
+                return await WFD.firmware_download_async(folder, download_texts, HFD.language_code(current_language()))  # v1.19
+
+            def rescan():  # v1.19: den Ordner nach dem Herunterladen neu einlesen
+                return HP.scan_firmware(folder, lang_id)  # v1.19
+            # path = wd.call_in_loop(WFF.firmware_async, groups, folder, default=None)  # v1.09 (entfallen)
+            path = wd.call_in_loop(WFF.firmware_async, groups, folder, download, rescan, fw_texts, default=None)  # v1.19
             if not path:  # v1.09
                 return  # v1.09
             try:  # v1.09

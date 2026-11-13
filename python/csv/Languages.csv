@@ -1,4 +1,5 @@
-﻿;;"Attention: Spelling errors in the German text must be corrected here AND in the program ! Otherwise the text is not recognized the next time ;-(";"Leading and tailing space characters are importand. Also make sure that qouotes are placed correctly at the beginning or end of a message.
+﻿;;"Press Ctrl+Shift+T to translate the marked cells
+Attention: Spelling errors in the German text must be corrected here AND in the program ! Otherwise the text is not recognized the next time ;-(";"Leading and tailing space characters are importand. Also make sure that qouotes are placed correctly at the beginning or end of a message.
 The '|' is used to mark a new line.";"Version 0.96 by Misha (English, Dutch, French)
 Translated with Goolgle!";"Translated with Goolgle!
 Not checked";"Translated with Goolgle!
@@ -596,6 +597,7 @@ DialogBox;;"* = Unveränderbare Farben|
 DialogBox;;Optionen und Spezielle Funktionen;Options and special functions;Opties en speciale functies;Options et fonctions spéciales;Options and special functions;Options and special functions;Valgmuligheder og specielle funktioner
 DialogBox;;Prog. Installieren;Prog. Install;Installeer het programma;Installation programme.;Prog. Install;Prog. Install;Prog. Installere
 DialogBox;;USB Port erkennen;Detect USB port;USB-poort detecteren;Détecter le port USB;Detect USB port;Detect USB port;Registrer USB-port
+DialogBox;;Firmware laden;Load firmware;Firmware laden;Charger le micrologiciel;Carica firmware;Cargar firmware;Indlæs firmware
 DialogBox;;Version lesen;Read version;Lees versie;Lire la version;Read version;Read version;Læs version
 DialogBox;;Arduino Typ;Arduino type;Arduino type;Type Arduino;Arduino type;Arduino type;Arduino type
 DialogBox;;LED Arduino;LED Arduino;LED Arduino;LED Arduino;LED Arduino;LED Arduino;LED Arduino
@@ -881,17 +883,26 @@ VBA;M03_Dialog 122;Bitposition eingeben;Enter bit position;Voer bitpositie in;En
 VBA;M03_Dialog 152;Falsche Eingabe. Die Bitposition muss zwischen 1 und 8 liegen. ;Wrong entry. The bit position must be between 1 and 8.;Verkeerde invoer. De bitpositie moet tussen 1 en 8 liggen.;Mauvaise entrée. La position du bit doit être comprise entre 1 et 8.;Wrong entry. The bit position must be between 1 and 8.;Wrong entry. The bit position must be between 1 and 8.;Forkert indrejse. Bitpositionen skal være mellem 1 og 8.
 VBA;M03_Dialog 152;"Startwert des Eingangs eingeben|
 |
-Der Startwert bestimmt das Verhalten nach dem Einschalten in Verbindung mit DCC, CAN oder Selectrix. |
+Der Startwert bestimmt das Verhalten nach dem Einschalten in Verbindung mit DCC, LNet, CAN oder Selectrix. |
 Normalerweise sind die Funktionen beim Start deaktiviert. Erst wenn der erste ";"Enter the start value of the input |
 |
-The start value determines the behavior after switching on in connection with DCC, CAN or Selectrix. |
-Normally the functions are deactivated at the start. Only when the first ";"Voer de startwaarde van de ingang in |
-|
-De startwaarde bepaalt het gedrag na het inschakelen in combinatie met DCC, CAN of Selectrix. |
-Normaal zijn de functies bij de start gedeactiveerd. Alleen als het eerste ";"Entrer la valeur de départ de l'entrée |
-|
-La valeur de départ détermine le comportement après la mise en marche en liaison avec DCC, CAN ou Selectrix. |
-Normalement, les fonctions sont désactivées au démarrage. Seulement lorsque le premier ";"Enter the start value of the input The start value determines the behavior after switching on in connection with DCC, CAN or Selectrix. Normally the functions are deactivated at the start. Only when the first ";"Enter the start value of the input The start value determines the behavior after switching on in connection with DCC, CAN or Selectrix. Normally the functions are deactivated at the start. Only when the first ";Indtast startværdien for input || Startværdien bestemmer opførslen efter tænding i forbindelse med DCC, CAN eller Selectrix. | Normalt deaktiveres funktionerne ved starten. Kun når den første
+The start value determines the behavior after switching on in connection with DCC, LNet, CAN or Selectrix. |
+Normally the functions are deactivated at the start. Only when the first ";"Voer de startwaarde van de invoer | in 
+ | 
+ De startwaarde bepaalt het gedrag na het inschakelen in combinatie met DCC, LNet, CAN of Selectrix. | 
+ Normaal gesproken zijn de functies bij de start gedeactiveerd. Alleen wanneer de eerste";"Entrez la valeur de départ de l'entrée | 
+ | 
+ La valeur de démarrage détermine le comportement après la mise sous tension en liaison avec DCC, LNet, CAN ou Selectrix. | 
+ Normalement les fonctions sont désactivées au démarrage. Ce n'est que lorsque le premier";"Immettere il valore iniziale dell'input | 
+ | 
+ Il valore iniziale determina il comportamento dopo l'accensione in connessione con DCC, LNet, CAN o Selectrix. | 
+ Normalmente le funzioni sono disattivate all'avvio. Solo quando il primo";"Introduzca el valor inicial de la entrada | 
+ | 
+ El valor inicial determina el comportamiento tras el encendido en conexión con DCC, LNet, CAN o Selectrix. | 
+ Normalmente las funciones están desactivadas al inicio. Sólo cuando el primero";"Indtast startværdien for input | 
+ | 
+ Startværdien bestemmer adfærden efter tænding i forbindelse med DCC, LNet, CAN eller Selectrix. | 
+ Normalt er funktionerne deaktiveret ved starten. Først når den første"
 VBA;M03_Dialog 158;" Einschaltbefehl von der Zentrale kommt wird die Zeile aktiviert. |
 Wenn eine bestimmte Funktion bereits beim Einschalten der Anlage einen definierten Wert haben soll kann das über den Startwert vorgegeben werden. Die meisten Funktionen haben einen Eingang mit dem sie Ein- oder Ausgeschaltet werden. Hier wird eine 1 zum Einschalten angegeben.|
 Bei Funktionen mit mehreren Eingängen (z.B. Signale) ist der Wert ist Bitkodiert. Hier wird der erste Eingang mit einer 1, zweite Eingang mit einer 2 und der dritte Eingang mit einer 4 aktiviert.|
@@ -924,7 +935,7 @@ VBA;M06_Write_Headder 280;Fehler: Eintrag ';Error: entry ';Fout: invoer ';Erreur
 VBA;M06_Write_Headder 280;' in InCnt Spalte ist ungültig; in InCnt column is invalid;InCnt-kolom is ongeldig;La colonne InCnt n'est pas valide; in InCnt column is invalid; in InCnt column is invalid; i kolonnen InCnt er ugyldig
 VBA;M06_Write_Headder 311;Falscher InCnt Eintrag;Wrong InCnt entry;Onjuiste invoer;Entrée InCnt incorrecte;Wrong InCnt entry;Wrong InCnt entry;Forkert InCnt-post
 VBA;M06_Write_Headder 311;Die Ausgewählte Funktion in Zeile ;The selected function in line;De geselecteerde functie in de rij;La fonction sélectionnée en ligne;The selected function in line;The selected function in line;Den valgte funktion i linje
-VBA;M06_Write_Headder 311; ist immer aktiv und kann nicht über DCC oder CAN geschaltet werden.; is always active and cannot be switched via DCC or CAN.; is altijd actief en kan niet worden geschakeld via DCC of CAN.; est toujours actif et ne peut pas être commuté via DCC ou CAN.; is always active and cannot be switched via DCC or CAN.; is always active and cannot be switched via DCC or CAN.;er altid aktiv og kan ikke skiftes via DCC eller CAN.
+VBA;M06_Write_Headder 311; ist immer aktiv und kann nicht über DCC, LNet oder CAN geschaltet werden.;is always active and cannot be switched via DCC, LNet or CAN.;is altijd actief en kan niet worden geschakeld via DCC, LNet of CAN.;est toujours actif et ne peut pas être commuté via DCC, LNet ou CAN.;è sempre attivo e non può essere commutato tramite DCC, LNet o CAN.;siempre está activo y no se puede conmutar a través de DCC, LNet o CAN.;er altid aktiv og kan ikke skiftes via DCC, LNet eller CAN.
 VBA;M06_Write_Headder 357; ist ungültig.; is invalid.; is ongeldig.; n'est pas valide.; is invalid.; is invalid.;er ugyldig.
 VBA;M06_Write_Headder 357;Maximale LED Anzahl überschritten: ;Maximum number of LEDs exceeded:;Maximaal aantal LED's overschreden:;Nombre maximum de LED dépassé:;Maximum number of LEDs exceeded:;Maximum number of LEDs exceeded:;Maksimum antal LED'er overskredet:
 VBA;M06_Write_Headder 361;Es sind maximal #1# RGB LEDs möglich;A maximum of #1# RGB LEDs are possible;Er zijn maximaal #1# RGB-leds mogelijk;Un maximum de #1# LED RVB est possible;È possibile un massimo di #1# RGB LED;Es posible un máximo de #1# LED RGB;Maksimalt #1# RGB LED'er er mulige
@@ -932,10 +943,10 @@ VBA;M06_Write_Headder 409;Ein neues Header file wurde nicht generiert!;A new hea
 VBA;M06_Write_Headder 410;Es sind Fehler aufgetreten;An error has occurred;Er zijn fouten opgetreden;Des erreurs sont survenues;An error has occurred;An error has occurred;Der opstod en fejl
 VBA;M06_Write_Headder 414;"Fehler: Die Anzahl der verwendeten Eingangskanäle ist zu groß!|
 Es sind maximal 250 verfügbar. Die Konfiguration enthält aber ";Error: The number of input channels used is too large! |A maximum of 250 are available. However, the configuration contains;Fout: het aantal gebruikte ingangskanalen is te groot! |Maximaal 250 zijn beschikbaar. De configuratie bevat echter;Erreur: le nombre de canaux d'entrée utilisés est trop important! |Un maximum de 250 sont disponibles. Cependant, la configuration contient;Error: The number of input channels used is too large! |A maximum of 250 are available. However, the configuration contains;Error: The number of input channels used is too large! |A maximum of 250 are available. However, the configuration contains;Fejl: Antallet af anvendte inputkanaler er for stort! | Højst 250 er tilgængelige. Konfigurationen indeholder dog
-VBA;M06_Write_Headder 414;"Die Eingangskanäle werden zum einlesen von DCC, Selectrix und CAN Daten benutzt. |
-Außerdem werden sie als interne Zwischenspeicher benötigt.";"The input channels are used to read DCC, Selectrix and CAN data. |
-They are also required as internal buffers.";"De ingangskanalen worden gebruikt om DCC-, Selectrix- en CAN-gegevens te lezen. |
-Ze zijn ook vereist als interne buffers.";"Les canaux d'entrée sont utilisés pour lire les données DCC, Selectrix et CAN. |
+VBA;M06_Write_Headder 414;"Die Eingangskanäle werden zum Einlesen von DCC, LNet, Selectrix und CAN Daten benutzt. |
+Außerdem werden sie als interne Zwischenspeicher benötigt.";"The input channels are used to read in DCC, LNet, Selectrix and CAN data. | 
+ They are also required as internal buffers.";"De ingangskanalen worden gebruikt voor het inlezen van DCC-, LNet-, Selectrix- en CAN-gegevens. | 
+ Ze zijn ook vereist als interne buffers.";"Les canaux d'entrée sont utilisés pour lire les données DCC, Selectrix et CAN. |
 Ils sont également requis comme tampons internes.";"The input channels are used to read DCC, Selectrix and CAN data. They are also required as internal buffers.";"The input channels are used to read DCC, Selectrix and CAN data. They are also required as internal buffers.";Indgangskanalerne bruges til at læse DCC-, Selectrix- og CAN-data. | De kræves også som interne buffere.
 VBA;M06_Write_Headder 428;Anzahl der InCh Variablen überschritten;Number of InCh variables exceeded;Aantal InCh-variabelen overschreden;Nombre de variables InCh dépassé;Number of InCh variables exceeded;Number of InCh variables exceeded;Antallet af InCh-variabler overskredet
 VBA;M06_Write_Headder 431;"Fehler auf der 'Config' Seite:|
@@ -957,7 +968,7 @@ VBA;M06_Write_Headder 497;Achtung: Die Konfiguration ist leer;Attention: The con
 VBA;M06_Write_Headder 583;: Header Datei ';: Header file ';: Header bestand ';: Fichier d'en-tête ';: Header file ';: Header file ';: Header-fil '
 VBA;M06_Write_Headder 583;' wurde erzeugt;' was created;' is gemaakt;' a été créé; was created; was created; var lavet
 VBA;M06_Write_Headder 587;Fehler beim Schreiben der Datei ';Error writing file ';Fout bij het schrijven van bestand ';"Erreur lors de l'écriture du fichier """;Error writing file ';Error writing file ';Fejl ved skrivning af fil '
-VBA;M06_Write_Headder 587;Fehler beim Erzeugen der Arduino Header Datei;Error generating the Arduino Header file;Fout bij het maken van het Arduino Header-bestand;Erreur lors de la création du fichier Arduino Header;Error creating the Arduino Header file;Error creating the Arduino Header file;Fejl ved oprettelse af filen Arduino Header
+VBA;M06_Write_Headder 587;Fehler beim Erzeugen der MobaLedLib Header Datei;Error generating the MobaLedLib Header file;Fout bij het maken van het MobaLedLib Header-bestand;Erreur lors de la création du fichier MobaLedLib Header;Error creating the MobaLedLib Header file;Error creating the MobaLedLib Header file;Fejl ved oprettelse af filen MobaLedLib Header
 VBA;M06_Write_Headder 599;"Fehler: Das Abfragen der COM Ports ist fehlgeschlagen ;-(";"Error: The query of the COM ports failed ;-(";"Fout: de zoekopdracht van de COM-poorten is mislukt ;-(";"Erreur: la requête des ports COM a échoué ;-(";"Error: The query of the COM ports failed ;-(";"Error: The query of the COM ports failed ;-(";"Fejl: Forespørgslen om COM-porte mislykkedes ;-("
 VBA;M06_Write_Headder 599;Fehler beim abfragen der COM Ports;Error querying the COM ports;Fout bij het opvragen van de COM-poorten;Erreur lors de l'interrogation des ports COM;Error querying the COM ports;Error querying the COM ports;Fejl ved forespørgsel om COM-porte
 VBA;M07_COM_Port 31;rechte;right;rechts;droit;right;right;højre
@@ -1151,7 +1162,7 @@ VBA;M08_Aruino 171;"verwendet.                               """;"           use
 VBA;M08_Aruino;"Achtung: Es wird nur ein ESP32           """;"Attention: Only one ESP32                """;"Let op: slechts één ESP32                 """;"Attention: un seul ESP32                 """;"Attenzione: solo un ESP32                """;"Atención: solo un ESP32                  """;"OBS: Kun en ESP32                        """
 VBA;M08_Aruino;"         Modul verwendet.                """;"           Module used.                  """;"        Module gebruikt.                  """;"           Module utilisé.               """;"            Modulo utilizzato.           """;"           Módulo utilizado.             """;"     brugt modul.                        """
 VBA;M08_Aruino 172;"Da ist was schief gegangen ;-(";"Something went wrong ;-(";"Er is iets misgegaan ;-(";"Quelque chose a mal tourné ;-(";"Something went wrong ;-(";"Something went wrong ;-(";"Noget gik galt ;-("
-VBA;M08_Aruino 173;Fehler beim erzeugen der Arduino Start Datei;Error creating the Arduino start file;Fout bij het maken van het Arduino-startbestand;Erreur lors de la création du fichier de démarrage Arduino;Error creating the Arduino start file;Error creating the Arduino start file;Fejl ved oprettelse af Arduino-startfilen
+VBA;M08_Aruino 173;Fehler beim Erzeugen der Arduino Start Datei;Error creating the Arduino start file;Fout bij het maken van het Arduino-startbestand;Erreur lors de la création du fichier de démarrage Arduino;Error creating the Arduino start file;Error creating the Arduino start file;Fejl ved oprettelse af Arduino-startfilen
 VBA;M08_Aruino 196;Fehler das Programm ;Error in the program ;Fout in het programma ;Erreur dans le programme ;Error in the program ;Error in the program ;Fejl i programmet
 VBA;M08_Aruino 207; ist nicht vorhanden in: ; is not available in:; is niet beschikbaar in:; n'est pas disponible en:; is not available in:; is not available in:;er ikke tilgængelig i:
 VBA;M08_Aruino 238;Fehler Ino-Programm nicht vorhanden;Ino program error not present;Geen Ino programmafout aanwezig;Erreur de programme ino non présente;Ino program error not present;Ino program error not present;Ino-programfejl ikke til stede
@@ -1163,26 +1174,26 @@ VBA;M08_Aruino 249;"Es ist ein Fehler aufgetreten ;-(|
 Zur Fehlersuche kann man die letzten Änderungen wieder rückgängig machen und es noch mal versuchen. |
 |
 Kommunikationsprobleme erkennt man an dieser Meldung: |
-   avrdude: ser_open(): can't open device ""\\.\";"An error has occurred ;-( |
+   avrdude: ser_open(): can't open device ""\\.\COM";"An error has occurred ;-( |
 |
 For troubleshooting you can undo the last changes and try again. |
 |
 Communication problems can be recognized by this message: |
-   avrdude: ser_open (): can't open device ""\\ . \ ";"Er is een fout opgetreden ;-( |
+   avrdude: ser_open (): can't open device ""\\ . \ COM";"Er is een fout opgetreden ;-( |
 |
 Voor het oplossen van problemen kunt u de laatste wijzigingen ongedaan maken en het opnieuw proberen. |
 |
 Communicatieproblemen zijn te herkennen aan dit bericht: |
-   avrdude: ser_open (): kan apparaat niet openen ""\\ . \ ";"Une erreur s'est produite ;-( |
+   avrdude: ser_open (): kan apparaat niet openen ""\\ . \ COM";"Une erreur s'est produite ;-( |
 |
 Pour le dépannage, vous pouvez annuler les dernières modifications et réessayer. |
 |
 Les problèmes de communication peuvent être reconnus par ce message: |
-avrdude: ser_open (): impossible d'ouvrir le périphérique ""\\ . \ ";"An error has occurred ;-( For troubleshooting you can undo the last changes and try again. Communication problems can be recognized by this message:    avrdude: ser_open (): can't open device ""\\ . \ ";"An error has occurred ;-( For troubleshooting you can undo the last changes and try again. Communication problems can be recognized by this message:    avrdude: ser_open (): can't open device ""\\ . \ ";"Der opstod en fejl ;-( || Ved fejlfinding kan du fortryde de sidste ændringer og prøve igen. || Kommunikationsproblemer kan genkendes af denne meddelelse: | avrdude: ser_open (): kan ikke åbne enheden ""\\. \ COM"
+avrdude: ser_open (): impossible d'ouvrir le périphérique ""\\ . \ COM";"An error has occurred ;-( For troubleshooting you can undo the last changes and try again. Communication problems can be recognized by this message:    avrdude: ser_open (): can't open device ""\\ . \ COM";"An error has occurred ;-( For troubleshooting you can undo the last changes and try again. Communication problems can be recognized by this message:    avrdude: ser_open (): can't open device ""\\ . \ COM";"Der opstod en fejl ;-( || Ved fejlfinding kan du fortryde de sidste ændringer og prøve igen. || Kommunikationsproblemer kan genkendes af denne meddelelse: | avrdude: ser_open (): kan ikke åbne enheden ""\\. \ COM"
 VBA;M08_Aruino 250;"   Das System kann die angegebene Datei nicht finden.|
 In diesem Fall müssen die Verbindungen überprüft und der Arduino durch einen neuen ersetzt werden.|
 |
-Der Fehler kann auch auftreten wenn der DCC/Selextrix Arduino noch nicht programmiert wurde.|
+Der Fehler kann auch auftreten wenn der DCC/LNet/Selextrix Arduino noch nicht programmiert wurde.|
 Am besten man steckt den rechten Arduino erst dann ein wenn er benötigt wird.|
 |
 Wenn der Fehler nicht zu finden ist und immer wieder auftritt, dann kann ein Screenshot des vorangegangenen Bildschirms (Nach oben scrollen so dass die erste Meldung nach dem Arduino Bild zu sehen ist) zusammen mit dem Excel Programm und einer ausführlichen Beschreibung an |
@@ -1190,50 +1201,50 @@ Wenn der Fehler nicht zu finden ist und immer wieder auftritt, dann kann ein Scr
 geschickt werden.";"   The system cannot find the file specified. | 
  In this case, the connections must be checked and the Arduino replaced with a new one. | 
  | 
- The error can also occur if the DCC / Selextrix Arduino has not yet been programmed. | 
+ The error can also occur if the DCC/LNet/Selextrix Arduino has not yet been programmed. | 
  It is best to only plug in the right Arduino when it is needed. | 
  | 
  If the error cannot be found and occurs again and again, a screenshot of the previous screen (scroll up so that the first message can be seen after the Arduino picture) can be sent to | 
  https://forum.mobaledlib.de | 
- will be sent.";"   Het systeem kan het gespecificeerde bestand niet vinden. | 
- In dit geval moeten de verbindingen worden gecontroleerd en moet de Arduino worden vervangen door een nieuwe. | 
+ will be sent.";"Het systeem kan het gespecificeerde bestand niet vinden. | 
+ In dit geval moeten de verbindingen worden gecontroleerd en de Arduino worden vervangen door een nieuwe. | 
  | 
- De fout kan ook optreden als de DCC / Selextrix Arduino nog niet is geprogrammeerd. | 
- U kunt het beste alleen de juiste Arduino aansluiten als dat nodig is. | 
+ De fout kan ook optreden als de DCC/LNet/Selextrix Arduino nog niet is geprogrammeerd. | 
+ Het beste is om alleen de juiste Arduino aan te sluiten wanneer deze nodig is. | 
  | 
- Als de fout niet kan worden gevonden en keer op keer optreedt, kan een screenshot van het vorige scherm (scroll omhoog zodat het eerste bericht na de Arduino-afbeelding te zien is) naar | 
+ Als de fout niet kan worden gevonden en steeds weer voorkomt, kan een screenshot van het vorige scherm (scroll omhoog zodat het eerste bericht zichtbaar is na de Arduino-afbeelding) naar | 
  https://forum.mobaledlib.de | 
- wordt verzonden.";"   Le système ne peut pas trouver le fichier spécifié. | 
+ wordt verzonden.";"Le système ne peut pas trouver le fichier spécifié. | 
  Dans ce cas, les connexions doivent être vérifiées et l'Arduino remplacé par un nouveau. | 
  | 
- L'erreur peut également survenir si le DCC / Selextrix Arduino n'a pas encore été programmé. | 
+ L'erreur peut également se produire si l'Arduino DCC/LNet/Selextrix n'a pas encore été programmé. | 
  Il est préférable de ne brancher le bon Arduino que lorsque cela est nécessaire. | 
  | 
- Si l'erreur ne peut pas être trouvée et se reproduit encore et encore, une capture d'écran de l'écran précédent (faites défiler vers le haut pour que le premier message puisse être vu après l'image Arduino) peut être envoyée à | 
+ Si l'erreur est introuvable et se reproduit encore et encore, une capture d'écran de l'écran précédent %28fait défiler vers le haut afin que le premier message puisse être vu après que l'image Arduino%29 puisse être envoyée à | 
  https://forum.mobaledlib.de | 
- sera envoyé.";"   Il sistema non trova il file specificato. | 
- In questo caso è necessario controllare i collegamenti e sostituire l'Arduino con uno nuovo. | 
+ sera envoyé.";"Il sistema non trova il file specificato. | 
+ In questo caso bisogna verificare le connessioni e sostituire Arduino con uno nuovo. | 
  | 
- L'errore può verificarsi anche se il DCC / Selextrix Arduino non è stato ancora programmato. | 
+ L'errore può verificarsi anche se la DCC/LNet/Selextrix Arduino non è stata ancora programmata. | 
  È meglio collegare l'Arduino giusto solo quando è necessario. | 
  | 
- Se l'errore non può essere trovato e si verifica ancora e ancora, è possibile inviare uno screenshot della schermata precedente (scorrere verso l'alto in modo che il primo messaggio possa essere visto dopo l'immagine di Arduino) può essere inviato a | 
- https://forum.mobaledlib.de | 
- verrà inviato.";"   El sistema no puede encontrar el archivo especificado. | 
- En este caso, las conexiones deben ser verificadas y el Arduino reemplazado por uno nuevo. | 
+ Se l'errore non può essere trovato e si verifica ancora e ancora, uno screenshot della schermata precedente %28scorrere verso l'alto in modo che il primo messaggio possa essere visto dopo l'immagine Arduino%29 possa essere inviato a | 
+ https://forum.mobaledlib.de | Verrà inviato 
+.";"El sistema no puede encontrar el archivo especificado. | 
+ En este caso, se deben revisar las conexiones y reemplazar el Arduino por uno nuevo. | 
  | 
- El error también puede ocurrir si el DCC / Selextrix Arduino aún no ha sido programado. | 
- Es mejor conectar solo el Arduino correcto cuando sea necesario. | 
+ El error también puede ocurrir si el Arduino DCC/LNet/Selextrix aún no ha sido programado. | 
+ Lo mejor es enchufar el Arduino correcto solo cuando sea necesario. | 
  | 
- Si no se puede encontrar el error y se repite una y otra vez, se puede enviar una captura de pantalla de la pantalla anterior (desplácese hacia arriba para que se pueda ver el primer mensaje después de la imagen de Arduino) a | 
+ Si no se puede encontrar el error y ocurre una y otra vez, se puede enviar una captura de pantalla de la pantalla anterior %28 para que se pueda ver el primer mensaje después de la imagen de Arduino%29 a | 
  https://forum.mobaledlib.de | Se enviará 
-.";"   Systemet kan ikke finde den angivne fil. | 
- I dette tilfælde skal forbindelserne kontrolleres, og Arduino udskiftes med en ny. | 
+.";"Systemet kan ikke finde den angivne fil. | 
+ I dette tilfælde skal forbindelserne kontrolleres og Arduino udskiftes med en ny. | 
  | 
- Fejlen kan også opstå, hvis DCC / Selextrix Arduino endnu ikke er programmeret. | 
+ Fejlen kan også opstå, hvis DCC/LNet/Selextrix Arduino endnu ikke er blevet programmeret. | 
  Det er bedst kun at tilslutte den rigtige Arduino, når det er nødvendigt. | 
  | 
- Hvis fejlen ikke kan findes og opstår igen og igen, kan et screenshot af det forrige skærmbillede (rul op, så den første besked kan ses efter Arduino-billedet) sendes til | 
+ Hvis fejlen ikke kan findes og opstår igen og igen, skal et skærmbillede af den forrige skærm %28rulle op, så den første besked kan ses efter Arduino-billedet%29 kan sendes til | 
  https://forum.mobaledlib.de | 
  vil blive sendt."
 VBA;M08_Aruino 259;Fehler beim Hochladen des Programms;Program upload failed;Programma-upload mislukt;Échec du téléchargement du programme;Program upload failed;Program upload failed;Programoverføringen mislykkedes
@@ -1545,10 +1556,10 @@ VBA;M30_Tools 370;existiert nicht im Standard Verzeichnis:;does not exist in the
 VBA;M50_Exchange 104; nicht vorhanden; unavailable; niet beschikbaar; non disponible; unavailable; unavailable;utilgængelig
 VBA;M50_Exchange 105;Fehler beim Wechsel in das Verzeichnis:;Error when changing to the directory:;Fout bij het veranderen van de map:;Erreur lors du changement de répertoire:;Error when changing to the directory:;Error when changing to the directory:;Fejl ved ændring til biblioteket:
 VBA;M50_Exchange 106;Fehler beim Start der Farbauswahl;Error starting color picker;Fout bij starten van kleurkiezer;Erreur lors du démarrage du sélecteur de couleurs;Error starting color picker;Error starting color picker;Fejl ved start af farvevælger
-VBA;M60_CheckColors 129;Fehler beim erzeugen der Disconnect Datei:;Error creating the Disconnect file:;Fout bij het maken van het bestand Verbinding verbreken:;Erreur lors de la création du fichier de déconnexion:;Error creating the Disconnect file:;Error creating the Disconnect file:;Fejl ved oprettelse af Disconnect-filen:
-VBA;M60_CheckColors 130;Fehler beim trennen der Verbindung zum Arduino;Failed to disconnect the Arduino;Kan de Arduino niet ontkoppelen;Impossible de déconnecter l'Arduino;Failed to disconnect the Arduino;Failed to disconnect the Arduino;Kunne ikke frakoble Arduino
-VBA;M60_CheckColors 170;Fehler beim erzeugen der Close Datei:;Error creating the close file:;Fout bij het sluiten van het bestand:;Erreur lors de la création fermeture du fichier:;Error creating the close file:;Error creating the close file:;Fejl ved oprettelse af den lukke fil:
-VBA;M60_CheckColors 171;Fehler beim beenden des Farbtest Programms;Error ending the color test program;Fout bij het beëindigen van het kleurentestprogramma;Erreur lors de la fin du programme de test des couleurs;Error ending the color test program;Error ending the color test program;Fejl ved afslutning af farvetestprogrammet
+VBA;M60_CheckColors 129;Fehler beim Erzeugen der Disconnect Datei:;Error creating the Disconnect file:;Fout bij het maken van het bestand Verbinding verbreken:;Erreur lors de la création du fichier de déconnexion:;Error creating the Disconnect file:;Error creating the Disconnect file:;Fejl ved oprettelse af Disconnect-filen:
+VBA;M60_CheckColors 130;Fehler beim Trennen der Verbindung zum Arduino;Failed to disconnect the Arduino;Kan de Arduino niet ontkoppelen;Impossible de déconnecter l'Arduino;Failed to disconnect the Arduino;Failed to disconnect the Arduino;Kunne ikke frakoble Arduino
+VBA;M60_CheckColors 170;Fehler beim Erzeugen der Close Datei:;Error creating the close file:;Fout bij het sluiten van het bestand:;Erreur lors de la création fermeture du fichier:;Error creating the close file:;Error creating the close file:;Fejl ved oprettelse af den lukke fil:
+VBA;M60_CheckColors 171;Fehler beim Beenden des Farbtest Programms;Error ending the color test program;Fout bij het beëindigen van het kleurentestprogramma;Erreur lors de la fin du programme de test des couleurs;Error ending the color test program;Error ending the color test program;Fejl ved afslutning af farvetestprogrammet
 VBA;M60_CheckColors 187;Fehler beim Schreiben der Parameter Datei:;Error writing the parameter file:;Fout bij het schrijven van het parameterbestand:;Erreur lors de l'écriture du fichier de paramètres:;Error writing the parameter file:;Error writing the parameter file:;Fejl ved skrivning af parameterfilen:
 VBA;M60_CheckColors 188;Fehler beim Schreiben der Parameter Datei;Error writing the parameter file;Fout bij het schrijven van het parameterbestand;Erreur lors de l'écriture du fichier de paramètres;Error writing the parameter file;Error writing the parameter file;Fejl ved skrivning af parameterfilen
 VBA;M60_CheckColors 287;Fehler beim Lesen der Datei:;Error reading file:;Fout bij het lezen van het bestand:;Erreur de lecture du fichier:;Error reading file:;Error reading file:;Fejl ved læsning af fil:
@@ -1649,24 +1660,10 @@ VBA;UserForm_House 177;RGB LED Kanäle: ;RGB LED channels:;RGB LED-kanalen:;Cana
 VBA;UserForm_House 252;Es können keine weiteren Räume hinzugefügt werden;No more rooms can be added;Er kunnen geen kamers meer worden toegevoegd;Plus aucune pièce ne peut être ajoutée;No more rooms can be added;No more rooms can be added;Der kan ikke tilføjes flere værelser
 VBA;UserForm_House 253;Maximale Raumanzahl erreicht;Maximum number of rooms reached;Maximaal aantal kamers bereikt;Nombre maximum de chambres atteint;Maximum number of rooms reached;Maximum number of rooms reached;Maksimalt antal værelser nået
 VBA;UserForm_House 582;Gaslights: Die Gaslaternen werden zufällig, nacheinander aktiviert. Sie erreichen erst nach einiger Zeit die volle Helligkeit und flackern manchmal.;Gaslights: The gas lanterns are activated randomly, one after the other. They only reach full brightness after some time and sometimes flicker.;Gaslichten: De gaslantaarns worden willekeurig na elkaar geactiveerd. Ze bereiken pas na enige tijd de volledige helderheid en flikkeren soms.;Lampes à gaz: Les réverbères à gaz sont activés au hasard, l'une après l'autre. Ils n'atteignent leur pleine luminosité qu'après un certain temps et scintillent parfois.;Gaslights: The gas lanterns are activated randomly, one after the other. They only reach full brightness after some time and sometimes flicker.;Gaslights: The gas lanterns are activated randomly, one after the other. They only reach full brightness after some time and sometimes flicker.;Gaslygter: Gaslyktterne aktiveres tilfældigt, den ene efter den anden. De når kun fuld lysstyrke efter et stykke tid og flimrer nogle gange.
-VBA;UserForm_House 582;Straßenlaternen sind ein wichtiger Bestandteil einer virtuellen Stadt. Sie beleuchten die nächtlichen Straßen und erzeugen eine warme Atmosphäre insbesondere, wenn es sich um Gaslaternen handelt. Die Lampen gehen zufällig an und werden dann langsam heller bis sie die volle Helligkeit erreichen. Außerdem ist noch ein zufälliges Flackern implementiert welches durch Schwankungen im Gasdruck oder durch Windböen entstehen kann.;Street lights are an important part of a virtual city. They illuminate the night streets and create a warm atmosphere, especially when it comes to gas lamps. The lamps come on randomly and then slowly become brighter until they reach full brightness. In addition, a random flickering is implemented which can be caused by fluctuations in the gas pressure or by wind gusts.;Straatverlichting is een belangrijk onderdeel van een virtuele stad. Ze verlichten de nachtstraten en creëren een warme sfeer, vooral als het gaat om gaslampen. De lampen gaan willekeurig aan en worden dan langzaam helderder totdat ze de volledige helderheid bereiken. Bovendien wordt een willekeurig flikkeren geïmplementeerd dat kan worden veroorzaakt door schommelingen in de gasdruk of door windvlagen.;Les réverbères sont important dans une ville virtuelle. Ils illuminent les rues sombres et créent une atmosphère chaleureuse, surtout lorsqu'il s'agit de lampes à gaz. Les lampes s'allument de façon aléatoire en devenant progressivement plus lumineuses jusqu'à un éclairage maximum. De plus, un scintillement aléatoire est mis en œuvre qui est du à des fluctuations de la pression du gaz ou par des rafales de vent.;Street lights are an important part of a virtual city. They illuminate the night streets and create a warm atmosphere, especially when it comes to gas lamps. The lamps come on randomly and then slowly become brighter until they reach full brightness. In addition, a random flickering is implemented which can be caused by fluctuations in the gas pressure or by wind gusts.;Street lights are an important part of a virtual city. They illuminate the night streets and create a warm atmosphere, especially when it comes to gas lamps. The lamps come on randomly and then slowly become brighter until they reach full brightness. In addition, a random flickering is implemented which can be caused by fluctuations in the gas pressure or by wind gusts.;Gadelys er en vigtig del af en virtuel by. De oplyser natgader og skaber en varm atmosfære, især når det kommer til gaslamper. Lamperne tændes tilfældigt og bliver derefter langsomt lysere, indtil de når fuld lysstyrke. Derudover implementeres en tilfældig flimring, der kan være forårsaget af udsving i gastrykket eller af vindkast.
-VBA;UserForm_House 635;"Öffnet das Profil von Hardi im Stummi Forum.|
-|
-Dort findet man, wenn man im Forum angemeldet ist, einen Link zur Email Adresse des Autors zum senden einer E-Mail oder PN.|
-|
-Alternativ kann auch eine Mail an 'https://forum.mobaledlib.de' geschickt werden wenn es Fragen oder Anregungen zu dem Programm oder zur MobaLedLib gibt.";"Opens the profile of Hardi in the Stummi forum. |
-|
-There you can find a link to the email address of the author if you are logged in to the forum to send him an email or PM. |
-|
-Alternatively you can also send an email to 'https://forum.mobaledlib.de' if there are any questions or suggestions about the program or the MobaLedLib.";"Opent het profiel van Hardi in het Stummi-forum. |
-|
-Daar vindt u een link naar het e-mailadres van de auteur als u bent ingelogd op het forum of u kunt hem een ​​e-mail of PM sturen. |
-|
-Als alternatief kunt u ook een e-mail sturen naar 'https://forum.mobaledlib.de' als er vragen of suggesties zijn over het programma of MobaLedLib.";"Ouvre le profil de Hardi dans le forum Stummi. |
-|
-Vous pouvez y trouver un lien vers l'adresse e-mail de l'auteur si vous êtes connecté au forum ou vous pouvez lui envoyer un e-mail ou un MP. |
-|Sinon, vous pouvez également envoyer un e-mail à 'https://forum.mobaledlib.de' pour toute question ou suggestion concernant le programme ou le MobaLedLib.";"Opens the profile of Hardi in the Stummi forum. There you can find a link to the email address of the author if you are logged in to the forum to send him an email or PM. Alternatively you can also send an email to 'https://forum.mobaledlib.de' if there are any questions or suggestions about the program or the MobaLedLib.";"Opens the profile of Hardi in the Stummi forum. There you can find a link to the email address of the author if you are logged in to the forum to send him an email or PM. Alternatively you can also send an email to 'https://forum.mobaledlib.de' if there are any questions or suggestions about the program or the MobaLedLib.";Åbner profilen af ​​Hardi i Stummi-forummet. || Der kan du finde et link til forfatterens e-mail-adresse, hvis du er logget ind på forummet for at sende ham en e-mail eller PM. || Alternativt kan du også sende en e-mail til 'https://forum.mobaledlib.de', hvis der er spørgsmål eller forslag til programmet eller MobaLedLib.
-VBA;UserForm_House 637;Profil des Autors öffnen;Open the author's profile;Open het profiel van de auteur;Ouvrez le profil de l'auteur;Open the author's profile;Open the author's profile;Åbn forfatterens profil
+VBA;UserForm_House 582;Straßenlaternen sind ein wichtiger Bestandteil einer virtuellen Stadt. Sie beleuchten die nächtlichen Straßen und erzeugen eine warme Atmosphäre insbesondere, wenn es sich um Gaslaternen handelt. Die Lampen gehen zufällig an und werden dann langsam heller bis sie die volle Helligkeit erreichen. Außerdem ist noch ein zufälliges Flackern implementiert welches durch Schwankungen im Gasdruck oder durch Windböen entstehen kann.;Street lights are an important part of a virtual city. They illuminate the night streets and create a warm atmosphere, especially when it comes to gas lamps. The lamps come on randomly and then slowly become brighter until they reach full brightness. In addition, a random flickering is implemented which can be caused by fluctuations in the gas pressure or by wind gusts.;Straatlantaarns zijn een belangrijk onderdeel van een virtuele stad. Ze verlichten de straten 's nachts en creëren een warme sfeer, vooral als het gaslampen zijn. De lampen gaan willekeurig aan en dimmen vervolgens geleidelijk tot ze hun volle lichtsterkte bereiken. Er is ook sprake van willekeurig flikkeren, wat kan worden veroorzaakt door schommelingen in de gasdruk of windstoten.;Les réverbères sont important dans une ville virtuelle. Ils illuminent les rues sombres et créent une atmosphère chaleureuse, surtout lorsqu'il s'agit de lampes à gaz. Les lampes s'allument de façon aléatoire en devenant progressivement plus lumineuses jusqu'à un éclairage maximum. De plus, un scintillement aléatoire est mis en œuvre qui est du à des fluctuations de la pression du gaz ou par des rafales de vent.;Street lights are an important part of a virtual city. They illuminate the night streets and create a warm atmosphere, especially when it comes to gas lamps. The lamps come on randomly and then slowly become brighter until they reach full brightness. In addition, a random flickering is implemented which can be caused by fluctuations in the gas pressure or by wind gusts.;Street lights are an important part of a virtual city. They illuminate the night streets and create a warm atmosphere, especially when it comes to gas lamps. The lamps come on randomly and then slowly become brighter until they reach full brightness. In addition, a random flickering is implemented which can be caused by fluctuations in the gas pressure or by wind gusts.;Gadelys er en vigtig del af en virtuel by. De oplyser natgader og skaber en varm atmosfære, især når det kommer til gaslamper. Lamperne tændes tilfældigt og bliver derefter langsomt lysere, indtil de når fuld lysstyrke. Derudover implementeres en tilfældig flimring, der kan være forårsaget af udsving i gastrykket eller af vindkast.
+VBA;UserForm_House 635;"Öffnet das MobaLedLib Forum 'https://forum.MobaLedLib.de'. |
+Dort findet man Hilfe. Man kann Fragen stellen, wenn man im Forum angemeldet ist.";Ues the Mobaledlib Forum 'https://forum.mobaledlib.de'. | There you can find help. You can ask questions if you are registered in the forum.;UES Het Mobaledlib Forum 'https://forum.mobaledlib.de'. | Daar kun je hulp vinden. U kunt vragen stellen als u op het forum bent geregistreerd.;Ues Le Forum Mobaledlib 'https://forum.mobaledlib.de'. | Vous pouvez y trouver de l'aide. Vous pouvez poser des questions si vous êtes inscrit sur le forum.;Ues the Mobaledlib Forum 'https://forum.moBaledlib.de'. | Lì puoi trovare aiuto. Puoi fare domande se sei registrato nel forum.;UES El foro Mobaledlib 'https://forum.mobaledlib.de'. | Ahí puedes encontrar ayuda. Puede hacer preguntas si está registrado en el foro.;Ues Mobaledlib Forum 'https://forum.mobaledlib.de'. | Der kan du finde hjælp. Du kan stille spørgsmål, hvis du er registreret i forummet.
+VBA;UserForm_House 637;Hilfe im Forum;Help in the forum;Help op het forum;Aide dans le forum;Aiuto nel forum;Ayuda en el foro;Hjælp i forummet
 VBA;UserForm_Options 50;Unbekannte Board Option: ;Unknown board option:;Onbekende bordoptie:;Option de carte inconnue:;Unknown board option:;Unknown board option:;Ukendt tavlemulighed:
 VBA;UserForm_Options 51;Unbekanntes Board;Unknown board;Onbekend bord;Tableau inconnu;Unknown board;Unknown board;Ukendt tavle
 VBA;UserForm_Options 120;Bitte einen Wert zwischen ;Please enter a value between ;Voer een waarde in tussen ;Veuillez saisir une valeur entre ;Please enter a value between ;Please enter a value between ;Indtast en værdi mellem
@@ -2060,7 +2057,7 @@ On / off switch or interpreted as a button (red / green). |
 * Buttons are used for sounds, for example.|
 |
 If the button function is activated, each time the corresponding bit is changed, a button press is generated.";A control input from the train controller can either be | On / off switch or interpreted as a button (red / green). || * On / off switch is used e.g. for houses. | * Buttons are used for sounds, for example. || If the button function is activated, each time the corresponding bit is changed, a button press is generated.;Een stuuringang van de treincontroller kan ofwel | zijn Aan / uit schakelaar of geïnterpreteerd als een knop (rood / groen). || * Aan / uit-schakelaar wordt b.v. gebruikt voor huizen. | * Knoppen worden bijvoorbeeld gebruikt voor geluiden. || Als de knopfunctie is geactiveerd, wordt elke keer dat de bijbehorende bit wordt gewijzigd, een knopdruk gegenereerd.;Une entrée de commande du contrôleur de train peut être | Interrupteur marche / arrêt ou interprété comme un bouton (rouge / vert). || * Un interrupteur marche / arrêt est utilisé par exemple pour les maisons. | * Les boutons sont utilisés pour les sons, par exemple. || Si la fonction du bouton est activée, chaque fois que le bit correspondant est modifié, une pression sur le bouton est générée.;Un input di controllo dal controllore del treno può essere | Interruttore on / off o interpretato come un pulsante (rosso / verde). || * Interruttore di accensione / spegnimento utilizzato ad es. per le case. | * I pulsanti vengono utilizzati per i suoni, ad esempio. || Se la funzione pulsante è attivata, ogni volta che viene modificato il bit corrispondente, viene generata una pressione del pulsante.;Una entrada de control del controlador del tren puede ser | Interruptor de encendido / apagado o interpretado como un botón (rojo / verde). || * Se utiliza el interruptor de encendido / apagado, p. para casas El | * Los botones se usan para sonidos, por ejemplo. || Si se activa la función del botón, cada vez que se cambia el bit correspondiente, se genera una pulsación de botón.;En kontrolindgang fra toglingen kan enten være | Tænd / sluk-kontakt eller fortolket som en knap (rød / grøn). || * Tænd / sluk-kontakt bruges f.eks. til huse. | * Knapper bruges f.eks. Til lyde. || Hvis knapfunktionen er aktiveret, genereres der et knaptryk, hver gang den tilsvarende bit ændres.
-;;Program generator file (*.MLL_pgf), *.MLL_pgf;Program generator file (* .MLL_pgf), * .MLL_pgf;Programma-generatorbestand (* .MLL_pgf), * .MLL_pgf;Fichier générateur de programme (* .MLL_pgf), * .MLL_pgf;File del generatore di programma (* .MLL_pgf), * .MLL_pgf;Archivo generador de programa (* .MLL_pgf), * .MLL_pgf;Programgeneratorfil (* .MLL_pgf), * .MLL_pgf
+;;Program generator file (*.MLL_pgf), *.MLL_pgf;Program generator file (*.MLL_pgf), *.MLL_pgf;Programma-generatorbestand (*.MLL_pgf), *.MLL_pgf;Fichier générateur de programme (*.MLL_pgf), *.MLL_pgf;File del generatore di programma (*.MLL_pgf), *.MLL_pgf;Archivo generador de programa (*.MLL_pgf), *.MLL_pgf;Programgeneratorfil (*.MLL_pgf), *.MLL_pgf
 ;;Dateiname zum abspeichern der Daten angeben;Specify file name for saving the data;Geef de bestandsnaam op voor het opslaan van de gegevens;Spécifiez le nom du fichier pour enregistrer les données;Specificare il nome del file per il salvataggio dei dati;Especifique el nombre del archivo para guardar los datos;Angiv filnavn for at gemme dataene
 ;;Daten aus allen Seiten übernehmen;Take data from all sides;gegevens uit alle pagina's overnemen;Prenez des données de tous les côtés;Prendi i dati da tutti i lati;Toma datos de todos lados;Tag data fra alle sider
 ;;"Achtung die Datei existiert bereits!|
@@ -2068,7 +2065,7 @@ If the button function is activated, each time the corresponding bit is changed,
 Soll die Datei überschrieben werden?";Attention the file already exists! || Should the file be overwritten?;Let op het bestand bestaat al! || Moet het bestand worden overschreven?;Attention le fichier existe déjà! || Le fichier doit-il être écrasé?;Attenzione, il file esiste già! || Il file deve essere sovrascritto?;¡Atención, el archivo ya existe! || ¿Se debe sobrescribir el archivo?;Bemærk, at filen allerede findes! || Bør filen overskrives?
 ;;Existierende Datei überschreiben?;Overwrite existing file?;Bestaand bestand overschrijven?;Écraser le fichier existant?;Sovrascrivi file esistente?;¿Sobrescribir el archivo existente?;Overskrive eksisterende fil?
 ;;Die zu übernehmenden Seiten können zusätzlich durch markieren der gewünschten Seiten an unteren Seitenrand bestimmt werden.;The pages to be adopted can also be determined by marking the desired pages at the bottom of the page.;De over te nemen pagina's kunnen ook worden bepaald door de gewenste pagina's onderaan de pagina te markeren.;Les pages à adopter peuvent également être déterminées en marquant les pages souhaitées en bas de page.;Le pagine da adottare possono anche essere determinate contrassegnando le pagine desiderate nella parte inferiore della pagina.;Las páginas a adoptar también se pueden determinar marcando las páginas deseadas en la parte inferior de la página.;De sider, der skal adopteres, kan også bestemmes ved at markere de ønskede sider nederst på siden.
-;;Program Generator File (*.MLL_pgf), *.MLL_pgf;Program Generator File (* .MLL_pgf), * .MLL_pgf;Program Generator-bestand (* .MLL_pgf), * .MLL_pgf;Fichier générateur de programme (* .MLL_pgf), * .MLL_pgf;File generatore di programma (* .MLL_pgf), * .MLL_pgf;Archivo generador de programa (* .MLL_pgf), * .MLL_pgf;Programgeneratorfil (* .MLL_pgf), * .MLL_pgf
+;;Program Generator File (*.MLL_pgf), *.MLL_pgf;Program Generator File (*.MLL_pgf), *.MLL_pgf;Program Generator-bestand (*.MLL_pgf), *.MLL_pgf;Fichier générateur de programme (*.MLL_pgf), *.MLL_pgf;File generatore di programma (*.MLL_pgf), *.MLL_pgf;Archivo generador de programa (*.MLL_pgf), *.MLL_pgf;Programgeneratorfil (*.MLL_pgf), *.MLL_pgf
 ;;Dateiname zum Importieren der Daten angeben;Specify file name for importing the data;Geef de bestandsnaam op voor het importeren van de gegevens;Spécifiez le nom du fichier pour importer les données;Specifica il nome del file per l'importazione dei dati;Especifique el nombre del archivo para importar los datos;Angiv filnavn for import af dataene
 ;;Mit dieser Funktion können ausgewählte Daten aus der aktuellen Seite in eine andere Seite kopiert werden.;This function can be used to copy selected data from the current page to another page.;Deze functie kan worden gebruikt om geselecteerde gegevens van de huidige pagina naar een andere pagina te kopiëren.;Cette fonction peut être utilisée pour copier les données sélectionnées de la page actuelle vers une autre page.;Questa funzione può essere utilizzata per copiare i dati selezionati dalla pagina corrente a un'altra pagina.;Esta función se puede usar para copiar datos seleccionados de la página actual a otra página.;Denne funktion kan bruges til at kopiere valgte data fra den aktuelle side til en anden side.
 ;;Kopieren von Daten von dieser Seite in eine andere Seite;Copy data from this page to another page;Kopieer gegevens van deze pagina naar een andere pagina;Copiez les données de cette page vers une autre page;Copia i dati da questa pagina in un'altra pagina;Copie datos de esta página a otra página;Kopier data fra denne side til en anden side
@@ -2100,7 +2097,7 @@ Erst wenn die Auswahl getroffen wurde wird der ""OK"" Knopf betätigt. |
 Dieser Schritt kann auch Später über die 'Optionen/Dateien' durchgeführt werden.|
 |
 Daten jetzt importieren?";Should the data be imported from the old program version? | This step can also be carried out later via the 'Options / Files'. || Import data now?;Moeten de gegevens worden geïmporteerd uit de oude programmaversie? | Deze stap kan ook later worden uitgevoerd via de 'Opties / Bestanden'. || Gegevens nu importeren?;Les données doivent-elles être importées de l'ancienne version du programme? | Cette étape peut également être effectuée ultérieurement via les 'Options / Fichiers'. || Importer des données maintenant?;"I dati devono essere importati dalla vecchia versione del programma? | Questo passaggio può essere eseguito anche successivamente tramite ""Opzioni / File"". || Importare dati adesso?";¿Deben importarse los datos de la versión anterior del programa? El | Este paso también se puede llevar a cabo más adelante a través de 'Opciones / Archivos'. || Importar datos ahora?;Skal dataene importeres fra den gamle programversion? | Dette trin kan også udføres senere via 'Indstillinger / filer'. || Importerer data nu?
-;;Importiren von Daten aus alter Version;Import data from old version;Gegevens importeren uit oude versie;Importer des données de l'ancienne version;Importa i dati dalla vecchia versione;Importar datos de la versión anterior;Importer data fra gammel version
+;;Importieren von Daten aus alter Version;Import data from old version;Gegevens importeren uit oude versie;Importer des données de l'ancienne version;Importa i dati dalla vecchia versione;Importar datos de la versión anterior;Importer data fra gammel version
 ;;"Fehler: Der Dateiname muss 'Prog_Generator' enthalten.|
 |
 Auswahl wiederholen?";Error: The file name must contain 'Prog_Generator'. || Repeat selection?;Fout: de bestandsnaam moet 'Prog_Generator' bevatten. || Selectie herhalen?;Erreur: le nom du fichier doit contenir «Prog_Generator». || Répéter la sélection?;"Errore: il nome del file deve contenere ""Prog_Generator"". || Ripeti la selezione?";Error: el nombre del archivo debe contener 'Prog_Generator'. || ¿Repetir selección?;Fejl: Filnavnet skal indeholde 'Prog_Generator'. || Gentag valg?
@@ -2169,7 +2166,7 @@ Gültiger Bereich: #2#";Error: The number of the variable '#1#' is invalid! || V
 ;;Fehler: Der 'LED Channel' in Zeile #1# ist ungültig;Error: The 'LED Channel' in line #1# is invalid;Fout: het 'LED-kanaal' in lijn #1# is ongeldig;Erreur: le «canal LED» dans la ligne #1# n'est pas valide;"Errore: il ""Canale LED"" nella riga #1# non è valido";Error: el 'Canal LED' en la línea #1# no es válido;Fejl: 'LED-kanalen' på linjen #1# er ugyldig
 ;;Ungültiger LED Channel;Invalid LED channel;Ongeldig LED-kanaal;Canal LED non valide;Canale LED non valido;Canal LED inválido;Ugyldig LED-kanal
 ;;LED Kanal;LED channel;LED-kanaal;Canal LED;Canale LED;Canal LED;LED-kanal
-;;Fehler beim erzeugen der Arduino Header Datei;Error creating the Arduino header file;Fout bij het maken van het Arduino-headerbestand;Erreur lors de la création du fichier d'en-tête Arduino;Errore durante la creazione del file di intestazione di Arduino;Error al crear el archivo de encabezado Arduino;Fejl ved oprettelse af Arduino-overskriftsfil
+;;Fehler beim Erzeugen der Arduino Header Datei;Error creating the Arduino header file;Fout bij het maken van het Arduino-headerbestand;Erreur lors de la création du fichier d'en-tête Arduino;Errore durante la creazione del file di intestazione di Arduino;Error al crear el archivo de encabezado Arduino;Fejl ved oprettelse af Arduino-overskriftsfil
 ;;"Fehler: Es sind nicht genügend Ausgangs Pins zur Ansteuerung der LEDs vorhanden. Die LED Pins müssen mit dem Befehl ""Set_LED_OutpPinLst()"" definiert werden.|
 Es müssen #1# Arduino Ausgänge definiert sein.";"Error: There are not enough output pins to control the LEDs. The LED pins must be defined with the command ""Set_LED_OutpPinLst ()"". | #1# Arduino outputs must be defined.";"Fout: er zijn niet genoeg outputpinnen om de LED's te bedienen. De LED-pinnen moeten worden gedefinieerd met de opdracht ""Set_LED_OutpPinLst ()"". | #1# Arduino-uitgangen moeten worden gedefinieerd.";"Erreur: il n'y a pas assez de broches de sortie pour contrôler les LED. Les broches LED doivent être définies avec la commande ""Set_LED_OutpPinLst ()"". | #1# Les sorties Arduino doivent être définies.";"Errore: non ci sono abbastanza pin di uscita per controllare i LED. I pin LED devono essere definiti con il comando ""Set_LED_OutpPinLst ()"". | #1# Le uscite di Arduino devono essere definite.";"Error: no hay suficientes pines de salida para controlar los LED. Los pines del LED deben definirse con el comando ""Set_LED_OutpPinLst ()"". El | #1# Las salidas de Arduino deben estar definidas.";"Fejl: Der er ikke nok outputstifter til at kontrollere lysdioderne. LED-stifterne skal defineres med kommandoen ""Set_LED_OutpPinLst ()"". | #1# Arduino-output skal defineres."
 ;;Mehr LED Gruppen verwendet als LED Ausgangspins definiert;More LED groups used than defined LED output pins;Meer LED-groepen gebruikt dan gedefinieerde LED-uitgangspinnen;Plus de groupes de LED utilisés que de broches de sortie LED définies;Più gruppi di LED utilizzati rispetto ai pin di uscita LED definiti;Se utilizan más grupos de LED que los pines de salida de LED definidos;Flere LED-grupper brugt end definerede LED-udgangsstifter
@@ -2199,38 +2196,46 @@ Die Pins können mit den Funktionen 'Set_Switch?_InpLst()' und '#4#' angepasst w
 Achtung: Dazu muss auch die Hardware angepasst werden!";Error: The input pin '#1#' of the Arduino is used as input in the switch functions '#2#' and at the same time as the #3# pin. | The pins can be adjusted with the functions 'Set_Switch? _InpLst ()' and '#4#'. | Warning : The hardware must also be adapted for this!;Fout: De invoerpin '#1#' van de Arduino wordt gebruikt als invoer in de schakelfuncties '#2#' en tegelijkertijd met de #3#-pin. | De pinnen kunnen worden aangepast met de functies 'Set_Switch? _InpLst () 'en' #4# '. | Waarschuwing: ook hiervoor moet de hardware worden aangepast!;Erreur: La broche d'entrée '#1#' de l'Arduino est utilisée comme entrée dans les fonctions de commutation '#2#' et en même temps que la broche #3#. | Les broches peuvent être ajustées avec les fonctions «Set_Switch? _InpLst () 'et' #4# '. | Attention: le matériel doit également être adapté pour cela!;Errore: il pin di input '#1#' di Arduino viene utilizzato come input nelle funzioni switch '#2#' e contemporaneamente al pin #3#. | I pin possono essere regolati con le funzioni 'Set_Switch? _InpLst () 'e' #4# '. | Attenzione: anche l'hardware deve essere adattato per questo!;Error: El pin de entrada '#1#' del Arduino se usa como entrada en las funciones del interruptor '#2#' y al mismo tiempo que el pin #3#. El | Los pines se pueden ajustar con las funciones 'Set_Switch? _InpLst () 'y' #4# '. El | Advertencia: ¡El hardware también debe estar adaptado para esto!;Fejl: Inputstiften '#1#' til Arduino bruges som input i switchfunktionerne '#2#' og på samme tid som #3#-stiften. | Stifterne kan justeres med funktionerne 'Set_Switch? _InpLst () 'og' #4# '. | Advarsel: Hardwaren skal også tilpasses til dette!
 ;; in Startwert Spalte ist ungültig; in start value column is invalid; in startwaardekolom is ongeldig; dans la colonne de valeur de départ n'est pas valide; nella colonna del valore iniziale non è valido; en la columna de valor inicial no es válida; i startværdikolonnen er ugyldig
 ;;Aktualisiere Status ...;Update status ...;Status bijwerken ...;État de mise à jour ...;Aggiorna stato ...;Estado de actualización ...;Opdater status ...
-;;"Achtung: Der Arduino wird von einem anderen Programm benutzt.|
+;;"Achtung: Der #1 wird von einem anderen Programm benutzt.|
 (Serieller Monitor?)|
-Das Programm muss geschlossen werden! ";Attention: The Arduino is used by another program. | (Serial monitor?) | The program must be closed!;Let op: de Arduino wordt gebruikt door een ander programma. | (Seriële monitor?) | Het programma moet worden afgesloten!;Attention: l'Arduino est utilisé par un autre programme. | (Moniteur série?) | Le programme doit être fermé!;Attenzione: Arduino è utilizzato da un altro programma. | (Monitor seriale?) | Il programma deve essere chiuso!;Atención: Arduino es utilizado por otro programa. El | (¿Monitor en serie?) | ¡El programa debe estar cerrado!;OBS: Arduino bruges af et andet program. | (Seriel skærm?) | Programmet skal være lukket!
+Das Programm muss geschlossen werden! ";Attention: The #1 is used by another program. | (Serial monitor?) | The program must be closed!;Let op: de #1 wordt gebruikt door een ander programma. | (Seriële monitor?) | Het programma moet worden afgesloten!;Attention: l'#1 est utilisé par un autre programme. | (Moniteur série?) | Le programme doit être fermé!;Attenzione: #1 è utilizzato da un altro programma. | (Monitor seriale?) | Il programma deve essere chiuso!;Atención: #1 es utilizado por otro programa. El | (¿Monitor en serie?) | ¡El programa debe estar cerrado!;OBS: #1 bruges af et andet program. | (Seriel skærm?) | Programmet skal være lukket!
 ;;"Kein COM Port erkannt.|
-Bitte Arduino an einen USB Anschluss des Computers anschließen";No COM port detected. | Please connect Arduino to a USB port on the computer;Geen COM-poort gedetecteerd. | Sluit Arduino aan op een USB-poort op de computer;Aucun port COM détecté. | Veuillez connecter Arduino à un port USB de l'ordinateur;Nessuna porta COM rilevata. | Si prega di collegare Arduino a una porta USB del computer;No se detectó ningún puerto COM. El | Conecte Arduino a un puerto USB en la computadora;Der blev ikke fundet nogen COM-port. | Forbind Arduino til en USB-port på computeren
+Bitte #1 an einen USB Anschluss des Computers anschließen";No COM port detected. | Please connect #1 to a USB port on the computer;Geen COM-poort gedetecteerd. | Sluit #1 aan op een USB-poort op de computer;Aucun port COM détecté. | Veuillez connecter #1 à un port USB de l'ordinateur;Nessuna porta COM rilevata. | Si prega di collegare #1 a una porta USB del computer;No se detectó ningún puerto COM. El | Conecte #1 a un puerto USB en la computadora;Der blev ikke fundet nogen COM-port. | Forbind #1 til en USB-port på computeren
 ;;Aktualisiere Status ...;Update status ...;Status bijwerken ...;État de mise à jour ...;Aggiorna stato ...;Estado de actualización ...;Opdater status ...
 ;;Text;text;tekst;texte;testo;texto;tekst
-;;"Zur Identifikation des Arduinos blinken die LEDs des ausgewählten Arduinos schnell.|
+;;"Ein anderer serieller Port kann über die Pfeiltasten ausgewählt werden.|
 |
-Ein anderer COM Port kann über die Pfeiltasten ausgewählt werden.|
-|
-Der Arduino kann auch nachträglich angesteckt werden.";The LEDs of the selected Arduino flash quickly to identify the Arduino. || Another COM port can be selected using the arrow keys. || The Arduino can also be connected later.;De LED's van de geselecteerde Arduino knipperen snel om de Arduino te identificeren. || Met de pijltoetsen kan een andere COM-poort worden geselecteerd. || De Arduino kan ook later worden aangesloten.;Les LED de l'Arduino sélectionné clignotent rapidement pour identifier l'Arduino. || Un autre port COM peut être sélectionné à l'aide des touches fléchées. || L'Arduino peut également être connecté ultérieurement.;I LED dell'Arduino selezionato lampeggiano rapidamente per identificare Arduino. || È possibile selezionare un'altra porta COM utilizzando i tasti freccia. || L'Arduino può anche essere collegato in un secondo momento.;Los LED del Arduino seleccionado parpadean rápidamente para identificar el Arduino. || Se puede seleccionar otro puerto COM con las teclas de flecha. || El Arduino también se puede conectar más tarde.;LED'erne på den valgte Arduino blinker hurtigt for at identificere Arduino. || En anden COM-port kan vælges ved hjælp af piletasterne. || Arduino kan også tilsluttes senere.
+Das Gerät kann auch nachträglich angesteckt werden.";"Another serial port can be selected using the arrow keys.| 
+ | 
+ The device can also be plugged in later.";"Met de pijltoetsen kunt u een andere seriële poort selecteren.|  
+ |  
+ Het apparaat kan ook later worden aangesloten.";"Un autre port série peut être sélectionné à l'aide des touches fléchées.|  
+ |  
+ L'appareil peut également être branché ultérieurement.";"È possibile selezionare un'altra porta seriale utilizzando i tasti freccia.|  VLF |  
+ Il dispositivo può essere collegato anche successivamente.";"Se puede seleccionar otro puerto serie usando las teclas de flecha.|  
+ El dispositivo también se puede enchufar más tarde.";"En anden seriel port kan vælges ved hjælp af piletasterne.|  
+ Enheden kan også tilsluttes senere."
 ;;Error;Error;Fout;Erreur;Errore;Error;Fejl
 ;;Verfügbare Ports:;Available ports:;Beschikbare poorten:;Ports disponibles:;Porte disponibili:;Puertos disponibles:;Tilgængelige havne:
+;;#1 Ports:;#1 ports:;#1 poorten:;Ports #1 :;Porte #1:;Puertos #1:;#1 porte:
+;;Andere Typen:;Other types:;Andere soorten:;Autres types :;Altri tipi:;Otros tipos:;Andre typer:
 ;;Überprüfung des USB Ports;Check the USB port;Controleer de USB-poort;Vérifiez le port USB;Controlla la porta USB;Comprueba el puerto USB;Kontroller USB-porten
-;;Auswahl des Arduino COM Ports;Selection of the Arduino COM port;Selectie van de Arduino COM-poort;Sélection du port COM Arduino;Selezione della porta COM Arduino;Selección del puerto COM Arduino;Valg af Arduino COM-port
+;;Auswahl des COM Ports;Selection of the COM port;Selectie van de COM-poort;Sélection du port COM;Selezione della porta COM;Selección del puerto COM;Valg af COM-port
 ;;Unbekannte Ports zeigen;Show unknown ports;Toon onbekende poorten;Afficher les ports inconnus;Mostra porte sconosciute;Mostrar puertos desconocidos;Vis ukendte porte
-;;"Mit diesem Dialog wird der COM Port überprüft bzw. ausgewählt an den der #1# Arduino angeschlossen ist.|
-|
-OK, wenn die LEDs am richtigen Arduino schnell blinken.";This dialog is used to check or select the COM port to which the #1# Arduino is connected. || OK if the LEDs on the correct Arduino are flashing quickly.;Dit dialoogvenster wordt gebruikt om de COM-poort te controleren of te selecteren waarmee de #1# Arduino is verbonden. || OK als de LED's op de juiste Arduino snel knipperen.;Cette boîte de dialogue est utilisée pour vérifier ou sélectionner le port COM auquel le #1# Arduino est connecté. || OK si les LED du bon Arduino clignotent rapidement.;Questa finestra di dialogo viene utilizzata per verificare o selezionare la porta COM a cui è collegato #1# Arduino. || OK se i LED sull'Arduino corretto lampeggiano rapidamente.;Este cuadro de diálogo se utiliza para verificar o seleccionar el puerto COM al que está conectado el #1# Arduino. || OK si los LED en el Arduino correcto parpadean rápidamente.;Denne dialog bruges til at kontrollere eller vælge den COM-port, som #1# Arduino er forbundet til. || OK, hvis LED'erne på den rigtige Arduino blinker hurtigt.
+;;Es wird der COM Port überprüft bzw. ausgewählt, an den der #1# angeschlossen ist.;The COM port to which the #1# is connected is checked or selected.;De COM-poort waarop de #1# is aangesloten, is aangevinkt of geselecteerd.;Le port COM auquel le #1# est connecté est coché ou sélectionné.;La porta COM a cui è connesso #1# è spuntata o selezionata.;El puerto COM al que está conectado el #1# está marcado o seleccionado.;Den COM-port, som #1# er forbundet til, er markeret eller valgt.
+;;OK, wenn die LEDs am richtigen Arduino schnell blinken.; OK if the LEDs on the correct Arduino are blinking rapidly.; OK als de LED's op de juiste Arduino snel knipperen.; OK si les LED du bon Arduino clignotent rapidement.; OK se i LED sull'Arduino corretto lampeggiano rapidamente.; OK si los LED del Arduino correcto parpadean rápidamente.; OK, hvis LED'erne på den korrekte Arduino blinker hurtigt.
 ;;Automatisch erkennen;Detect automatically;Detecteer automatisch;Détecter automatiquement;Rileva automaticamente;Detectar automáticamente;Registrer automatisk
 ;;"Fehler: Der COM Port #1# wird bereits von einem anderen Programm benutzt.|
 Das kann z.B. der serielle Monitor der Arduino IDE oder das Farbtestprogramm sein.|
 |
 Das entsprechende Programm muss geschlossen werden.";Error: The COM port #1# is already being used by another program. | This can e.g. be the serial monitor of the Arduino IDE or the color test program. || The corresponding program must be closed.;Fout: de COM-poort #1# wordt al gebruikt door een ander programma. | Dit kan b.v. worden de seriële monitor van de Arduino IDE of het kleurentestprogramma. || Het bijbehorende programma moet worden afgesloten.;Erreur: le port COM #1# est déjà utilisé par un autre programme. | Cela peut par exemple être le moniteur série de l'Arduino IDE ou le programme de test de couleur. || Le programme correspondant doit être fermé.;Errore: la porta COM #1# è già utilizzata da un altro programma. | Questo può ad es. essere il monitor seriale dell'IDE Arduino o il programma di test del colore. || Il programma corrispondente deve essere chiuso.;Error: el puerto COM #1# ya está siendo utilizado por otro programa. El | Esto puede p. ser el monitor en serie del IDE de Arduino o el programa de prueba de color. || El programa correspondiente debe estar cerrado.;Fejl: COM-porten #1# bruges allerede af et andet program. | Dette kan f.eks. være den serielle skærm for Arduino IDE eller farvetestprogrammet. || Det tilsvarende program skal være lukket.
-;;Fehler bei der Überprüfung des angeschlossenen Arduinos;Error when checking the connected Arduino;Fout bij het controleren van de aangesloten Arduino;Erreur lors de la vérification de l'Arduino connecté;Errore durante il controllo di Arduino collegato;Error al verificar el Arduino conectado;Fejl ved kontrol af den tilsluttede Arduino
-;;Fehler: Es ist kein Arduino an COM Port #1# angeschlossen.;Error: No Arduino is connected to COM port #1#.;Fout: geen Arduino aangesloten op COM-poort #1#.;Erreur: aucun Arduino n'est connecté au port COM #1#.;Errore: No Arduino è collegato alla porta COM #1#.;Error: No Arduino está conectado al puerto COM #1#.;Fejl: Ingen Arduino er forbundet til COM-port #1#.
+;;Fehler bei der Überprüfung des angeschlossenen #2#;Error when checking the connected #2#;Fout bij het controleren van de aangesloten #2#;Erreur lors de la vérification de l'#2# connecté;Errore durante il controllo di #2# collegato;Error al verificar el #2# conectado;Fejl ved kontrol af den tilsluttede #2#
+;;Fehler: Es ist kein #2# an COM Port #1# angeschlossen.;Error: No #2# is connected to COM port #1#.;Fout: geen #2# aangesloten op COM-poort #1#.;Erreur: aucun #2# n'est connecté au port COM #1#.;Errore: No #2# è collegato alla porta COM #1#.;Error: No #2# está conectado al puerto COM #1#.;Fejl: Ingen #2# er forbundet til COM-port #1#.
 ;;Das am COM Port angeschlossene Gerät wurde nicht als Arduino erkannt;The device connected to the COM port was not recognized as an Arduino;Het apparaat dat op de COM-poort is aangesloten, werd niet herkend als een Arduino;Le périphérique connecté au port COM n'a pas été reconnu comme Arduino;Il dispositivo collegato alla porta COM non è stato riconosciuto come Arduino;El dispositivo conectado al puerto COM no fue reconocido como un Arduino;Enheden, der er tilsluttet COM-porten, blev ikke genkendt som en Arduino
-;;"Fehler: Das Gerät am COM Port #1# wurde nicht als Arduino erkannt.|
-Evtl. ist es ein defekter Arduino oder der Bootloader ist falsch.";Error: The device at the COM port #1# was not recognized as an Arduino. | Possibly. is it a broken arduino or the boot loader is wrong.;Fout: het apparaat op de COM-poort #1# werd niet herkend als een Arduino. | Mogelijk. is het een kapotte arduino of is de bootloader verkeerd.;Erreur: le périphérique sur le port COM #1# n'a pas été reconnu comme Arduino. | Peut-être. est-ce un Arduino cassé ou le chargeur de démarrage est incorrect.;Errore: il dispositivo sulla porta COM #1# non è stato riconosciuto come Arduino. | Possibilmente. è un arduino rotto o il boot loader è sbagliato?;Error: El dispositivo en el puerto COM #1# no fue reconocido como un Arduino. El | Posiblemente. ¿Es un arduino roto o el gestor de arranque está mal?;Fejl: Enheden på COM-porten #1# blev ikke genkendt som en Arduino. | Eventuelt. er det en ødelagt arduino, eller bootloaderen er forkert.
-;;Programmiere #1# Arduino;Program #1# Arduino;Programma #1# Arduino;Programme #1# Arduino;Programma #1# Arduino;Programa #1# Arduino;Program #1# Arduino
-;;Wollen sie es noch mal mit einem anderen Arduino oder einem anderen COM Port versuchen?;Do you want to try another Arduino or COM port again?;Wil je nog een keer een andere Arduino- of COM-poort proberen?;Voulez-vous réessayer un autre port Arduino ou COM?;Vuoi provare di nuovo un'altra porta Arduino o COM?;¿Desea probar otro puerto Arduino o COM nuevamente?;Vil du prøve en anden Arduino- eller COM-port igen?
+;;"Fehler: Das Gerät am COM Port #1# wurde nicht als #2# erkannt.|
+Evtl. ist es ein defekter #2# oder der Bootloader ist falsch.";Error: The device at the COM port #1# was not recognized as an #2#. | Possibly. is it a broken #2# or the boot loader is wrong.;Fout: het apparaat op de COM-poort #1# werd niet herkend als een #2#. | Mogelijk. is het een kapotte #2# of is de bootloader verkeerd.;Erreur: le périphérique sur le port COM #1# n'a pas été reconnu comme Arduino. | Peut-être. est-ce un #2# cassé ou le chargeur de démarrage est incorrect.;Errore: il dispositivo sulla porta COM #1# non è stato riconosciuto come #2#. | Possibilmente. è un #2# rotto o il boot loader è sbagliato?;Error: El dispositivo en el puerto COM #1# no fue reconocido como un #2#. El | Posiblemente. ¿Es un #2# roto o el gestor de arranque está mal?;Fejl: Enheden på COM-porten #1# blev ikke genkendt som en #2#. | Eventuelt. er det en ødelagt #2#, eller bootloaderen er forkert.
+;;Programmiere #1#;Program #1#;Programma #1#;Programme #1#;Programma #1#;Programa #1#;Program #1#
+;;Wollen sie es noch mal mit einem anderen #2# oder einem anderen COM Port versuchen?;Do you want to try another #2# or COM port again?;Wil je nog een keer een andere #2# -of COM-poort proberen?;Voulez-vous réessayer un autre port #2# ou COM?;Vuoi provare di nuovo un'altra porta #2# o COM?;¿Desea probar otro puerto #2# o COM nuevamente?;Vil du prøve en anden #2#- eller COM-port igen?
 ;;#1# Programm installiert?;#1# program installed?;#1#-programma geïnstalleerd?;#1# programme installé?;#1# programma installato?;#1# programa instalado?;#1#-program installeret?
 ;;Red_Hint;Red_Hint;Red_Hint;Red_Hint;Red_Hint;Sugerencia_rojo;Red_Hint
 ;;Tipp: Der ausgewählte Arduino blinkt schnell;Tip: The selected Arduino flashes quickly;Tip: de geselecteerde Arduino knippert snel;Astuce: l'Arduino sélectionné clignote rapidement;Suggerimento: Arduino selezionato lampeggia rapidamente;Consejo: el Arduino seleccionado parpadea rápidamente;Tip: Den valgte Arduino blinker hurtigt
@@ -2248,8 +2253,8 @@ Bei Funktionen welche einen Kanal nur kurzzeitig ansteuern kann das sinnvoll sei
 Ein Beispiel dafür ist die Ansteuerung von Sound Modulen. Hier steuern mehrere Tasten den gleichen Kanal mit unterschiedlichen Werten an. Je nach abzuspielendem Sound wird eine andere 'Helligkeit' gesendet. Da die Tasten werden aber nicht gleichzeitig betätigt werden ist das unproblematisch.|
 |
 Soll der neue Befehl die gleiche LED Adressieren wie der Vorangegangene Befehl?";Attention: The LED channels are the same as the previous line (#1#)! | This can lead to unwanted effects. | For functions that only control a channel for a short time, this can be useful. | An example of this is the activation of sound modules. Here several keys control the same channel with different values. Depending on the sound to be played, a different 'brightness' is sent. Since the buttons are not pressed at the same time, this is not a problem. || Should the new command address the same LED as the previous command?;Let op: de LED-kanalen zijn hetzelfde als de vorige regel (#1#)! | Dit kan tot ongewenste effecten leiden. | Voor functies die slechts een korte tijd een kanaal aansturen, kan dit handig zijn. | Een voorbeeld hiervan is het activeren van geluidsmodules. Hier besturen verschillende toetsen hetzelfde kanaal met verschillende waarden. Afhankelijk van het af te spelen geluid wordt een andere 'helderheid' gestuurd. Aangezien de knoppen niet tegelijkertijd worden ingedrukt, is dit geen probleem. || Moet het nieuwe commando dezelfde LED adresseren als het vorige commando?;Attention: Les canaux LED sont les mêmes que la ligne précédente (#1#)! | Cela peut entraîner des effets indésirables. | Pour les fonctions qui ne contrôlent un canal que pendant une courte période, cela peut être utile. | Un exemple de ceci est l'activation de modules sonores. Ici, plusieurs touches contrôlent le même canal avec des valeurs différentes. Selon le son à jouer, une «luminosité» différente est envoyée. Comme les boutons ne sont pas enfoncés en même temps, ce n'est pas un problème. || La nouvelle commande doit-elle adresser la même LED que la commande précédente?;Attenzione: i canali LED sono gli stessi della linea precedente (#1#)! | Questo può portare a effetti indesiderati. | Per le funzioni che controllano un canale solo per un breve periodo, questo può essere utile. | Un esempio di ciò è l'attivazione di moduli sonori. Qui diversi tasti controllano lo stesso canale con valori diversi. A seconda del suono da riprodurre, viene inviata una 'luminosità' diversa. Poiché i pulsanti non vengono premuti contemporaneamente, questo non è un problema. || Il nuovo comando dovrebbe indirizzare lo stesso LED del comando precedente?;Atención: ¡Los canales LED son los mismos que la línea anterior (#1#)! El | Esto puede conducir a efectos no deseados. El | Para funciones que solo controlan un canal por un corto tiempo, esto puede ser útil. El | Un ejemplo de esto es la activación de módulos de sonido. Aquí varias teclas controlan el mismo canal con diferentes valores. Dependiendo del sonido a reproducir, se envía un 'brillo' diferente. Como los botones no se presionan al mismo tiempo, esto no es un problema. || ¿Debería el nuevo comando abordar el mismo LED que el comando anterior?;OBS: LED-kanalerne er de samme som den forrige linje (#1#)! | Dette kan føre til uønskede effekter. | For funktioner, der kun styrer en kanal i kort tid, kan dette være nyttigt. | Et eksempel på dette er aktivering af lydmoduler. Her styrer flere taster den samme kanal med forskellige værdier. Afhængigt af lyden, der skal afspilles, sendes der en anden 'lysstyrke'. Da knapperne ikke trykkes på samme tid, er dette ikke et problem. || Skal den nye kommando adressere den samme LED som den forrige kommando?
-;;"Fehler: Der Arduino Pin '#1#' kann nicht als Ein- oder Ausgang werden wenn DCC oder Selectrix Daten per SPI Bus gelesen werden. Es muss ein anderer Anschluss verwendet werden oder die SPI Kommunikation in der 'Config' Seite deaktiviert werden.
-Achtung: Die beiden Arduinos müssen dann per RS232 verbunden sein.";Error: The Arduino pin '#1#' cannot be used as an input or output if DCC or Selectrix data is read via SPI bus. Another connection has to be used or the SPI communication has to be deactivated in the 'Config' page. Attention: The two Arduinos must then be connected via RS232.;Fout: de Arduino-pin '#1#' kan niet worden gebruikt als invoer of uitvoer als DCC- of Selectrix-gegevens worden gelezen via de SPI-bus. Er moet een andere verbinding worden gebruikt of de SPI-communicatie moet worden gedeactiveerd op de 'Config'-pagina. Let op: de twee Arduino's moeten dan via RS232 worden aangesloten.;Erreur: la broche Arduino '#1#' ne peut pas être utilisée comme entrée ou sortie si les données DCC ou Selectrix sont lues via le bus SPI. Une autre connexion doit être utilisée ou la communication SPI doit être désactivée dans la page 'Config'. Attention: Les deux Arduinos doivent ensuite être connectés via RS232.;"Errore: il pin Arduino '#1#' non può essere utilizzato come input o output se i dati DCC o Selectrix vengono letti tramite bus SPI. È necessario utilizzare un'altra connessione o la comunicazione SPI deve essere disattivata nella pagina ""Config"". Attenzione: i due Arduinos devono quindi essere collegati tramite RS232.";Error: el pin Arduino '#1#' no se puede usar como entrada o salida si los datos DCC o Selectrix se leen a través del bus SPI. Se debe utilizar otra conexión o la comunicación SPI se debe desactivar en la página 'Configuración'. Atención: los dos Arduinos deben conectarse a través de RS232.;Fejl: Arduino-stiften '#1#' kan ikke bruges som input eller output, hvis DCC- eller Selectrix-data læses via SPI-bus. En anden forbindelse skal bruges, eller SPI-kommunikationen skal deaktiveres på siden 'Config'. OBS: De to Arduinos skal derefter tilsluttes via RS232.
+;;"Fehler: Der Arduino Pin '#1#' kann nicht als Ein- oder Ausgang werden wenn DCC, LNet oder Selectrix Daten per SPI Bus gelesen werden. Es muss ein anderer Anschluss verwendet werden oder die SPI Kommunikation in der 'Config' Seite deaktiviert werden.
+Achtung: Die beiden Arduinos müssen dann per RS232 verbunden sein.";Error: The Arduino pin '#1#' cannot be used as an input or output if DCC, LNet or Selectrix data is read via SPI bus. Another connection has to be used or the SPI communication has to be deactivated in the 'Config' page. Attention: The two Arduinos must then be connected via RS232.;Fout: de Arduino-pin '#1#' kan niet worden gebruikt als invoer of uitvoer als DCC-, LNet - of Selectrix-gegevens worden gelezen via de SPI-bus. Er moet een andere verbinding worden gebruikt of de SPI-communicatie moet worden gedeactiveerd op de 'Config'-pagina. Let op: de twee Arduino's moeten dan via RS232 worden aangesloten.;Erreur: la broche Arduino '#1#' ne peut pas être utilisée comme entrée ou sortie si les données DCC ou Selectrix sont lues via le bus SPI. Une autre connexion doit être utilisée ou la communication SPI doit être désactivée dans la page 'Config'. Attention: Les deux Arduinos doivent ensuite être connectés via RS232.;"Errore: il pin Arduino '#1#' non può essere utilizzato come input o output se i dati DCC o Selectrix vengono letti tramite bus SPI. È necessario utilizzare un'altra connessione o la comunicazione SPI deve essere disattivata nella pagina ""Config"". Attenzione: i due Arduinos devono quindi essere collegati tramite RS232.";Error: el pin Arduino '#1#' no se puede usar como entrada o salida si los datos DCC o Selectrix se leen a través del bus SPI. Se debe utilizar otra conexión o la comunicación SPI se debe desactivar en la página 'Configuración'. Atención: los dos Arduinos deben conectarse a través de RS232.;Fejl: Arduino-stiften '#1#' kan ikke bruges som input eller output, hvis DCC- eller Selectrix-data læses via SPI-bus. En anden forbindelse skal bruges, eller SPI-kommunikationen skal deaktiveres på siden 'Config'. OBS: De to Arduinos skal derefter tilsluttes via RS232.
 ;;"; A Abbrechen; O OK";"; A Cancel; O OK";"; A Annuleren; O OK";"; A Annuler; O OK";"; A Annulla; OK";"; Una cancelación; Oh ok";"; A Annuller; O OK"
 ;;Fehler #1# beim Starten der Update Programms '#2#';Error #1# when starting the update program '#2#';Fout #1# bij het starten van het updateprogramma '#2#';Erreur #1# lors du démarrage du programme de mise à jour '#2#';Errore #1# all'avvio del programma di aggiornamento '#2#';Error #1# al iniciar el programa de actualización '#2#';Fejl #1# ved start af opdateringsprogrammet '#2#'
 ;;Fehler beim Aktualisieren der Bibliotheken;Failed to update libraries;Bibliotheken kunnen niet worden bijgewerkt;Échec de la mise à jour des bibliothèques;Impossibile aggiornare le librerie;Error al actualizar las bibliotecas;Kunne ikke opdatere biblioteker
@@ -2270,10 +2275,9 @@ Nicht geschlossene Fenster werden ohne zu speichern geschlossen.|
 |
 Wenn die Fenster geschlossen sind ""OK"" klicken. ";"Attention all other Excel windows must be closed before the update is started. If data has been changed in the windows, it should be saved. | Windows that are not closed are closed without saving. || When the windows are closed, click ""OK"".";"Let op: alle andere Excel-vensters moeten worden gesloten voordat de update wordt gestart. Als gegevens in de vensters zijn gewijzigd, moeten deze worden opgeslagen. | Ramen die niet zijn gesloten, worden gesloten zonder op te slaan. || Klik op ""OK"" wanneer de vensters gesloten zijn.";"Attention, toutes les autres fenêtres Excel doivent être fermées avant le démarrage de la mise à jour. Si des données ont été modifiées dans les fenêtres, elles doivent être enregistrées. | Les fenêtres qui ne sont pas fermées sont fermées sans enregistrement. || Lorsque les fenêtres sont fermées, cliquez sur ""OK"".";"Attenzione, tutte le altre finestre di Excel devono essere chiuse prima dell'avvio dell'aggiornamento. Se i dati sono stati modificati in Windows, devono essere salvati. | Le finestre non chiuse vengono chiuse senza salvare. || Quando le finestre sono chiuse, fare clic su ""OK"".";"Atención, todas las demás ventanas de Excel deben estar cerradas antes de iniciar la actualización. Si los datos se han cambiado en las ventanas, se deben guardar. El | Las ventanas que no están cerradas se cierran sin guardar. || Cuando las ventanas estén cerradas, haga clic en ""Aceptar"".";"Vær opmærksom på, at alle andre Excel-vinduer skal være lukket, før opdateringen startes. Hvis data er ændret i windows, skal de gemmes. | Windows, der ikke er lukket, lukkes uden at gemme. || Når vinduerne er lukket, skal du klikke på ""OK""."
 ;;Aktualisiert die MobaLedLib auf den offiziellen freigegebenen Stand welcher in der Arduino IDE verfügbat ist.;Updates the MobaLedLib to the official released status which is available in the Arduino IDE.;Werkt de MobaLedLib bij naar de officiële vrijgegeven status die beschikbaar is in de Arduino IDE.;Met à jour le MobaLedLib à l'état officiel publié qui est disponible dans l'IDE Arduino.;Aggiorna MobaLedLib allo stato rilasciato ufficialmente disponibile nell'IDE di Arduino.;Actualiza MobaLedLib al estado oficial de lanzamiento que está disponible en el IDE de Arduino.;Opdaterer MobaLedLib til den officielle frigivne status, der er tilgængelig på Arduino IDE.
-;;Installiere Beta Test;Install Beta Test;Installeer Beta Test;Installer le test bêta;Installa beta test;Instalar prueba beta;Installer betatest
+;;Installiere Korrekturversion;Install the corrected version;Fixversie installeren;Installer la version corrective;Installa la versione di correzione;Instalar versión corregida;Installer reparationsversion
 ;;Status der Bibliotheken;Status of the libraries;Status van de bibliotheken;Statut des bibliothèques;Stato delle biblioteche;Estado de las bibliotecas.;Bibliotekernes status
-;;"Installiert die Beta Test Version der MobaLedLib Bibliothek. |
-(Nur für Experten)";Installs the beta test version of the MobaLedLib library. | (For experts only);Installeert de bètatestversie van de MobaLedLib-bibliotheek. | (Alleen voor experts);Installe la version bêta-test de la bibliothèque MobaLedLib. | (Pour les experts uniquement);Installa la versione beta test della libreria MobaLedLib. | (Solo per esperti);Instala la versión beta de prueba de la biblioteca MobaLedLib. El | (Solo para expertos);Installerer betatestversionen af ​​MobaLedLib-biblioteket. | (Kun for eksperter)
+;;Installiert die aktuelle Korrekturversion der MobaLedLib Bibliothek. Bitte vorher prüfen, ob es eine neue Korrektur gibt!;Installs the latest fix version of the MobaLedLib library. Please check for a new fix beforehand!;Installeert de nieuwste fixversie van de MobaLedLib-bibliotheek. Controleer vooraf of er een nieuwe fix beschikbaar is!;Installe la dernière version corrective de la bibliothèque MobaLedLib. Veuillez vérifier la disponibilité d'une nouvelle version corrective au préalable !;Installa l'ultima versione di correzione della libreria MobaLedLib. Controlla in anticipo se è disponibile una nuova correzione!;Instala la última versión corregida de la biblioteca MobaLedLib. ¡Comprueba si hay una nueva corrección antes de instalarla!;Installerer den seneste reparationsversion af MobaLedLib-biblioteket. Tjek venligst for en ny reparation på forhånd!
 ;;Zeigt den Status aller installierten Bibliotheken und Boards an.;Displays the status of all installed libraries and boards.;Geeft de status weer van alle geïnstalleerde bibliotheken en kaarten.;Affiche l'état de toutes les bibliothèques et cartes installées.;Visualizza lo stato di tutte le librerie e schede installate.;Muestra el estado de todas las bibliotecas y placas instaladas.;Viser status for alle installerede biblioteker og kort.
 ;;Soll die MobaLedLib aktualisiert werden?;Should the MobaLedLib be updated?;Moet de MobaLedLib worden bijgewerkt?;Le MobaLedLib doit-il être mis à jour?;MobaLedLib dovrebbe essere aggiornato?;¿Debería actualizarse MobaLedLib?;Bør MobaLedLib opdateres?
 ;;Aktualisieren der MobaLedLib;Update the MobaLedLib;Werk de MobaLedLib bij;Mettre à jour le MobaLedLib;Aggiorna MobaLedLib;Actualice el MobaLedLib;Opdater MobaLedLib
@@ -2294,8 +2298,8 @@ Es kann manuell von hier installiert werden:";"The programs 'curl' and 'tar' are
 ;;Neue Version des Farbtests herunterladen?;Download new version of the color test?;Nieuwe versie van de kleurentest downloaden?;Télécharger la nouvelle version du test de couleur?;Scarica la nuova versione del test del colore?;Descargar nueva versión de la prueba de color?;Download ny version af farvetesten?
 ;;(Update: Strg+Klick);(Update: Ctrl click);(Update: Ctrl-klik);(Mise à jour: Ctrl clic);(Aggiorna: Ctrl clic);(Actualización: Ctrl clic);(Opdatering: Ctrl-klik)
 ;;Verwende SPI Kommunikation: ;Use SPI communication:;Gebruik SPI-communicatie:;Utilisez la communication SPI:;Usa comunicazione SPI:;Utilice la comunicación SPI:;Brug SPI-kommunikation:
-;;"Verwendet die SPI Kommunikation zwischen LED Arduino und DCC/Selectrix Arduino. Wenn dieser Modus aktiviert ist, dann kann wird die RS232 Verbindung nicht mehr benötigt. Der TX Pin des DCC/SX Arduinos kann entfernt werden. Dadurch können Probleme beim Flashen des Arduinos beseitigt werden. 
-Die SPI Kommunikation benötigt aber zusätzliche Pins des Arduinos welche nicht zum einlesen von Schaltern zur Verfügung stehen.";Use the SPI communication between LED Arduino and DCC / Selectrix Arduino. If this mode is activated, the RS232 connection is no longer required. The TX pin of the DCC / SX Arduino can be removed. This can eliminate problems when flashing the Arduino. However, the SPI communication requires additional pins of the Arduino which are not available for reading switches.;Gebruik de SPI-communicatie tussen LED Arduino en DCC / Selectrix Arduino. Als deze modus is geactiveerd, is de RS232-verbinding niet langer nodig. De TX-pin van de DCC / SX Arduino kan worden verwijderd. Dit kan problemen bij het flitsen van de Arduino elimineren. De SPI-communicatie vereist echter extra pinnen van de Arduino die niet beschikbaar zijn voor het lezen van schakelaars.;Utilisez la communication SPI entre LED Arduino et DCC / Selectrix Arduino. Si ce mode est activé, la connexion RS232 n'est plus nécessaire. La broche TX du DCC / SX Arduino peut être retirée. Cela peut éliminer les problèmes lors du flashage de l'Arduino. Cependant, la communication SPI nécessite des broches supplémentaires de l'Arduino qui ne sont pas disponibles pour la lecture des commutateurs.;Utilizzare la comunicazione SPI tra LED Arduino e DCC / Selectrix Arduino. Se questa modalità è attivata, la connessione RS232 non è più necessaria. Il pin TX di DCC / SX Arduino può essere rimosso. Questo può eliminare i problemi durante il flashing di Arduino. Tuttavia, la comunicazione SPI richiede pin aggiuntivi di Arduino che non sono disponibili per la lettura degli switch.;Utilice la comunicación SPI entre LED Arduino y DCC / Selectrix Arduino. Si este modo está activado, la conexión RS232 ya no es necesaria. El pin TX del DCC / SX Arduino se puede quitar. Esto puede eliminar problemas al flashear el Arduino. Sin embargo, la comunicación SPI requiere pines adicionales del Arduino que no están disponibles para leer los interruptores.;Brug SPI-kommunikationen mellem LED Arduino og DCC / Selectrix Arduino. Hvis denne tilstand er aktiveret, er RS232-forbindelsen ikke længere påkrævet. TX-stiften på DCC / SX Arduino kan fjernes. Dette kan eliminere problemer, når Arduino blinker. SPI-kommunikationen kræver dog yderligere ben af ​​Arduino, som ikke er tilgængelige til aflæsning af afbrydere.
+;;"Verwendet die SPI Kommunikation zwischen LED Arduino und DCC/LNet/Selectrix Arduino. Wenn dieser Modus aktiviert ist, dann kann wird die RS232 Verbindung nicht mehr benötigt. Der TX Pin des DCC/LNet/SX Arduinos kann entfernt werden. Dadurch können Probleme beim Flashen des Arduinos beseitigt werden. 
+Die SPI Kommunikation benötigt aber zusätzliche Pins des Arduinos welche nicht zum einlesen von Schaltern zur Verfügung stehen.";Use the SPI communication between LED Arduino and DCC/LNet/Selectrix Arduino. If this mode is activated, the RS232 connection is no longer required. The TX pin of the DCC/LNet/SX Arduino can be removed. This can eliminate problems when flashing the Arduino. However, the SPI communication requires additional pins of the Arduino which are not available for reading switches.;Gebruik de SPI-communicatie tussen LED Arduino en DCC/LNet/Selectrix Arduino. Als deze modus is geactiveerd, is de RS232-verbinding niet meer nodig. De TX-pin van de DCC/LNet/SX Arduino kan worden verwijderd. Dit kan problemen bij het flashen van de Arduino voorkomen. De SPI-communicatie vereist echter extra pinnen van de Arduino die niet beschikbaar zijn voor het lezen van schakelaars.;Utilisez la communication SPI entre LED Arduino et DCC/LNet/Selectrix Arduino. Si ce mode est activé, la connexion RS232 n'est plus nécessaire. La broche TX de l'Arduino DCC/LNet/SX peut être retirée. Cela peut éliminer les problèmes lors du flashage de l'Arduino. Cependant, la communication SPI nécessite des broches supplémentaires de l'Arduino qui ne sont pas disponibles pour la lecture des commutateurs.;Usa la comunicazione SPI tra LED Arduino e DCC/LNet/Selectrix Arduino. Se questa modalità è attivata, la connessione RS232 non è più necessaria. Il pin TX di DCC/LNet/SX Arduino può essere rimosso. Questo può eliminare i problemi durante il flashing di Arduino. Tuttavia, la comunicazione SPI richiede pin aggiuntivi di Arduino che non sono disponibili per la lettura degli switch.;Utilice la comunicación SPI entre LED Arduino y DCC/LNet/Selectrix Arduino. Si este modo está activado, la conexión RS232 ya no es necesaria. El pin TX del DCC/LNet/SX Arduino se puede quitar. Esto puede eliminar problemas al flashear el Arduino. Sin embargo, la comunicación SPI requiere pines adicionales del Arduino que no están disponibles para leer interruptores.;Brug SPI-kommunikationen mellem LED Arduino og DCC/LNet/Selecttrix Arduino. Hvis denne tilstand er aktiveret, er RS232-forbindelsen ikke længere nødvendig. TX-stiften på DCC/LNet/SX Arduino kan fjernes. Dette kan eliminere problemer, når du flasher Arduino. SPI-kommunikationen kræver dog yderligere ben på Arduino, som ikke er tilgængelige til at læse switches.
 ;;Fehler beim Umbenennen des Verzeichnisses:;Error renaming the directory:;Fout bij het hernoemen van de directory:;Erreur lors du changement de nom du répertoire:;Errore durante la ridenominazione della directory:;Error al renombrar el directorio:;Fejl ved omdøbning af biblioteket:
 ;;Verzeichnis kann nicht umbenannt werden;Directory cannot be renamed;Directory kan niet worden hernoemd;Le répertoire ne peut pas être renommé;La directory non può essere rinominata;No se puede cambiar el nombre del directorio;Directory kan ikke omdøbes
 ;;Fehler: Das Verzeichnis '#1#' wurde nicht erzeugt beim entzippen von:;Error: The directory '#1#' was not created when unzipping:;Fout: de map '#1#' is niet gemaakt bij het uitpakken:;Erreur: le répertoire '#1#' n'a pas été créé lors de la décompression:;Errore: la directory '#1#' non è stata creata durante la decompressione:;Error: el directorio '#1#' no se creó al descomprimir:;Fejl: Kataloget '#1#' blev ikke oprettet ved udpakning:
@@ -2321,49 +2325,49 @@ Wenn die vorhandene Bibliothek die gleiche oder eine neuere Version besitzt, dan
 Soll der Bootloader auf einen weiteren Arduino geladen werden?|
 |
 Wenn ja, dann muss dieser jetzt in den linken Steckplatz gesteckt werden.|
-Mit 'Nein' wird wieder das DCC/Selectrix Programm auf den rechten Nano installiert.|
+Mit 'Nein' wird wieder das DCC/LNet/Selectrix Programm auf den rechten Nano installiert.|
 |
 Achtung der rechte Arduino darf nicht entfernt werden!";"Installation of the bootloader completed | 
  | 
  Should the bootloader be loaded onto another Arduino? | 
  | 
  If so, then this must now be plugged into the left slot. | 
- With 'No' the DCC / Selectrix program is installed again on the right Nano. | 
+ With 'No' the DCC/LNet/Selectrix program is installed again on the right Nano. | 
  | 
  Warning, the right Arduino must not be removed!";"Installatie van de bootloader voltooid | 
  | 
  Moet de bootloader op een andere Arduino worden geladen? | 
  | 
- Zo ja, dan moet deze nu in de linkersleuf worden gestoken. | 
- Met 'No' wordt het DCC / Selectrix programma weer op de rechter Nano geïnstalleerd. | 
+ Zo ja, dan moet deze nu in het linkerslot worden gestoken. | 
+ Met 'Nee' wordt het DCC/LNet/Selectrix programma weer geïnstalleerd op de rechter Nano. | 
  | 
  Waarschuwing, de juiste Arduino mag niet worden verwijderd!";"Installation du bootloader terminée | 
  | 
- Le bootloader doit-il être chargé sur un autre Arduino? | 
+ Le bootloader doit-il être chargé sur un autre Arduino ? | 
  | 
- Si tel est le cas, celui-ci doit maintenant être branché dans la fente gauche. | 
- Avec «Non», le programme DCC / Selectrix est à nouveau installé sur le Nano droit. | 
- | Attention 
-, le bon Arduino ne doit pas être supprimé!";"Installazione del bootloader completata | 
+ Si c'est le cas, il doit maintenant être branché dans l'emplacement de gauche. | 
+ Avec 'Non' le programme DCC/LNet/Selectrix est réinstallé sur le Nano droit. | 
+ | 
+ Attention, l'Arduino de droite ne doit pas être retiré !";"Installazione del bootloader completata | 
  | 
  Il bootloader dovrebbe essere caricato su un altro Arduino? | 
  | 
- In tal caso, questo deve ora essere inserito nello slot di sinistra. | 
- Con ""No"" il programma DCC / Selectrix viene nuovamente installato sul Nano destro. | 
- | Attenzione 
-, l'Arduino giusto non deve essere rimosso!";"Instalación del cargador de arranque completada | 
+ Se è così, questo deve ora essere inserito nello slot di sinistra. | 
+ Con 'No' il programma DCC/LNet/Selectrix viene nuovamente installato sul Nano destro. | 
  | 
- ¿Debería cargarse el gestor de arranque en otro Arduino? | 
+ Attenzione, l'Arduino giusto non deve essere rimosso!";"Instalación del gestor de arranque completada | 
  | 
- Si es así, ahora debe enchufarlo en la ranura izquierda. | 
- Con 'No' el programa DCC / Selectrix se instala de nuevo en el Nano derecho. | 
+ ¿Debe cargarse el gestor de arranque en otro Arduino? | 
+ | 
+ Si es así, ahora debe enchufarse en la ranura izquierda. | 
+ Con 'No', el programa DCC/LNet/Selectrix se vuelve a instalar en el Nano derecho. | 
  | Advertencia de 
-, ¡no se debe quitar el Arduino correcto!";"Installation af bootloader afsluttet | 
+, ¡no se debe quitar el Arduino correcto!";"Installation af bootloaderen fuldført | 
  | 
- Skal bootloaderen læsses på en anden Arduino? | 
+ Skal bootloaderen indlæses på en anden Arduino? | 
  | 
- Hvis ja, skal dette nu tilsluttes den venstre åbning. | 
- Med 'Nej' installeres DCC / Selectrix-programmet igen på højre Nano. | 
+ Hvis ja, så skal denne nu sættes i venstre slot. | 
+ Med 'Nej' installeres DCC/LNet/Selecttrix programmet igen på højre Nano. | 
  | 
  Advarsel, den rigtige Arduino må ikke fjernes!"
 ;;"Achtung: Die Jumper müssen unbedingt wieder entfernt werden sonst geht nichts mehr ;-(|
@@ -2451,7 +2455,7 @@ Die Jumper sind erst ab der Hardware Version 1.5 der Hauptplatine vorhanden.";"W
 ;;Fehler: Falscher Typ '#1#' in der 'LED_to_Var' Funktion;Error: Wrong type '#1#' in the 'LED_to_Var' function;Fout: verkeerde type '#1#' in de 'LED_to_Var' functie;Erreur: type incorrect '#1#' dans la fonction 'LED_to_Var';"Errore: tipo errato ""#1#"" nella funzione ""LED_to_Var""";Error: tipo incorrecto '#1#' en la función 'LED_to_Var';Fejl: Forkert type '#1#' i funktionen 'LED_to_Var'
 ;;Fehler: Falscher Typ in 'LED_to_Var' Funktion;Error: Wrong type in 'LED_to_Var' function;Fout: verkeerd type in functie 'LED_to_Var';Erreur: type incorrect dans la fonction 'LED_to_Var';"Errore: tipo errato nella funzione ""LED_to_Var""";Error: tipo incorrecto en la función 'LED_to_Var';Fejl: Forkert type i 'LED_to_Var' funktion
 ;;Die Adresse muss im Bereich 1 bis 9999 liegen;The address must be in the range 1 to 9999;Het adres moet tussen 1 en 9999 liggen;L'adresse doit être comprise entre 1 et 9999;L'indirizzo deve essere compreso tra 1 e 9999;La dirección debe estar en el rango de 1 a 9999;Adressen skal være i området 1 til 9999
-;;Mit 'Nein' wird die Meldung ignoriert und versucht den Arduino trotzdem zu programmieren.;With 'No' the message is ignored and it's tried to program the Arduino anyway.;Met 'Nee' wordt het bericht genegeerd en wordt toch geprobeerd de Arduino te programmeren.;Avec «Non», le message est ignoré et il a quand même essayé de programmer l'Arduino.;"Con ""No"" il messaggio viene ignorato e si tenta comunque di programmare Arduino.";Con 'No' el mensaje se ignora y se ha intentado programar el Arduino de todos modos.;Med 'Nej' ignoreres meddelelsen, og det er alligevel forsøgt at programmere Arduino.
+;;Mit 'Nein' wird die Meldung ignoriert und versucht den #2# trotzdem zu programmieren.;With 'No' the message is ignored and it's tried to program the #2# anyway.;Met 'Nee' wordt het bericht genegeerd en wordt toch geprobeerd de #2# te programmeren.;Avec «Non», le message est ignoré et il a quand même essayé de programmer l'#2#.;"Con ""No"" il messaggio viene ignorato e si tenta comunque di programmare #2#.";Con 'No' el mensaje se ignora y se ha intentado programar el #2# de todos modos.;Med 'Nej' ignoreres meddelelsen, og det er alligevel forsøgt at programmere #2#.
 ;;"Fehler: Der Parameter '#1#' muss eine der folgenden Werte enthalten:|
   #2#";"Error: The parameter '#1#' must contain one of the following values: | 
  #2#";"Fout: de parameter '#1#' moet een van de volgende waarden bevatten: | 
@@ -2464,8 +2468,10 @@ Die Jumper sind erst ab der Hardware Version 1.5 der Hauptplatine vorhanden.";"W
 ;;Datei nicht gefunden;file not found;bestand niet gevonden;Fichier non trouvé;file non trovato;archivo no encontrado;fil ikke fundet
 ;;Nano (Full memory);Nano (full memory);Nano (volledig geheugen);Nano (mémoire pleine);Nano (memoria piena);Nano (memoria completa);Nano (fuld hukommelse)
 ;;Überprüfe den Arduino Typ;Check out the Arduino type;Bekijk het Arduino-type;Découvrez le type Arduino;Dai un'occhiata alla tipologia Arduino;Mira el tipo Arduino;Tjek Arduino-typen
-;;Die schnelle Bootloader kann nur von einer DCC oder Selectrix Seite aus installiert werden.;The fast bootloader can only be installed from a DCC or Selectrix side.;De snelle bootloader kan alleen worden geïnstalleerd vanaf een DCC- of Selectrix-zijde.;Le chargeur de démarrage rapide ne peut être installé que depuis un côté DCC ou Selectrix.;Il bootloader veloce può essere installato solo da un lato DCC o Selectrix.;El cargador de arranque rápido solo se puede instalar desde un lado DCC o Selectrix.;Den hurtige bootloader kan kun installeres fra en DCC- eller Selectrix-side.
-;;Falsche Seite zum aktualisieren des Bootloaders ausgewählt;Wrong page selected to update the bootloader;Verkeerde pagina geselecteerd om de bootloader bij te werken;Mauvaise page sélectionnée pour mettre à jour le chargeur de démarrage;Pagina selezionata errata per aggiornare il bootloader;Se seleccionó una página incorrecta para actualizar el cargador de arranque;Forkert side valgt for at opdatere bootloader
+;;Der schnelle Bootloader kann nur von einer DCC, LNet oder Selectrix Seite aus installiert werden.;The fast bootloader can only be installed from a DCC, LNet or Selectrix side.;De snelle bootloader kan alleen worden geïnstalleerd vanaf een DCC-, LNet- of Selectrix-zijde.;Le chargeur de démarrage rapide ne peut être installé que d'un côté DCC, LNet ou Selectrix.;Il fast bootloader può essere installato solo da un lato DCC, LNet o Selectrix.;El cargador de arranque rápido solo se puede instalar desde un lado DCC, LNet o Selectrix.;Den hurtige bootloader kan kun installeres fra en DCC, LNet eller Selectrix side.
+;;Falsche Seite zum Aktualisieren des Bootloaders ausgewählt;Wrong page selected to update the bootloader;Verkeerde pagina geselecteerd om de bootloader bij te werken;Mauvaise page sélectionnée pour mettre à jour le chargeur de démarrage;Pagina selezionata errata per aggiornare il bootloader;Se seleccionó una página incorrecta para actualizar el cargador de arranque;Forkert side valgt for at opdatere bootloader
+;;Der schnelle Bootloader kann nur für Arduino installiert werden.;The fast bootloader can only be installed for Arduino.;De snelle bootloader kan alleen voor Arduino worden geïnstalleerd.;Le chargeur de démarrage rapide ne peut être installé que pour Arduino.;Il bootloader veloce può essere installato solo per Arduino.;El gestor de arranque rápido sólo se puede instalar para Arduino.;Den hurtige bootloader kan kun installeres til Arduino.
+;;Falsche Plattform zum Aktualisieren des Bootloaders ausgewählt;Wrong platform selected to update bootloader;Verkeerd platform geselecteerd om de bootloader bij te werken;Mauvaise plate-forme sélectionnée pour mettre à jour le chargeur de démarrage;È stata selezionata la piattaforma sbagliata per aggiornare il bootloader;Plataforma incorrecta seleccionada para actualizar el gestor de arranque;Forkert platform valgt til at opdatere bootloader
 ;;#1# Pin für SwitchB oder SwitchC;#1# pin for SwitchB or SwitchC;#1# pin voor SwitchB of SwitchC;Broche #1# pour SwitchB ou SwitchC;#1# pin per SwitchB o SwitchC;#1# pin para SwitchB o SwitchC;#1# pin til SwitchB eller SwitchC
 ;;Wenn der ESP32 verwendet wird, dann wird kein rechter Arduino benötigt;If the ESP32 is used then no right Arduino is needed;Als de ESP32 wordt gebruikt, is er geen juiste Arduino nodig;Si l'ESP32 est utilisé, aucun Arduino correct n'est nécessaire;Se viene utilizzato ESP32, non è necessario alcun Arduino corretto;Si se usa el ESP32, entonces no se necesita Arduino correcto;Hvis ESP32 bruges, er der ikke brug for nogen rigtig Arduino
 ;;Rechter Arduino nicht benötigt;Right Arduino not required;Juiste Arduino niet vereist;Arduino droit non requis;Arduino destro non richiesto;No se requiere Arduino derecho;Højre Arduino kræves ikke
@@ -2474,14 +2480,6 @@ Die Jumper sind erst ab der Hardware Version 1.5 der Hauptplatine vorhanden.";"W
 ;;Fehler: Makro kann nicht mit 3 LEDs benutzt werden;Error: Macro cannot be used with 3 LEDs;Fout: macro kan niet worden gebruikt met 3 LED's;Erreur: la macro ne peut pas être utilisée avec 3 LED;Errore: la macro non può essere utilizzata con 3 LED;Error: la macro no se puede utilizar con 3 LED;Fejl: Makro kan ikke bruges med 3 lysdioder
 ;;"Fehler: Die LED Nummer darf nicht negativ werden. Das kann durch eine falsche Angabe bei einem vorangegangenen ""Next_LED"" Befehl passieren.";"Error: The LED number must not become negative. This can happen through an incorrect entry in a previous ""Next_LED"" command.";"Fout: het LED-nummer mag niet negatief worden. Dit kan gebeuren door een onjuiste invoer in een eerdere ""Next_LED"" -opdracht.";"Erreur: le nombre de LED ne doit pas devenir négatif. Cela peut se produire par une entrée incorrecte dans une précédente commande ""Next_LED"".";"Errore: il numero del LED non deve diventare negativo. Ciò può accadere tramite una voce errata in un precedente comando ""Next_LED"".";"Error: el número de LED no debe volverse negativo. Esto puede suceder por una entrada incorrecta en un comando ""Next_LED"" anterior.";"Fejl: LED-nummeret må ikke blive negativt. Dette kan ske gennem en forkert indtastning i en tidligere ""Next_LED"" kommando."
 ;;Fehler: Negative LED Nummer;Error: Negative LED number;Fout: negatief LED-nummer;Erreur: numéro de LED négatif;Errore: numero LED negativo;Error: número de LED negativo;Fejl: Negativt LED-nummer
-;;"Kein COM Port erkannt.|
-Bitte Arduino an einen USB Anschluss des Computers anschließen";"No COM port recognized. | 
- Please connect the Arduino to a USB port on the computer";"Geen COM-poort herkend. | 
- Sluit de Arduino aan op een USB-poort op de computer";"Aucun port COM reconnu. | 
- Veuillez connecter l'Arduino à un port USB de l'ordinateur";"Nessuna porta COM riconosciuta. | 
- Si prega di collegare Arduino a una porta USB del computer";"No se reconoce ningún puerto COM. | 
- Conecte el Arduino a un puerto USB de la computadora";"Ingen COM -port genkendes. | 
- Slut Arduino til en USB -port på computeren"
 ;;Fehler: Das DMX Senden ist auf 100 Leds (300 DMX Kanäle) limitiert.;Error: The DMX sending is limited to 100 LEDs (300 DMX channels).;Fout: de DMX-verzending is beperkt tot 100 LED's (300 DMX-kanalen).;Erreur: l'envoi DMX est limité à 100 LED (300 canaux DMX).;Errore: l'invio DMX è limitato a 100 LED (300 canali DMX).;Error: El envío DMX está limitado a 100 LED (300 canales DMX).;Fejl: DMX-afsendelsen er begrænset til 100 lysdioder (300 DMX-kanaler).
 ;;Fehler: Eine notwendige Arduino Erweiterung ist nicht installiert:;Error: A necessary Arduino extension is not installed:;Fout: een noodzakelijke Arduino-extensie is niet geïnstalleerd:;Erreur: une extension Arduino nécessaire n'est pas installée:;Errore: un'estensione Arduino necessaria non è installata:;Error: una extensión necesaria de Arduino no está instalada:;Fejl: En nødvendig Arduino-udvidelse er ikke installeret:
 ;;Fehlende Erweiterung;Missing extension;Ontbrekende extensie;Extension manquante;Estensione mancante;Falta extensión;Mangler udvidelse
@@ -2556,18 +2554,10 @@ Treeview by JKP Application Development Services, info@jkp-ads.com, http://www.j
  (Dette kan ændres senere på siden 'Konfig')"
 ;;Welcher Makro Auswahl Dialog soll verwendet werden?;Which macro selection dialog should be used?;Welk dialoogvenster voor macroselectie moet worden gebruikt?;Quelle boîte de dialogue de sélection de macro doit être utilisée ?;Quale finestra di dialogo per la selezione delle macro dovrebbe essere utilizzata?;¿Qué cuadro de diálogo de selección de macros debería utilizarse?;Hvilken makrovalgdialog skal bruges?
 ;;ESP32 Wroom;ESP32 Wroom;ESP32 Wroom;ESP32 Wroom;ESP32 Wroom;ESP32 Wroom;ESP32 Wroom
-;;Raspberry Pico;Raspberry Pico;Frambozen Pico;Framboise Pico;Pico al lampone;Pico de frambuesa;Hindbær Pico
+;;Raspberry Pico;Raspberry Pico;Frambozen Pico (Experimenteel);Raspberry Pico;Raspberry Pico;Raspberry Pico;Raspberry Pico
 ;;"Achtung: Es wird nur ein Raspberry PICO  """;"Attention: Only one Raspberry PICO """;"Let op: slechts één Raspberry PICO """;"Attention : Un seul Framboise PICO""";"Attenzione: solo un Raspberry PICO """;"Atención: sólo una frambuesa PICO """;"Bemærk: Kun en hindbær PICO """
 ;;Zum Arduino schicken;Send to the Arduino;Stuur naar de Arduino;Envoyer à l'Arduino;Invia ad Arduino;Enviar al Arduino;Send til Arduino
 ;;Filename;Filename;Bestandsnaam;Nom de fichier;Nome del file;Nombre del archivo;Filnavn
-;;"Kein COM Port erkannt.|
-Bitte Arduino an einen USB Anschluss des Computers anschließen";"No COM port recognized. | 
- Please connect the Arduino to a USB port on the computer";"Geen COM-poort herkend. | 
- Sluit de Arduino aan op een USB-poort op de computer";"Aucun port COM reconnu. | 
- Veuillez connecter l'Arduino à un port USB de l'ordinateur";"Nessuna porta COM riconosciuta. | 
- Si prega di collegare Arduino a una porta USB del computer";"No se reconoce ningún puerto COM. | 
- Conecte el Arduino a un puerto USB de la computadora";"Ingen COM -port genkendes. | 
- Slut Arduino til en USB -port på computeren"
 ;;LED oder Sound Kanal;LED or sound channel;LED of geluidskanaal;LED ou canal sonore;LED o canale audio;LED o canal de sonido;LED eller lydkanal
 ;;Serial Channel;Serial Channel;Serieel kanaal;Canal série;Canale seriale;Canal serial;Seriel kanal
 ;;"Fehler beim Lesen der Pin Nummern in Zeile:|
@@ -2596,9 +2586,9 @@ Der Pin kann nicht mehrfach benutzt werden.";"Error: The pin '#1#' in '#3#' is a
  El pin no se puede utilizar más de una vez.";"Fejl: Pin '#1#' i '#3#' bruges allerede som '#2#' pin. | 
  Stiften kan ikke bruges mere end én gang."
 ;;Sound Kanal;Sound channel;Geluidskanaal;Canal sonore;Canale audio;Canal de sonido;Lydkanal
-;;Fehler: Der Soundmodul Typ '#1#' wird nicht unterstützt.;Error: The sound module type '#1#' is not supported.;Fout: het type geluidsmodule '#1#' wordt niet ondersteund.;Erreur : Le type de module de son '#1#' n'est pas pris en charge.;Errore: il tipo di modulo audio '#1#' non è supportato.;Error: el tipo de módulo de sonido '#1#' no es compatible.;Fejl: Lydmodultypen '#1#' understøttes ikke.
-;;Fehler: Der Sound Kanal '#1#' ist schon definiert.;Error: The sound channel '#1#' is already defined.;Error: Het geluidskanaal '#1#' is al gedefinieerd.;Erreur : Le canal audio '#1#' est déjà défini.;Errore: il canale audio '#1#' è già definito.;Error: el canal de sonido '#1#' ya está definido.;Fejl: Lydkanalen '#1#' er allerede defineret.
-;;Fehler: Der 'Sound Kanal' in Zeile #1# ist ungültig;Error: The 'Sound Channel' on line #1# is invalid;Fout: het 'Sound Channel' op regel #1# is ongeldig;Erreur : Le 'Sound Channel' sur la ligne #1# n'est pas valide;Errore: il 'Canale audio' sulla riga #1# non è valido;Error: el 'Canal de sonido' en la línea #1# no es válido;Fejl: 'Lydkanalen' på linje #1# er ugyldig
+;;Fehler Zeile #2#: Der Sound Kanal '#1#' ist schon definiert.;Error line #2#: The sound channel '#1#' is already defined.;Foutregel #2#: Het geluidskanaal '#1#' is al gedefinieerd.;Ligne d'erreur #2# : Le canal audio '#1#' est déjà défini.;Riga di errore #2#: il canale audio '#1#' è già definito.;Línea de error #2#: el canal de sonido '#1#' ya está definido.;Fejllinje #2#: Lydkanalen '#1#' er allerede defineret.
+;;Fehler Zeile #2#: Ungültiges Kommando '#1#'.;Error line #2#: Invalid command '#1#'.;Foutregel #2#: Ongeldige opdracht '#1#'.;Ligne d'erreur #2# : commande non valide '#1#'.;Riga di errore #2#: comando non valido '#1#'.;Línea de error #2#: comando no válido '#1#'.;Fejllinje #2#: Ugyldig kommando '#1#'.
+;;Fehler Zeile #2#: Der Soundmodul Typ '#1#' wird nicht unterstützt.;Error line #2#: The sound module type '#1#' is not supported.;Foutregel #2#: Het geluidsmoduletype '#1#' wordt niet ondersteund.;Ligne d'erreur #2# : Le type de module de son '#1#' n'est pas pris en charge.;Riga di errore #2#: il tipo di modulo audio '#1#' non è supportato.;Línea de error #2#: el tipo de módulo de sonido '#1#' no es compatible.;Fejllinje #2#: Lydmodultypen '#1#' understøttes ikke.
 ;;Ungültiger Sound Kanal;Invalid sound channel;Ongeldig geluidskanaal;Canal audio invalide;Canale audio non valido;Canal de sonido no válido;Ugyldig lydkanal
 ;;"Fehler: Der Sound Kanal '#1#' ist nicht definiert.|
 Zur Definition muss das Makro SOUND_CHANNEL_DEFINITON( vor dieser Zeile verwendet werden";"Error: The sound channel '#1#' is not defined. | 
@@ -2634,4 +2624,401 @@ Es sind die Led Kanäle 0-#2# erlaubt.";"Error: The 'LED channel' in line #1# is
 ;;Diese Excel Version wird nicht unterstützt.Bitte besuchen sie die Webseite #1# für weitergehende Informationen.Das Programm wird weiter ausgeführt, es kann jedoch zu unerwarteten Fehlfunktionen, Fehlermeldung und Abstürzen kommen.;This Excel version is not supported. Please visit the website #1# for further information. The program will continue to be executed, but unexpected malfunctions, error messages and crashes may occur.;Deze Excel-versie wordt niet ondersteund. Bezoek de website #1# voor meer informatie. Het programma wordt verder uitgevoerd, maar er kunnen onverwachte storingen, foutmeldingen en crashes optreden.;Cette version d'Excel n'est pas prise en charge. Veuillez visiter le site Web #1# pour plus d'informations. Le programme continuera à être exécuté, mais des dysfonctionnements inattendus, des messages d'erreur et des plantages peuvent se produire.;Questa versione di Excel non è supportata. Si prega di visitare il sito web #1# per ulteriori informazioni. Il programma continuerà ad essere eseguito, ma potrebbero verificarsi malfunzionamenti imprevisti, messaggi di errore e crash.;Esta versión de Excel no es compatible. Visite el sitio web #1# para obtener más información. El programa continuará ejecutándose, pero pueden ocurrir fallas inesperadas, mensajes de error y fallas.;Denne Excel-version understøttes ikke. Besøg webstedet #1# for yderligere information. Programmet vil fortsætte med at blive udført, men uventede fejlfunktioner, fejlmeddelelser og nedbrud kan forekomme.
 ;;Versionsprüfung;Version check;Versiecontrole;Vérification des versions;Controllo della versione;Verificación de versión;Versionstjek
 ;;Das Arduino Sketchbook Verzeichnis #1# existiert nicht.Bitte prüfen und korrigieren sie die Einstellungen in der Arduino IDE.;The Arduino Sketchbook directory #1# does not exist. Please check and correct the settings in the Arduino IDE.;De Arduino Sketchbook-directory #1# bestaat niet. Controleer en corrigeer de instellingen in de Arduino IDE.;Le répertoire Arduino Sketchbook #1# n'existe pas. Veuillez vérifier et corriger les paramètres dans l'IDE Arduino.;La directory Arduino Sketchbook #1# non esiste. Si prega di controllare e correggere le impostazioni nell'IDE di Arduino.;El directorio de Arduino Sketchbook #1# no existe. Verifique y corrija la configuración en el IDE de Arduino.;Arduino Sketchbook biblioteket #1# eksisterer ikke. Kontroller og ret indstillingerne i Arduino IDE.
-;;CommandButton1;;;;;;
+;;Fehler beim Schreiben der Datei ';Error writing file ';Fout bij schrijven bestand ';Erreur d'écriture du fichier ';Errore durante la scrittura del file ';Error al escribir el archivo ';Fejl ved skrivning af fil '
+;;Es wurde versucht, ein Blatt einzubinden, welches nicht existiert. Der Blattname lautet: ';An attempt was made to include a sheet that does not exist. The sheet name is: ';Er is geprobeerd een blad toe te voegen dat niet bestaat. De bladnaam is: ';Une tentative a été faite pour inclure une feuille qui n'existe pas. Le nom de la feuille est : ';Si è tentato di includere un foglio che non esiste. Il nome del foglio è: ';Se ha intentado incluir una hoja que no existe. El nombre de la hoja es: ';Det blev forsøgt at inkludere et ark, der ikke eksisterer. Arkets navn er: '
+;;Fehler beim Einbinden eines Blattes;Error including a sheet;Fout bij het opnemen van een blad;Erreur lors de l'inclusion d'une feuille;Errore durante l'inclusione di un foglio;Error al incluir una hoja;Fejl ved at inkludere et ark
+;;' in Startwert Spalte ist ungültig; in start value column is invalid;in de startwaardekolom is ongeldig;dans la colonne de la valeur de départ n'est pas valide;nella colonna del valore iniziale non è valido;en la columna de valor inicial no es válido;i startværdikolonnen er ugyldig
+;;Der Rückmelder Typ ist nicht definiert. Dazu muss z.B. die Zeile '#define USE_ATTiny_CAN_GBM' in die Konfiguration eingetragen werden;The feedback type is not defined. To do this, for example, the line '#define USE_ATTiny_CAN_GBM' must be entered in the configuration;Het feedbacktype is niet gedefinieerd. Hiervoor moet bijvoorbeeld de regel '#define USE_ATTiny_CAN_GBM' in de configuratie worden ingevoerd;Le type de retour n'est pas défini. Pour cela, par exemple, la ligne '#define USE_ATTiny_CAN_GBM' doit être saisie dans la configuration;Il tipo di feedback non è definito. Per fare ciò, ad esempio, nella configurazione deve essere inserita la riga '#define USE_ATTiny_CAN_GBM';El tipo de retroalimentación no está definido. Para ello, por ejemplo, se debe introducir en la configuración la línea '#define USE_ATTiny_CAN_GBM';Feedbacktypen er ikke defineret. For at gøre dette skal f.eks. linjen '#define USE_ATTiny_CAN_GBM' indtastes i konfigurationen
+;;Fehler: Falsche Parameter Anzahl in 'Logic()' Ausdruck: '#1#';Error: Wrong number of parameters in 'Logic()' Expression: '#1#';Fout: verkeerd aantal parameters in 'Logic()' Expressie: '#1#';"Erreur : Nombre de paramètres incorrect dans l'expression ""Logic%28%29"" : ""#1#""";Errore: numero errato di parametri nell'espressione 'Logic%28%29': '#1#';Error: Número incorrecto de parámetros en 'Logic%28%29' Expresión: '#1#';Fejl: Forkert antal parametre i 'Logic%28%29' udtryk: '#1#'
+;;Fehler: 'Logic()' Ausdruck ist ungültig;Error: 'Logic()' expression is invalid;Fout: 'Logic()'-expressie is ongeldig;"Erreur : l'expression ""Logic%28%29"" n'est pas valide";Errore: l'espressione 'Logic%28%29' non è valida;Error: la expresión 'Logic%28%29' no es válida;Fejl: 'Logic%28%29'-udtrykket er ugyldigt
+;;Fehler: Die Plattform '#1#' ist nicht definiert.;Error: The platform '#1#' is not defined.;Fout: het platform '#1#' is niet gedefinieerd.;Erreur : La plate-forme '#1#' n'est pas définie.;Errore: la piattaforma '#1#' non è definita.;Error: La plataforma '#1#' no está definida.;Fejl: Platformen '#1#' er ikke defineret.
+;;Beim Einbinden eines Blattes wurde ein Zirkelbezug festgestellt. Der Blattname lautet: ;A circular reference was detected when including a sheet. The sheet name is:;Er is een kringverwijzing gedetecteerd bij het opnemen van een blad. De bladnaam is:;Une référence circulaire a été détectée lors de l'inclusion d'une feuille. Le nom de la feuille est :;È stato rilevato un riferimento circolare durante l'inclusione di un foglio. Il nome del foglio è:;Se detectó una referencia circular al incluir una hoja. El nombre de la hoja es:;En cirkulær reference blev detekteret, når et ark inkluderedes. Arkets navn er:
+;;Der angegebene Blattname existiert nicht: ;The specified sheet name does not exist:;De opgegeven bladnaam bestaat niet:;Le nom de feuille spécifié n'existe pas :;Il nome del foglio specificato non esiste:;El nombre de hoja especificado no existe:;Det angivne arknavn findes ikke:
+;;Taster Loslassen simulieren:;Simulate button release:;Knop loslaten simuleren:;Simuler le relâchement du bouton :;Simula il rilascio del pulsante:;Simular liberación de botón:;Simuler knapfrigivelse:
+;;Nach der Änderung dieser Einstellung muss das DCC Arduino Programm neu installiert werden!;After changing this setting, the DCC Arduino program must be reinstalled!;Na het wijzigen van deze instelling moet het DCC Arduino programma opnieuw geïnstalleerd worden!;Après avoir modifié ce paramètre, le programme DCC Arduino doit être réinstallé !;Dopo aver modificato questa impostazione, il programma DCC Arduino deve essere reinstallato!;¡Después de cambiar esta configuración, el programa DCC Arduino debe ser reinstalado!;Efter at have ændret denne indstilling, skal DCC Arduino-programmet geninstalleres!
+;;LNet Lizenzbestimmungen;LNet License Agreement;LNet-licentieovereenkomst;Contrat de licence LNet;Contratto di licenza LNet;Acuerdo de licencia de LNet;LNet Licensaftale
+;;Die Verwendung des LNet Protokoll ist ausschließlich für die private, nicht-kommerzielle Nutzung erlaubt. Die Lizenzbestimmungen sind hier nachzulesen:;The use of the LNet protocol is only permitted for private, non-commercial use. The license terms can be found here:;Het gebruik van het LNet-protocol is alleen toegestaan ​​voor privé, niet-commercieel gebruik. De licentievoorwaarden zijn hier te vinden:;L'utilisation du protocole LNet n'est autorisée que pour un usage privé et non commercial. Les termes de la licence peuvent être trouvés ici :;L'uso del protocollo LNet è consentito solo per uso privato e non commerciale. I termini della licenza sono disponibili qui:;El uso del protocolo LNet solo está permitido para uso privado y no comercial. Los términos de la licencia se pueden encontrar aquí:;Brugen af ​​LNet-protokollen er kun tilladt til privat, ikke-kommerciel brug. Licensbetingelserne kan findes her:
+;;Ich bestätige die Einhaltung dieser Lizenzbestimmungen;I confirm compliance with these license terms;Ik bevestig de naleving van deze licentievoorwaarden;Je confirme le respect de ces conditions de licence;Confermo il rispetto di questi termini di licenza;Confirmo el cumplimiento de estos términos de licencia;Jeg bekræfter overholdelse af disse licensvilkår
+;;Der Link kann nicht geöffnet werden: http://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf;The link cannot be opened: http://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf;De link kan niet worden geopend: http://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf;Le lien ne peut pas être ouvert : http://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf;Impossibile aprire il collegamento: http://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf;El enlace no se puede abrir: http://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf;Linket kan ikke åbnes: http://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf
+;;"Die Verwendung des LNet Protokoll basiert auf der ""LocoNet Personal Edition"" und ist vom Lizenzinhaber Digitrax ausschließlich für die private, nicht-kommerzielle Nutzung erlaubt. Die Lizenzbestimmungen sind hier nachzulesen:";"The use of the LNet protocol is based on the ""LocoNet Personal Edition"" and is permitted by the license holder Digitrax exclusively for private, non-commercial use. The license terms can be found here:";"Het gebruik van het LNet-protocol is gebaseerd op de ""LocoNet Personal Edition"" en is door licentiehouder Digitrax uitsluitend toegestaan ​​voor privé, niet-commercieel gebruik. De licentievoorwaarden zijn hier te vinden:";"L'utilisation du protocole LNet est basée sur ""LocoNet Personal Edition"" et est autorisée par le titulaire de la licence Digitrax exclusivement pour un usage privé et non commercial. Les termes de la licence peuvent être trouvés ici :";"L'utilizzo del protocollo LNet si basa sulla ""LocoNet Personal Edition"" ed è consentito dal titolare della licenza Digitrax esclusivamente per uso privato e non commerciale. I termini della licenza sono disponibili qui:";"El uso del protocolo LNet se basa en la ""Edición personal de LocoNet"" y está permitido por el titular de la licencia Digitrax exclusivamente para uso privado y no comercial. Los términos de la licencia se pueden encontrar aquí:";"Brugen af ​​LNet-protokollen er baseret på ""LocoNet Personal Edition"" og er tilladt af licensindehaveren Digitrax udelukkende til privat, ikke-kommerciel brug. Licensbetingelserne kan findes her:"
+;;Das Protokoll #1# wird auf dieser Plattform nicht unterstützt.;The #1# protocol is not supported on this platform.;Het #1#-protocol wordt niet ondersteund op dit platform.;Le protocole #1# n'est pas pris en charge sur cette plate-forme.;Il protocollo #1# non è supportato su questa piattaforma.;El protocolo #1# no es compatible con esta plataforma.;#1#-protokollen understøttes ikke på denne platform.
+;;Loconet ™;;;;;;
+;;Icon Familie Auswählen;Select family icon;Selecteer het familiepictogram;Sélectionnez l'icône de la famille;Seleziona l'icona della famiglia;Seleccionar icono de familia;Vælg familieikon
+;;"Welche Iconfamilie soll verwendet werden?|
+|
+Klicke auf das entsprechend Bild";"Which icon family should you use?| 
+ | 
+ Click on the corresponding image";"Welke pictogramfamilie moet u gebruiken?| 
+ | 
+ Klik op de bijbehorende afbeelding";"Quelle famille d'icônes devriez-vous utiliser ?| 
+ | 
+ Cliquez sur l'image correspondante";"Quale famiglia di icone dovresti usare?| VLF | 
+ Clicca sull'immagine corrispondente";"¿Qué familia de iconos deberías usar?| 
+ | 
+ Haga clic en la imagen correspondiente";"Hvilken ikonfamilie skal du bruge?| 
+ | 
+ Klik på det tilsvarende billede"
+;;Das Einbinden eines Blattes mit einem unterschiedlichen Steuerungstyps ist nicht möglich: Der Blattname lautet: ';It is not possible to include a sheet with a different control type: The sheet name is: ';Het is niet mogelijk om een ​​blad met een ander besturingstype op te nemen: De bladnaam is: ';Il n'est pas possible d'inclure une feuille avec un type de champ différent : Le nom de la feuille est : ';Non è possibile includere un foglio con un tipo di controllo diverso: il nome del foglio è: ';No es posible incluir una hoja con un tipo de control diferente: El nombre de la hoja es: ';Det er ikke muligt at inkludere et ark med en anden kontroltype: Arknavnet er: '
+;;Ab Softwareversion 3.3 und Hautplatine 1.8.2 ist der Automatikmodus aktiv. Die Jumper brauchen nicht mehr gesteckt werden. ;Automatic mode is active from software version 3.3 and main board 1.8.2. The jumpers no longer need to be inserted.;De automatische modus is actief vanaf softwareversie 3.3 en moederbord 1.8.2. De jumpers hoeven niet meer te worden geplaatst.;Le mode automatique est actif à partir de la version logicielle 3.3 et de la carte principale 1.8.2. Les cavaliers n'ont plus besoin d'être insérés.;La modalità automatica è attiva dalla versione software 3.3 e dalla scheda principale 1.8.2. Non è più necessario inserire i ponticelli.;El modo automático está activo desde la versión de software 3.3 y la placa principal 1.8.2. Ya no es necesario insertar los puentes.;Automatisk tilstand er aktiv fra softwareversion 3.3 og hovedkort 1.8.2. Jumperne skal ikke længere indsættes.
+;;ATMega328PB zu ATMega328P ändern (empfohlen);Change ATMega328PB to ATMega328P (recommended);Wijzig ATMega328PB in ATMega328P (aanbevolen);Remplacez ATMega328PB par ATMega328P %28recommended%29;Cambia ATMega328PB in ATMega328P %28recommended%29;Cambie ATMega328PB a ATMega328P %28recommended%29;Skift ATMega328PB til ATMega328P %28recommended%29
+;;Netzwerkpfade werden nicht unterstützt! Das Programm muss auf einem lokalen Laufwerk ausgeführt werden. Bitte beachten sie die Installationsanleitung.;Network paths are not supported! The program must be run on a local drive. Please note the installation instructions.;Netwerkpaden worden niet ondersteund! Het programma moet op een lokale schijf worden uitgevoerd. Let op de installatie-instructies.;Les chemins réseau ne sont pas pris en charge ! Le programme doit être exécuté sur un disque local. Veuillez respecter les instructions d'installation.;I percorsi di rete non sono supportati! Il programma deve essere eseguito su un'unità locale. Si prega di notare le istruzioni di installazione.;¡Las rutas de red no son compatibles! El programa debe ejecutarse en una unidad local. Tenga en cuenta las instrucciones de instalación.;Netværksstier understøttes ikke! Programmet skal køres på et lokalt drev. Bemærk venligst monteringsvejledningen.
+;;Benutzerfehler;User error;Gebruikersfout;Erreur de l'utilisateur;Errore dell'utente;Error de usuario;Brugerfejl
+;;"Achtung:|
+Wenn PlatformIO bei Beta Versionen verwendet wird, dann werden die C++ Quellen der Release Version benutzt. |
+Das kann zu Problemen führen. Als Abhilfe müssen die C++ Quellen in das '.pio' Verzeichnis kopiert werden.";"Attention:| 
+ If PlatformIO is used with beta versions, then the C++ sources of the release version are used. | 
+ This can lead to problems. As a workaround, the C++ sources must be copied into the '.pio' directory.";"Let op:| 
+ Als PlatformIO wordt gebruikt met bètaversies, worden de C++-bronnen van de releaseversie gebruikt. | 
+ Dit kan tot problemen leiden. Als tijdelijke oplossing moeten de C++-bronnen worden gekopieerd naar de map '.pio'.";"Attention : | 
+ Si PlatformIO est utilisé avec les versions bêta, les sources C++ de la version publiée sont utilisées. | 
+ Cela peut entraîner des problèmes. Pour contourner ce problème, les sources C++ doivent être copiées dans le répertoire « .pio ».";"Attenzione: | 
+ Se PlatformIO viene utilizzato con versioni beta, vengono utilizzate le sorgenti C++ della versione di rilascio. | 
+ Questo può causare problemi. Come soluzione alternativa, le sorgenti C++ devono essere copiate nella directory '.pio'.";"Atención: | 
+ Si se utiliza PlatformIO con versiones beta, se utilizan las fuentes C++ de la versión de lanzamiento. | 
+ Esto puede ocasionar problemas. Como solución alternativa, las fuentes C++ se deben copiar en el directorio '.pio'.";"Bemærk:|  
+ Hvis PlatformIO bruges sammen med betaversioner, bruges C++-kilderne til udgivelsesversionen. |  
+ Dette kan føre til problemer. Som en løsning skal C++-kilderne kopieres til '.pio'-mappen."
+;;Der lokaler Pfad der OneDrive Datei oder des Ordners ### kann nicht ermittelt werden.;The local path of the OneDrive file or folder ### cannot be determined.;Het lokale pad van het OneDrive-bestand of de OneDrive-map ### kan niet worden vastgesteld.;Le chemin local du fichier ou du dossier OneDrive ### ne peut pas être déterminé.;Non è possibile determinare il percorso locale del file o della cartella OneDrive ###.;No se puede determinar la ruta local del archivo o carpeta de OneDrive ###.;Den lokale sti til OneDrive-filen eller -mappen ### kan ikke bestemmes.
+;;Analoge Taster werden auf dieser Plattform nicht unterstützt.;Analog buttons are not supported on this platform.;Analoge knoppen worden niet ondersteund op dit platform.;Les boutons analogiques ne sont pas pris en charge sur cette plate-forme.;I pulsanti analogici non sono supportati su questa piattaforma.;Los botones analógicos no son compatibles con esta plataforma.;Analoge knapper understøttes ikke på denne platform.
+;;Ein Lichtsensor wird auf dieser Plattform nicht unterstützt.;A light sensor is not supported on this platform.;Een lichtsensor wordt niet ondersteund op dit platform.;Un capteur de lumière n'est pas pris en charge sur cette plate-forme.;Un sensore di luce non è supportato su questa piattaforma.;Un sensor de luz no es compatible con esta plataforma.;En lyssensor understøttes ikke på denne platform.
+;;"PICO im Bootmodus gefunden|
+Soll der PICO mit einer Start-Firmware initialisiert werden?";"PICO found in boot mode| 
+ Should the PICO be initialized with a start firmware?";"PICO gevonden in opstartmodus|  
+ Moet de PICO worden geïnitialiseerd met een startfirmware?";"PICO trouvé en mode démarrage |  
+ Le PICO doit-il être initialisé avec un firmware de démarrage ?";"PICO trovato in modalità di avvio|  
+ Il PICO deve essere inizializzato con un firmware di avvio?";"PICO encontrado en modo de arranque|  
+ ¿Se debe inicializar el PICO con un firmware de inicio?";"PICO fundet i opstartstilstand|  
+ Skal PICO initialiseres med en start firmware?"
+;;"Fehler: Die Anzahl der verwendeten Eingangskanäle ist zu groß!|
+Es sind maximal #1# verfügbar. Die Konfiguration enthält aber ";"Error: The number of input channels used is too large!| 
+ A maximum of #1# is available. However, the configuration contains";"Fout: Het aantal gebruikte ingangskanalen is te groot!|  
+ Er is maximaal #1# beschikbaar. De configuratie bevat echter";"Erreur : Le nombre de canaux d'entrée utilisés est trop grand !|  
+ Un maximum de #1# est disponible. Cependant, la configuration contient";"Errore: il numero di canali di ingresso utilizzati è troppo grande!|  
+ È disponibile un massimo di #1#. Tuttavia, la configurazione contiene";"Error: ¡El número de canales de entrada utilizados es demasiado grande!|  
+ Hay un máximo de #1# disponible. Sin embargo, la configuración contiene";"Fejl: Antallet af anvendte inputkanaler er for stort!|  
+ Et maksimum på #1# er tilgængeligt. Konfigurationen indeholder dog"
+;;"Die Eingangskanäle werden zum einlesen von DCC, LNet, Selectrix und CAN Daten benutzt. |
+Außerdem werden sie als interne Zwischenspeicher benötigt.";"The input channels are used to read DCC, LNet, Selectrix and CAN data. | 
+ They are also required as internal buffer storage.";"De ingangskanalen worden gebruikt om DCC-, LNet-, Selectrix- en CAN-data te lezen. |  
+ Ze zijn ook nodig als interne bufferopslag.";"Les canaux d'entrée sont utilisés pour lire les données DCC, LNet, Selectrix et CAN. |  
+ Ils sont également requis comme stockage tampon interne.";"I canali di ingresso vengono utilizzati per leggere i dati DCC, LNet, Selectrix e CAN. |  
+ Sono necessari anche come memoria buffer interna.";"Los canales de entrada se utilizan para leer datos DCC, LNet, Selectrix y CAN. |  
+ También se requieren como almacenamiento intermedio interno.";"Indgangskanalerne bruges til at læse DCC, LNet, Selectrix og CAN data. |  
+ De er også påkrævet som intern bufferlagring."
+;;Ungültigen Variablennamen;Invalid variable name;Ongeldige variabelenaam;Nom de variable invalide;Nome della variabile non valido;Nombre de variable no válido;Ugyldigt variabelnavn
+;;;;;;;;
+;;"Fehler: Das Gerät am COM Port #1# wurde nicht als #2# erkannt.|
+Evtl. ist es ein defekter Arduino oder der Bootloader ist falsch.";"Error: The device on COM port #1# was not recognized as #2#.| 
+ Maybe it's a defective Arduino or the bootloader is wrong.";"Fout: het apparaat op COM-poort #1# werd niet herkend als #2#.|  
+ Misschien is het een defecte Arduino of is de bootloader verkeerd.";"Erreur : le périphérique sur le port COM #1# n'a pas été reconnu comme #2#.|  
+ C'est peut-être un Arduino défectueux ou le chargeur de démarrage est erroné.";"Errore: il dispositivo sulla porta COM #1# non è stato riconosciuto come #2#.|  
+ Forse è un Arduino difettoso o il bootloader è sbagliato.";"Error: el dispositivo en el puerto COM #1# no fue reconocido como #2#.|  
+ Quizás sea un Arduino defectuoso o el gestor de arranque esté mal.";"Fejl: Enheden på COM-porten #1# blev ikke genkendt som #2#.|  
+ Måske er det en defekt Arduino, eller bootloaderen er forkert."
+;;#1 Ports:;#1 ports:;#1-poorten:;Ports #1 :;_Porte HASH1:;_Puertos HASH1:;#1-porte:
+;;Der Parameter '#1#' hat einen ungültigen Variablennamen;The parameter '#1#' has an invalid variable name;De parameter '#1#' heeft een ongeldige variabelenaam;Le paramètre '#1#' a un nom de variable non valide;Il parametro '#1#' ha un nome di variabile non valido;El parámetro '#1#' tiene un nombre de variable no válido;Parameteren '#1#' har et ugyldigt variabelnavn
+;;Verbindungsaufnahme mit Zentral vom Typ #1#;Establishing connection with central of type #1#;Verbinding tot stand brengen met centrale van het type #1#;Établissement de la connexion avec la centrale de type #1#;Stabilire la connessione con la centrale di tipo #1#;Estableciendo conexión con central de tipo #1#;Etablering af forbindelse med central af typen #1#
+;;Versuch #1#/#2;Try #1#/#2;Probeer #1#/#2;Essayez #1#/#2;Prova #1#/#2;Pruebe #1#/#2;Prøv #1#/#2
+;;Verbindungsaufnahme mit Zentral vom Typ #1# nicht möglich;Unable to establish a connection with the central type #1#;Kan geen verbinding tot stand brengen met het centrale type #1#;Impossible d'établir une connexion avec le type central #1#;Impossibile stabilire una connessione con la centrale di tipo #1#;No se puede establecer una conexión con el tipo central #1#;Kan ikke etablere forbindelse med den centrale type #1#
+;;Servo Test und Einstellung;Servo test and adjustment;Servotest en afstelling;Test et réglage des servos;Test e regolazione dei servi;Prueba y ajuste de servos.;Servo test og justering
+;;"Wählen sie zuerst die Adresse des Servo. |
+Mit dem Schieberegler wird die Position eingestelllt.|
+|
+Mit den Knöpfen unten wird der aktuelle Servo konfiguriert.";"First select the address of the servo. | 
+ The position is adjusted using the slider.| 
+ | 
+ The buttons below are used to configure the current servo.";"Selecteer eerst het adres van de servo. |  
+ De positie wordt aangepast met behulp van de schuifregelaar.|  
+ |  
+ De onderstaande knoppen worden gebruikt om de huidige servo te configureren.";"Sélectionnez d’abord l’adresse du servo. |  
+ La position est ajustée à l'aide du curseur.|  
+ |  
+ Les boutons ci-dessous sont utilisés pour configurer le servo actuel.";"Selezionare innanzitutto l'indirizzo del servo. |  
+ La posizione viene regolata utilizzando lo slider.|  VLF |  
+ I pulsanti sottostanti vengono utilizzati per configurare il servo corrente.";"Primero seleccione la dirección del servo. |  
+ La posición se ajusta mediante el control deslizante.|  
+ |  
+ Los siguientes botones se utilizan para configurar el servo actual.";"Vælg først adressen på servoen. |  
+ Positionen justeres ved hjælp af skyderen.|  
+ |  
+ Knapperne nedenfor bruges til at konfigurere den aktuelle servo."
+;;LED Nummer;LED number;LED-nummer;Numéro de LED;Numero del LED;número de LED;LED nummer
+;;Anschluss;Connection;Verbinding;Connexion;Connessione;Conexión;Forbindelse
+;;Servo Modul Auswahl;Servo module selection;Selectie van servomodules;Sélection du module servo;Selezione del servomodulo;Selección de servomódulo;Valg af servomodul
+;;<<;<<;<<;<<;<<;<<;<<
+;;<;<;<;<;<;<;<
+;;>>;>>;>>;>>;>>;>>;>>
+;;>;>;>;>;>;>;>
+;;Servo zurücksetzen;Reset servo;Servo opnieuw instellen;Réinitialiser le servo;Reimpostare il servo;Restablecer servo;Nulstil servo
+;;Servoeinstellung;Servo adjustment;Servo-afstelling;Réglage des servos;Regolazione del servo;ajuste servo;Servo justering
+;;Servo Konfigurieren;Configure servo;Servo configureren;Configurer le servo;Configura il servo;Configurar servo;Konfigurer servo
+;;Einstellungen speichern;Save settings;Instellingen opslaan;Enregistrer les paramètres;Salva impostazioni;Guardar configuración;Gem indstillinger
+;;Weiter;Proceed;Verder;Plus loin;Ulteriore;Más;Længere
+;;nicht speichern;don't save;niet opslaan;ne sauvegarde pas;non salvare;no guardes;gem ikke
+;;"Konfiguration der Minimalposition|
+|
+Mit den Pfeiltasten wird die Positition eingestellt. Durch Halten der Tasten wird die Position schneller verändert";"Minimum position configuration| 
+ | 
+ The position is set using the arrow keys. Holding the buttons changes the position more quickly";"Minimale positieconfiguratie|  
+ |  
+ De positie wordt ingesteld met behulp van de pijltjestoetsen. Door de knoppen ingedrukt te houden, verandert de positie sneller";"Configuration de position minimale |  
+ |  
+ La position est définie à l'aide des touches fléchées. Maintenir les boutons change la position plus rapidement";"Configurazione posizione minima|  VLF |  
+ La posizione viene impostata utilizzando i tasti freccia. Tenendo premuti i pulsanti si cambia la posizione più rapidamente";"Configuración de posición mínima|  
+ |  
+ La posición se ajusta mediante las teclas de flecha. Mantener presionados los botones cambia la posición más rápidamente";"Minimum position konfiguration|  
+ |  
+ Positionen indstilles ved hjælp af piletasterne. Ved at holde knapperne ændres positionen hurtigere"
+;;"Konfiguration der Geschwindigkeit|
+|
+Mit den Pfeiltasten wird die Geschwindigkeit eingestellt. Durch Halten der Tasten wird die Geschwindigkeit schneller verändert";"Speed ​​configuration| 
+ | 
+ The speed is set using the arrow keys. Holding the buttons changes the speed faster";"Snelheid ââconfiguratie|  
+ |  
+ De snelheid wordt ingesteld met de pijltjestoetsen. Door de knoppen ingedrukt te houden, verandert de snelheid sneller";"Configuration de la vitesse |  
+ |  
+ La vitesse est réglée à l'aide des touches fléchées. Maintenir les boutons change la vitesse plus rapidement";"Configurazione della velocità |  VLF |  
+ La velocità viene impostata utilizzando i tasti freccia. Tenendo premuti i pulsanti la velocità cambia più velocemente";"Velocidad ââconfiguración|  
+ |  
+ La velocidad se ajusta mediante las teclas de flecha. Mantener presionados los botones cambia la velocidad más rápido";"Hastighed ââkonfiguration|  
+ |  
+ Hastigheden indstilles med piletasterne. Hvis du holder knapperne nede, ændres hastigheden hurtigere"
+;;"Konfiguration der Maximalposition|
+|
+Mit den Pfeiltasten wird die Positition eingestellt. Durch Halten der Tasten wird die Position schneller verändert";"Maximum position configuration| 
+ | 
+ The position is set using the arrow keys. Holding the buttons changes the position more quickly";"Maximale positieconfiguratie|  
+ |  
+ De positie wordt ingesteld met behulp van de pijltjestoetsen. Door de knoppen ingedrukt te houden, verandert de positie sneller";"Configuration de la position maximale |  
+ |  
+ La position est définie à l'aide des touches fléchées. Maintenir les boutons change la position plus rapidement";"Configurazione della posizione massima|  VLF |  
+ La posizione viene impostata utilizzando i tasti freccia. Tenendo premuti i pulsanti si cambia la posizione più rapidamente";"Configuración de posición máxima|  
+ |  
+ La posición se ajusta mediante las teclas de flecha. Mantener presionados los botones cambia la posición más rápidamente";"Maksimal positionskonfiguration|  
+ |  
+ Positionen indstilles med piletasterne. Ved at holde knapperne ændres positionen hurtigere"
+;;Sollen der Servo auf die Grundeinstellungen (Limits, Geschwindigkeit) zurückgesetzt werden?;Should the servo be reset to the basic settings (limits, speed)?;Moet de servo worden gereset naar de basisinstellingen (limieten, snelheid)?;Le servo doit-il être réinitialisé aux paramètres de base %28limites, speed%29 ?;Il servo deve essere ripristinato alle impostazioni di base %28limits, speed%29?;¿Se debe restablecer el servo a la configuración básica %28límites, velocidad%29?;Skal servoen nulstilles til grundindstillingerne %28grænser, hastighed%29?
+;;"Fehler: Die Anzahl der verwendeten Eingangskanäle ist zu groß!|
+Es sind maximal #1# verfügbar. Die Konfiguration enthält aber ";"Error: The number of input channels used is too large!|
+A maximum of #1# are available. But the configuration contains";"Fout: Het aantal gebruikte ingangskanalen is te groot!|
+Er zijn maximaal #1# beschikbaar. Maar de configuratie bevat";"Erreur : Le nombre de canaux d'entrée utilisés est trop grand !|
+Un maximum de #1# est disponible. Mais la configuration contient";"Errore: il numero di canali di ingresso utilizzati è troppo grande!|
+Sono disponibili al massimo #1#. Ma la configurazione contiene";"Error: ¡El número de canales de entrada utilizados es demasiado grande!|
+Un máximo de #1# están disponibles. Pero la configuración contiene";"Fejl: Antallet af anvendte inputkanaler er for stort!|
+Der er maksimalt #1# til rådighed. Men konfigurationen indeholder"
+;;"Die Eingangskanäle werden zum einlesen von DCC, LNet, Selectrix und CAN Daten benutzt. |
+Außerdem werden sie als interne Zwischenspeicher benötigt.";"The input channels are used to read DCC, LNet, Selectrix and CAN data. |
+They are also required as internal buffer storage.";"De ingangskanalen worden gebruikt om DCC-, LNet-, Selectrix- en CAN-data te lezen. |
+Ze zijn ook nodig als interne bufferopslag.";"Les canaux d'entrée sont utilisés pour lire les données DCC, LNet, Selectrix et CAN. |
+Ils sont également requis comme stockage tampon interne.";"I canali di ingresso vengono utilizzati per leggere i dati DCC, LNet, Selectrix e CAN. |
+Sono inoltre necessari come memoria buffer interna.";"Los canales de entrada se utilizan para leer datos DCC, LNet, Selectrix y CAN. |
+También se necesitan como almacenamiento intermedio interno.";"Indgangskanalerne bruges til at læse DCC, LNet, Selectrix og CAN data. |
+De er også nødvendige som intern bufferlagring."
+;;;;;;;;
+;;Liste der verfügbaren Firmware wird geladen...;Loading list of available firmware...;Lijst met beschikbare firmware laden...;Chargement de la liste des firmwares disponibles...;Caricamento elenco firmware disponibili...;Cargando lista de firmware disponible...;Indlæser liste over tilgængelig firmware...
+;;Firmware Herunterladen;Download firmware;Firmware downloaden;Télécharger le micrologiciel;Scarica il firmware;Descargar firmware;Download firmware
+;;Herunterladen;Download;Downloaden;Télécharger;Scaricamento;Descargar;Download
+;;Wählen sie die gewünsche Firmwaredatei aus, die aus der zentralen Firmwarebibliothek heruntergeladen werden soll:;Select the desired firmware file to download from the central firmware library:;Selecteer het gewenste firmwarebestand om te downloaden uit de centrale firmwarebibliotheek:;Sélectionnez le fichier de micrologiciel souhaité à télécharger à partir de la bibliothèque centrale de micrologiciels :;Selezionare il file firmware desiderato da scaricare dalla libreria firmware centrale:;Seleccione el archivo de firmware que desee para descargar desde la biblioteca de firmware central:;Vælg den ønskede firmwarefil, der skal downloades fra det centrale firmwarebibliotek:
+;;Firmware '#1#' V#2# wird heruntergeladen...;Downloading firmware '#1#' V#2#...;Firmware '#1#' V#2# downloaden...;Téléchargement du firmware '#1#' V#2#...;Download del firmware '#1#' V#2#...;Descargando firmware '#1#' V#2#...;Downloader firmware '#1#' V#2#...
+;;Datei '#1#' wird entpackt...;File '#1#' is being unpacked...;Bestand '#1#' wordt uitgepakt...;Le fichier '#1#' est en cours de décompression...;Il file '#1#' è in fase di decompressione...;El archivo '#1#' se está descomprimiendo...;Filen '#1#' pakkes ud...
+;;Firmware heruntergeladen und entpackt nach:;Firmware downloaded and unpacked to:;Firmware gedownload en uitgepakt naar:;Firmware téléchargé et décompressé pour :;Firmware scaricato e decompresso in:;Firmware descargado y descomprimido en:;Firmware downloadet og pakket ud til:
+;;Fehler beim Aufbau der Firmware-Liste:;Error while building the firmware list:;Fout bij het samenstellen van de firmwarelijst:;Erreur lors de la création de la liste des firmwares :;Errore durante la creazione dell'elenco dei firmware:;Error al crear la lista de firmware:;Fejl under opbygning af firmwarelisten:
+;;Die Liste der verfügbaren Firmware konnte nicht ermittelt werden.;The list of available firmware could not be determined.;De lijst met beschikbare firmware kan niet worden bepaald.;La liste des micrologiciels disponibles n'a pas pu être déterminée.;Non è stato possibile determinare l'elenco dei firmware disponibili.;No se pudo determinar la lista de firmware disponible.;Listen over tilgængelig firmware kunne ikke bestemmes.
+;;Bitte die Internetverbindung prüfen und es später erneut versuchen.;Please check your internet connection and try again later.;Controleer uw internetverbinding en probeer het later opnieuw.;Veuillez vérifier votre connexion Internet et réessayer plus tard.;Controlla la tua connessione Internet e riprova più tardi.;Verifique su conexión a Internet e inténtelo nuevamente más tarde.;Tjek venligst din internetforbindelse og prøv igen senere.
+;;Es ist keine Firmware zum Herunterladen verfügbar.;There is no firmware available to download.;Er is geen firmware beschikbaar om te downloaden.;Aucun firmware n'est disponible au téléchargement.;Non è disponibile alcun firmware da scaricare.;No hay ningún firmware disponible para descargar.;Der er ingen firmware tilgængelig at downloade.
+;;"Die Datei '#1#' existiert bereits.|
+Soll sie überschrieben werden?";"The file '#1#' already exists.|
+Should it be overwritten?";"Het bestand '#1#' bestaat al.|
+Moet het worden overschreven?";"Le fichier '#1#' existe déjà.|
+Faut-il l'écraser ?";"Il file '#1#' esiste già.|
+Dovrebbe essere sovrascritto?";"El archivo '#1#' ya existe.|
+¿Debería sobrescribirse?";"Filen '#1#' findes allerede.|
+Skal det overskrives?"
+;;Pico Firmware laden;Load Pico firmware;Laad Pico-firmware;Charger le micrologiciel Pico;Carica il firmware Pico;Cargar firmware Pico;Indlæs Pico firmware
+;;Das Herunterladen der Firmware ist fehlgeschlagen.;Firmware download failed.;Firmware-download mislukt.;Le téléchargement du micrologiciel a échoué.;Download del firmware non riuscito.;Error en la descarga del firmware.;Firmware-download mislykkedes.
+;;"Bei manchen DCC Zentralen wird keine Meldung beim Loslassen eines Tasters geschickt. Das führt dazu, dass die mit den Tasten verknüpften Ausgänge nicht ausgehen. Als Abhilfe kann die MobaLedLib das Loslassen das Tasters simulieren.
+
+0: LED Arduino simuliert das Loslassen (kompatibles Verhalten zu Version <3.2.1
+1: es wird kein Loslassen simuliert
+2: der DCC Arduino erkennt automatisch, ob das Loslassen simuliert werden muss
+3: der DCC Arduino erzeugt das Loslassen immer";"With some DCC centers no message is sent when a button is released. This means that the outputs associated with the buttons do not go out. As a remedy, the MobaLedLib can simulate releasing the button.
+
+0: LED Arduino simulates releasing (compatible behavior to version <3.2.1
+1: no letting go is simulated
+2: the DCC Arduino automatically detects whether releasing needs to be simulated
+3: the DCC Arduino always generates the release";"Bij sommige DCC-centra wordt er geen bericht verzonden wanneer een knop wordt losgelaten. Dit betekent dat de uitgangen die bij de knoppen horen niet uitgaan. Als remedie kan de MobaLedLib het loslaten van de knop simuleren.
+
+0: LED Arduino simuleert loslaten (compatibel gedrag met versie <3.2.1
+1: er wordt geen loslaten gesimuleerd
+2: de DCC Arduino detecteert automatisch of het loslaten gesimuleerd moet worden
+3: de DCC Arduino genereert altijd de release";"Avec certains centres DCC, aucun message n'est envoyé lorsqu'un bouton est relâché. Cela signifie que les sorties associées aux boutons ne s'éteignent pas. En guise de remède, le MobaLedLib peut simuler le relâchement du bouton.
+
+0 : La LED Arduino simule le déclenchement (comportement compatible avec la version <3.2.1
+1 : aucun lâcher prise n’est simulé
+2 : le DCC Arduino détecte automatiquement si le déclenchement doit être simulé
+3 : le DCC Arduino génère toujours la release";"In alcuni centri DCC non viene inviato alcun messaggio al rilascio del pulsante. Ciò significa che le uscite associate ai pulsanti non si spengono. Come rimedio, MobaLedLib può simulare il rilascio del pulsante.
+
+0: LED Arduino simula il rilascio (comportamento compatibile con la versione <3.2.1
+1: viene simulato il non lasciare andare
+2: DCC Arduino rileva automaticamente se è necessario simulare il rilascio
+3: la DCC Arduino genera sempre la release";"En algunos centros DCC no se envía ningún mensaje cuando se suelta un botón. Esto hace que las salidas asociadas a los botones no se apaguen. Como solución, MobaLedLib puede simular que se suelta el botón.
+
+0: LED Arduino simula liberación (comportamiento compatible con la versión <3.2.1)
+1: se simula no soltarse
+2: el DCC Arduino detecta automáticamente si es necesario simular la liberación
+3: el DCC Arduino siempre genera la liberación";"Med nogle DCC-centre sendes der ingen besked, når en knap slippes. Det betyder, at de udgange, der er knyttet til knapperne, ikke går ud. Som et middel kan MobaLedLib simulere frigivelse af knappen.
+
+0: LED Arduino simulerer frigivelse (kompatibel adfærd til version <3.2.1
+1: ingen slip simuleres
+2: DCC Arduino registrerer automatisk, om frigivelse skal simuleres
+3: DCC Arduino genererer altid udgivelsen"
+;;Anzeige der StartLed Nummer;Display of the StartLed number;Weergave van het StartLed-nummer;Affichage du numéro StartLed;Visualizzazione del numero dello StartLed;Visualización del número StartLed;Visning af StartLed-nummeret
+;;"Dieser Parameter bestimmt die Darstellung der Start Led Nummer je Kanal.
+
+Wert 0: Es wird nur Start Led Nummer angezeigt
+
+Wert 1: Akrtiviert eine kombinierte Anzeige mit dem Format ""KanalNummer-LedNummer"". Ist nur der Standard Led Kanal in Verwendung hat diese Option keine Auswirkung, dann ist die Darstellung wie bei Wert 0
+";"This parameter determines the display of the start LED number per channel.
+
+Value 0: Only the start LED number is displayed
+
+Value 1: Activates a combined display with the format ""ChannelNumber-LedNumber"". If only the standard LED channel is used, this option has no effect, then the display is as with value 0";"Deze parameter bepaalt de weergave van het start-LED-nummer per kanaal.
+
+Waarde 0: Alleen het start-LED-nummer wordt weergegeven
+
+Waarde 1: Activeert een gecombineerde weergave met het formaat ""ChannelNumber-LedNumber"". Indien alleen het standaard LED-kanaal wordt gebruikt heeft deze optie geen effect, dan is de weergave zoals bij waarde 0";"Ce paramètre détermine l'affichage du numéro de la LED de démarrage par canal.
+
+Valeur 0 : seul le numéro de la LED de démarrage est affiché
+
+Valeur 1 : Active un affichage combiné au format ""ChannelNumber-LedNumber"". Si seul le canal LED standard est utilisé, cette option n'a aucun effet, alors l'affichage est comme avec la valeur 0";"Questo parametro determina la visualizzazione del numero di LED di avvio per canale.
+
+Valore 0: viene visualizzato solo il numero del LED di avvio
+
+Valore 1: Attiva una visualizzazione combinata con il formato ""ChannelNumber-LedNumber"". Se viene utilizzato solo il canale LED standard, questa opzione non ha alcun effetto, quindi la visualizzazione è come con il valore 0";"Este parámetro determina la visualización del número de LED de inicio por canal.
+
+Valor 0: solo se muestra el número del LED de inicio
+
+Valor 1: Activa una visualización combinada con el formato ""ChannelNumber-LedNumber"". Si solo se utiliza el canal LED estándar, esta opción no tiene ningún efecto, entonces la visualización es como con el valor 0";"Denne parameter bestemmer visningen af ​​start-LED-nummeret pr. kanal.
+
+Værdi 0: Kun start-LED-nummeret vises
+
+Værdi 1: Aktiverer et kombineret display med formatet ""ChannelNumber-LedNumber"". Hvis kun standard LED-kanalen bruges, har denne mulighed ingen effekt, så er displayet som med værdien 0"
+;;Baumansicht  zur Makroauswahl verwenden:;Use tree view for macro selection:;Gebruik de boomstructuur voor macroselectie:;Utiliser l'arborescence pour la sélection des macros :;Utilizza la visualizzazione ad albero per la selezione delle macro:;Utilice la vista de árbol para la selección de macros:;Brug trævisning til makrovalg:
+;;"Wenn der Schalter aktiviert ist (1), dann wird die neue Baumansicht zur Auswahl der Makros verwendet.
+Mit 0 werden die Makros über die alte Listauswahl selektiert.";"If the switch is activated (1), then the new tree view is used to select macros.
+With 0 the macros are selected using the old list selection.";"Als de schakelaar is geactiveerd (1), wordt de nieuwe boomstructuur gebruikt om macro's te selecteren.
+Met 0 worden de macro's geselecteerd met behulp van de oude lijstselectie.";"Si le commutateur est activé (1), alors la nouvelle arborescence est utilisée pour sélectionner les macros.
+Avec 0, les macros sont sélectionnées en utilisant l'ancienne sélection de liste.";"Se l'interruttore è attivato (1), la nuova visualizzazione ad albero viene utilizzata per selezionare le macro.
+Con 0 le macro vengono selezionate utilizzando la vecchia selezione dell'elenco.";"Si el interruptor está activado (1), la nueva vista de árbol se utiliza para seleccionar macros.
+Con 0 las macros se seleccionan usando la selección de lista anterior.";"Hvis kontakten er aktiveret (1), så bruges den nye trævisning til at vælge makroer.
+Med 0 vælges makroerne ved hjælp af det gamle listevalg."
+;;Expert Mode aktivieren:;Activate Expert Mode:;Expertmodus activeren:;Activer le mode expert :;Attiva la modalità esperto:;Activar el modo experto:;Aktiver eksperttilstand:
+;;Mit einer 1 wird der Expert Mode bei der Makro Auswahl aktiviert.;With a 1 the expert mode is activated when selecting the macro.;Met een 1 wordt de expertmodus geactiveerd bij het selecteren van de macro.;Avec un 1, le mode expert est activé lors de la sélection de la macro.;Con 1 viene attivata la modalità esperto quando si seleziona la macro.;Con un 1 se activa el modo experto al seleccionar la macro.;Med en 1 aktiveres eksperttilstanden, når makroen vælges.
+;;Auswahl der angezeigten Spalten:;Selection of the displayed columns:;Selectie van de weergegeven kolommen:;Sélection des colonnes affichées :;Selezione delle colonne visualizzate:;Selección de las columnas mostradas:;Valg af de viste kolonner:
+;;Mindesten eine der folgenden Spalten muss angezeigt werden.;At least one of the following columns must be displayed.;Minimaal één van de volgende kolommen moet worden weergegeven.;Au moins une des colonnes suivantes doit être affichée.;Deve essere visualizzata almeno una delle seguenti colonne.;Se debe mostrar al menos una de las siguientes columnas.;Mindst én af følgende kolonner skal vises.
+;;Icons anzeigen:;Show icons:;Pictogrammen weergeven:;Afficher les icônes :;Mostra icone:;Mostrar iconos:;Vis ikoner:
+;;"Zeigt zu jedem Makro das passende Bild an.
+Dadurch kann die Funktion schnell erkannt werden.";"Displays the appropriate image for each macro.
+This allows the function to be recognized quickly.";"Geeft voor elke macro de juiste afbeelding weer.
+Hierdoor kan de functie snel worden herkend.";"Affiche l'image appropriée pour chaque macro.
+Cela permet de reconnaître rapidement la fonction.";"Visualizza l'immagine appropriata per ciascuna macro.
+Ciò consente di riconoscere rapidamente la funzione.";"Muestra la imagen adecuada para cada macro.
+Esto permite que la función se reconozca rápidamente.";"Viser det passende billede for hver makro.
+Dette gør det muligt at genkende funktionen hurtigt."
+;;Einfachen Namen:;Simple name:;Eenvoudige naam:;Nom simple :;Nome semplice:;Nombre sencillo:;Simpelt navn:
+;;Zeigt zu jedem Makro einen einfachen Namen in der aktiven Sprache an.;Displays a simple name in the active language for each macro.;Geeft voor elke macro een eenvoudige naam weer in de actieve taal.;Affiche un nom simple dans la langue active pour chaque macro.;Visualizza un nome semplice nella lingua attiva per ciascuna macro.;Muestra un nombre simple en el idioma activo para cada macro.;Viser et enkelt navn på det aktive sprog for hver makro.
+;;Ausführliche Makro Ansicht:;Detailed macro view:;Gedetailleerde macroweergave:;Vue macro détaillée :;Visualizzazione macro dettagliata:;Vista macro detallada:;Detaljeret makrovisning:
+;;"Zeigt die ausführlichen Makros mit allen Parametern an. 
+In der Programm Version 3.0.0 gab es nur diese Spalte.";"Displays the detailed macros with all parameters. 
+In program version 3.0.0 there was only this column.";"Toont de gedetailleerde macro's met alle parameters. 
+In programmaversie 3.0.0 was er alleen deze kolom.";"Affiche les macros détaillées avec tous les paramètres. 
+Dans la version 3.0.0 du programme, il n'y avait que cette colonne.";"Visualizza le macro dettagliate con tutti i parametri. 
+Nella versione del programma 3.0.0 c'era solo questa colonna.";"Muestra las macros detalladas con todos los parámetros. 
+En la versión 3.0.0 del programa solo existía esta columna.";"Viser de detaljerede makroer med alle parametre. 
+I programversion 3.0.0 var der kun denne kolonne."
+;;LED Simulator Einstellungen:;LED simulator settings:;Instellingen LED-simulator:;Paramètres du simulateur LED :;Impostazioni del simulatore LED:;Configuración del simulador de LED:;LED-simulatorindstillinger:
+;;Anzahl Leds horizontal:;Number of LEDs horizontally:;Aantal LED's horizontaal:;Nombre de LED horizontalement :;Numero di LED in orizzontale:;Número de LED horizontalmente:;Antal lysdioder vandret:
+;;Anzahl Leds vertikal:;Number of LEDs vertically:;Aantal LED's verticaal:;Nombre de LED verticalement :;Numero di LED in verticale:;Número de LED verticalmente:;Antal LED'er lodret:
+;;Led Größe in Pixel (4-64):;Led size in pixels (4-64):;Ledgrootte in pixels (4-64):;Taille des LED en pixels (4-64) :;Dimensione led in pixel (4-64):;Tamaño del LED en píxeles (4-64):;LED-størrelse i pixels (4-64):
+;;Fensterposition horizontal:;Window position horizontal:;Raampositie horizontaal:;Position de la fenêtre horizontale :;Posizione della finestra orizzontale:;Posición de la ventana horizontal:;Vinduets position vandret:
+;;Fensterposition vertikal:;Window position vertical:;Raampositie verticaal:;Position de la fenêtre verticale :;Posizione della finestra verticale:;;Vinduets position lodret:
+;;Start LED;Start LED;Start-LED;LED de démarrage;Avvia LED;LED de inicio;Start LED
+;;Simulator zeigt LEDs ab dieser Nummer an;Simulator displays LEDs starting from this number;Simulator geeft LED's weer vanaf dit nummer;Le simulateur affiche les LED à partir de ce numéro;Il simulatore visualizza i LED a partire da questo numero;El simulador muestra LED a partir de este número;Simulatoren viser LED'er fra dette nummer
+;;Autostart:;Autostart:;Automatisch starten:;Démarrage automatique :;Avvio automatico:;Inicio automático:;Autostart:
+;;"
+0: Simualtor ausgeschaltet
+1: Simulator wird beim Programmstart geöffnet
+2: Simulator und Hauptplatine gemeinsam
+3: Nur Simulator
+";"0: Simulator switched off
+1: Simulator opens when the program starts
+2: Simulator and motherboard together
+3: Simulator only";"0: Simulator uitgeschakeld
+1: Simulator wordt geopend wanneer het programma start
+2: Simulator en moederbord samen
+3: Alleen simulator";"0 : Simulateur éteint
+1 : Le simulateur s'ouvre au démarrage du programme
+2 : Simulateur et carte mère ensemble
+3 : Simulateur uniquement";"0: Simulatore spento
+1: Il simulatore si apre all'avvio del programma
+2: Simulatore e scheda madre insieme
+3: Solo simulatore";"0: Simulador apagado
+1: El simulador se abre cuando se inicia el programa.
+2: Simulador y placa base juntos
+3: solo simulador";"0: Simulator slukket
+1: Simulator åbner, når programmet starter
+2: Simulator og bundkort sammen
+3: Kun simulator"
+;;Immer im Vordergrund:;Always in the foreground:;Altijd op de voorgrond:;Toujours au premier plan :;Sempre in primo piano:;Siempre en primer plano:;Altid i forgrunden:
+;;"
+0: normales Fenster
+1: immer im Vordergrund
+";"0: normal window
+1: always in the foreground";"0: normaal venster
+1: altijd op de voorgrond";"0 : fenêtre normale
+1 : toujours au premier plan";"0: finestra normale
+1: sempre in primo piano";"0: ventana normal
+1: siempre en primer plano";"0: normalt vindue
+1: altid i forgrunden"
+;;Schnelles Build und Upload verwenden:;Use fast build and upload:;Gebruik snel bouwen en uploaden:;Utilisez la création et le téléchargement rapides :;Utilizza creazione e caricamento rapidi:;Utilice compilación y carga rápidas:;Brug hurtig build og upload:
+;;"Schnellere Methode zum erzeugen des Arduino Programms und zum hochladen verwenden (10 Sek. anstelle von 23 Sek. auf Hardis Laptop). 
+Dazu wird die Datei ""privateBuild.cmd"" verwendet. Diese kann bei Bedarf angepasst werden.";"Use faster method to generate Arduino program and upload (10 seconds instead of 23 seconds on Hardi's laptop). 
+The file “privateBuild.cmd” is used for this. This can be adjusted if necessary.";"Gebruik een snellere methode om het Arduino-programma te genereren en te uploaden (10 seconden in plaats van 23 seconden op Hardi's laptop). 
+Hiervoor wordt het bestand “privateBuild.cmd” gebruikt. Indien nodig kan dit aangepast worden.";"Utilisez une méthode plus rapide pour générer le programme Arduino et le télécharger (10 secondes au lieu de 23 secondes sur l'ordinateur portable de Hardi). 
+Le fichier « privateBuild.cmd » est utilisé pour cela. Cela peut être ajusté si nécessaire.";"Utilizza un metodo più veloce per generare e caricare il programma Arduino (10 secondi invece di 23 secondi sul laptop di Hardi). 
+A questo scopo viene utilizzato il file “privateBuild.cmd”. Questo può essere modificato se necessario.";"Utilice un método más rápido para generar el programa Arduino y cargarlo (10 segundos en lugar de 23 segundos en la computadora portátil de Hardi). 
+Para ello se utiliza el archivo “privateBuild.cmd”. Esto se puede ajustar si es necesario.";"Brug en hurtigere metode til at generere Arduino-program og uploade (10 sekunder i stedet for 23 sekunder på Hardis bærbare computer). 
+Filen ""privateBuild.cmd"" bruges til dette. Dette kan justeres om nødvendigt."
+;;"Verwendet die SPI Kommunikation zwischen LED Arduino und DCC/Selectrix Arduino. Wenn dieser Modus aktiviert ist, dann kann wird die RS232 Verbindung nicht mehr benötigt. Der TX Pin des DCC/SX Arduinos kann entfernt werden. Dadurch können Probleme beim Flashen des Arduinos beseitigt werden. 
+Die SPI Kommunikation benötigt aber zusätzliche Pins des Arduinos welche nicht zum einlesen von Schaltern zur Verfügung stehen.";"Uses SPI communication between LED Arduino and DCC/Selectrix Arduino. If this mode is activated, the RS232 connection is no longer required. The TX pin of the DCC/SX Arduino can be removed. This can eliminate problems when flashing the Arduino. 
+However, SPI communication requires additional pins on the Arduino which are not available for reading switches.";"Maakt gebruik van SPI-communicatie tussen LED Arduino en DCC/Selectrix Arduino. Als deze modus is geactiveerd, is de RS232-verbinding niet langer vereist. De TX-pin van de DCC/SX Arduino kan worden verwijderd. Dit kan problemen bij het flashen van de Arduino elimineren. 
+Voor SPI-communicatie zijn echter extra pinnen op de Arduino nodig die niet beschikbaar zijn voor leesschakelaars.";"Utilise la communication SPI entre LED Arduino et DCC/Selectrix Arduino. Si ce mode est activé, la connexion RS232 n'est plus nécessaire. La broche TX de l'Arduino DCC/SX peut être retirée. Cela peut éliminer les problèmes lors du flashage de l'Arduino. 
+Cependant, la communication SPI nécessite des broches supplémentaires sur l'Arduino qui ne sont pas disponibles pour la lecture des commutateurs.";"Utilizza la comunicazione SPI tra LED Arduino e DCC/Selectrix Arduino. Se questa modalità è attivata, la connessione RS232 non è più necessaria. Il pin TX dell'Arduino DCC/SX può essere rimosso. Questo può eliminare i problemi durante il flashing di Arduino. 
+Tuttavia, la comunicazione SPI richiede pin aggiuntivi su Arduino che non sono disponibili per la lettura degli interruttori.";"Utiliza comunicación SPI entre LED Arduino y DCC/Selectrix Arduino. Si este modo está activado, la conexión RS232 ya no es necesaria. El pin TX del DCC/SX Arduino se puede quitar. Esto puede eliminar problemas al actualizar el Arduino. 
+Sin embargo, la comunicación SPI requiere pines adicionales en Arduino que no están disponibles para leer interruptores.";"Bruger SPI-kommunikation mellem LED Arduino og DCC/Selecttrix Arduino. Hvis denne tilstand er aktiveret, er RS232-forbindelsen ikke længere nødvendig. TX-stiften på DCC/SX Arduino kan fjernes. Dette kan eliminere problemer, når du flasher Arduino. 
+SPI-kommunikation kræver dog yderligere ben på Arduino, som ikke er tilgængelige til at læse switches."
+;;Arduino Ausgaben in Excel Fenster:;Arduino outputs in Excel window:;Arduino-uitgangen in Excel-venster:;Sorties Arduino dans la fenêtre Excel :;Output di Arduino nella finestra di Excel:;Salidas de Arduino en la ventana de Excel:;Arduino-output i Excel-vindue:
+;;Ausgaben beim Kompilieren des Arduino Programms werden in einem Excel Fenster angezeigt (Experimentell);Outputs when compiling the Arduino program are displayed in an Excel window (Experimental);Uitgangen bij het compileren van het Arduino-programma worden weergegeven in een Excel-venster (experimenteel);Les résultats lors de la compilation du programme Arduino sont affichés dans une fenêtre Excel (expérimental);Gli output durante la compilazione del programma Arduino vengono visualizzati in una finestra Excel (sperimentale);Los resultados al compilar el programa Arduino se muestran en una ventana de Excel (Experimental);Output ved kompilering af Arduino-programmet vises i et Excel-vindue (eksperimentelt)
+;;PlatformIO Build verwenden;Use PlatformIO build;Gebruik PlatformIO-build;Utiliser la version PlatformIO;Utilizza la build PlatformIO;Utilice la compilación PlatformIO;Brug PlatformIO build
+;;"Welche Tool-Chain wird zum Builden verwendet
+
+0: Arduino 
+1: PlatformIO";"Which tool chain is used to build
+
+0: Arduino 
+1: PlatformIO";"Welke gereedschapsketen wordt gebruikt om te bouwen
+
+0: Arduino 
+1: PlatformIO";"Which tool chain is used to build
+
+0 : Arduino 
+1 : PlateformeIO";"Quale catena di strumenti viene utilizzata per costruire
+
+0:Arduino 
+1: PiattaformaIO";"¿Qué cadena de herramientas se utiliza para construir?
+
+0:Arduino 
+1: plataforma IO";"Hvilken værktøjskæde bruges til at bygge
+
+0: Arduino 
+1: PlatformIO"

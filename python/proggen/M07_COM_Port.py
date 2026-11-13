@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-10-27) - M07_COM_Port.py
+# Datei-Version: 1.09 (2026-11-12) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.04
-# Last Update:    2026-10-27
+# Version:        1.09
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,11 @@
 #   1.02  2026-10-21  Pico: jede Kennung VID 2E8A und Adafruit 239A:813D (vorher nur 2E8A:000A), pyserial- und Windows-Zweig; DetectArduino schaltet RTS ein (Version K des Excel-Programms)
 #   1.03  2026-10-26  Linux: die Platzhalter-Anschluesse /dev/ttyS0 ... ttyS31 ohne Geraet erscheinen nicht mehr in der Liste der Anschluesse (auch nicht mit unbekannte Ports anzeigen)
 #   1.04  2026-10-27  Find_Nano_Like_Device: erkennt einen Arduino Nano (CH340, FTDI, Arduino) an einem Anschluss, wenn ein Pico oder ESP32 eingestellt ist
+#   1.05  2026-11-11  getdeviceinformation gab immer False zurueck (Erfolg der Pruefung nur noch an der Antwort des Bootloaders erkannt). DetectArduino: Verbindung wird in jedem Fall geschlossen, nur noch mit der lokalen Verbindung gearbeitet (kein 'NoneType' ... 'dtr'), gegen gleichzeitige Zugriffe gesichert (Sperre), bei -1/-2/-3 mehrere Versuche mit Pause; Bootloader-Pruefung (STK500) ueber die Einstellung DetectBootloader (Kurzweg: aendert die Wahl des Benutzers nie); Liste der Anschluesse erkennt CH340, FTDI und Arduino an der Hersteller-Kennung (Beschreibung 'USB Serial'); die Pruefung akzeptiert einen gewaehlten Anschluss auch mit unbekannter Beschreibung (nicht bei ESP32 und Pico)
+#   1.06  2026-11-11  Bootloader-Pruefung (Einstellung DetectBootloader an): nur eine Pruefung je Baudrate statt vier (DETECT_LOOPS_BOOTLOADER; 'nicht erkannt' nach etwa 6 statt 24 Sekunden); das Protokoll nennt gesendete und empfangene Bytes jeder Synchronisation (__transact) und die Zahl der Bytes im Empfangspuffer vor dem Synchronisieren
+#   1.07  2026-11-12  Bootloader-Pruefung: nach dem DTR-Puls 150 ms warten und den Empfangspuffer leeren; GET_SYNC bis zu 10-mal im Abstand von etwa 0,3 s neu senden statt dreimal 2 s zu warten (der alte Bootloader des Nano ist nur kurz erreichbar; Ergebnis von bootloader_test.py auf dem Raspberry Pi: der erste Sync direkt nach dem Loslassen von DTR geht verloren)
+#   1.08  2026-11-12  Die Bootloader-Pruefung ist jetzt STANDARD (Einstellung NanoBootloaderDetection, ohne Eintrag oder leer: an); wer sie nicht moechte, schaltet sie in den Programm Einstellungen aus. Neuer Name der Einstellung, damit die in 3.10 bis 3.12 beim Speichern der Seite mitgeschriebene Vorgabe 'aus' (DetectBootloader) nicht gilt
+#   1.09  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26); EnumComPorts, Check_If_Port_is_Available und Check_If_Port_is_Available_And_Get_Name haben den Board-Typ als Parameter (BoardType, Vorgabe: der Board-Typ des aktuellen Blatts), wie im Excel-Programm
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -53,6 +58,7 @@ import logging
 import os  # v1.03
 import re  # v1.03
 import serial
+import threading  # v1.05
 try:    
     from zeroconf import Zeroconf, ServiceBrowser, ServiceListener,  DNSAddress
     import_zeroconfok = True
@@ -595,10 +601,11 @@ def find_devices():
 
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: ResNames - ByRef 
-def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True):
+def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True, BoardType=None):  # v1.09: BoardType (Excel 3.5.0L3): der Board-Typ, fuer den die Anschluesse gesucht werden; ohne Angabe der Board-Typ des Blatts
     Ports = vbObjectInitialize((50,), Byte)
-    ESP_Inst = ( M02a.Get_BoardTyp() == M02.HT_ESP32 )
-    PICO_Inst = ( M02a.Get_BoardTyp() == M02.HT_PICO )
+    BoardType = BoardType or M02a.Get_BoardTyp()  # v1.09
+    ESP_Inst = ( BoardType == M02.HT_ESP32 )  # v1.09 (vorher M02a.Get_BoardTyp())
+    PICO_Inst = ( BoardType == M02.HT_PICO )  # v1.09 (vorher M02a.Get_BoardTyp())
     WLAN_inst =  InStr(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL), 'WLAN') > 0
     if WLAN_inst:
         # check for Railmail mDNS
@@ -630,7 +637,8 @@ def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True):
                 continue                              # Linux: ttyS0 ... ttyS31 sind Platzhalter ohne Geraet (auch mit "unbekannte Ports anzeigen" nie in der Liste)  # v1.03
             # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 ) ) or ( ESP_Inst == True and InStr(comport.description, 'Silicon Labs CP210x') > 0 )  or  ( PICO_Inst == True and InStr(comport.description, 'USB\\\\VID_2E8A&PID_000A\\') > 0 ):
             # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and InStr(comport.hwid, 'USB VID:PID=2E8A:000A') > 0 ):  # v1.02 (entfallen)
-            if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and ( InStr(comport.hwid, 'USB VID:PID=2E8A:') > 0 or InStr(comport.hwid, 'USB VID:PID=239A:813D') > 0 ) ):  # v1.02
+            # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and ( InStr(comport.hwid, 'USB VID:PID=2E8A:') > 0 or InStr(comport.hwid, 'USB VID:PID=239A:813D') > 0 ) ):  # v1.02  # v1.05 (entfallen)
+            if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 or ( getattr(comport, 'vid', None) in NANO_LIKE_VIDS ) ) ) or ( InStr(comport.description, 'Silicon Labs CP210x') > 0 ) or ( InStr(comport.description, 'CP2102 USB to UART') > 0 )  or  ( PICO_Inst == True and ( InStr(comport.hwid, 'USB VID:PID=2E8A:') > 0 or InStr(comport.hwid, 'USB VID:PID=239A:813D') > 0 ) ):  # v1.05
                 Ports.append(comport.device)
                 ResNames.append(comport.description)
                 idx=idx+1
@@ -639,7 +647,7 @@ def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True):
     return fn_return_value, ResNames
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: PortNr - ByVal 
-def Check_If_Port_is_Available(PortNr):
+def Check_If_Port_is_Available(PortNr, BoardType=None):  # v1.09: BoardType wie im Excel-Programm
     if PortNr.startswith("IP:"):
         return True
     Debug.Print("Check_If_Port_is_Available:"+PortNr)
@@ -648,7 +656,9 @@ def Check_If_Port_is_Available(PortNr):
 
     ResNames = vbObjectInitialize(objtype=String)
     #--------------------------------------------------------------------------
-    Ports, ResNames = EnumComPorts(False, ResNames)
+    # Ports, ResNames = EnumComPorts(False, ResNames)  # v1.05 (entfallen)
+    # Ports, ResNames = EnumComPorts(_Accept_Unknown_Ports(), ResNames)  # v1.05 (entfallen: mit BoardType)
+    Ports, ResNames = EnumComPorts(_Accept_Unknown_Ports(BoardType), ResNames, BoardType=BoardType)  # v1.09: ein gewaehlter Anschluss gilt auch mit unbekannter Beschreibung (Nano)
     fn_return_value = M30.Is_Contained_in_Array(PortNr, Ports)
     return fn_return_value
 
@@ -675,7 +685,7 @@ def Find_Nano_Like_Device(PortNr):  # v1.04
     return ""  # v1.04
 
 
-def Check_If_Port_is_Available_And_Get_Name(PortNr):
+def Check_If_Port_is_Available_And_Get_Name(PortNr, BoardType=None):  # v1.09: BoardType wie im Excel-Programm
     Debug.Print("Check_If_Port_is_Available_And_Get_Name:"+PortNr)
     fn_return_value = ""
     Ports = vbObjectInitialize(objtype=Byte)
@@ -684,7 +694,9 @@ def Check_If_Port_is_Available_And_Get_Name(PortNr):
 
     Res = int()
     #--------------------------------------------------------------------------------------
-    Ports,ResNames = EnumComPorts(False, ResNames)
+    # Ports,ResNames = EnumComPorts(False, ResNames)  # v1.05 (entfallen)
+    # Ports,ResNames = EnumComPorts(_Accept_Unknown_Ports(), ResNames)  # v1.05 (entfallen)
+    Ports,ResNames = EnumComPorts(_Accept_Unknown_Ports(BoardType), ResNames, BoardType=BoardType)  # v1.09
     Res = M30.Get_Position_In_Array(PortNr, Ports)
     if Res >= 0:
         fn_return_value = ResNames[Res]
@@ -788,7 +800,9 @@ def Get_Arduino_Baudrate(ComPort, Start_Baudrate, DeviceSignatur, FirmwareVer, D
     if BaudRate != 115200 and BaudRate != 57600:
         BaudRate = 115200
     SleepTime = 20
-    for i in vbForRange(1, 8):
+    Loops = DETECT_LOOPS_BOOTLOADER if Detect_Bootloader_Enabled() else 8  # v1.06: mit der Bootloader-Pruefung nur ein Durchlauf je Baudrate (sonst Kurzweg: der erste Durchlauf antwortet)
+    # for i in vbForRange(1, 8):  # v1.06 (entfallen)
+    for i in vbForRange(1, Loops):  # v1.06
         # In case of an error we check each baudrate 4 times because sometimes the Baudrate is not detected if started with the wrong Baudrate   13.10.20: old:  For i = 1 To 6
         if DebugPrint:
             Debug.Print('Trying COM' + str(ComPort) + ' with Baudrate ' + str(BaudRate))
@@ -849,104 +863,262 @@ def getdeviceinformation():
     SWMajorVersion  = b''
     SWMinorVersion  = b''
     Data = __transact(STK_READ_SIGN, 5)
+    Res = False  # v1.05
     if len(Data)==5:
         if Data[4].to_bytes(1,byteorder="little") == Resp_STK_OK:
             DeviceSignatur = Data[1:4]
+            Res = True  # v1.05
             #logging.debug("getdeviceinformation: %s",str(DeviceSignatur))
             if DeviceSignatur == b'\x1E\x95\x0F':
                 logging.info("ATMEGA328P")
             else:
                 logging.info("Device Signatur: %s",str(DeviceSignatur))
-    return False, DeviceSignatur
+    # return False, DeviceSignatur  # v1.05 (entfallen: gab immer False zurueck, auch wenn der Bootloader die Signatur lieferte)
+    return Res, DeviceSignatur  # v1.05
     
-def DetectArduino(port,baudrate, HWVersion=255, SWMajorVersion=255, SWMinorVersion=255, DeviceSignatur=- 1, Trials=3, PrintDebug=True, SleepTime=20):
-    global Cmnd_STK_GET_SYNC, CheckCOMPort_Txt
+# def DetectArduino(port,baudrate, HWVersion=255, SWMajorVersion=255, SWMinorVersion=255, DeviceSignatur=- 1, Trials=3, PrintDebug=True, SleepTime=20):  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     global Cmnd_STK_GET_SYNC, CheckCOMPort_Txt  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     # protocol see application note 1AVR061 here http://ww1.microchip.com/downloads/en/Appnotes/doc2525.pdf  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     # Result:  1: O.K  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     #          0: Give up after n trials => if no arduino is detected  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     #         -1: can't open com port  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     #         -2: can't close and assign port  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     #         -3: can't reset arduino  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     fn_return_value=0  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     No_of_trials = Trials  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     logging.debug ("M07.detect_arduino: %s",port)  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     no_port=None  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     try: # close the port if it is open and reopen it with DTR = False  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         if PG.global_controller.arduino and PG.global_controller.arduino.is_open:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#             PG.global_controller.arduino.close()  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         # hack for Mac  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         if P01.checkplatform("Darwin"):  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#             logging.debug("Hack for Mac: Set baudrate to 19200")  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#             baudrate=19200  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         PG.global_controller.arduino = serial.Serial(no_port,baudrate=baudrate,timeout=0.2,write_timeout=1,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE,bytesize=serial.EIGHTBITS)  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         logging.info("Serial-params: " + repr(PG.global_controller.arduino))  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     except BaseException as e:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         logging.debug(e, exc_info=True)   # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         logging.debug("M07.detect_arduino: Error assigning port")  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         return -2, None  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     if type(port)==int:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         port_str="COM"+str(port)  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     else:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         port_str = port  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     ser = PG.global_controller.arduino  # v1.01  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     if ser is None:                                     # die Verbindung wurde inzwischen getrennt (zum Beispiel nach einem Schreibfehler im Sendethread): kein Absturz  # v1.01  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         logging.debug("M07.detect_arduino: Verbindung zum Arduino ist weg")  # v1.01  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         return -2, None  # v1.01  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     ser.port = port_str  # v1.01  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     ser.dtr = False  # v1.01  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     try:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         ser.open()  # v1.01  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     except BaseException as e:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         logging.debug("M07.detect_arduino: Error opening  port "+port_str)  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         logging.debug(e, exc_info=True)   # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         return -1, None             # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     try:  # v1.02  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         ser.rts = True                                  # 11.02.26: Version K - manche Module brauchen RTS high, um senden zu duerfen  # v1.02  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     except BaseException as e:  # v1.02  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         logging.debug(e, exc_info=True)  # v1.02  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     try:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         PG.global_controller.arduino.dtr = True  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         time.sleep(0.250)  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         PG.global_controller.arduino.dtr = False  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     except BaseException as e:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         logging.debug(e, exc_info=True)                   # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         logging.debug("M07.detect_arduino: Error, reset ARDUINO")  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         return -3, None  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     # now get in sync  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     message = Cmnd_STK_GET_SYNC  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     fn_return_value = 0  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     if not(Left(CheckCOMPort_Txt, 18) == 'Arduino NANO Every'):  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         fn_return_value = 1  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         DeviceSignatur = 2004561  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         HWVersion = 1  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         SWMajorVersion = 1  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         SWMinorVersion = 7  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         if baudrate == 115200:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#             fn_return_value = 1  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         else:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#             fn_return_value = 0  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     else:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         for i in range (No_of_trials):  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#             message = __transact(Cmnd_STK_GET_SYNC,2)  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#             if message == Resp_STK_INSYNC + Resp_STK_OK:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#                 DeviceSignatur = b''  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#                 HWVersion = b''  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#                 SWMajorVersion  = b''  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#                 SWMinorVersion  = b''              # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#                 res,devicesignatur = getdeviceinformation()  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#                 if res==True:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#                     fn_return_value=1  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#                     PG.global_controller.arduino.close()  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#                     return fn_return_value, devicesignatur  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#         if fn_return_value != 1:  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#             logging.debug("Give up after %s trials",No_of_trials)  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+#     return fn_return_value, None  # v1.05 (entfallen: ersetzt durch _DetectArduino_once und den Rahmen DetectArduino)
+
+# ---- Verbindung zum Arduino pruefen (v1.05) --------------------------------------------------------------------------------------
+_DETECT_LOCK = threading.RLock()  # v1.05: Zeitgeber der blinkenden LEDs, Pruefung und Hochladen duerfen den Anschluss nicht gleichzeitig benutzen
+DETECT_RETRIES = 3  # v1.05: Versuche, wenn sich der Anschluss nicht oeffnen oder der Arduino nicht zuruecksetzen laesst (-1, -2, -3)
+DETECT_RETRY_PAUSE = 0.4  # v1.05: Sekunden zwischen den Versuchen
+REOPEN_PAUSE_WIN = 0.3  # v1.05: Windows (CH340): nach dem Schliessen braucht der Treiber einen Moment, bevor sich der Anschluss wieder oeffnen laesst
+DETECT_LOOPS_BOOTLOADER = 2  # v1.06: Durchlaeufe von Get_Arduino_Baudrate bei eingeschalteter Bootloader-Pruefung (je Baudrate einer; vorher 8: 24 Sekunden bis 'nicht erkannt')
+SYNC_START_DELAY = 0.15  # v1.07: Sekunden Wartezeit nach dem Loslassen von DTR, bevor der erste Sync gesendet wird (wie avrdude)
+SYNC_ATTEMPTS = 10  # v1.07: Anzahl der GET_SYNC je Baudrate (jeweils neu gesendet)
+SYNC_RETRY_PAUSE = 0.1  # v1.07: Pause zwischen zwei GET_SYNC (dazu kommt das Lesen mit 0,2 s Zeitgrenze: etwa 0,3 s je Versuch)
+SYNC_BAUDRATES = (57600, 115200)  # v1.05: nur bei diesen Baudraten wird der Bootloader angesprochen (nicht beim Blinken mit 50 Baud)
+
+
+# def Detect_Bootloader_Enabled():  # v1.05  # v1.08 (entfallen: Vorgabe war aus, Name DetectBootloader)
+#     """Einstellung DetectBootloader (Programm Einstellungen, Spezialeinstellungen): Mit Haken wird der Bootloader des Nano angesprochen (STK500) und dadurch alt (57600) und  # v1.08 (entfallen: Vorgabe war aus, Name DetectBootloader)
+#     neu (115200) erkannt. Ohne Haken (Vorgabe) wird nur geprueft, ob sich der Anschluss oeffnen laesst; die Wahl des Benutzers bleibt, wie sie ist."""  # v1.05  # v1.08 (entfallen: Vorgabe war aus, Name DetectBootloader)
+#     try:  # v1.05  # v1.08 (entfallen: Vorgabe war aus, Name DetectBootloader)
+#         value = PG.global_controller.getConfigData("DetectBootloader")  # v1.05  # v1.08 (entfallen: Vorgabe war aus, Name DetectBootloader)
+#     except Exception:                                                  # noqa: BLE001  # v1.05  # v1.08 (entfallen: Vorgabe war aus, Name DetectBootloader)
+#         return False  # v1.05  # v1.08 (entfallen: Vorgabe war aus, Name DetectBootloader)
+#     return str(value if value is not None else "").strip().lower() in ("1", "true", "ja", "yes", "an", "ein", "on")  # v1.05  # v1.08 (entfallen: Vorgabe war aus, Name DetectBootloader)
+
+
+BOOTLOADER_DETECTION_PARAM = "NanoBootloaderDetection"  # v1.08: Name der Einstellung (Programm Einstellungen, Spezialeinstellungen)
+
+
+def Detect_Bootloader_Enabled():  # v1.08
+    """Einstellung NanoBootloaderDetection (Programm Einstellungen, Spezialeinstellungen, 'Bootloader des Nano beim Prüfen erkennen'): VORGABE AN.
+    An: Das Programm spricht den Bootloader des Nano an (STK500) und erkennt alt (57600 Baud) und neu (115200 Baud); mit 'Automatisch erkennen' stellt es das Board passend ein.
+    Aus (nur auf ausdruecklichen Wunsch): Es wird nur geprueft, ob sich der Anschluss oeffnen laesst; die Wahl des Benutzers bleibt, wie sie ist.
+    Ohne Eintrag, leer oder bei einem Fehler beim Lesen: an. Die Seite der Einstellungen speichert Wahrheitswerte (True/False)."""  # v1.08
+    try:  # v1.08
+        value = PG.global_controller.getConfigData(BOOTLOADER_DETECTION_PARAM)  # v1.08
+    except Exception:                                                  # noqa: BLE001  # v1.08
+        return True  # v1.08
+    text = str(value if value is not None else "").strip().lower()  # v1.08
+    if text == "":  # v1.08: nie gespeichert: Vorgabe
+        return True  # v1.08
+    return text in ("1", "true", "ja", "yes", "an", "ein", "on")  # v1.08
+
+
+def _Accept_Unknown_Ports(BoardType=None):  # v1.05 (v1.09: BoardType)
+    """Fuer die Pruefung eines gewaehlten Anschlusses: Bei einem Nano (nicht ESP32, nicht Pico) gilt jeder vorhandene Anschluss, auch mit unbekannter Beschreibung"""  # v1.05
+    try:  # v1.05
+        return (BoardType or M02a.Get_BoardTyp()) not in (M02.HT_ESP32, M02.HT_PICO)  # v1.09 (vorher M02a.Get_BoardTyp())
+    except Exception:                                                  # noqa: BLE001  # v1.05
+        return False  # v1.05
+
+
+def _Close_Quiet(ser):  # v1.05
+    try:  # v1.05
+        if ser is not None and ser.is_open:  # v1.05
+            ser.close()  # v1.05
+    except BaseException as e:                                         # noqa: BLE001  # v1.05
+        logging.debug(e, exc_info=True)  # v1.05
+
+
+def DetectArduino(port, baudrate, HWVersion=255, SWMajorVersion=255, SWMinorVersion=255, DeviceSignatur=- 1, Trials=3, PrintDebug=True, SleepTime=20):  # v1.05
+    """Rahmen um _DetectArduino_once: serialisiert die Zugriffe (Sperre) und wiederholt bei -1 (Anschluss nicht zu oeffnen), -2 (nicht zuweisbar) und -3 (Arduino nicht
+    zuruecksetzbar) bis zu DETECT_RETRIES-mal mit Pause (beim Blinken mit 50 Baud nur einmal: der Zeitgeber ruft jede Sekunde auf).
+    Ergebnis wie bisher: 1 erkannt, 0 nicht erkannt, -1 Anschluss nicht zu oeffnen, -2 nicht zuweisbar, -3 nicht zuruecksetzbar."""  # v1.05
+    retries = 1 if baudrate == 50 else DETECT_RETRIES  # v1.05
+    with _DETECT_LOCK:  # v1.05
+        result = (0, None)  # v1.05
+        for attempt in range(1, retries + 1):  # v1.05
+            result = _DetectArduino_once(port, baudrate, HWVersion, SWMajorVersion, SWMinorVersion, DeviceSignatur, Trials, PrintDebug, SleepTime)  # v1.05
+            if result[0] >= 0:  # v1.05
+                break  # v1.05
+            logging.debug("M07.detect_arduino: Versuch %s von %s gescheitert (Ergebnis %s)", attempt, retries, result[0])  # v1.05
+            if attempt < retries:  # v1.05
+                time.sleep(DETECT_RETRY_PAUSE)  # v1.05
+        return result  # v1.05
+
+
+def _DetectArduino_once(port, baudrate, HWVersion=255, SWMajorVersion=255, SWMinorVersion=255, DeviceSignatur=- 1, Trials=3, PrintDebug=True, SleepTime=20):  # v1.05
+    global Cmnd_STK_GET_SYNC, CheckCOMPort_Txt  # v1.05
     # protocol see application note 1AVR061 here http://ww1.microchip.com/downloads/en/Appnotes/doc2525.pdf
     # Result:  1: O.K
     #          0: Give up after n trials => if no arduino is detected
     #         -1: can't open com port
     #         -2: can't close and assign port
     #         -3: can't reset arduino
-    fn_return_value=0
-    
-    No_of_trials = Trials
-    logging.debug ("M07.detect_arduino: %s",port)
-    no_port=None
-    try: # close the port if it is open and reopen it with DTR = False
-        if PG.global_controller.arduino and PG.global_controller.arduino.is_open:
-            PG.global_controller.arduino.close()
+    No_of_trials = Trials  # v1.05
+    logging.debug("M07.detect_arduino: %s", port)  # v1.05
+    ser = None  # v1.05
+    try:  # close the port if it is open and reopen it with DTR = False  # v1.05
+        old_connection = PG.global_controller.arduino  # v1.05
+        if old_connection and old_connection.is_open:  # v1.05
+            old_connection.close()  # v1.05
+            if os.name == 'nt':  # v1.05
+                time.sleep(REOPEN_PAUSE_WIN)  # v1.05
         # hack for Mac
-        if P01.checkplatform("Darwin"):
-            logging.debug("Hack for Mac: Set baudrate to 19200")
-            baudrate=19200
-
-        PG.global_controller.arduino = serial.Serial(no_port,baudrate=baudrate,timeout=0.2,write_timeout=1,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE,bytesize=serial.EIGHTBITS)
-        logging.info("Serial-params: " + repr(PG.global_controller.arduino))
-    except BaseException as e:
-        logging.debug(e, exc_info=True) 
-        logging.debug("M07.detect_arduino: Error assigning port")
-        return -2, None
-    if type(port)==int:
-        port_str="COM"+str(port)
-    else:
-        port_str = port
-    ser = PG.global_controller.arduino  # v1.01
-    if ser is None:                                     # die Verbindung wurde inzwischen getrennt (zum Beispiel nach einem Schreibfehler im Sendethread): kein Absturz  # v1.01
-        logging.debug("M07.detect_arduino: Verbindung zum Arduino ist weg")  # v1.01
-        return -2, None  # v1.01
-    ser.port = port_str  # v1.01
-    ser.dtr = False  # v1.01
-    try:
-        ser.open()  # v1.01
-    except BaseException as e:
-        logging.debug("M07.detect_arduino: Error opening  port "+port_str)
-        logging.debug(e, exc_info=True) 
-        return -1, None           
-    try:  # v1.02
-        ser.rts = True                                  # 11.02.26: Version K - manche Module brauchen RTS high, um senden zu duerfen  # v1.02
-    except BaseException as e:  # v1.02
-        logging.debug(e, exc_info=True)  # v1.02
-    try:
-        PG.global_controller.arduino.dtr = True
-        time.sleep(0.250)
-        PG.global_controller.arduino.dtr = False
-    except BaseException as e:
-        logging.debug(e, exc_info=True)                 
-        logging.debug("M07.detect_arduino: Error, reset ARDUINO")
-        return -3, None
-
-    # now get in sync
-    message = Cmnd_STK_GET_SYNC
-    
-    fn_return_value = 0
-    
-    if not(Left(CheckCOMPort_Txt, 18) == 'Arduino NANO Every'):
-        fn_return_value = 1
-        DeviceSignatur = 2004561
-        HWVersion = 1
-        SWMajorVersion = 1
-        SWMinorVersion = 7
-        if baudrate == 115200:
-            fn_return_value = 1
-        else:
-            fn_return_value = 0
-    else:
-        for i in range (No_of_trials):
-            message = __transact(Cmnd_STK_GET_SYNC,2)
-            
-            if message == Resp_STK_INSYNC + Resp_STK_OK:
-                DeviceSignatur = b''
-                HWVersion = b''
-                SWMajorVersion  = b''
-                SWMinorVersion  = b''            
-                res,devicesignatur = getdeviceinformation()
-                if res==True:
-                    fn_return_value=1
-                    PG.global_controller.arduino.close()
-                    return fn_return_value, devicesignatur
-        if fn_return_value != 1:
-            logging.debug("Give up after %s trials",No_of_trials)
-    return fn_return_value, None
+        if P01.checkplatform("Darwin"):  # v1.05
+            logging.debug("Hack for Mac: Set baudrate to 19200")  # v1.05
+            baudrate = 19200  # v1.05
+        ser = serial.Serial(None, baudrate=baudrate, timeout=0.2, write_timeout=1, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)  # v1.05
+        PG.global_controller.arduino = ser  # v1.05: __transact und getdeviceinformation arbeiten mit dieser Verbindung
+        logging.info("Serial-params: " + repr(ser))  # v1.05
+    except BaseException as e:                                         # noqa: BLE001  # v1.05
+        logging.debug(e, exc_info=True)  # v1.05
+        logging.debug("M07.detect_arduino: Error assigning port")  # v1.05
+        return -2, None  # v1.05
+    port_str = "COM" + str(port) if type(port) == int else port  # v1.05
+    try:  # v1.05: ab hier wird die Verbindung in jedem Fall wieder geschlossen
+        try:  # v1.05
+            ser.port = port_str  # v1.05
+            ser.dtr = False  # v1.05
+            ser.open()  # v1.05
+        except BaseException as e:                                     # noqa: BLE001  # v1.05
+            logging.debug("M07.detect_arduino: Error opening  port " + str(port_str))  # v1.05
+            logging.debug(e, exc_info=True)  # v1.05
+            return -1, None  # v1.05
+        try:  # v1.05
+            ser.rts = True                                  # 11.02.26: Version K - manche Module brauchen RTS high, um senden zu duerfen  # v1.05
+        except BaseException as e:                                     # noqa: BLE001  # v1.05
+            logging.debug(e, exc_info=True)  # v1.05
+        try:  # v1.05
+            ser.dtr = True  # v1.05
+            time.sleep(0.250)  # v1.05
+            ser.dtr = False  # v1.05
+        except BaseException as e:                                     # noqa: BLE001  # v1.05
+            logging.debug(e, exc_info=True)  # v1.05
+            logging.debug("M07.detect_arduino: Error, reset ARDUINO")  # v1.05
+            return -3, None  # v1.05
+        # if Left(CheckCOMPort_Txt, 18) == 'Arduino NANO Every':  # v1.05 (entfallen v1.09: Nano Every wird nicht mehr unterstuetzt)
+        #     return (1 if baudrate == 115200 else 0), None  # v1.05 (entfallen)
+        if (not Detect_Bootloader_Enabled()) or baudrate not in SYNC_BAUDRATES:  # v1.05: Kurzweg: der Anschluss laesst sich oeffnen (die Wahl des Benutzers bleibt)
+            return 1, None  # v1.05
+        try:  # now get in sync (Bootloader ansprechen)  # v1.05
+            try:  # v1.06: fuer die Fehlersuche: Bytes, die nach dem Zuruecksetzen schon im Empfangspuffer liegen
+                pending = ser.in_waiting  # v1.06
+            except BaseException:                                      # noqa: BLE001  # v1.06
+                pending = -1  # v1.06
+            logging.debug("M07.detect_arduino: %s Baud, vor dem Synchronisieren %s Byte(s) im Empfangspuffer", baudrate, pending)  # v1.06
+            time.sleep(SYNC_START_DELAY)  # v1.07: der Bootloader braucht nach dem Loslassen von DTR einen Moment; ein sofort gesendeter Sync geht verloren
+            try:  # v1.07
+                ser.reset_input_buffer()  # v1.07: Ausgabe des Sketches und Reste verwerfen
+            except BaseException as e:                                 # noqa: BLE001  # v1.07
+                logging.debug(e, exc_info=True)  # v1.07
+            # for i in range(No_of_trials):  # v1.07 (entfallen: einmal senden und 2 s warten; der alte Bootloader war dann schon im Sketch)
+            for i in range(SYNC_ATTEMPTS):  # v1.07: GET_SYNC wiederholt senden (je Versuch nur einmal lesen)
+                message = __transact(Cmnd_STK_GET_SYNC, 2, 1)  # v1.07
+                if message == Resp_STK_INSYNC + Resp_STK_OK:  # v1.05
+                    res, devicesignatur = getdeviceinformation()  # v1.05: die Signatur ist nur eine Zugabe; Erfolg heisst: der Bootloader antwortet (wie in der Tk-Fassung)
+                    logging.info("M07.detect_arduino: Bootloader antwortet mit %s Baud (Versuch %s)", baudrate, i + 1)  # v1.07
+                    return 1, devicesignatur  # v1.05
+                time.sleep(SYNC_RETRY_PAUSE)  # v1.07
+        except BaseException as e:                                     # noqa: BLE001  # v1.05
+            logging.debug(e, exc_info=True)  # v1.05
+            logging.debug("M07.detect_arduino: Fehler beim Ansprechen des Bootloaders")  # v1.05
+            return -3, None  # v1.05
+        logging.debug("Give up after %s trials", SYNC_ATTEMPTS)  # v1.07 (vorher No_of_trials)
+        return 0, None  # v1.05
+    finally:  # v1.05
+        _Close_Quiet(ser)  # v1.05
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Port - ByVal 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: BaudRate - ByVal 
@@ -1044,7 +1216,7 @@ def DetectArduino_old(Port, BaudRate, HWVersion=255, SWMajorVersion=255, SWMinor
         CloseHandle(( handle ))
     return fn_return_value
 
-def __transact(bytemessage,nNumberOfBytesToRead=10):
+def __transact(bytemessage,nNumberOfBytesToRead=10, Reads=10):  # v1.07: Reads = Anzahl der Lesevorgaenge je Senden (Vorgabe wie bisher 10)
     
     bytemessage += Sync_CRC_EOP
     # write message to serport
@@ -1052,15 +1224,21 @@ def __transact(bytemessage,nNumberOfBytesToRead=10):
     if nbytes_written != len(bytemessage):
         logging.debug("ERROR write to ARDUINO")
         return b''
-    no_of_trials=10
+    no_of_trials=Reads  # v1.07 (vorher 10)
+    first_seen = b''  # v1.06: erste nicht leere Antwort (fuer das Protokoll)
+    started = time.time()  # v1.06
     for i in range (no_of_trials):
         # read from serport nNumberOfBytesToRead
         read_data = PG.global_controller.arduino.read(size=nNumberOfBytesToRead)
         #logging.debug("transact: %s",read_data)
+        if read_data and not first_seen:  # v1.06
+            first_seen = read_data  # v1.06
         if (read_data[:1] == Resp_STK_INSYNC and read_data[-1:] == Resp_STK_OK) or read_data[-1:] == Resp_STK_FAILED:
         # return response
             #logging.debug("transact data_ok: %s",read_data)
+            logging.debug("M07.transact: gesendet %s, Antwort %s (Lesevorgang %s von %s, %.2f s)", bytemessage.hex(" "), read_data.hex(" "), i + 1, no_of_trials, time.time() - started)  # v1.06
             return read_data
+    logging.debug("M07.transact: gesendet %s, keine passende Antwort; erste empfangene Bytes: %s (%s Lesevorgaenge, %.2f s)", bytemessage.hex(" "), first_seen.hex(" ") if first_seen else "keine", no_of_trials, time.time() - started)  # v1.06
     return b''
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: handle - ByVal 

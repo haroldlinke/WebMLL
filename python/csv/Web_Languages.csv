@@ -282,8 +282,10 @@ Blau;Blue;Blauw;Bleu;Blu;Azul;Blå
 Bleibt es bei 'Connecting....' stehen: am ESP32 die Taste BOOT;If it stays at 'Connecting....': hold the BOOT button on the ESP32;Blijft het bij 'Connecting....' hangen: houd op de ESP32 de BOOT-knop ingedrukt;Si le message reste bloqué sur « Connecting.... » : maintenez le bouton BOOT de l'ESP32 enfoncé;Se resta fermo su 'Connecting....': tieni premuto il pulsante BOOT sull'ESP32;Si se queda en 'Connecting....': mantén pulsado el botón BOOT del ESP32;Hvis den bliver hængende ved 'Connecting....': hold BOOT-knappen på ESP32 nede
 Blinken Ein/Aus;Blinking on/off;Knipperen aan/uit;Clignotement activé/désactivé;Lampeggio acceso/spento;Parpadeo activado/desactivado;Blinker til/fra
 Blue;Blue;Blauw;Bleu;Blu;Azul;Blå
+Board automatisch gestellt;Board set automatically;Board automatisch ingesteld;Carte réglée automatiquement;Scheda impostata automaticamente;Placa configurada automáticamente;Board indstillet automatisk
 Board stimmt nicht mit dem Anschluss überein;Board does not match the port;Board komt niet overeen met de poort;La carte ne correspond pas au port;La scheda non corrisponde alla porta;La placa no coincide con el puerto;Boardet svarer ikke til porten
 Board-Typ des angeschlossenen ARDUINOs;Board type of the connected ARDUINO;Boardtype van de aangesloten ARDUINO;Type de carte de l'ARDUINO connecté;Tipo di scheda dell'ARDUINO collegato;Tipo de placa del ARDUINO conectado;Boardtype for den tilsluttede ARDUINO
+Bootloader des Nano beim Prüfen erkennen;Detect the Nano bootloader when checking;Bootloader van de Nano bij het controleren herkennen;Reconnaître le bootloader du Nano lors de la vérification;Riconoscere il bootloader del Nano durante il controllo;Reconocer el bootloader del Nano al comprobar;Genkend Nano-bootloaderen ved kontrol
 Bootloader nicht geschrieben;Bootloader not written;Bootloader niet geschreven;Bootloader non écrit;Bootloader non scritto;Bootloader no escrito;Bootloader ikke skrevet
 COM Port;COM port;COM-poort;Port COM;Porta COM;Puerto COM;COM-port
 COM-Port mit COM-Port UserForm abfragen und nicht ARDUINO-Einstellungen-Seite verwenden;Ask for the COM port with the COM port dialog instead of using the ARDUINO settings page;COM-poort opvragen met het COM-poortvenster en niet de pagina ARDUINO-instellingen gebruiken;Demander le port COM avec la fenêtre du port COM au lieu d'utiliser la page des paramètres ARDUINO;Chiedi la porta COM con la finestra della porta COM invece di usare la pagina delle impostazioni ARDUINO;Preguntar el puerto COM con la ventana del puerto COM en lugar de usar la página de ajustes de ARDUINO;Spørg efter COM-porten med COM-portvinduet i stedet for at bruge siden med ARDUINO-indstillinger
@@ -312,6 +314,7 @@ Das Blatt konnte nicht umbenannt werden: {ex};The sheet could not be renamed: {e
 Das eigene Passwort ist entfernt. Es gilt wieder die Voreinstellung.;Your own password has been removed. The default applies again.;Je eigen wachtwoord is verwijderd. Het standaardwachtwoord geldt weer.;Votre propre mot de passe a été supprimé. Le mot de passe par défaut s'applique de nouveau.;La tua password personale è stata rimossa. Vale di nuovo quella predefinita.;Se ha eliminado tu propia contraseña. Vuelve a aplicarse la predeterminada.;Din egen adgangskode er fjernet. Standarden gælder igen.
 Das Entfernen wurde an Windows übergeben. Ob die Regeln weg sind, lässt sich hier nicht lesen.;The removal was handed over to Windows. Whether the rules are gone cannot be read here.;Het verwijderen is aan Windows overgedragen. Of de regels weg zijn, kan hier niet worden uitgelezen.;La suppression a été transmise à Windows. On ne peut pas lire ici si les règles ont disparu.;La rimozione è stata passata a Windows. Qui non si può leggere se le regole sono sparite.;La eliminación se ha pasado a Windows. Aquí no se puede leer si las reglas han desaparecido.;Fjernelsen er overgivet til Windows. Om reglerne er væk, kan ikke læses her.
 Das Fenster kann geschlossen werden.;The window can be closed.;Het venster kan gesloten worden.;La fenêtre peut être fermée.;La finestra può essere chiusa.;La ventana se puede cerrar.;Vinduet kan lukkes.
+Das Firmware-Verzeichnis '#1#' existiert nicht.;The firmware directory '#1#' does not exist.;De firmwaremap '#1#' bestaat niet.;Le dossier de firmware '#1#' n'existe pas.;La cartella del firmware '#1#' non esiste.;La carpeta de firmware '#1#' no existe.;Firmwaremappen '#1#' findes ikke.
 Das gibt es nur unter Linux.;This exists only under Linux.;Dit bestaat alleen onder Linux.;Cela n'existe que sous Linux.;Esiste solo sotto Linux.;Esto solo existe en Linux.;Det findes kun under Linux.
 Das gibt es nur unter Windows, macOS und Linux.;This is only available on Windows, macOS and Linux.;Dit bestaat alleen op Windows, macOS en Linux.;Cela n'existe que sous Windows, macOS et Linux.;Esiste solo su Windows, macOS e Linux.;Esto solo existe en Windows, macOS y Linux.;Det findes kun på Windows, macOS og Linux.
 Das Haus enthält noch keine Räume;The house does not contain any rooms yet;Het huis bevat nog geen ruimtes;La maison ne contient pas encore de pièces;La casa non contiene ancora stanze;La casa todavía no contiene habitaciones;Huset indeholder endnu ingen rum
@@ -329,9 +332,138 @@ Das Netzwerk ist als „Öffentlich“ eingestuft, die Regel gilt aber nur für 
 Das Passwort darf nicht mit einem Leerzeichen beginnen oder enden.;The password must not start or end with a space.;Het wachtwoord mag niet met een spatie beginnen of eindigen.;Le mot de passe ne doit pas commencer ni se terminer par une espace.;La password non deve iniziare né finire con uno spazio.;La contraseña no debe empezar ni terminar con un espacio.;Adgangskoden må ikke begynde eller slutte med et mellemrum.
 Das Passwort ist gesetzt.;The password has been set.;Het wachtwoord is ingesteld.;Le mot de passe a été défini.;La password è stata impostata.;La contraseña se ha establecido.;Adgangskoden er indstillet.
 Das Pattern ist kein korrektes Muster für den Multiplexer!;The pattern is not a correct pattern for the multiplexer!;Het patroon is geen correct patroon voor de multiplexer!;Le motif n'est pas un motif correct pour le multiplexeur !;Il pattern non è un pattern corretto per il multiplexer!;¡El patrón no es un patrón correcto para el multiplexor!;Mønsteret er ikke et korrekt mønster til multiplexeren!
+Das Programm hat den Bootloader am COM Port #1# geprüft und das Board automatisch auf „#2#“ gestellt.;The program checked the bootloader at COM port #1# and set the board automatically to “#2#”.;Het programma heeft de bootloader op COM-poort #1# gecontroleerd en het board automatisch ingesteld op „#2#”.;Le programme a vérifié le bootloader sur le port COM #1# et a réglé automatiquement la carte sur « #2# ».;Il programma ha verificato il bootloader sulla porta COM #1# e ha impostato automaticamente la scheda su «#2#».;El programa comprobó el bootloader en el puerto COM #1# y configuró automáticamente la placa en «#2#».;Programmet har kontrolleret bootloaderen på COM-port #1# og indstillet boardet automatisk til „#2#“.
 Das Programm webMobaLedLib selbst aktualisieren: Menü Hilfe → Update webMobaLedLib …;Update the webMobaLedLib program itself: menu Help → Update webMobaLedLib …;Het programma webMobaLedLib zelf bijwerken: menu Help → Update webMobaLedLib …;Mettre à jour le programme webMobaLedLib lui-même : menu Aide → Mettre à jour webMobaLedLib …;Aggiorna il programma webMobaLedLib stesso: menu Aiuto → Aggiorna webMobaLedLib …;Actualizar el propio programa webMobaLedLib: menú Ayuda → Actualizar webMobaLedLib …;Opdater selve programmet webMobaLedLib: menuen Hjælp → Opdater webMobaLedLib …
 "Das Programm wird beendet. Mit ""Speichern"" werden vorher die Tabellen und die Konfiguration gesichert. ";"The program is closing. With ""Save"" the tables and the configuration are backed up first. ";Het programma wordt afgesloten. Bij „Opslaan” worden eerst de tabellen en de configuratie veiliggesteld.;Le programme se ferme. Avec « Enregistrer », les tableaux et la configuration sont d'abord sauvegardés.;Il programma si sta chiudendo. Con “Salva” le tabelle e la configurazione vengono prima salvate in backup.;El programa se está cerrando. Con “Guardar” primero se hace una copia de seguridad de las tablas y la configuración.;Programmet lukkes. Med “Gem” sikkerhedskopieres tabellerne og konfigurationen først.
 Das Programm wird neu gestartet. Diese Seite lädt sich selbst neu, sobald es wieder läuft (kann bis zu einer Minute dauern) ...;The program is restarting. This page reloads by itself as soon as it is running again (can take up to a minute) ...;Het programma wordt opnieuw gestart. Deze pagina laadt zichzelf opnieuw zodra het weer draait (kan tot een minuut duren) ...;Le programme redémarre. Cette page se recharge d'elle-même dès qu'il fonctionne de nouveau (jusqu'à une minute) ...;Il programma si sta riavviando. Questa pagina si ricarica da sola appena è di nuovo in funzione (può richiedere fino a un minuto) ...;El programa se está reiniciando. Esta página se vuelve a cargar sola en cuanto vuelva a funcionar (puede tardar hasta un minuto) ...;Programmet genstarter. Denne side genindlæses af sig selv, så snart det kører igen (kan tage op til et minut) ...
+"Das Programm wurde auf die Lichtmaschine geschrieben, aber die anschließende Prüfung (Rücklesen des Speichers) ist fehlgeschlagen.
+
+Die Lichtmaschine arbeitet meist trotzdem mit dem neuen Programm: Blinkt die Heartbeat LED?
+
+Mögliche Ursachen und Hilfen:
+- Bei Nano-Nachbauten hilft oft „Nano Normal (old Bootloader)“ (Optionen Werkzeuge, Reiter LED ARDUINO).
+- Ein anderes USB-Kabel und einen anderen USB-Anschluss probieren.
+- Die LEDs nicht über den USB-Anschluss des Computers versorgen.
+
+Die Einzelheiten stehen im Protokoll (Hilfe → Logfile anzeigen).";"The program was written to the Lichtmaschine, but the subsequent verification (reading the memory back) failed.
+
+The Lichtmaschine usually works with the new program anyway: Is the Heartbeat LED blinking?
+
+Possible causes and remedies:
+- With Nano clones, “Nano Normal (old Bootloader)” often helps (Options tools, tab LED ARDUINO).
+- Try another USB cable and another USB port.
+- Do not power the LEDs from the USB port of the computer.
+
+The details are in the log (Help → Show logfile).";"Het programma is naar de Lichtmaschine geschreven, maar de controle daarna (het teruglezen van het geheugen) is mislukt.
+
+De Lichtmaschine werkt meestal toch met het nieuwe programma: knippert de Heartbeat-LED?
+
+Mogelijke oorzaken en oplossingen:
+- Bij Nano-namaakboards helpt vaak „Nano Normal (old Bootloader)“ (Opties hulpmiddelen, tabblad LED ARDUINO).
+- Probeer een andere USB-kabel en een andere USB-poort.
+- Voed de LED's niet via de USB-poort van de computer.
+
+De details staan in het logboek (Help → Logfile weergeven).";"Le programme a été écrit sur la Lichtmaschine, mais la vérification qui suit (relecture de la mémoire) a échoué.
+
+La Lichtmaschine fonctionne généralement quand même avec le nouveau programme : la Heartbeat LED clignote-t-elle ?
+
+Causes possibles et remèdes :
+- Avec les clones de Nano, « Nano Normal (old Bootloader) » aide souvent (Options outils, onglet LED ARDUINO).
+- Essayer un autre câble USB et un autre port USB.
+- Ne pas alimenter les LED par le port USB de l'ordinateur.
+
+Les détails figurent dans le journal (Aide → Afficher le logfile).";"Il programma è stato scritto sulla Lichtmaschine, ma la successiva verifica (rilettura della memoria) non è riuscita.
+
+La Lichtmaschine di solito funziona comunque con il nuovo programma: il LED Heartbeat lampeggia?
+
+Possibili cause e rimedi:
+- Con i cloni di Nano spesso aiuta «Nano Normal (old Bootloader)» (Opzioni strumenti, scheda LED ARDUINO).
+- Provare un altro cavo USB e un'altra porta USB.
+- Non alimentare i LED dalla porta USB del computer.
+
+I dettagli sono nel registro (Aiuto → Mostra logfile).";"El programa se escribió en la Lichtmaschine, pero la comprobación posterior (relectura de la memoria) falló.
+
+La Lichtmaschine suele funcionar igualmente con el nuevo programa: ¿parpadea el LED Heartbeat?
+
+Posibles causas y soluciones:
+- Con los clones de Nano suele ayudar «Nano Normal (old Bootloader)» (Opciones herramientas, pestaña LED ARDUINO).
+- Probar otro cable USB y otro puerto USB.
+- No alimentar los LED desde el puerto USB del ordenador.
+
+Los detalles figuran en el registro (Ayuda → Mostrar logfile).";"Programmet blev skrevet til Lichtmaschine, men den efterfølgende kontrol (aflæsning af hukommelsen) mislykkedes.
+
+Lichtmaschine fungerer som regel alligevel med det nye program: Blinker Heartbeat LED?
+
+Mulige årsager og løsninger:
+- Med Nano-kloner hjælper „Nano Normal (old Bootloader)“ ofte (Indstillinger værktøjer, fanen LED ARDUINO).
+- Prøv et andet USB-kabel og en anden USB-port.
+- Forsyn ikke LED'erne via computerens USB-port.
+
+Detaljerne står i logfilen (Hjælp → Vis logfile)."
+"Das Programm wurde auf die Lichtmaschine geschrieben, aber die anschließende Prüfung (Rücklesen des Speichers) ist fehlgeschlagen.
+
+Die Lichtmaschine arbeitet meist trotzdem mit dem neuen Programm: Blinkt die Heartbeat LED?
+
+Mögliche Ursachen und Hilfen:
+- Probiere beide Einstellungen „Nano Normal (old Bootloader)“ und „Nano (neue Version)“ (Optionen Werkzeuge, Reiter LED ARDUINO).
+- Ein anderes USB-Kabel und einen anderen USB-Anschluss probieren.
+- Die LEDs nicht über den USB-Anschluss des Computers versorgen.
+
+Die Einzelheiten stehen im Protokoll (Hilfe → Logfile anzeigen).";"The program was written to the Lichtmaschine, but the subsequent verification (reading the memory back) failed.
+
+The Lichtmaschine usually works with the new program anyway: Is the Heartbeat LED blinking?
+
+Possible causes and remedies:
+- Try both settings “Nano Normal (old Bootloader)” and “Nano (neue Version)” (Options tools, tab LED ARDUINO).
+- Try another USB cable and another USB port.
+- Do not power the LEDs from the USB port of the computer.
+
+The details are in the log (Help → Show logfile).";"Het programma is naar de Lichtmaschine geschreven, maar de controle daarna (het teruglezen van het geheugen) is mislukt.
+
+De Lichtmaschine werkt meestal toch met het nieuwe programma: knippert de Heartbeat-LED?
+
+Mogelijke oorzaken en oplossingen:
+- Probeer beide instellingen „Nano Normal (old Bootloader)“ en „Nano (neue Version)“ (Opties hulpmiddelen, tabblad LED ARDUINO).
+- Probeer een andere USB-kabel en een andere USB-poort.
+- Voed de LED's niet via de USB-poort van de computer.
+
+De details staan in het logboek (Help → Logfile weergeven).";"Le programme a été écrit sur la Lichtmaschine, mais la vérification qui suit (relecture de la mémoire) a échoué.
+
+La Lichtmaschine fonctionne généralement quand même avec le nouveau programme : la Heartbeat LED clignote-t-elle ?
+
+Causes possibles et remèdes :
+- Essayer les deux réglages « Nano Normal (old Bootloader) » et « Nano (neue Version) » (Options outils, onglet LED ARDUINO).
+- Essayer un autre câble USB et un autre port USB.
+- Ne pas alimenter les LED par le port USB de l'ordinateur.
+
+Les détails figurent dans le journal (Aide → Afficher le logfile).";"Il programma è stato scritto sulla Lichtmaschine, ma la successiva verifica (rilettura della memoria) non è riuscita.
+
+La Lichtmaschine di solito funziona comunque con il nuovo programma: il LED Heartbeat lampeggia?
+
+Possibili cause e rimedi:
+- Provare entrambe le impostazioni «Nano Normal (old Bootloader)» e «Nano (neue Version)» (Opzioni strumenti, scheda LED ARDUINO).
+- Provare un altro cavo USB e un'altra porta USB.
+- Non alimentare i LED dalla porta USB del computer.
+
+I dettagli sono nel registro (Aiuto → Mostra logfile).";"El programa se escribió en la Lichtmaschine, pero la comprobación posterior (relectura de la memoria) falló.
+
+La Lichtmaschine suele funcionar igualmente con el nuevo programa: ¿parpadea el LED Heartbeat?
+
+Posibles causas y soluciones:
+- Probar ambos ajustes «Nano Normal (old Bootloader)» y «Nano (neue Version)» (Opciones herramientas, pestaña LED ARDUINO).
+- Probar otro cable USB y otro puerto USB.
+- No alimentar los LED desde el puerto USB del ordenador.
+
+Los detalles figuran en el registro (Ayuda → Mostrar logfile).";"Programmet blev skrevet til Lichtmaschine, men den efterfølgende kontrol (aflæsning af hukommelsen) mislykkedes.
+
+Lichtmaschine fungerer som regel alligevel med det nye program: Blinker Heartbeat LED?
+
+Mulige årsager og løsninger:
+- Prøv begge indstillinger „Nano Normal (old Bootloader)“ og „Nano (neue Version)“ (Indstillinger værktøjer, fanen LED ARDUINO).
+- Prøv et andet USB-kabel og en anden USB-port.
+- Forsyn ikke LED'erne via computerens USB-port.
+
+Detaljerne står i logfilen (Hjælp → Vis logfile)."
 Das Programm wurde zuletzt nicht normal beendet. Es gibt einen automatisch gesicherten Stand vom {when}, der neuer ist als der gespeicherte. Soll er wiederhergestellt werden?;The program was not shut down normally the last time. There is an automatically saved state from {when} that is newer than the saved one. Do you want to restore it?;Het programma is de vorige keer niet normaal afgesloten. Er is een automatisch opgeslagen stand van {when} die nieuwer is dan de opgeslagen stand. Wil je die herstellen?;Le programme n'a pas été arrêté normalement la dernière fois. Il existe un état enregistré automatiquement le {when}, plus récent que l'état enregistré. Voulez-vous le restaurer ?;L'ultima volta il programma non è stato chiuso normalmente. Esiste uno stato salvato automaticamente il {when} più recente di quello salvato. Vuoi ripristinarlo?;La última vez el programa no se cerró normalmente. Hay un estado guardado automáticamente el {when} que es más reciente que el guardado. ¿Quieres restaurarlo?;Programmet blev ikke afsluttet normalt sidste gang. Der er en automatisk gemt tilstand fra {when}, som er nyere end den gemte. Vil du gendanne den?
 Das Sheet 'Main' kann nicht gelöscht werden;The sheet 'Main' cannot be deleted;Het blad 'Main' kan niet worden verwijderd;La feuille 'Main' ne peut pas être supprimée;Il foglio 'Main' non può essere eliminato;La hoja 'Main' no se puede eliminar;Arket 'Main' kan ikke slettes
 Das Speichern ist fehlgeschlagen: kein Neustart. Bitte das Programm von Hand beenden und neu starten.;Saving failed: no restart. Please quit the program by hand and start it again.;Opslaan mislukt: geen herstart. Sluit het programma zelf af en start het opnieuw.;Échec de l'enregistrement : pas de redémarrage. Veuillez quitter le programme à la main et le relancer.;Salvataggio non riuscito: nessun riavvio. Chiudi il programma a mano e riavvialo.;Error al guardar: sin reinicio. Cierra el programa a mano y vuelve a iniciarlo.;Gemning mislykkedes: ingen genstart. Afslut programmet manuelt og start det igen.
@@ -456,6 +588,9 @@ Die ARDUINO IDE wurde nicht gefunden. Entweder wurde ARDUINO noch nicht installi
 Die beiden Eingaben sind nicht gleich.;The two entries are not the same.;De beide invoeren zijn niet gelijk.;Les deux saisies ne sont pas identiques.;Le due immissioni non sono uguali.;Las dos entradas no son iguales.;De to indtastninger er ikke ens.
 Die Datei #1# konnte nicht gelöscht werden';The file #1# could not be deleted;Het bestand #1# kon niet worden verwijderd;Le fichier #1# n'a pas pu être supprimé;Non è stato possibile eliminare il file #1#;No se pudo eliminar el archivo #1#;Filen #1# kunne ikke slettes
 Die Datei #1# mit dem Bootloader wurde nicht gefunden.;The file #1# with the bootloader was not found.;Het bestand #1# met de bootloader is niet gevonden.;Le fichier #1# contenant le bootloader est introuvable.;Il file #1# con il bootloader non è stato trovato.;No se encontró el archivo #1# con el bootloader.;Filen #1# med bootloaderen blev ikke fundet.
+Die Datei '#1#' kann nicht überschrieben werden.;The file '#1#' cannot be overwritten.;Het bestand '#1#' kan niet worden overschreven.;Le fichier '#1#' ne peut pas être écrasé.;Il file '#1#' non può essere sovrascritto.;El archivo '#1#' no se puede sobrescribir.;Filen '#1#' kan ikke overskrives.
+Die Datei '#1#' konnte nicht entpackt werden.;The file '#1#' could not be unpacked.;Het bestand '#1#' kon niet worden uitgepakt.;Le fichier '#1#' n'a pas pu être décompressé.;Il file '#1#' non ha potuto essere decompresso.;No se pudo descomprimir el archivo '#1#'.;Filen '#1#' kunne ikke pakkes ud.
+Die Datei '#1#' konnte nicht gespeichert werden.;The file '#1#' could not be saved.;Het bestand '#1#' kon niet worden opgeslagen.;Le fichier '#1#' n'a pas pu être enregistré.;Il file '#1#' non ha potuto essere salvato.;No se pudo guardar el archivo '#1#'.;Filen '#1#' kunne ikke gemmes.
 Die Datei '{name}' konnte nicht übertragen werden: {meldung};The file '{name}' could not be transferred: {meldung};Het bestand '{name}' kon niet worden overgedragen: {meldung};Le fichier '{name}' n'a pas pu être transféré : {meldung};Non è stato possibile trasferire il file '{name}': {meldung};No se pudo transferir el archivo '{name}': {meldung};Filen '{name}' kunne ikke overføres: {meldung}
 Die Datei '{name}' laden?{extra};Load the file '{name}'?{extra};Het bestand '{name}' laden?{extra};Charger le fichier '{name}' ?{extra};Caricare il file '{name}'?{extra};¿Cargar el archivo '{name}'?{extra};Indlæs filen '{name}'?{extra}
 Die Datei install_git.sh wurde nicht gefunden:;The file install_git.sh was not found:;Het bestand install_git.sh is niet gevonden:;Le fichier install_git.sh est introuvable :;Il file install_git.sh non è stato trovato:;No se encontró el archivo install_git.sh:;Filen install_git.sh blev ikke fundet:
@@ -474,6 +609,7 @@ Die Einstellungen wurden verändert. Sollen die geänderten Einstellungen gesich
 Die Farbtestseite ermöglicht das Austesten der verschiedenen Farbkombinationen und das Erstellen einer Farbtabelle für das <SetColTab>-Macro. Die Farben können über verschiedene Wege definiert werden: Einen Farbkreis, durch direkte Eingabe der Rot-Grün-Blau-Werte, des Farbtons, der Helligkeit und Sättigung oder der Farbtemperatur.;The color test page lets you try out different color combinations and create a color table for the <SetColTab> macro. Colors can be defined in several ways: with a color wheel, by entering the red, green and blue values directly, by hue, brightness and saturation, or by color temperature.;Op de kleurtestpagina kunt u verschillende kleurcombinaties uitproberen en een kleurentabel maken voor de macro <SetColTab>. De kleuren kunnen op verschillende manieren worden vastgelegd: met een kleurenwiel, door de rood-groen-blauw-waarden rechtstreeks in te voeren, via tint, helderheid en verzadiging of via de kleurtemperatuur.;La page de test des couleurs permet d'essayer différentes combinaisons de couleurs et de créer une table de couleurs pour la macro <SetColTab>. Les couleurs peuvent être définies de plusieurs façons : avec une roue chromatique, en saisissant directement les valeurs rouge, vert et bleu, la teinte, la luminosité et la saturation, ou la température de couleur.;La pagina di test dei colori consente di provare diverse combinazioni di colori e di creare una tabella dei colori per la macro <SetColTab>. I colori possono essere definiti in vari modi: con una ruota dei colori, inserendo direttamente i valori di rosso, verde e blu, la tinta, la luminosità e la saturazione oppure la temperatura colore.;La página de prueba de colores permite probar distintas combinaciones de colores y crear una tabla de colores para la macro <SetColTab>. Los colores se pueden definir de varias maneras: con una rueda de colores, introduciendo directamente los valores de rojo, verde y azul, el tono, el brillo y la saturación, o la temperatura de color.;På farvetestsiden kan du afprøve forskellige farvekombinationer og oprette en farvetabel til makroen <SetColTab>. Farverne kan defineres på flere måder: med et farvehjul, ved direkte indtastning af rød-grøn-blå-værdier, farvetone, lysstyrke og mætning eller farvetemperatur.
 Die fertig übersetzte Datei #1# wurde nicht gefunden.;The precompiled file #1# was not found.;Het kant-en-klaar gecompileerde bestand #1# is niet gevonden.;Le fichier précompilé #1# est introuvable.;Il file precompilato #1# non è stato trovato.;No se encontró el archivo precompilado #1#.;Den færdigkompilerede fil #1# blev ikke fundet.
 Die Firmware {datei} wurde auf den Pico geschrieben. Der Pico startet jetzt neu.;The firmware {datei} was written to the Pico. The Pico is restarting now.;De firmware {datei} is naar de Pico geschreven. De Pico start nu opnieuw op.;Le firmware {datei} a été écrit sur le Pico. Le Pico redémarre maintenant.;Il firmware {datei} è stato scritto sul Pico. Il Pico si riavvia ora.;El firmware {datei} se ha escrito en la Pico. La Pico se reinicia ahora.;Firmwaren {datei} er skrevet til Pico. Pico genstarter nu.
+Die Firmware-Liste hat ein ungültiges Format.;The firmware list has an invalid format.;De firmwarelijst heeft een ongeldig formaat.;La liste des firmwares a un format invalide.;L'elenco dei firmware ha un formato non valido.;La lista de firmware tiene un formato no válido.;Firmwarelisten har et ugyldigt format.
 Die Freigabe ist eingerichtet.;The release has been set up.;De vrijgave is ingesteld.;Le partage a été configuré.;La condivisione è stata configurata.;El recurso compartido se ha configurado.;Delingen er oprettet.
 Die Freigabe ist entfernt.;The release has been removed.;De vrijgave is verwijderd.;Le partage a été supprimé.;La condivisione è stata rimossa.;El recurso compartido se ha eliminado.;Delingen er fjernet.
 Die Freigabe wurde an Windows übergeben. Ob die Regel besteht, lässt sich hier nicht lesen: bitte vom anderen Rechner ausprobieren.;The release was handed over to Windows. Whether the rule exists cannot be read here: please try it from the other computer.;De vrijgave is aan Windows overgedragen. Of de regel bestaat, kan hier niet worden gelezen: probeer het vanaf de andere computer.;Le partage a été transmis à Windows. On ne peut pas lire ici si la règle existe : veuillez essayer depuis l'autre ordinateur.;La condivisione è stata passata a Windows. Qui non si può leggere se la regola esiste: prova dall'altro computer.;El recurso compartido se ha pasado a Windows. Aquí no se puede leer si la regla existe: pruébalo desde el otro ordenador.;Delingen er overgivet til Windows. Om reglen findes, kan ikke læses her: prøv fra den anden computer.
@@ -481,6 +617,7 @@ Die Funktion '{func}' gibt es in der Web-Oberfläche noch nicht.;The function '{
 Die Funktion möchte diese Seite öffnen:;The function wants to open this page:;De functie wil deze pagina openen:;La fonction veut ouvrir cette page :;La funzione vuole aprire questa pagina:;La función quiere abrir esta página:;Funktionen vil åbne denne side:
 Die gewählten Makros werden aus der Tabelle entfernt.;The selected macros are removed from the table.;De gekozen macro's worden uit de tabel verwijderd.;Les macros choisies sont supprimées du tableau.;Le macro scelte vengono rimosse dalla tabella.;Las macros elegidas se eliminan de la tabla.;De valgte makroer fjernes fra tabellen.
 Die Helligkeit ist eine Zahl zwischen 0 und 255.;The brightness is a number between 0 and 255.;De helderheid is een getal tussen 0 en 255.;La luminosité est un nombre entre 0 et 255.;La luminosità è un numero compreso tra 0 e 255.;El brillo es un número entre 0 y 255.;Lysstyrken er et tal mellem 0 og 255.
+Die heruntergeladene Datei ist leer.;The downloaded file is empty.;Het gedownloade bestand is leeg.;Le fichier téléchargé est vide.;Il file scaricato è vuoto.;El archivo descargado está vacío.;Den hentede fil er tom.
 Die Installation hat zu lange gedauert (mehr als {n} Minuten).;The installation took too long (more than {n} minutes).;De installatie duurde te lang (meer dan {n} minuten).;L'installation a duré trop longtemps (plus de {n} minutes).;L'installazione ha richiesto troppo tempo (più di {n} minuti).;La instalación tardó demasiado (más de {n} minutos).;Installationen tog for lang tid (mere end {n} minutter).
 Die Installation wurde abgebrochen oder ist fehlgeschlagen (Rückgabewert {rc}). Bitte Git selbst installieren:;The installation was cancelled or failed (return value {rc}). Please install Git yourself:;De installatie is afgebroken of mislukt (retourwaarde {rc}). Installeer Git alstublieft zelf:;L'installation a été annulée ou a échoué (valeur de retour {rc}). Veuillez installer Git vous-même :;L'installazione è stata annullata o non è riuscita (valore restituito {rc}). Installare Git manualmente:;La instalación se canceló o falló (valor devuelto {rc}). Instale Git usted mismo:;Installationen blev afbrudt eller mislykkedes (returværdi {rc}). Installer Git venligst selv:
 Die Installation wurde repariert (Version {new_v}, {anzahl} Dateien geschrieben, {zeit}). Bitte das Programm neu starten, falls noch nicht geschehen.;The installation was repaired (version {new_v}, {anzahl} files written, {zeit}). Please restart the program if that has not happened yet.;De installatie is hersteld (versie {new_v}, {anzahl} bestanden geschreven, {zeit}). Start het programma opnieuw als dat nog niet is gebeurd.;L'installation a été réparée (version {new_v}, {anzahl} fichiers écrits, {zeit}). Veuillez redémarrer le programme si ce n'est pas encore fait.;L'installazione è stata riparata (versione {new_v}, {anzahl} file scritti, {zeit}). Riavvia il programma se non è già successo.;La instalación se ha reparado (versión {new_v}, {anzahl} archivos escritos, {zeit}). Reinicia el programa si todavía no ha ocurrido.;Installationen er repareret (version {new_v}, {anzahl} filer skrevet, {zeit}). Genstart programmet, hvis det ikke allerede er sket.
@@ -491,6 +628,56 @@ Die LED Tabelle ist leer. Bitte die Felder mit einem 'x' markieren in denen die 
 ";"The LEDs are addressed by their position in the chain. The first LED in the chain gets the number 0. The second one the number 1...
 
 ";De LED's worden aangesproken via hun positie in de keten. De eerste LED in de keten krijgt het nummer 0. De tweede het nummer 1...;Les LED sont adressées par leur position dans la chaîne. La première LED de la chaîne reçoit le numéro 0. La deuxième le numéro 1...;I LED vengono indirizzati in base alla loro posizione nella catena. Il primo LED della catena riceve il numero 0. Il secondo il numero 1...;Los LED se direccionan por su posición en la cadena. El primer LED de la cadena recibe el número 0. El segundo el número 1...;LED'erne adresseres via deres position i kæden. Den første LED i kæden får nummer 0. Den anden nummer 1...
+"Die Lichtmaschine antwortet beim Hochladen nicht (avrdude: not in sync).
+
+Mögliche Ursachen und Hilfen:
+- Der Bootloader passt nicht zur Einstellung: Probiere in Optionen Werkzeuge, Reiter LED ARDUINO, beide Einstellungen „Nano Normal (old Bootloader)“ und „Nano (neue Version)“.
+- Ein anderes USB-Kabel (es muss Daten übertragen) und einen anderen USB-Anschluss probieren.
+- Der Anschluss darf nicht von einem anderen Programm benutzt werden (zum Beispiel vom Seriellen Monitor).
+
+Die Einzelheiten stehen im Protokoll (Hilfe → Logfile anzeigen).";"The Lichtmaschine does not respond during upload (avrdude: not in sync).
+
+Possible causes and remedies:
+- The bootloader does not match the setting: In Options tools, tab LED ARDUINO, try both settings “Nano Normal (old Bootloader)” and “Nano (neue Version)”.
+- Try another USB cable (it must transfer data) and another USB port.
+- The port must not be used by another program (for example the serial monitor).
+
+The details are in the log (Help → Show logfile).";"De Lichtmaschine reageert niet tijdens het uploaden (avrdude: not in sync).
+
+Mogelijke oorzaken en oplossingen:
+- De bootloader past niet bij de instelling: probeer bij Opties hulpmiddelen, tabblad LED ARDUINO, beide instellingen „Nano Normal (old Bootloader)“ en „Nano (neue Version)“.
+- Probeer een andere USB-kabel (hij moet gegevens overdragen) en een andere USB-poort.
+- De poort mag niet door een ander programma worden gebruikt (bijvoorbeeld de seriële monitor).
+
+De details staan in het logboek (Help → Logfile weergeven).";"La Lichtmaschine ne répond pas pendant le téléversement (avrdude : not in sync).
+
+Causes possibles et remèdes :
+- Le bootloader ne correspond pas au réglage : dans Options outils, onglet LED ARDUINO, essayer les deux réglages « Nano Normal (old Bootloader) » et « Nano (neue Version) ».
+- Essayer un autre câble USB (il doit transmettre des données) et un autre port USB.
+- Le port ne doit pas être utilisé par un autre programme (par exemple le moniteur série).
+
+Les détails figurent dans le journal (Aide → Afficher le logfile).";"La Lichtmaschine non risponde durante il caricamento (avrdude: not in sync).
+
+Possibili cause e rimedi:
+- Il bootloader non corrisponde all'impostazione: in Opzioni strumenti, scheda LED ARDUINO, provare entrambe le impostazioni «Nano Normal (old Bootloader)» e «Nano (neue Version)».
+- Provare un altro cavo USB (deve trasmettere dati) e un'altra porta USB.
+- La porta non deve essere usata da un altro programma (per esempio il monitor seriale).
+
+I dettagli sono nel registro (Aiuto → Mostra logfile).";"La Lichtmaschine no responde durante la carga (avrdude: not in sync).
+
+Posibles causas y soluciones:
+- El bootloader no coincide con el ajuste: en Opciones herramientas, pestaña LED ARDUINO, probar ambos ajustes «Nano Normal (old Bootloader)» y «Nano (neue Version)».
+- Probar otro cable USB (debe transmitir datos) y otro puerto USB.
+- El puerto no debe ser usado por otro programa (por ejemplo el monitor serie).
+
+Los detalles figuran en el registro (Ayuda → Mostrar logfile).";"Lichtmaschine svarer ikke under upload (avrdude: not in sync).
+
+Mulige årsager og løsninger:
+- Bootloaderen passer ikke til indstillingen: Prøv under Indstillinger værktøjer, fanen LED ARDUINO, begge indstillinger „Nano Normal (old Bootloader)“ og „Nano (neue Version)“.
+- Prøv et andet USB-kabel (det skal overføre data) og en anden USB-port.
+- Porten må ikke bruges af et andet program (for eksempel den serielle monitor).
+
+Detaljerne står i logfilen (Hjælp → Vis logfile)."
 Die Liste der Releases konnte nicht gelesen werden: {ex};The list of releases could not be read: {ex};De lijst met releases kon niet worden gelezen: {ex};La liste des releases n'a pas pu être lue : {ex};Impossibile leggere l'elenco delle release: {ex};No se pudo leer la lista de releases: {ex};Listen over releases kunne ikke læses: {ex}
 Die markierten Kästchen liegen in verschiedenen Ketten und lassen sich nicht gemeinsam verschieben.;The selected boxes are in different chains and cannot be moved together.;De geselecteerde vakjes staan in verschillende ketens en kunnen niet samen worden verplaatst.;Les cases sélectionnées se trouvent dans des chaînes différentes et ne peuvent pas être déplacées ensemble.;I riquadri selezionati si trovano in catene diverse e non possono essere spostati insieme.;Los recuadros seleccionados están en cadenas distintas y no se pueden mover juntos.;De valgte felter ligger i forskellige kæder og kan ikke flyttes sammen.
 Die Meldungen von avrdude stehen im Fenster des Arduino-Monitors.;The messages from avrdude are shown in the Arduino monitor window.;De meldingen van avrdude staan in het venster van de Arduino-monitor.;Les messages d'avrdude sont affichés dans la fenêtre du moniteur Arduino.;I messaggi di avrdude sono visualizzati nella finestra del monitor Arduino.;Los mensajes de avrdude aparecen en la ventana del monitor Arduino.;Meddelelserne fra avrdude står i Arduino-monitorens vindue.
@@ -689,6 +876,7 @@ Endwert (1..254);End value (1..254);Eindwaarde (1..254);Valeur finale (1..254);V
 ENTER: gedrückt halten. In den Betriebsarten 2 und 3 zweimal drücken (2nd Step);ENTER: hold pressed. In operating modes 2 and 3 press twice (2nd step);ENTER: ingedrukt houden. In bedrijfsmodi 2 en 3 twee keer drukken (2e stap);ENTRÉE : maintenir appuyée. Dans les modes de fonctionnement 2 et 3, appuyer deux fois (2e étape);INVIO: tieni premuto. Nelle modalità di funzionamento 2 e 3 premi due volte (2° passo);INTRO: mantener pulsado. En los modos de funcionamiento 2 y 3, pulsar dos veces (2.º paso);ENTER: hold nede. I driftstilstand 2 og 3 trykkes to gange (2. trin)
 Entf;Del;Del;Suppr;Canc;Supr;Slet
 Enthält;Contains;Bevat;Contient;Contiene;Contiene;Indeholder
+Entwicklertest;developer test;ontwikkelaarstest;test du développeur;test dello sviluppatore;prueba del desarrollador;udviklertest
 Entwicklungsumgebung;Development environment;Ontwikkelomgeving;Environnement de développement;Ambiente di sviluppo;Entorno de desarrollo;Udviklingsmiljø
 Erlaubt sind Buchstaben, Ziffern und Bindestrich (nicht am Anfang oder Ende), höchstens 31 Zeichen, keine Leerzeichen und Umlaute.;Allowed are letters, digits and hyphen (not at the start or end), at most 31 characters, no spaces or umlauts.;Toegestaan zijn letters, cijfers en een koppelteken (niet aan het begin of einde), hoogstens 31 tekens, geen spaties en geen umlauts.;Sont autorisés les lettres, les chiffres et le trait d'union (pas au début ni à la fin), 31 caractères au plus, ni espaces ni trémas.;Sono consentiti lettere, cifre e trattino (non all'inizio né alla fine), al massimo 31 caratteri, senza spazi né dieresi.;Se permiten letras, cifras y guion (no al principio ni al final), como máximo 31 caracteres, sin espacios ni diéresis.;Tilladt er bogstaver, cifre og bindestreg (ikke i begyndelsen eller slutningen), højst 31 tegn, ingen mellemrum og ingen umlaut.
 ermöglicht die Animation der Farbe einer RGB-LED-Beleuchtung.;allows the animation of the color of RGB LED lighting.;maakt de animatie van de kleur van een RGB-LED-verlichting mogelijk.;permet d'animer la couleur d'un éclairage à LED RVB.;consente di animare il colore di un'illuminazione a LED RGB.;permite animar el color de una iluminación LED RGB.;gør det muligt at animere farven på en RGB-LED-belysning.
@@ -817,6 +1005,21 @@ Fehler: beim lesen des 'sketchbook.path' in '#1#';Error: while reading the 'sket
 Fehler: Das Bild ';Error: The picture ';Fout: De afbeelding ';Erreur : l'image ';Errore: l'immagine ';Error: la imagen ';Fejl: Billedet '
 Fehler: Das Verzeichnis '#1#' wurde nicht gefunden;Error: The folder '#1#' was not found;Fout: De map '#1#' is niet gevonden;Erreur : le dossier '#1#' est introuvable;Errore: la cartella '#1#' non è stata trovata;Error: no se encontró la carpeta '#1#';Fejl: Mappen '#1#' blev ikke fundet
 "Fehler: Datei wurde nicht gefunden ;-(";"Error: File was not found ;-(";"Fout: Bestand is niet gevonden ;-(";"Erreur : fichier introuvable ;-(";"Errore: file non trovato ;-(";"Error: archivo no encontrado ;-(";"Fejl: Filen blev ikke fundet ;-("
+"Fehler: Der #2# am COM Port #1# lässt sich nicht ansprechen (Fehlercode #3#: Anschluss nicht zuweisbar oder Arduino nicht zurücksetzbar).
+
+Das Programm hat es mehrfach versucht. Bitte das USB-Kabel abziehen, wieder anstecken und noch einmal versuchen.";"Error: The #2# at COM port #1# cannot be addressed (error code #3#: port cannot be assigned or Arduino cannot be reset).
+
+The program tried several times. Please unplug the USB cable, plug it in again and try once more.";"Fout: De #2# op COM-poort #1# kan niet worden aangesproken (foutcode #3#: poort kan niet worden toegewezen of Arduino kan niet worden gereset).
+
+Het programma heeft het meermaals geprobeerd. Trek de USB-kabel eruit, steek hem er opnieuw in en probeer het nog eens.";"Erreur : #2# sur le port COM #1# ne peut pas être adressé (code d'erreur #3# : port non attribuable ou Arduino non réinitialisable).
+
+Le programme a essayé plusieurs fois. Débranchez le câble USB, rebranchez-le et réessayez.";"Errore: #2# sulla porta COM #1# non può essere indirizzato (codice errore #3#: porta non assegnabile o Arduino non resettabile).
+
+Il programma ha provato più volte. Scollegare il cavo USB, ricollegarlo e riprovare.";"Error: #2# en el puerto COM #1# no se puede direccionar (código de error #3#: no se puede asignar el puerto o no se puede reiniciar el Arduino).
+
+El programa lo intentó varias veces. Desconecte el cable USB, vuelva a conectarlo e inténtelo de nuevo.";"Fejl: #2# på COM-port #1# kan ikke tilgås (fejlkode #3#: porten kan ikke tildeles, eller Arduino kan ikke nulstilles).
+
+Programmet har prøvet flere gange. Træk USB-kablet ud, sæt det i igen og prøv igen."
 Fehler: Der Adruino reagiert nicht;Error: The Arduino does not respond;Fout: De Arduino reageert niet;Erreur : l'Arduino ne répond pas;Errore: l'Arduino non risponde;Error: el Arduino no responde;Fejl: Arduinoen reagerer ikke
 Fehler: Der Arduino 'sketchbook.path' darf kein Netzlaufwerk sein:;Error: The Arduino 'sketchbook.path' must not be a network drive:;Fout: Het Arduino-'sketchbook.path' mag geen netwerkstation zijn:;Erreur : le 'sketchbook.path' d'Arduino ne doit pas être un lecteur réseau :;Errore: il 'sketchbook.path' di Arduino non deve essere un'unità di rete:;Error: el 'sketchbook.path' de Arduino no debe ser una unidad de red:;Fejl: Arduinos 'sketchbook.path' må ikke være et netværksdrev:
 Fehler: Der Bereich '#1#' wurde nicht im Blatt '#2#' gefunden;Error: The range '#1#' was not found in the sheet '#2#';Fout: Het bereik '#1#' is niet gevonden in het blad '#2#';Erreur : la plage '#1#' est introuvable dans la feuille '#2#';Errore: l'intervallo '#1#' non è stato trovato nel foglio '#2#';Error: no se encontró el rango '#1#' en la hoja '#2#';Fejl: Området '#1#' blev ikke fundet i arket '#2#'
@@ -848,11 +1051,14 @@ Fester Wert;Fixed value;Vaste waarde;Valeur fixe;Valore fisso;Valor fijo;Fast v�
 Filter;Filter;;;;;
 Firewall;Firewall;Firewall;Pare-feu;Firewall;Cortafuegos;Firewall
 Firmware für den Raspberry Pi Pico auswählen;Select firmware for the Raspberry Pi Pico;Firmware voor de Raspberry Pi Pico kiezen;Choisir le firmware pour le Raspberry Pi Pico;Seleziona il firmware per il Raspberry Pi Pico;Seleccionar el firmware para la Raspberry Pi Pico;Vælg firmware til Raspberry Pi Pico
+Firmware heruntergeladen nach:;Firmware downloaded to:;Firmware gedownload naar:;Firmware téléchargé dans :;Firmware scaricato in:;Firmware descargado en:;Firmware hentet til:
+Firmware herunterladen;Download firmware;Firmware downloaden;Télécharger le micrologiciel;Scarica il firmware;Descargar firmware;Download firmware
 Firmware installieren;Install firmware;Firmware installeren;Installer le firmware;Installa firmware;Instalar firmware;Installer firmware
 Fix;Fixed;Vast;Fixe;Fisso;Fijo;Fast
 Formeln neu berechnen;Recalculate formulas;Formules herberekenen;Recalculer les formules;Ricalcola le formule;Recalcular fórmulas;Genberegn formler
 Freigabe entfernen;Remove release;Vrijgave verwijderen;Supprimer le partage;Rimuovi la condivisione;Quitar el recurso compartido;Fjern deling
 Für den Raspberry Pi Pico braucht Linux einmalig eine Regel für den USB-Zugriff (udev), sonst meldet PlatformIO: picotool was unable to connect.;For the Raspberry Pi Pico, Linux needs a rule for USB access (udev) once, otherwise PlatformIO reports: picotool was unable to connect.;Voor de Raspberry Pi Pico heeft Linux eenmalig een regel voor USB-toegang (udev) nodig, anders meldt PlatformIO: picotool was unable to connect.;Pour le Raspberry Pi Pico, Linux a besoin une fois d'une règle d'accès USB (udev), sinon PlatformIO signale : picotool was unable to connect.;Per il Raspberry Pi Pico Linux ha bisogno una volta di una regola per l'accesso USB (udev), altrimenti PlatformIO segnala: picotool was unable to connect.;"Para la Raspberry Pi Pico, Linux necesita una vez una regla de acceso USB (udev); de lo contrario PlatformIO informa: picotool was unable to connect.";Til Raspberry Pi Pico har Linux én gang brug for en regel for USB-adgang (udev), ellers melder PlatformIO: picotool was unable to connect.
+Für diese Firmware ist keine Download-Datei angegeben.;No download file is specified for this firmware.;Voor deze firmware is geen downloadbestand opgegeven.;Aucun fichier de téléchargement n'est indiqué pour ce firmware.;Per questo firmware non è indicato alcun file da scaricare.;No se ha indicado ningún archivo de descarga para este firmware.;Der er ikke angivet nogen downloadfil til denne firmware.
 Ganze Datei herunterladen;Download whole file;Heel bestand downloaden;Télécharger le fichier entier;Scarica l'intero file;Descargar el archivo completo;Download hele filen
 Ganze Zeile;Entire row;Hele rij;Ligne entière;Intera riga;Fila completa;Hele rækken
 Ganze Zeile färben;Colour the whole row;Hele regel kleuren;Colorer toute la ligne;Colora l'intera riga;Colorear toda la fila;Farvelæg hele rækken
@@ -877,6 +1083,7 @@ gleich zum Arduino schicken;Send to the Arduino immediately;;;;;
 Goto Aktivierung auswählen:;Select goto activation:;Goto-activering kiezen:;Choisir l'activation du goto :;Scegli l'attivazione del goto:;Elegir la activación de goto:;Vælg goto-aktiveringen:
 Grafik;Graphic;Grafiek;Graphique;Grafico;Gráfico;Grafik
 Grafik (Balken) neu aufbauen;Rebuild graphic (bars);Grafiek opnieuw opbouwen (balken);Reconstruire le graphique (barres);Ricostruisci il grafico (barre);Reconstruir el gráfico (barras);Genopbyg grafikken (søjler)
+Grafik und Tabelle zusammen anzeigen;Show the graphic and the table together;Grafiek en tabel samen tonen;Afficher le graphique et le tableau ensemble;Mostra il grafico e la tabella insieme;Mostrar el gráfico y la tabla juntos;Vis grafikken og tabellen sammen
 Green;Green;Groen;Vert;Verde;Verde;Grøn
 Große Schrift;Large font;Groot lettertype;Grande police;Carattere grande;Letra grande;Stor skrift
 Größe;Size;Grootte;Taille;Dimensione;Tamaño;Størrelse
@@ -900,6 +1107,8 @@ Hintergrundfarbe der Zelle;Background colour of the cell;Achtergrondkleur van de
 Hinweis: Die Rückmeldung (RMBUS) vom Arduino ist mit dieser Version der seriellen Schicht nicht verfügbar (web_serial.py aktualisieren).;Note: The feedback (RMBUS) from the Arduino is not available with this version of the serial layer (update web_serial.py).;Opmerking: De terugmelding (RMBUS) van de Arduino is met deze versie van de seriële laag niet beschikbaar (web_serial.py bijwerken).;Remarque : le retour d'information (RMBUS) de l'Arduino n'est pas disponible avec cette version de la couche série (mettre à jour web_serial.py).;Nota: il riscontro (RMBUS) dall'Arduino non è disponibile con questa versione del livello seriale (aggiornare web_serial.py).;Nota: la retroinformación (RMBUS) del Arduino no está disponible con esta versión de la capa serie (actualizar web_serial.py).;Bemærk: Tilbagemeldingen (RMBUS) fra Arduinoen er ikke tilgængelig med denne version af det serielle lag (opdater web_serial.py).
 Hinweis: keine Verbindung zum ARDUINO. Die Befehle werden erst gesendet, wenn „Mit ARDUINO verbinden“ (Kopfzeile) gelungen ist.;Note: no connection to the ARDUINO. The commands are only sent once “Connect to ARDUINO” (header) has succeeded.;Opmerking: geen verbinding met de ARDUINO. De opdrachten worden pas verzonden als „Met ARDUINO verbinden” (kopregel) is gelukt.;Remarque : pas de connexion à l'ARDUINO. Les commandes ne sont envoyées qu'une fois « Se connecter à l'ARDUINO » (en-tête) réussi.;Nota: nessuna connessione all'ARDUINO. I comandi vengono inviati solo dopo che “Connetti all'ARDUINO” (intestazione) è riuscito.;Nota: sin conexión con el ARDUINO. Los comandos solo se envían cuando “Conectar con el ARDUINO” (encabezado) haya tenido éxito.;Bemærk: ingen forbindelse til ARDUINO. Kommandoerne sendes først, når “Forbind til ARDUINO” (overskrift) er lykkedes.
 Hochladen gestartet. Die fertig übersetzte Datei wird hochgeladen (es wird nichts übersetzt).;Upload started. The precompiled file is being uploaded (nothing is compiled).;Uploaden gestart. Het kant-en-klaar gecompileerde bestand wordt geüpload (er wordt niets gecompileerd).;Téléversement démarré. Le fichier précompilé est téléversé (rien n'est compilé).;Caricamento avviato. Viene caricato il file precompilato (non viene compilato nulla).;Carga iniciada. Se carga el archivo precompilado (no se compila nada).;Upload startet. Den færdigkompilerede fil uploades (der kompileres ikke noget).
+Hochladen: Keine Antwort;Upload: no response;Uploaden: geen antwoord;Téléversement : pas de réponse;Caricamento: nessuna risposta;Carga: sin respuesta;Upload: intet svar
+Hochladen: Prüfung fehlgeschlagen;Upload: verification failed;Uploaden: controle mislukt;Téléversement : vérification échouée;Caricamento: verifica non riuscita;Carga: comprobación fallida;Upload: kontrol mislykkedes
 HSV;HSV;HSV;TSV;HSV;HSV;HSV
 HSV-Farbton;HSV hue;HSV-tint;Teinte HSV;Tinta HSV;Tono HSV;HSV-farvetone
 "https://platformio.org/install/cli (Linux, macOS: pipx install platformio, danach pipx ensurepath und neu anmelden; Debian, Ubuntu, Raspberry Pi OS: vorher sudo apt install pipx)";"https://platformio.org/install/cli (Linux, macOS: pipx install platformio, then pipx ensurepath and log in again; Debian, Ubuntu, Raspberry Pi OS: first sudo apt install pipx)";"https://platformio.org/install/cli (Linux, macOS: pipx install platformio, daarna pipx ensurepath en opnieuw aanmelden; Debian, Ubuntu, Raspberry Pi OS: eerst sudo apt install pipx)";"https://platformio.org/install/cli (Linux, macOS : pipx install platformio, puis pipx ensurepath et se reconnecter ; Debian, Ubuntu, Raspberry Pi OS : d'abord sudo apt install pipx)";"https://platformio.org/install/cli (Linux, macOS: pipx install platformio, poi pipx ensurepath e riaccedere; Debian, Ubuntu, Raspberry Pi OS: prima sudo apt install pipx)";"https://platformio.org/install/cli (Linux, macOS: pipx install platformio, luego pipx ensurepath y volver a iniciar sesión; Debian, Ubuntu, Raspberry Pi OS: antes sudo apt install pipx)";"https://platformio.org/install/cli (Linux, macOS: pipx install platformio, derefter pipx ensurepath og log ind igen; Debian, Ubuntu, Raspberry Pi OS: først sudo apt install pipx)"
@@ -1132,6 +1341,8 @@ Con il cursore si imposta la posizione del servo.";"Con la placa de servos de Ha
 Con el control deslizante se ajusta la posición del servo.";"Med Hardis servoprint kan servoer også styres via MLL. Eckhart har programmeret en variant, der undværer WS2811-chippen og giver bedre kontrol over servoens position. På denne side kan du teste og konfigurere servoen.
 Med skyderen indstilles servoens position."
 Mit Haken (Anfänger Modus) werden Funktionen ausgeblendet, die für den Einstieg nicht nötig sind: die Reiter Patterngenerator, Z21 Simulator und ProgGenerator Einstellungen, der Knopf Zeilen Färben und einige Makros in der Makroauswahl. Ohne Haken (Experten Modus) ist alles sichtbar. Eine neue Installation startet im Anfänger Modus.;With the check mark (beginner mode) functions that are not needed to get started are hidden: the tabs Pattern generator, Z21 simulator and ProgGenerator settings, the button Color rows and some macros in the macro selection. Without the check mark (expert mode) everything is visible. A new installation starts in beginner mode.;Met vinkje (beginnersmodus) worden functies verborgen die voor het begin niet nodig zijn: de tabbladen Patroongenerator, Z21-simulator en ProgGenerator-instellingen, de knop Rijen kleuren en enkele macro's in de macrokeuze. Zonder vinkje (expertmodus) is alles zichtbaar. Een nieuwe installatie start in de beginnersmodus.;Avec la coche (mode débutant), les fonctions inutiles pour débuter sont masquées : les onglets Générateur de motifs, Simulateur Z21 et Paramètres ProgGenerator, le bouton Colorer les lignes et quelques macros dans la sélection des macros. Sans la coche (mode expert), tout est visible. Une nouvelle installation démarre en mode débutant.;Con la spunta (modalità principiante) vengono nascoste le funzioni non necessarie per iniziare: le schede Generatore di pattern, Simulatore Z21 e Impostazioni ProgGenerator, il pulsante Colora righe e alcune macro nella selezione delle macro. Senza la spunta (modalità esperto) è tutto visibile. Una nuova installazione parte in modalità principiante.;Con la marca (modo principiante) se ocultan las funciones que no hacen falta para empezar: las pestañas Generador de patrones, Simulador Z21 y Ajustes de ProgGenerator, el botón Colorear filas y algunas macros en la selección de macros. Sin la marca (modo experto) todo es visible. Una instalación nueva se inicia en modo principiante.;Med flueben (begyndertilstand) skjules funktioner, der ikke er nødvendige til at komme i gang: fanerne Mønstergenerator, Z21-simulator og ProgGenerator-indstillinger, knappen Farv rækker og nogle makroer i makrovalget. Uden flueben (ekspertilstand) er alt synligt. En ny installation starter i begyndertilstand.
+Mit Haken (Vorgabe) spricht das Programm beim Prüfen des angeschlossenen Nano (Optionen Werkzeuge: Haken „Automatisch erkennen“ und „USB Port erkennen“) den Bootloader an und stellt „Nano Normal (old Bootloader)“ oder „Nano (neue Version)“ passend ein. Ohne Haken prüft das Programm nur, ob sich der Anschluss öffnen lässt, und lässt Ihre Einstellung unverändert.;With the check mark (default) the program contacts the bootloader when checking the connected Nano (Options tools: with automatic detection on, after detecting the USB port) and sets “Nano Normal (old Bootloader)” or “Nano (neue Version)” accordingly. Without the check mark the program only checks whether the port can be opened and leaves your setting unchanged.;Met vinkje (standaard) spreekt het programma bij het controleren van de aangesloten Nano (Opties hulpmiddelen: bij ingeschakelde automatische herkenning, na het herkennen van de USB-poort) de bootloader aan en stelt „Nano Normal (old Bootloader)“ of „Nano (neue Version)“ passend in. Zonder vinkje controleert het programma alleen of de poort kan worden geopend en laat uw instelling ongewijzigd.;Avec la case cochée (par défaut), le programme dialogue avec le bootloader lors de la vérification du Nano connecté (Options outils : avec la détection automatique activée, après la détection du port USB) et règle « Nano Normal (old Bootloader) » ou « Nano (neue Version) » en conséquence. Sans la case, le programme vérifie seulement si le port peut être ouvert et laisse votre réglage inchangé.;Con la casella attivata (predefinito), il programma dialoga con il bootloader durante il controllo del Nano collegato (Opzioni strumenti: con il riconoscimento automatico attivo, dopo il riconoscimento della porta USB) e imposta di conseguenza «Nano Normal (old Bootloader)» o «Nano (neue Version)». Senza casella il programma controlla solo se la porta può essere aperta e lascia invariata la vostra impostazione.;Con la casilla marcada (predeterminado), el programa se comunica con el bootloader al comprobar el Nano conectado (Opciones herramientas: con el reconocimiento automático activado, tras reconocer el puerto USB) y ajusta «Nano Normal (old Bootloader)» o «Nano (neue Version)» según corresponda. Sin la casilla, el programa solo comprueba si se puede abrir el puerto y deja su ajuste sin cambios.;Med afkrydsning (standard) kontakter programmet bootloaderen ved kontrol af den tilsluttede Nano (Indstillinger værktøjer: med automatisk genkendelse slået til, efter genkendelse af USB-porten) og indstiller „Nano Normal (old Bootloader)“ eller „Nano (neue Version)“ i overensstemmelse hermed. Uden afkrydsning kontrollerer programmet kun, om porten kan åbnes, og lader din indstilling være uændret.
+Mit Haken spricht das Programm beim Prüfen des angeschlossenen Nano (Optionen Werkzeuge: Haken „Automatisch erkennen“ und „USB Port erkennen“) den Bootloader an und stellt „Nano Normal (old Bootloader)“ oder „Nano (neue Version)“ passend ein. Ohne Haken (Vorgabe) prüft das Programm nur, ob sich der Anschluss öffnen lässt, und lässt Ihre Einstellung unverändert. Der Haken ist neu und wird erprobt.;With the check mark the program contacts the bootloader when checking the connected Nano (Options tools: with automatic detection on, after detecting the USB port) and sets “Nano Normal (old Bootloader)” or “Nano (neue Version)” accordingly. Without the check mark (default) the program only checks whether the port can be opened and leaves your setting unchanged. The option is new and is being tested.;Met vinkje spreekt het programma bij het controleren van de aangesloten Nano (Opties hulpmiddelen: bij ingeschakelde automatische herkenning, na het herkennen van de USB-poort) de bootloader aan en stelt „Nano Normal (old Bootloader)“ of „Nano (neue Version)“ passend in. Zonder vinkje (standaard) controleert het programma alleen of de poort kan worden geopend en laat uw instelling ongewijzigd. De optie is nieuw en wordt getest.;Avec la case cochée, le programme dialogue avec le bootloader lors de la vérification du Nano connecté (Options outils : avec la détection automatique activée, après la détection du port USB) et règle « Nano Normal (old Bootloader) » ou « Nano (neue Version) » en conséquence. Sans la case (par défaut), le programme vérifie seulement si le port peut être ouvert et laisse votre réglage inchangé. L'option est nouvelle et en cours de test.;Con la casella attivata, il programma dialoga con il bootloader durante il controllo del Nano collegato (Opzioni strumenti: con il riconoscimento automatico attivo, dopo il riconoscimento della porta USB) e imposta di conseguenza «Nano Normal (old Bootloader)» o «Nano (neue Version)». Senza casella (predefinito) il programma controlla solo se la porta può essere aperta e lascia invariata la vostra impostazione. L'opzione è nuova ed è in fase di prova.;Con la casilla marcada, el programa se comunica con el bootloader al comprobar el Nano conectado (Opciones herramientas: con el reconocimiento automático activado, tras reconocer el puerto USB) y ajusta «Nano Normal (old Bootloader)» o «Nano (neue Version)» según corresponda. Sin la casilla (predeterminado), el programa solo comprueba si se puede abrir el puerto y deja su ajuste sin cambios. La opción es nueva y está en fase de prueba.;Med afkrydsning kontakter programmet bootloaderen ved kontrol af den tilsluttede Nano (Indstillinger værktøjer: med automatisk genkendelse slået til, efter genkendelse af USB-porten) og indstiller „Nano Normal (old Bootloader)“ eller „Nano (neue Version)“ i overensstemmelse hermed. Uden afkrydsning (standard) kontrollerer programmet kun, om porten kan åbnes, og lader din indstilling være uændret. Indstillingen er ny og afprøves.
 Mit PlatformIO werden die fertigen Programme (.hex) hochgeladen, die Quelldateien werden nicht übersetzt. Die Datei muss in einem dieser Ordner liegen:;"With PlatformIO the precompiled programs (.hex) are uploaded; the source files are not compiled. The file must be in one of these folders:";"Met PlatformIO worden de kant-en-klare programma's (.hex) geüpload; de bronbestanden worden niet gecompileerd. Het bestand moet in een van deze mappen staan:";"Avec PlatformIO, les programmes précompilés (.hex) sont téléversés ; les fichiers source ne sont pas compilés. Le fichier doit se trouver dans l'un de ces dossiers :";"Con PlatformIO vengono caricati i programmi precompilati (.hex); i file sorgente non vengono compilati. Il file deve trovarsi in una di queste cartelle:";"Con PlatformIO se cargan los programas precompilados (.hex); los archivos fuente no se compilan. El archivo debe estar en una de estas carpetas:";"Med PlatformIO uploades de færdige programmer (.hex); kildefilerne kompileres ikke. Filen skal ligge i en af disse mapper:"
 MobaLedLib LED-Servotester;MobaLedLib LED servo tester;MobaLedLib LED-servotester;Testeur de servos LED MobaLedLib;Tester servo LED MobaLedLib;Probador de servos LED MobaLedLib;MobaLedLib LED-servotester
 MobaLedLib LED-Servotester für Direct Mode Servos;MobaLedLib LED servo tester for direct mode servos;MobaLedLib-LED-servotester voor servo's in directe modus;Testeur de servo LED MobaLedLib pour servos en mode direct;Tester servo LED MobaLedLib per servo in modalità diretta;Probador de servos LED MobaLedLib para servos en modo directo;MobaLedLib LED-servotester til servoer i direkte tilstand
@@ -1199,7 +1410,9 @@ Nicht verbunden. Bitte zuerst verbinden.;Not connected. Please connect first.;Ni
 Normale Schrift;Normal font;Normaal lettertype;Police normale;Carattere normale;Fuente normal;Normal skrift
 Nummer der RGB LED am Modul (0 ist die erste LED).;Number of the RGB LED on the module (0 is the first LED).;Nummer van de RGB-LED op de module (0 is de eerste LED).;Numéro de la LED RGB sur le module (0 est la première LED).;Numero del LED RGB sul modulo (0 è il primo LED).;Número del LED RGB en el módulo (0 es el primer LED).;Nummer på RGB-LED'en på modulet (0 er den første LED).
 Nur Datenblätter lassen sich duplizieren.;Only data sheets can be duplicated.;Alleen gegevensbladen kunnen worden gedupliceerd.;Seules les feuilles de données peuvent être dupliquées.;Solo i fogli di dati possono essere duplicati.;Solo las hojas de datos se pueden duplicar.;Kun dataark kan duplikeres.
+Nur die Grafik anzeigen (Ketten der Makros);Show the graphic only (chains of the macros);Alleen de grafiek tonen (ketens van de macro's);Afficher uniquement le graphique (chaînes des macros);Mostra solo il grafico (catene delle macro);Mostrar solo el gráfico (cadenas de las macros);Vis kun grafikken (kæder af makroerne)
 Nur die Spalten bis Q anzeigen;Show only the columns up to Q;Alleen de kolommen tot en met Q tonen;Afficher uniquement les colonnes jusqu'à Q;Mostra solo le colonne fino alla Q;Mostrar solo las columnas hasta la Q;Vis kun kolonnerne til og med Q
+Nur die Tabelle anzeigen;Show the table only;Alleen de tabel tonen;Afficher uniquement le tableau;Mostra solo la tabella;Mostrar solo la tabla;Vis kun tabellen
 Nur eigene Blätter (Kopien) lassen sich umbenennen.;Only your own sheets (copies) can be renamed.;Alleen eigen bladen (kopieën) kunnen worden hernoemd.;Seules vos propres feuilles (copies) peuvent être renommées.;Solo i propri fogli (copie) possono essere rinominati.;Solo las hojas propias (copias) se pueden renombrar.;Kun egne ark (kopier) kan omdøbes.
 Oben ausrichten;Align top;Boven uitlijnen;Aligner en haut;Allinea in alto;Alinear arriba;Juster øverst
 Oberhalb der ersten Datenzeile kann nichts eingefügt werden.;Nothing can be inserted above the first data row.;Boven de eerste gegevensregel kan niets worden ingevoegd.;Rien ne peut être inséré au-dessus de la première ligne de données.;Non si può inserire nulla sopra la prima riga di dati.;No se puede insertar nada encima de la primera fila de datos.;Der kan ikke indsættes noget over den første datarække.

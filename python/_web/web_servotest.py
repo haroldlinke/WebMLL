@@ -1,9 +1,9 @@
-# Datei-Version: 2.07 (2026-11-09) - web_servotest.py
+# Datei-Version: 2.08 (2026-11-12) - web_servotest.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_servotest.py
 # Path:           _web/web_servotest.py
-# Version:        2.07
-# Last Update:    2026-11-09
+# Version:        2.08
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -16,6 +16,7 @@
 #   2.05  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 #   2.06  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 #   2.07  2026-11-09  Die Beschreibung wird uebersetzt, bevor die erste Zeile fuer die zugeklappte Anzeige genommen wird (zugeklappt stand sie auf Deutsch, aufgeklappt in der Sprache)
+#   2.08  2026-11-12  Tastatur wie im Excel-Programm 3.5.0L (UserForm_ServoPos): Pfeil hoch/runter = > und <, Bild hoch/runter = >> und <<, solange die Pfeiltasten aktiv sind (Taste gedrueckt halten = Pfeiltaste gehalten); handle_servo_key; die Seite scrollt dabei nicht
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Servo Test 1" nach dem Excel-Dialog "Servo Test und Einstellung" (UserForm der Excel-Fassung, Stand Oktober 2026).
 
@@ -100,6 +101,26 @@ LIMIT_LOW, LIMIT_HIGH = 20, 180       # Begrenzung des Werts beim Konfigurieren
 # gehaltene Pfeiltasten: (Startwert bei MouseDown, Schritt je Zeitgeber)
 ARROWS = {"minus2": (90, -5), "minus1": (96, -1), "plus1": (104, 1), "plus2": (110, 5)}
 ARROW_LABELS = {"minus2": "<<", "minus1": "<", "plus1": ">", "plus2": ">>"}
+# Tastatur (Excel 3.5.0L, UserForm_ServoPos: KeyCode 38/40/33/34): Pfeil hoch = >, Pfeil runter = <, Bild hoch = >>, Bild runter = <<  # v2.08
+KEY_ARROWS = {"ArrowUp": "plus1", "ArrowDown": "minus1", "PageUp": "plus2", "PageDown": "minus2"}  # v2.08
+
+
+def handle_servo_key(model, key_name, action, shift=False, ctrl=False, alt=False, meta=False) -> bool:  # v2.08
+    """Taste der Tastatur wie im Excel-Dialog: keydown haelt die Pfeiltaste (nur wenn die Pfeiltasten aktiv sind und keine andere gehalten wird), keyup laesst sie los.
+    Mit Umschalt, Strg, Alt oder Meta tut sie nichts (Shift <> 0: Exit Sub). Rueckgabe True, wenn die Taste behandelt wurde."""  # v2.08
+    name = KEY_ARROWS.get(str(key_name))  # v2.08
+    if not name or shift or ctrl or alt or meta:  # v2.08
+        return False  # v2.08
+    if not (model.arrows_visible and model.min_max_active):  # v2.08: nur bei aktiven Pfeiltasten (Minimal- und Maximalposition einstellen)
+        return False  # v2.08
+    if action == "keydown":  # v2.08
+        if model.active_button == 0 and getattr(model, "pressed", None) is None:  # v2.08: If Plus_Button.Enabled And ActiveButton = 0
+            model.arrow_press(name)  # v2.08
+        return True  # v2.08
+    if action == "keyup":  # v2.08
+        model.arrow_release(name)  # v2.08
+        return True  # v2.08
+    return False  # v2.08 (Wiederholung der gehaltenen Taste: nichts)
 
 PARAMS = ("ServoAddress", "ServoLEDChannel", "ServoChannel")          # Namen der gemerkten Werte (wie in der Tk-Fassung)
 PARAM_DEFAULTS = {                    # (Text im Excel-Dialog, Min, Max, Vorgabe, Hinweis)
@@ -681,6 +702,10 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
         refs["action2"].set_text(model.action2_text)
         refs["cancel"].set_text(model.cancel_text)
         refs["cancel"].set_visibility(model.prog_step != 0)                  # nur beim Konfigurieren (nicht speichern); verbunden wird in der Kopfzeile  # v2.04
+        try:  # v2.08: die Tasten Pfeil und Bild scrollen die Seite nicht, solange die Pfeiltasten aktiv sind
+            ui.run_javascript("if (window._mllServoKeys) { window._mllServoKeys.active = %s; }" % ("true" if (model.arrows_visible and model.min_max_active) else "false"))  # v2.08
+        except Exception:                                          # noqa: BLE001  # v2.08
+            logger.debug("Servo Test: Scroll-Sperre nicht gesetzt", exc_info=True)  # v2.08
 
     def tick():
         if is_active is not None and not is_active():
@@ -784,6 +809,18 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
             refs["cancel"] = ui.button(model.cancel_text, on_click=on_cancel).props("outline no-caps").classes("mll-servo-action")  # v2.01
             # refs["cancel"].tooltip("Verbinden: wie ARDUINO → Verbinden. Beim Konfigurieren: nicht speichern")  # v2.04 (entfallen)
             refs["cancel"].tooltip("Nicht speichern")  # v2.04
+    def on_key(e):  # v2.08
+        try:  # v2.08
+            if is_active is not None and not is_active():  # v2.08
+                return  # v2.08
+            mods = e.modifiers  # v2.08
+            action = "keydown" if e.action.keydown else ("keyup" if e.action.keyup else "")  # v2.08
+            handle_servo_key(model, str(getattr(e.key, "name", e.key)), action, bool(mods.shift), bool(mods.ctrl), bool(mods.alt), bool(mods.meta))  # v2.08
+        except Exception:                                          # noqa: BLE001  # v2.08
+            logger.debug("Servo Test: Taste", exc_info=True)  # v2.08
+
+    ui.add_body_html("<script>if (!window._mllServoKeys) { window._mllServoKeys = {active: false}; window.addEventListener('keydown', function (ev) { if (window._mllServoKeys.active && !ev.shiftKey && !ev.ctrlKey && !ev.altKey && !ev.metaKey && ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].indexOf(ev.key) >= 0) { ev.preventDefault(); } }, {passive: false}); }</script>")  # v2.08
+    ui.keyboard(on_key=on_key, repeating=False, ignore=["input", "select", "textarea"])  # v2.08: Tasten auch, wenn ein Knopf den Fokus hat
     timer = ui.timer(TICK, tick)
     timer.active = False
     refresh()
