@@ -1,9 +1,9 @@
-# Datei-Version: 1.12 (2026-11-03) - M08_ARDUINO.py
+# Datei-Version: 1.17 (2026-11-12) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.12
-# Last Update:    2026-11-03
+# Version:        1.17
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -20,6 +20,11 @@
 #   1.10  2026-11-03  Compile_and_Upload_Prog_to_Arduino gibt nach erfolgreichem Hochladen True zurueck (wie im VBA-Original)
 #   1.11  2026-11-03  Show_Hex_Missing: die Meldung 'fertig uebersetzte Datei fehlt' als eigene Funktion (auch fuer den schnellen Bootloader)
 #   1.12  2026-11-03  StepTitle und Ueberschrift 'fertig uebersetzte Datei wird hochgeladen' statt 'Kompilieren und Hochladen gestartet ... Kaffee' beim Hochladen einer .hex-Datei
+#   1.13  2026-11-10  Hochladen mit der ARDUINO IDE: Scheitert nur das Zuruecklesen des Speichers (Pruefung nach dem Schreiben: avrdude stk500_paged_load, failed to read all of flash memory), sagt die Meldung das ausdruecklich und nennt die Hilfen (Upload_Failed_Only_in_Verify); sonst unveraendert
+#   1.14  2026-11-11  Pruefung des Arduino: eigene Meldung bei -2/-3 (Anschluss nicht ansprechbar) statt 'von einem anderen Programm benutzt'; das Board wird nur noch automatisch umgestellt, wenn die Einstellung DetectBootloader an ist (oder bei ESP32), mit Hinweis; Hochladen: Meldung 'Keine Antwort' bei stk500_getsync/not in sync (Upload_Failed_Not_In_Sync); Meldung 'Pruefung fehlgeschlagen' nennt beide Bootloader-Einstellungen
+#   1.15  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26); Pruefung des gewaehlten Anschlusses mit dem Board-Typ des Blatts (Check_If_Port_is_Available(_And_Get_Name)(Port, Board-Typ) wie im Excel-Programm)
+#   1.16  2026-11-12  Excel-Programm 3.5.0L3: platformio.ini: die Bibliothek MobaLedLib wird mit symlink:// verknuepft statt kopiert (file://), wenn der Rechner symbolische Verknuepfungen erlaubt (Lib_Link_Scheme, sonst wie bisher file://); Write_PIO_Extension einmal im Abschnitt [env] statt in jedem Abschnitt (damit auch fuer den Pico); WriteGenButtonReleaseDefine: Text plus Zahl (TypeError bei GEN_BUTTON_RELEASE_COM 2 oder 3) behoben
+#   1.17  2026-11-12  Einstellung 'Test ARDUINO Programm Creation' (ARDUINOTest): Die Fragen nach jedem Schritt kommen jetzt als Web-Dialog (P01.MsgBox) statt tk.messagebox (ohne Tk lieferte askyesno immer Nein: 'Headerfileerstellung abgebrochen - Die Headerdatei wurde nicht geschrieben', Windows 11, Log des Testers)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -64,6 +69,10 @@ from vb2py.vbconstants import *
 
 import time
 import platform
+import logging  # v1.13
+import re  # v1.14
+
+upload_logger = logging.getLogger("webmobaledlib.arduino")  # v1.13: dasselbe Protokoll wie das Fenster Kompilieren und Hochladen
 
 # fromx proggen.M02_Public import *
 # fromx proggen.M06_Write_Header_LED2Var import *
@@ -143,6 +152,7 @@ ArduName = ""
 import os
 import platform
 import shutil  # v1.02
+import tempfile  # v1.16
 import subprocess  # v1.02
 import sys  # v1.03
 from pathlib import Path
@@ -680,6 +690,26 @@ def __Create_PIO_Build_cmd(Environment, ResultName, ComPort, SrcDir):
     cmd = 'cd .. && pio run -t upload -e ' + Environment + ' --upload-port ' + ComPort
     return cmd
     
+_LIB_LINK_SCHEME = [None]  # v1.16
+
+
+def Lib_Link_Scheme() -> str:  # v1.16
+    """'symlink', wenn dieser Rechner symbolische Verknuepfungen anlegen darf (Linux, macOS, Windows mit Entwicklermodus oder Administratorrechten), sonst 'file'.
+    Excel 3.5.0L3 schreibt in die platformio.ini 'MobaLedLib=symlink://...': PlatformIO verknuepft die Bibliothek, statt sie nach .pio/libdeps zu kopieren (schneller, und eine
+    geaenderte Datei der Bibliothek gilt sofort). Wo Verknuepfungen nicht erlaubt sind, bleibt es bei 'file://' (Kopie), damit nichts scheitert. Das Ergebnis gilt je Programmlauf."""  # v1.16
+    if _LIB_LINK_SCHEME[0] is None:  # v1.16
+        try:  # v1.16
+            with tempfile.TemporaryDirectory(prefix="mll_link_") as tmp:  # v1.16
+                target = os.path.join(tmp, "target")  # v1.16
+                os.mkdir(target)  # v1.16
+                os.symlink(target, os.path.join(tmp, "link"), target_is_directory=True)  # v1.16
+            _LIB_LINK_SCHEME[0] = "symlink"  # v1.16
+        except (OSError, NotImplementedError, AttributeError):  # v1.16
+            _LIB_LINK_SCHEME[0] = "file"  # v1.16
+        logging.info("platformio.ini: Bibliothek MobaLedLib wird mit %s:// eingebunden", _LIB_LINK_SCHEME[0])  # v1.16
+    return _LIB_LINK_SCHEME[0]  # v1.16
+
+
 def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     fn_return_value = False
     fp2 = Integer()
@@ -726,9 +756,14 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, '    NmraDcc', '\n')         # '                  Ini syntax see: https://docs.platformio.org/en/stable/core/userguide/lib/cmd_uninstall.html
     if M02.Test_Suffix == "":    
         #VBFiles.writeText(fp2, '    MobaLedLib=file://../../libraries/MobaLedLib@3.5.0', '\n')
-        VBFiles.writeText(fp2, '    MobaLedLib=file://libraries/MobaLedLib@3.5.0', '\n')
+        # VBFiles.writeText(fp2, '    MobaLedLib=file://libraries/MobaLedLib@3.5.0', '\n')  # v1.16 (entfallen)
+        VBFiles.writeText(fp2, '    MobaLedLib=' + Lib_Link_Scheme() + '://libraries/MobaLedLib@3.5.0', '\n')  # v1.16: symlink:// wie Excel 3.5.0L3 (sonst file://)
     else:
-        VBFiles.writeText(fp2, '    MobaLedLib=file://libraries/MobaLedLib@3.5.0-'+ M02.Test_Suffix, '\n')
+        # VBFiles.writeText(fp2, '    MobaLedLib=file://libraries/MobaLedLib@3.5.0-'+ M02.Test_Suffix, '\n')  # v1.16 (entfallen)
+        VBFiles.writeText(fp2, '    MobaLedLib=' + Lib_Link_Scheme() + '://libraries/MobaLedLib@3.5.0-'+ M02.Test_Suffix, '\n')  # v1.16
+    if not M38.Write_PIO_Extension(fp2):  # v1.16: die Erweiterungen stehen einmal in [env] (alle Abschnitte erben lib_deps, auch der Pico), wie in Excel 3.5.0L3
+        VBFiles.closeFile(fp2)  # v1.16
+        return fn_return_value  # v1.16
     VBFiles.writeText(fp2, '', '\n')
     VBFiles.writeText(fp2, "build_src_filter =", '\n') #                                                   '                  See: https://docs.platformio.org/en/latest/projectconf/sections/env/options/build/build_src_filter.html
     VBFiles.writeText(fp2, "  +<**/*.*>" , '\n') #                                                           '                  Add all files and directories
@@ -743,9 +778,9 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, '    WiFiManager=https://github.com/tzapu/WiFiManager.git', '\n')
     VBFiles.writeText(fp2, '    EspSoftwareSerial@^8.1.0', '\n')
     VBFiles.writeText(fp2, '    LocoNet2=https://github.com/Jueff/LocoNet2/archive/refs/tags/master.zip', '\n')
-    if not M38.Write_PIO_Extension(fp2):
-        VBFiles.closeFile(fp2)
-        return fn_return_value
+    # if not M38.Write_PIO_Extension(fp2):  # v1.16 (entfallen: einmal in [env])
+    #     VBFiles.closeFile(fp2)  # v1.16 (entfallen)
+    #     return fn_return_value  # v1.16 (entfallen)
     VBFiles.writeText(fp2, 'build_unflags = -Wall', '\n')
     VBFiles.writeText(fp2, '', '\n')
     
@@ -755,11 +790,11 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, "framework = arduino", '\n')
     VBFiles.writeText(fp2, "board_build.core = earlephilhower", '\n')
     VBFiles.writeText(fp2, "build_src_filter = ${env.src_filter} -<pyProg_Generator_MobaLedLib/>", '\n') # 
-    if M38.ExtensionsActiveCount() > 0:                                                    # Extensions auch fuer den Pico (wie Nano und ESP32); ohne Extension bleibt die Umgebung unveraendert  # v1.08
-        VBFiles.writeText(fp2, "lib_deps = ${env.lib_deps}", '\n')  # v1.08
-        if not M38.Write_PIO_Extension(fp2):  # v1.08
-            VBFiles.closeFile(fp2)  # v1.08
-            return fn_return_value  # v1.08
+    # if M38.ExtensionsActiveCount() > 0:                                                    # Extensions auch fuer den Pico (wie Nano und ESP32); ohne Extension bleibt die Umgebung unveraendert  # v1.08  # v1.16 (entfallen: der Pico erbt lib_deps mit den Erweiterungen aus [env])
+    # VBFiles.writeText(fp2, "lib_deps = ${env.lib_deps}", '\n')  # v1.08  # v1.16 (entfallen: der Pico erbt lib_deps mit den Erweiterungen aus [env])
+    # if not M38.Write_PIO_Extension(fp2):  # v1.08  # v1.16 (entfallen: der Pico erbt lib_deps mit den Erweiterungen aus [env])
+    # VBFiles.closeFile(fp2)  # v1.08  # v1.16 (entfallen: der Pico erbt lib_deps mit den Erweiterungen aus [env])
+    # return fn_return_value  # v1.08  # v1.16 (entfallen: der Pico erbt lib_deps mit den Erweiterungen aus [env])
     VBFiles.writeText(fp2, "lib_ignore =", '\n') # 
     VBFiles.writeText(fp2, "    FastLED", '\n') # )
     VBFiles.writeText(fp2, "    U8g2", '\n') # )
@@ -774,9 +809,9 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, '    EEProm', '\n')
     VBFiles.writeText(fp2, '    SPI', '\n')
     VBFiles.writeText(fp2, '    AnalogScanner=https://github.com/merose/AnalogScanner/archive/master.zip', '\n')
-    if not M38.Write_PIO_Extension(fp2):
-        VBFiles.closeFile(fp2)
-        return fn_return_value
+    # if not M38.Write_PIO_Extension(fp2):  # v1.16 (entfallen: einmal in [env])
+    #     VBFiles.closeFile(fp2)  # v1.16 (entfallen)
+    #     return fn_return_value  # v1.16 (entfallen)
     VBFiles.writeText(fp2, '', '\n')
     VBFiles.writeText(fp2, 'build_unflags = -Wall', '\n')
     VBFiles.writeText(fp2, '', '\n')
@@ -792,9 +827,9 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, '    EEProm', '\n')
     VBFiles.writeText(fp2, '    SPI', '\n')
     VBFiles.writeText(fp2, '    AnalogScanner=https://github.com/merose/AnalogScanner/archive/master.zip', '\n')
-    if not M38.Write_PIO_Extension(fp2):
-        VBFiles.closeFile(fp2)
-        return fn_return_value
+    # if not M38.Write_PIO_Extension(fp2):  # v1.16 (entfallen: einmal in [env])
+    #     VBFiles.closeFile(fp2)  # v1.16 (entfallen)
+    #     return fn_return_value  # v1.16 (entfallen)
     VBFiles.writeText(fp2, '', '\n')
     VBFiles.writeText(fp2, 'build_unflags = -Wall', '\n')
     VBFiles.writeText(fp2, '', '\n')
@@ -811,9 +846,9 @@ def __Create_PIO_Build(fp, Environment, ResultName, ComPort, SrcDir):
     VBFiles.writeText(fp2, '    EEProm', '\n')
     VBFiles.writeText(fp2, '    SPI', '\n')
     VBFiles.writeText(fp2, '    AnalogScanner=https://github.com/merose/AnalogScanner/archive/master.zip', '\n')
-    if not M38.Write_PIO_Extension(fp2):
-        VBFiles.closeFile(fp2)
-        return fn_return_value
+    # if not M38.Write_PIO_Extension(fp2):  # v1.16 (entfallen: einmal in [env])
+    #     VBFiles.closeFile(fp2)  # v1.16 (entfallen)
+    #     return fn_return_value  # v1.16 (entfallen)
     
     VBFiles.writeText(fp2, '', '\n')
     VBFiles.writeText(fp2, 'build_unflags = -Wall', '\n')
@@ -937,7 +972,8 @@ def Create_Start_ESP32_Sub(ResultName, ComPort, BuildOptions, InoName, SrcDir, C
         VBFiles.writeText(fp, 'REM  4: Build options:       "arduino:avr:nano:cpu=atmega328"', '\n')
         VBFiles.writeText(fp, 'REM  5: Baudrate:            "57600" or "115200"', '\n')
         VBFiles.writeText(fp, 'REM  6: Arduino Library path "%USERPROFILE%\\Documents\\Arduino\\libraries"', '\n')
-        VBFiles.writeText(fp, 'REM  7: CPU type:            "atmega328p, atmega4809, esp32"', '\n')
+        # VBFiles.writeText(fp, 'REM  7: CPU type:            "atmega328p, atmega4809, esp32"', '\n')  # v1.15 (entfallen)
+        VBFiles.writeText(fp, 'REM  7: CPU type:            "atmega328p, esp32"', '\n')  # v1.15
         VBFiles.writeText(fp, 'REM  8: options:             "noflash|norebuild"', '\n')
         # 19.12.21: Jürgen: Added noflash option
         VBFiles.writeText(fp, 'REM  additional argument from caller', '\n')
@@ -1274,7 +1310,8 @@ def Create_Start_ESP32_Sub_Linux(ResultName, ComPort, BuildOptions, InoName, Src
         VBFiles.writeText(fp, 'REM  4: Build options:       "arduino:avr:nano:cpu=atmega328"', '\n')
         VBFiles.writeText(fp, 'REM  5: Baudrate:            "57600" or "115200"', '\n')
         VBFiles.writeText(fp, 'REM  6: Arduino Library path "%USERPROFILE%\\Documents\\Arduino\\libraries"', '\n')
-        VBFiles.writeText(fp, 'REM  7: CPU type:            "atmega328p, atmega4809, esp32"', '\n')
+        # VBFiles.writeText(fp, 'REM  7: CPU type:            "atmega328p, atmega4809, esp32"', '\n')  # v1.15 (entfallen)
+        VBFiles.writeText(fp, 'REM  7: CPU type:            "atmega328p, esp32"', '\n')  # v1.15
         VBFiles.writeText(fp, 'REM  8: options:             ""noflash|norebuild""', '\n')
         # 19.12.21: Jürgen: Added noflash option
         VBFiles.writeText(fp, 'REM  additional argument from caller', '\n')
@@ -2071,7 +2108,8 @@ def Check_If_Arduino_could_be_programmed_and_set_Board_type(ComPortColumn, Build
         #ComPort = P01.val(P01.Cells(M02.SH_VARS_ROW, ComPortColumn))
         #if ComPort > 255:                                                       # 03.03.22: Juergen avoid overrun error
         #    ComPort = 0
-        CheckCOMPort_Txt = M07.Check_If_Port_is_Available_And_Get_Name(ComPort)
+        # CheckCOMPort_Txt = M07.Check_If_Port_is_Available_And_Get_Name(ComPort)  # v1.15 (entfallen)
+        CheckCOMPort_Txt = M07.Check_If_Port_is_Available_And_Get_Name(ComPort, M02a.Get_BoardTyp())  # v1.15: Board-Typ wie im Excel-Programm 3.5.0L3
         if not PG.global_controller.execute_upload:
             CheckCOMPort_Txt = "Test"        
         FirmwareVer = ""
@@ -2095,12 +2133,16 @@ def Check_If_Arduino_could_be_programmed_and_set_Board_type(ComPortColumn, Build
                     Retry = True  # v1.04
                     continue  # v1.04
         if BaudRate <= 0 and not ComPort.startswith("IP:"):
-            if M07.Check_If_Port_is_Available(ComPort) == False:
+            # if M07.Check_If_Port_is_Available(ComPort) == False:  # v1.15 (entfallen)
+            if M07.Check_If_Port_is_Available(ComPort, M02a.Get_BoardTyp()) == False:  # v1.15
                 Msg = M09.Get_Language_Str('Fehler: Es ist kein #2# an COM Port #1# angeschlossen.')
             elif BaudRate == 0:
                 Msg = M09.Get_Language_Str('Fehler: Das Gerät am COM Port #1# wurde nicht als #2# erkannt.' + vbCr + 'Evtl. ist es ein defekter Arduino oder der Bootloader ist falsch.')
+            elif BaudRate in (-2, -3):  # v1.14: Anschluss nicht zuweisbar oder Arduino nicht zurücksetzbar (nicht: von einem anderen Programm benutzt)
+                Msg = M09.Get_Language_Str('Fehler: Der #2# am COM Port #1# lässt sich nicht ansprechen (Fehlercode #3#: Anschluss nicht zuweisbar oder Arduino nicht zurücksetzbar).\n\nDas Programm hat es mehrfach versucht. Bitte das USB-Kabel abziehen, wieder anstecken und noch einmal versuchen.')  # v1.14
             else:
                 Msg = M09.Get_Language_Str('Fehler: Der COM Port #1# wird bereits von einem anderen Programm benutzt.' + vbCr + 'Das kann z.B. der serielle Monitor der Arduino IDE oder das Farbtestprogramm sein.' + vbCr + vbCr + 'Das entsprechende Programm muss geschlossen werden.')
+            Msg = Replace(Msg, "#3#", str(BaudRate))  # v1.14: Fehlercode der Prüfung
             Msg = Replace(Replace(Msg, "#1#", ComPort), "#2#", GetArduName()) + vbCr + vbCr + Replace(M09.Get_Language_Str("Wollen sie es noch mal mit einem anderen #2# oder einem anderen COM Port versuchen?"), "#2#", GetArduName()) + vbCr + vbCr + Replace(M09.Get_Language_Str("Mit 'Nein' wird die Meldung ignoriert und versucht den #2# trotzdem zu programmieren."), "#2#", GetArduName())
             select_variable_ = P01.MsgBox(Msg, vbYesNoCancel + vbQuestion, Replace(M09.Get_Language_Str("Fehler bei der Überprüfung des angeschlossenen #2#"), "#2#", GetArduName()))
             if (select_variable_ == vbYes):
@@ -2119,17 +2161,24 @@ def Check_If_Arduino_could_be_programmed_and_set_Board_type(ComPortColumn, Build
                 else:
                     #If 1 Or BaudRate <> Start_Baudrate Or DeviceSignature = 2004561 Then ' Change the board type to speed up the check the next time ' 28.10.20: Jürgen: Added "Or DeviceSignature..."
                     # 28.10.20: Jürgen: Added "Or DeviceSignature..."
-                    if DeviceSignature == 2004561:
-                        # 28.10.20: Jürgen
-                        NewBrd = M02.BOARD_NANO_EVERY
+                    # if DeviceSignature == 2004561:  # v1.15 (entfallen: Nano Every)
+                    #     NewBrd = M02.BOARD_NANO_EVERY  # v1.15 (entfallen)
+                    # else:  # v1.15 (entfallen)
+                    if BaudRate == 57600:  # v1.15 (eine Einrueckung weniger)
+                        NewBrd = M02.BOARD_NANO_OLD
                     else:
-                        if BaudRate == 57600:
-                            NewBrd = M02.BOARD_NANO_OLD
-                        else:
-                            # An UNO can't be detected every time, but it could be programmed like a Nano with the new bootloader
-                            NewBrd = Get_New_Board_Type(FirmwareVer, DeviceSignature)
-                            # 09.12.23: Juergen 328PB support
-                M28.Change_Board_Typ(LeftArduino, NewBrd)
+                        # An UNO can't be detected every time, but it could be programmed like a Nano with the new bootloader
+                        NewBrd = Get_New_Board_Type(FirmwareVer, DeviceSignature)
+                        # 09.12.23: Juergen 328PB support
+                if NewBrd != M02.BOARD_ESP32 and not M07.Detect_Bootloader_Enabled():  # v1.14: ohne die Einstellung DetectBootloader bleibt die Wahl des Benutzers (alt oder neu) unverändert
+                    NewBrd = ''  # v1.14
+                if NewBrd != '':  # v1.14
+                    _Old_Board = _Board_Option_of(P01.Cells(M02.SH_VARS_ROW, BuildOptColumn))  # v1.14
+                    # M28.Change_Board_Typ(LeftArduino, NewBrd)  # v1.14 (entfallen: nur noch mit Einstellung oder bei ESP32, mit Hinweis)
+                    M28.Change_Board_Typ(LeftArduino, NewBrd)  # v1.14
+                    if _Old_Board != '' and _Old_Board != NewBrd:  # v1.14: Hinweis, damit die Umstellung nicht verwirrt
+                        upload_logger.info('Board automatisch umgestellt: %s -> %s (COM Port %s)', _Old_Board, NewBrd, ComPort)  # v1.14
+                        P01.MsgBox(Replace(Replace(M09.Get_Language_Str('Das Programm hat den Bootloader am COM Port #1# geprüft und das Board automatisch auf „#2#“ gestellt.'), '#1#', ComPort), '#2#', _Board_Text(NewBrd)), vbInformation, M09.Get_Language_Str('Board automatisch gestellt'))  # v1.14
                 # Write the new board type
                 BuildOptions = P01.Cells(M02.SH_VARS_ROW, BuildOptColumn)
                 # remove leading "'"
@@ -2162,6 +2211,40 @@ def Stop_Compile_Time_Display():
 
 # def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, SrcDir,CreateFilesOnly=False, LEDsInUse=None): # 20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files  # v1.09 (entfallen)
 # def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, SrcDir,CreateFilesOnly=False, LEDsInUse=None, HexFile=''): # 20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files  # v1.12 (entfallen)
+def _Board_Option_of(BuildOptions):  # v1.14
+    """Die Option '--board ...' aus den Build-Optionen einer Zelle (sonst '')"""  # v1.14
+    found = re.search(r"--board\s+\S+", str(BuildOptions))  # v1.14
+    return found.group(0) if found else ''  # v1.14
+
+
+def _Board_Text(Board):  # v1.14
+    """Anzeigetext eines Boards fuer den Hinweis nach der automatischen Umstellung"""  # v1.14
+    names = {M02.BOARD_NANO_OLD: 'Nano Normal (old Bootloader)', M02.BOARD_NANO_NEW: 'Nano (neue Version)', M02.BOARD_NANO_FULL: 'Nano (Full memory)', M02.BOARD_ESP32: 'ESP32'}  # v1.14
+    name = names.get(Board, Board)  # v1.14
+    return M09.Get_Language_Str(name) if Board in names else name  # v1.14
+
+
+UPLOAD_NOSYNC_MARKERS = ('stk500_getsync', 'programmer is not responding')  # v1.14: der Bootloader antwortet nicht (falscher Bootloader, Kabel, Anschluss)
+
+
+def Upload_Failed_Not_In_Sync(Lines):  # v1.14
+    """True, wenn die Ausgabe des Hochladens zeigt, dass der Bootloader nicht antwortet (avrdude: stk500_getsync ... not in sync, programmer is not responding)"""  # v1.14
+    text = '\n'.join(str(l[0] if isinstance(l, (tuple, list)) else l) for l in (Lines or []))  # v1.14
+    return any(m in text for m in UPLOAD_NOSYNC_MARKERS)  # v1.14
+
+
+# Ausgabe von avrdude beim Hochladen: Fehler beim ZURUECKLESEN des Speichers (Pruefung nach dem Schreiben) und Fehler, die VOR oder BEIM Schreiben auftreten  # v1.13
+UPLOAD_READ_MARKERS = ('stk500_paged_load', 'failed to read all of flash memory', 'read operation not supported for memory "flash"')  # v1.13
+UPLOAD_EARLY_MARKERS = ('stk500_getsync', 'stk500_paged_write', "can't open device", 'programmer is not responding', 'ser_open()')  # v1.13
+
+
+def Upload_Failed_Only_in_Verify(Lines):  # v1.13
+    """True, wenn die Ausgabe des Hochladens nur einen Fehler beim Zuruecklesen zeigt (das Programm ist dann geschrieben, nur die Pruefung scheiterte).
+    Lines: Zeilen als Texte oder als Paare (Text, Klassen) wie in WebLog.lines. Fehler beim Verbinden oder Schreiben (stk500_getsync, stk500_paged_write, can't open device ...) zaehlen nicht."""  # v1.13
+    text = '\n'.join(str(l[0] if isinstance(l, (tuple, list)) else l) for l in (Lines or []))  # v1.13
+    return any(m in text for m in UPLOAD_READ_MARKERS) and not any(m in text for m in UPLOAD_EARLY_MARKERS)  # v1.13
+
+
 def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, SrcDir,CreateFilesOnly=False, LEDsInUse=None, HexFile='', StepTitle=''): # 20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files  # v1.12
     ComPort = String()
 
@@ -2186,10 +2269,11 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
     #*HL Res = ShellAndWaitResult()
     PG.global_controller.execute_upload = True
     if PG.global_controller.ARDUINOTest:
-        answer = tk.messagebox.askyesnocancel ('ARDUINOTest','Kompilieren und Hochladen (ja)\nNur Kompilieren (Nein)\nAbbrechen',default='yes')
-        if answer == None:
+        # answer = tk.messagebox.askyesnocancel ('ARDUINOTest','Kompilieren und Hochladen (ja)\nNur Kompilieren (Nein)\nAbbrechen',default='yes')  # v1.17 (entfallen)
+        answer = P01.MsgBox('Kompilieren und Hochladen (Ja)\nNur Kompilieren (Nein)\nAbbrechen', vbQuestion + vbYesNoCancel, 'ARDUINOTest')  # v1.17: Web-Dialog
+        if answer == vbCancel:  # v1.17
             return False# cancelation return to "ConfigurationOage"
-        PG.global_controller.execute_upload = answer # True=compile and upload - False = only compile
+        PG.global_controller.execute_upload = (answer == vbYes) # True=compile and upload - False = only compile  # v1.17
             
 
     Start = Variant()
@@ -2258,10 +2342,11 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
         useARDUINO_IDE=False
         
     if PG.global_controller.ARDUINOTest:
-        answer = tk.messagebox.askyesnocancel ('ARDUINOTest','Use ARDUINO IDE (ja)\nuse ARDUINO Builder (Nein)\nAbbrechen',default='yes')
-        if answer == None:
+        # answer = tk.messagebox.askyesnocancel ('ARDUINOTest','Use ARDUINO IDE (ja)\nuse ARDUINO Builder (Nein)\nAbbrechen',default='yes')  # v1.17 (entfallen)
+        answer = P01.MsgBox('Use ARDUINO IDE (Ja)\nuse ARDUINO Builder (Nein)\nAbbrechen', vbQuestion + vbYesNoCancel, 'ARDUINOTest')  # v1.17: Web-Dialog
+        if answer == vbCancel:  # v1.17
             return False# cancelation return
-        useARDUINO_IDE = answer
+        useARDUINO_IDE = (answer == vbYes)  # v1.17
     
     if PG.get_global_controller().useARDUINO_IDE==True or (M02a.Get_BoardTyp() == M02.HT_ESP32 and PG.get_global_controller().useESP32WinBat==False) or M02a.Get_BoardTyp() == M02.HT_PICO:
         useARDUINO_IDE = True
@@ -2371,7 +2456,15 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
             Failed = True
     
     if Failed:
-        P01.MsgBox(M09.Get_Language_Str('Es ist ein Fehler aufgetreten ;-(' + vbCr + vbCr + 'Zur Fehlersuche kann man die letzten Änderungen wieder rückgängig machen und es noch mal versuchen. ' + vbCr + vbCr + 'Kommunikationsprobleme erkennt man an dieser Meldung: ' + vbCr + '   avrdude: ser_open(): can\'t open device "\\\\.\\') + P01.Cells(M02.SH_VARS_ROW, ComPortColumn) + '":' + vbCr + M09.Get_Language_Str('   Das System kann die angegebene Datei nicht finden.' + vbCr + 'In diesem Fall müssen die Verbindungen überprüft und der Arduino durch einen neuen ersetzt werden.' + vbCr + vbCr + 'Der Fehler kann auch auftreten wenn der DCC/LNet/Selextrix Arduino noch nicht programmiert wurde.' + vbCr + 'Am besten man steckt den rechten Arduino erst dann ein wenn er benötigt wird.' + vbCr + vbCr + 'Wenn der Fehler nicht zu finden ist und immer wieder auftritt, dann kann ein Screenshot des ' + 'vorangegangenen Bildschirms (Nach oben scrollen so dass die erste Meldung nach dem Arduino Bild zu sehen ist) ' + 'zusammen mit dem Excel Programm und einer ausführlichen Beschreibung an ' + vbCr + '  https://forum.mobaledlib.de' + vbCr + 'geschickt werden.'), vbInformation, M09.Get_Language_Str('Fehler beim Hochladen des Programms'))
+        _lines = getattr(PG.global_controller.getFramebyName("ARDUINOMonitorPage"), 'lines', [])  # v1.13: Ausgabe dieses Laufs (Web); sonst leer
+        if Upload_Failed_Only_in_Verify(_lines):  # v1.13: nur die Pruefung nach dem Schreiben ist gescheitert
+            upload_logger.warning('Hochladen: Das Programm wurde geschrieben, nur die Pruefung (Zuruecklesen des Speichers) ist gescheitert. Moegliche Ursachen: falscher Bootloader (Nano Normal (old Bootloader) probieren), USB-Kabel oder Anschluss, Stromversorgung.')  # v1.13
+            P01.MsgBox(M09.Get_Language_Str('Das Programm wurde auf die Lichtmaschine geschrieben, aber die anschließende Prüfung (Rücklesen des Speichers) ist fehlgeschlagen.\n\nDie Lichtmaschine arbeitet meist trotzdem mit dem neuen Programm: Blinkt die Heartbeat LED?\n\nMögliche Ursachen und Hilfen:\n- Probiere beide Einstellungen „Nano Normal (old Bootloader)“ und „Nano (neue Version)“ (Optionen Werkzeuge, Reiter LED ARDUINO).\n- Ein anderes USB-Kabel und einen anderen USB-Anschluss probieren.\n- Die LEDs nicht über den USB-Anschluss des Computers versorgen.\n\nDie Einzelheiten stehen im Protokoll (Hilfe → Logfile anzeigen).'), vbInformation, M09.Get_Language_Str('Hochladen: Prüfung fehlgeschlagen'))  # v1.13
+        elif Upload_Failed_Not_In_Sync(_lines):  # v1.14: der Bootloader antwortet nicht
+            upload_logger.warning('Hochladen: Der Bootloader antwortet nicht (avrdude: not in sync). Moegliche Ursachen: falsche Bootloader-Einstellung (old oder neue Version), USB-Kabel oder Anschluss.')  # v1.14
+            P01.MsgBox(M09.Get_Language_Str('Die Lichtmaschine antwortet beim Hochladen nicht (avrdude: not in sync).\n\nMögliche Ursachen und Hilfen:\n- Der Bootloader passt nicht zur Einstellung: Probiere in Optionen Werkzeuge, Reiter LED ARDUINO, beide Einstellungen „Nano Normal (old Bootloader)“ und „Nano (neue Version)“.\n- Ein anderes USB-Kabel (es muss Daten übertragen) und einen anderen USB-Anschluss probieren.\n- Der Anschluss darf nicht von einem anderen Programm benutzt werden (zum Beispiel vom Seriellen Monitor).\n\nDie Einzelheiten stehen im Protokoll (Hilfe → Logfile anzeigen).'), vbInformation, M09.Get_Language_Str('Hochladen: Keine Antwort'))  # v1.14
+        else:  # v1.13
+            P01.MsgBox(M09.Get_Language_Str('Es ist ein Fehler aufgetreten ;-(' + vbCr + vbCr + 'Zur Fehlersuche kann man die letzten Änderungen wieder rückgängig machen und es noch mal versuchen. ' + vbCr + vbCr + 'Kommunikationsprobleme erkennt man an dieser Meldung: ' + vbCr + '   avrdude: ser_open(): can\'t open device "\\\\.\\') + P01.Cells(M02.SH_VARS_ROW, ComPortColumn) + '":' + vbCr + M09.Get_Language_Str('   Das System kann die angegebene Datei nicht finden.' + vbCr + 'In diesem Fall müssen die Verbindungen überprüft und der Arduino durch einen neuen ersetzt werden.' + vbCr + vbCr + 'Der Fehler kann auch auftreten wenn der DCC/LNet/Selextrix Arduino noch nicht programmiert wurde.' + vbCr + 'Am besten man steckt den rechten Arduino erst dann ein wenn er benötigt wird.' + vbCr + vbCr + 'Wenn der Fehler nicht zu finden ist und immer wieder auftritt, dann kann ein Screenshot des ' + 'vorangegangenen Bildschirms (Nach oben scrollen so dass die erste Meldung nach dem Arduino Bild zu sehen ist) ' + 'zusammen mit dem Excel Programm und einer ausführlichen Beschreibung an ' + vbCr + '  https://forum.mobaledlib.de' + vbCr + 'geschickt werden.'), vbInformation, M09.Get_Language_Str('Fehler beim Hochladen des Programms'))  # v1.13 (eingerueckt, unveraendert)
         M30.EndProg()
         return False
     else:
@@ -2395,8 +2488,8 @@ def GetCPUTypeFromSignature(DeviceSignature, DefaultType='ATMega328P'):
         _fn_return_value = 'atmega328'
     elif (_select73 == 0x1E9516):
         _fn_return_value = 'atmega328pb'
-    elif (_select73 == 0x1E9651):
-        _fn_return_value = 'atmega4809'
+    # elif (_select73 == 0x1E9651):  # v1.15 (entfallen: Nano Every)
+    #     _fn_return_value = 'atmega4809'  # v1.15 (entfallen)
     else:
         _fn_return_value = DefaultType
     return _fn_return_value
@@ -2453,7 +2546,8 @@ def WriteGenButtonReleaseDefine(fp):
         # legacy behavior, off or invalid value
         VBFiles.writeText(fp, '#define GEN_BUTTON_RELEASE_COM GEN_OFF', '\n')
     else:
-        VBFiles.writeText(fp, '#define GEN_BUTTON_RELEASE_COM ' + GenOption - 1, '\n')
+        # VBFiles.writeText(fp, '#define GEN_BUTTON_RELEASE_COM ' + GenOption - 1, '\n')  # v1.16 (entfallen: Text plus Zahl ergab einen TypeError bei den Werten 2 und 3)
+        VBFiles.writeText(fp, '#define GEN_BUTTON_RELEASE_COM ' + str(int(GenOption) - 1), '\n')  # v1.16
 
 def Compile_and_Upload_Prog_to_Right_Arduino(SkipPortSelection=False):
     InoName = String()

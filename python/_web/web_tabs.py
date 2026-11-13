@@ -1,9 +1,9 @@
-# Datei-Version: 1.12 (2026-11-05) - web_tabs.py
+# Datei-Version: 1.14 (2026-11-12) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.12
-# Last Update:    2026-11-05
+# Version:        1.14
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -20,6 +20,8 @@
 #   1.10  2026-10-28  Adresse nur einmal maskieren (vorher doppelt)
 #   1.11  2026-11-05  Option Check for Updates (CheckVersion, ohne Funktion) entfaellt auf der Seite Programm Einstellungen (PARAM_REMOVALS)
 #   1.12  2026-11-05  Anfaenger Modus: Einstellung BeginnerMode (Programm Einstellungen), is_beginner_mode, BEGINNER_HIDDEN_TABS (Patterngenerator, Z21 Simulator, ProgGenerator Einstellungen); tab_enabled beachtet den Modus
+#   1.13  2026-11-11  Neue Einstellung DetectBootloader (Programm Einstellungen, Spezialeinstellungen): Bootloader des Nano beim Pruefen erkennen
+#   1.14  2026-11-12  Einstellung 'Bootloader des Nano beim Prüfen erkennen': Vorgabe AN, neuer Name NanoBootloaderDetection (vorher DetectBootloader, Vorgabe aus)
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -74,6 +76,14 @@ PARAM_ADDITIONS = {"SaveExcelCharset": ({"ParName": "SaveExcelCharset", "Cnt": "
                                        "Input Text": "Standardansicht des Programm Generators",  # v1.08
                                        "Hint": "Ansicht, mit der ein Blatt des Programm Generators geöffnet wird: Tabelle, Grafik (Ketten der Makros) oder Beides (Grafik oben, Tabelle unten). Mit den Knöpfen über der Tabelle kann man jederzeit umschalten."},  # v1.08
                                       "SaveExcelCharset"),  # v1.08
+                 # "DetectBootloader": ({"ParName": "DetectBootloader", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "DetectBootloader", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.13  # v1.14 (entfallen)
+                 # "Input Text": "Bootloader des Nano beim Prüfen erkennen",  # v1.13  # v1.14 (entfallen)
+                 # "Hint": "Mit Haken spricht das Programm beim Prüfen des angeschlossenen Nano (Optionen Werkzeuge: Haken „Automatisch erkennen“ und „USB Port erkennen“) den Bootloader an und stellt „Nano Normal (old Bootloader)“ oder „Nano (neue Version)“ passend ein. Ohne Haken (Vorgabe) prüft das Programm nur, ob sich der Anschluss öffnen lässt, und lässt Ihre Einstellung unverändert. Der Haken ist neu und wird erprobt."},  # v1.13  # v1.14 (entfallen)
+                 # "IPUploadTimeout"),  # v1.13  # v1.14 (entfallen)
+                 "NanoBootloaderDetection": ({"ParName": "NanoBootloaderDetection", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "NanoBootloaderDetection", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "1",  # v1.14: Vorgabe an
+                                       "Input Text": "Bootloader des Nano beim Prüfen erkennen",  # v1.13
+                                       "Hint": "Mit Haken (Vorgabe) spricht das Programm beim Prüfen des angeschlossenen Nano (Optionen Werkzeuge: Haken „Automatisch erkennen“ und „USB Port erkennen“) den Bootloader an und stellt „Nano Normal (old Bootloader)“ oder „Nano (neue Version)“ passend ein. Ohne Haken prüft das Programm nur, ob sich der Anschluss öffnen lässt, und lässt Ihre Einstellung unverändert."},  # v1.14
+                                      "IPUploadTimeout"),  # v1.13
                  "BeginnerMode": ({"ParName": "BeginnerMode", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "BeginnerMode", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.12
                                    "Input Text": "Anfänger Modus",  # v1.12
                                    "Hint": "Mit Haken (Anfänger Modus) werden Funktionen ausgeblendet, die für den Einstieg nicht nötig sind: die Reiter Patterngenerator, Z21 Simulator und ProgGenerator Einstellungen, der Knopf Zeilen Färben und einige Makros in der Makroauswahl. Ohne Haken (Experten Modus) ist alles sichtbar. Eine neue Installation startet im Anfänger Modus."},  # v1.12

@@ -1,4 +1,5 @@
-// Datei-Version: 1.13 (2026-11-01) - mll_graph.js (gilt fuer webMobaLedLib 2.61)
+// Datei-Version: 1.14 (2026-11-12) - mll_graph.js (gilt fuer webMobaLedLib 3.21)
+// 1.14: Zeilen ohne LEDs in einer Kette (Alle Zeilen, n.noled): gestrichelter Rand, hellerer Hintergrund (Klasse mll-g-noled)
 // 1.13: Testtasten der Tabelle auch in der Kette und in der Anlage (n.tests, unter dem Symbol; erst ab 50 Pixel Kaestchengroesse): Maus runter und hoch gehen wie in der Tabelle
 //       als Ereignis mll_tb {row, k, phase} an den Server (Hoch ueber window, auch wenn das Kaestchen dabei neu gezeichnet wird); ein Druck auf eine Taste waehlt kein Kaestchen aus und zieht nichts
 // 1.12: (1) Groesse der Kaestchen in der Ansicht Ketten einstellbar (model.chain_size, Standard 140): CSS-Variable --cs am Behaelter .mll-g, Symbol, Schrift und Abstaende skalieren;
@@ -29,6 +30,8 @@
     ".mll-g-head span{font-size:12px;color:#616161}",
     ".mll-g-node{position:relative;width:var(--cs,140px);box-sizing:border-box;border:1px solid #9e9e9e;border-radius:6px;background:#fff;color:#212121;padding:calc(var(--cs,140px) * 0.07) calc(var(--cs,140px) * 0.043);text-align:center;cursor:pointer;user-select:none}",
     ".mll-g-node:hover{border-color:#1976d2}",
+    ".mll-g-node.mll-g-noled{border-style:dashed;background:#fafafa;color:#424242}",
+    ".mll-g-node.mll-g-noled.mll-sel{background:#e3f2fd}",
     ".mll-g-node.mll-sel{border-color:#1976d2;background:#e3f2fd;box-shadow:0 0 0 3px rgba(25,118,210,.35)}",
     ".mll-g-pin{position:absolute;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#616161;border:2px solid #fff;box-sizing:content-box}",
     ".mll-g-in{top:-7px}",
@@ -123,7 +126,7 @@
   }
 
   function nodeHtml(n, selectedRow, movable, box) {
-    var cls = "mll-g-node" + (n.row === selectedRow ? " mll-sel" : "");
+    var cls = "mll-g-node" + (n.noled ? " mll-g-noled" : "") + (n.row === selectedRow ? " mll-sel" : "");  // 1.14
     var icon = n.icon ? '<img class="mll-g-icon" src="' + esc(iconSrc(n, Math.round((box || CHAIN_BOX) * CHAIN_ICON))) + '" alt="">' : '<span class="mll-g-noicon">?</span>';
     return '<div class="' + cls + '"' + (movable ? ' draggable="true"' : "") + ' data-row="' + esc(n.row) + '" data-id="' + esc(n.id) + '" title="' + esc(n.tooltip || "") + '">' +
       '<span class="mll-g-pin mll-g-in"></span>' + icon +

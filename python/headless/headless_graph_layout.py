@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-11-01) - headless_graph_layout.py
+# Datei-Version: 1.05 (2026-11-12) - headless_graph_layout.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph_layout.py
 # Path:           headless/headless_graph_layout.py
-# Version:        1.04
-# Last Update:    2026-11-01
+# Version:        1.05
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.02  2026-10-28  Stufe 3: Groesse begrenzen (clamp_size), Raster (snap_value, snap_pos) und Ausrichten (align_positions)
 #   1.03  2026-10-28  Bild ohne Pillow: Kopf lesen (sniff_image), Verkleinern im Browser; image_from_base64
 #   1.04  2026-11-01  Groesse der Kaestchen in der Ansicht Ketten (chain_size, Standard 140, Bereich 30 bis 300), je Blatt, auch in der Datei .MLL_view
+#   1.05  2026-11-12  all_rows (je Blatt, auch in der Datei .MLL_view): Alle aktiven Zeilen in den Ketten zeigen
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht, Stufe 3: Layout der Anlagenansicht (Hintergrundbild und Positionen der Kaestchen).
@@ -45,7 +46,8 @@ def new_layout() -> dict:
     # return {"version": LAYOUT_VERSION, "mode": "chains", "image": None, "size": NODE_SIZE, "nodes": []}  # v1.02 (entfallen)
     """Leeres Layout: Ansicht Ketten, kein Bild, keine Positionen, Raster aus"""  # v1.02
     # return {"version": LAYOUT_VERSION, "mode": "chains", "image": None, "size": NODE_SIZE, "snap": False, "nodes": []}  # v1.04 (entfallen)
-    return {"version": LAYOUT_VERSION, "mode": "chains", "image": None, "size": NODE_SIZE, "chain_size": CHAIN_SIZE, "snap": False, "nodes": []}  # v1.04
+    # return {"version": LAYOUT_VERSION, "mode": "chains", "image": None, "size": NODE_SIZE, "chain_size": CHAIN_SIZE, "snap": False, "nodes": []}  # v1.05 (entfallen)
+    return {"version": LAYOUT_VERSION, "mode": "chains", "image": None, "size": NODE_SIZE, "chain_size": CHAIN_SIZE, "snap": False, "all_rows": False, "nodes": []}  # v1.05
 
 
 def get_layout(ws) -> dict:
@@ -58,6 +60,7 @@ def get_layout(ws) -> dict:
     layout.setdefault("size", NODE_SIZE)
     layout.setdefault("snap", False)  # v1.02
     layout["chain_size"] = clamp_chain_size(layout.get("chain_size") or CHAIN_SIZE)  # v1.04
+    layout["all_rows"] = bool(layout.get("all_rows", False))  # v1.05
     layout.setdefault("nodes", [])
     layout.setdefault("image", None)
     return layout
@@ -342,4 +345,5 @@ def import_json(text: str) -> dict:
     mode = layout.get("mode") if layout.get("mode") in MODES else "chains"
     # return {"version": LAYOUT_VERSION, "mode": mode, "image": image, "size": float(layout.get("size") or NODE_SIZE), "nodes": nodes}  # v1.02 (entfallen)
     # return {"version": LAYOUT_VERSION, "mode": mode, "image": image, "size": clamp_size(layout.get("size") or NODE_SIZE), "snap": bool(layout.get("snap")), "nodes": nodes}  # v1.04 (entfallen)
-    return {"version": LAYOUT_VERSION, "mode": mode, "image": image, "size": clamp_size(layout.get("size") or NODE_SIZE), "chain_size": clamp_chain_size(layout.get("chain_size") or CHAIN_SIZE), "snap": bool(layout.get("snap")), "nodes": nodes}  # v1.04
+    # return {"version": LAYOUT_VERSION, "mode": mode, "image": image, "size": clamp_size(layout.get("size") or NODE_SIZE), "chain_size": clamp_chain_size(layout.get("chain_size") or CHAIN_SIZE), "snap": bool(layout.get("snap")), "nodes": nodes}  # v1.04  # v1.05 (entfallen)
+    return {"version": LAYOUT_VERSION, "mode": mode, "image": image, "size": clamp_size(layout.get("size") or NODE_SIZE), "chain_size": clamp_chain_size(layout.get("chain_size") or CHAIN_SIZE), "snap": bool(layout.get("snap")), "all_rows": bool(layout.get("all_rows", False)), "nodes": nodes}  # v1.05

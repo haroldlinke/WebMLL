@@ -1,9 +1,9 @@
-# Datei-Version: 1.03 (2026-11-01) - headless_graph.py
+# Datei-Version: 1.04 (2026-11-12) - headless_graph.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph.py
 # Path:           headless/headless_graph.py
-# Version:        1.03
-# Last Update:    2026-11-01
+# Version:        1.04
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.01  2026-10-28  LED Nr im Format Kanal-Nummer (1-5) wird gelesen; Makros mit Einzel-LEDs (C1-1, C2-1, ...) gehoeren in die Kette; mehrzeilige LEDs-Zellen
 #   1.02  2026-10-30  Knoten haben icon_large (Symbol mit hoher Aufloesung), wenn es eines gibt
 #   1.03  2026-11-01  Knoten haben tests (Testtasten der Zeile)
+#   1.04  2026-11-12  build_model(..., all_rows): alle aktiven Zeilen in die Ketten, auch die ohne LEDs (in die Kette der nachfolgenden LED-Zeile, am Ende in die der letzten); Knoten haben noled
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht des Programm Generators, Stufe 1: das Modell der Ketten.
@@ -75,20 +76,36 @@ def macro_name(config: str) -> str:
 
 # def build_model(ws, icons=None, display=None) -> dict:  # v1.02 (entfallen)
 # def build_model(ws, icons=None, display=None, icon_large=None) -> dict:  # v1.03 (entfallen)
-def build_model(ws, icons=None, display=None, icon_large=None, tests=None) -> dict:  # v1.03
+def _row_active(ws, sh, r, c_enable) -> bool:  # v1.04
+    """Aktive Zeile wie beim Erzeugen des Programms (M06_Write_Header): Spalte Aktiv nicht leer und Zeile nicht ausgeblendet (Filter)"""  # v1.04
+    if str(sh.get_cell_data(r, c_enable) or "").strip() == "":  # v1.04
+        return False  # v1.04
+    try:  # v1.04
+        if ws.is_row_hidden(r):  # v1.04
+            return False  # v1.04
+    except Exception:                                                     # noqa: BLE001  # v1.04
+        logger.debug("Zeile versteckt?", exc_info=True)  # v1.04
+    return True  # v1.04
+
+
+# def build_model(ws, icons=None, display=None, icon_large=None, tests=None) -> dict:  # v1.03 (entfallen)
+def build_model(ws, icons=None, display=None, icon_large=None, tests=None, all_rows=False) -> dict:  # v1.04
     """Ketten und Knoten eines Datenblatts.
 
     icons: {(Zeile, Spalte): URL} (0-basiert, wie collect_icons); display: {(Zeile, Spalte): Text} (Get_Display_Cells, Namen in der gewaehlten Sprache).
     Ergebnis (JSON-faehig):
       {"sheet": Blattname, "ok": True, "count": Anzahl Knoten,
        "chains": [{"channel": Kanal, "led_count": Summe der LEDs, "nodes": [Knoten ...]}, ...],   # nach Kanal sortiert
-       "other": [Knoten ohne LEDs ...]}
+       "other": [Knoten ohne LEDs ...], "all_rows": False oder True}
+    all_rows (v1.04): alle AKTIVEN Zeilen (Spalte Aktiv nicht leer, Zeile nicht ausgeblendet) stehen in der Reihenfolge der Tabelle in den Ketten, auch die ohne LEDs. Eine Zeile ohne LEDs
+    kommt in die Kette der NACHFOLGENDEN Zeile mit LEDs (direkt vor sie: solche Makros gehoeren meist zu ihr); Zeilen hinter der letzten Zeile mit LEDs ans Ende der Kette dieser
+    letzten Zeile; gibt es keine Zeile mit LEDs, bleiben sie in der Liste 'other'. Inaktive Zeilen fehlen in diesem Modus (auch die mit LEDs).
       Knoten: {"row": Zeile (0-basiert), "id": Zeilenkennung, "makro", "label", "descrip", "config", "icon" (URL oder ""),
                "leds" (volle LEDs), "single" (Einzel-LEDs wie 'C1-1' oder ''), "led_from", "led_to" (oder None), "channel"}"""
     import proggen.M02_Public as M02
     import proggen.M25_Columns as M25
     import proggen.M28_Diverse as M28
-    model = {"sheet": str(getattr(ws, "Name", "")), "ok": False, "count": 0, "chains": [], "other": []}
+    model = {"sheet": str(getattr(ws, "Name", "")), "ok": False, "count": 0, "chains": [], "other": [], "all_rows": bool(all_rows)}  # v1.04
     try:
         if not M28.Is_Data_Sheet(ws):
             return model
@@ -102,11 +119,16 @@ def build_model(ws, icons=None, display=None, icon_large=None, tests=None) -> di
     c_cfg, c_nr, c_leds, c_ch = (int(M25.Config__Col) - 1, int(M25.LED_Nr__Col) - 1, int(M25.LEDs____Col) - 1, int(M25.LED_Cha_Col) - 1)
     c_name, c_desc, c_icon = int(M25.LanName_Col) - 1, int(M25.Descrip_Col) - 1, int(M25.MacIcon_Col) - 1
     first = int(M02.FirstDat_Row) - 1
+    c_enable = int(M02.Enable_Col) - 1  # v1.04
+    pending: list = []  # v1.04: Zeilen ohne LEDs, die auf die naechste Zeile mit LEDs warten (nur mit all_rows)
+    last_channel = None  # v1.04: Kanal der letzten Zeile mit LEDs
     chains: dict = {}
     for r in range(max(first, 0), sh.get_total_rows()):
         config = str(sh.get_cell_data(r, c_cfg) or "").strip()
         if config == "":
             continue
+        if all_rows and not _row_active(ws, sh, r, c_enable):  # v1.04: inaktive und ausgeblendete Zeilen fehlen in diesem Modus
+            continue  # v1.04
         # leds = to_int(sh.get_cell_data(r, c_leds), 0)  # v1.01 (entfallen)
         # led_from = to_int(sh.get_cell_data(r, c_nr))  # v1.01 (entfallen)
         # channel = to_int(sh.get_cell_data(r, c_ch), 0)  # v1.01 (entfallen)
@@ -129,11 +151,27 @@ def build_model(ws, icons=None, display=None, icon_large=None, tests=None) -> di
                 "tests": [dict(item) for item in ((tests or {}).get(r) or [])],                # Testtasten der Zeile (wie in der Tabelle): [{n: Name, c: Farbe, t: Text}]     # Gegenstueck mit hoher Aufloesung (icons_gross), sonst ""  # v1.03
                 "led_from": led_from if in_chain else None,  # v1.01
                 "led_to": (led_from + leds - 1) if (leds > 0 and led_from is not None) else None, "channel": channel}
+        node["noled"] = not in_chain  # v1.04: Zeile ohne LEDs (die Grafik zeichnet sie anders)
         # if leds > 0:  # v1.01 (entfallen)
         if in_chain:  # v1.01
+            if pending:  # v1.04: Zeilen ohne LEDs davor gehoeren zu dieser Zeile: in ihre Kette, direkt vor sie
+                for waiting in pending:  # v1.04
+                    waiting["channel"] = channel  # v1.04
+                chains.setdefault(channel, []).extend(pending)  # v1.04
+                pending = []  # v1.04
             chains.setdefault(channel, []).append(node)
+            last_channel = channel  # v1.04
+        elif all_rows:  # v1.04
+            pending.append(node)  # v1.04
         else:
             model["other"].append(node)
+    if pending:  # v1.04: Zeilen hinter der letzten Zeile mit LEDs
+        if last_channel is not None:  # v1.04
+            for waiting in pending:  # v1.04
+                waiting["channel"] = last_channel  # v1.04
+            chains[last_channel].extend(pending)  # v1.04
+        else:  # v1.04: keine Zeile mit LEDs im Blatt
+            model["other"].extend(pending)  # v1.04
     for channel in sorted(chains):
         nodes = chains[channel]
         model["chains"].append({"channel": channel, "led_count": sum(n["leds"] for n in nodes), "nodes": nodes})

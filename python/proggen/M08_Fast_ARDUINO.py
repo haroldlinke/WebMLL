@@ -1,3 +1,14 @@
+# Datei-Version: 1.01 (2026-11-12) - M08_Fast_ARDUINO.py
+# ----------------------------------------------------------------------------------------------
+# Name:           M08_Fast_ARDUINO.py
+# Path:           proggen/M08_Fast_ARDUINO.py
+# Version:        1.01
+# Last Update:    2026-11-12
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.01  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26) (fruehere Versionen ohne Eintrag)
+# ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
 #         M08 Fast_ARDUINO
@@ -141,7 +152,8 @@ def Create_Build_Arduino(fp):
     VBFiles.writeText(fp, 'REM  4: Build options:       "arduino:avr:nano:cpu=atmega328"', '\n')
     VBFiles.writeText(fp, 'REM  5: Baudrate:            "57600" or "115200"', '\n')
     VBFiles.writeText(fp, 'REM  6: Arduino Library path "%USERPROFILE%\\Documents\\Arduino\\libraries"', '\n')
-    VBFiles.writeText(fp, 'REM  7: CPU type:            "atmega328p, atmega4809', '\n')
+    # VBFiles.writeText(fp, 'REM  7: CPU type:            "atmega328p, atmega4809', '\n')  # v1.01 (entfallen)
+    VBFiles.writeText(fp, 'REM  7: CPU type:            "atmega328p"', '\n')  # v1.01
     # 28.10.20: Jürgen
     VBFiles.writeText(fp, 'REM  8: options:             "noflash|norebuild"', '\n')
     # 19.12.21: Jürgen: Added noflash option
@@ -214,14 +226,14 @@ def Create_Build_Arduino(fp):
     VBFiles.writeText(fp, '   REM -V = Do not verify.                      => Saves 3 sec', '\n')
     VBFiles.writeText(fp, '   REM -D = Disable auto erase for flash memory', '\n')
     VBFiles.writeText(fp, '   set extraArgs=', '\n')
-    # 28.10.20: Jürgen: New Block
-    VBFiles.writeText(fp, '   if "%7"=="atmega4809" (', '\n')
-    VBFiles.writeText(fp, '      echo Forcing reset using 1200bps open/close on port %3', '\n')
-    VBFiles.writeText(fp, '      mode %3 1200,n,8,1', '\n')
-    VBFiles.writeText(fp, '      set extraArgs=-cjtag2updi -e -Ufuse2:w:0x01:m -Ufuse5:w:0xC9:m -Ufuse8:w:0x00:m', '\n')
-    VBFiles.writeText(fp, '      goto flash', '\n')
-    VBFiles.writeText(fp, '   )', '\n')
-    VBFiles.writeText(fp, '', '\n')
+    # # 28.10.20: Jürgen: New Block  # v1.01 (entfallen: Block fuer den Nano Every)
+    # VBFiles.writeText(fp, '   if "%7"=="atmega4809" (', '\n')  # v1.01 (entfallen: Block fuer den Nano Every)
+    # VBFiles.writeText(fp, '      echo Forcing reset using 1200bps open/close on port %3', '\n')  # v1.01 (entfallen: Block fuer den Nano Every)
+    # VBFiles.writeText(fp, '      mode %3 1200,n,8,1', '\n')  # v1.01 (entfallen: Block fuer den Nano Every)
+    # VBFiles.writeText(fp, '      set extraArgs=-cjtag2updi -e -Ufuse2:w:0x01:m -Ufuse5:w:0xC9:m -Ufuse8:w:0x00:m', '\n')  # v1.01 (entfallen: Block fuer den Nano Every)
+    # VBFiles.writeText(fp, '      goto flash', '\n')  # v1.01 (entfallen: Block fuer den Nano Every)
+    # VBFiles.writeText(fp, '   )', '\n')  # v1.01 (entfallen: Block fuer den Nano Every)
+    # VBFiles.writeText(fp, '', '\n')  # v1.01 (entfallen: Block fuer den Nano Every)
     VBFiles.writeText(fp, 'if "%mainType%"=="atmega328" (', '\n')
     # 08.12.23: Juergen 328PB support
     VBFiles.writeText(fp, '   set extraArgs=-carduino', '\n')

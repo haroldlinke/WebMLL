@@ -1,4 +1,14 @@
-# Datei-Version: 1.05 (2026-10-26) - web_log.py
+# Datei-Version: 1.06 (2026-11-11) - web_log.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_log.py
+# Path:           _web/web_log.py
+# Version:        1.06
+# Last Update:    2026-11-11
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.06  2026-11-11  Meldungen der ARDUINO IDE zum Netzwerk (JmDNS: javax.jmdns, dns[response, Hexdump, Steuerzeichen) werden weder angezeigt noch ins Protokoll geschrieben (tausende Zeilen je Minute auf einem Raspberry Pi mit verlaengertem Rechnernamen); eine Zeile im Protokoll nennt es je Lauf (fruehere Versionen ohne Eintrag)
+# ----------------------------------------------------------------------------------------------
 """Log-Fenster fuer Kompilieren und Hochladen (Ersatz fuer ARDUINOMonitorPage).
 
 WebLog bietet dieselben Methoden wie das Textfenster der Tk-Seite
@@ -12,6 +22,7 @@ Jede Zeile steht ausserdem im Protokoll (Logger webmobaledlib.arduino, Stufe INF
 from __future__ import annotations
 
 import logging
+import re  # v1.06
 
 from _web import web_dialogs as wd
 try:  # v1.05
@@ -22,6 +33,16 @@ except ImportError:                                   # aeltere Installation ohn
 
 logger = logging.getLogger(__name__)
 arduino_log = logging.getLogger("webmobaledlib.arduino")           # Ausgabe der Laeufe im Protokoll
+
+IDE_NOISE_MARKERS = ('javax.jmdns', 'dns[response', 'dns[query', 'Picked up JAVA_TOOL_OPTIONS')  # v1.06: Meldungen der Java-Bibliothek der IDE (Suche nach Boards im Netz), die mit dem Hochladen nichts zu tun haben
+IDE_NOISE_HEXDUMP = re.compile(r"^\s*\d+: [0-9a-f]{16} [0-9a-f]{16}")  # v1.06: Hexdump eines DNS-Pakets
+
+
+def is_ide_network_noise(line) -> bool:  # v1.06
+    """True fuer Zeilen der IDE zur Netzwerksuche (JmDNS): Marker, Hexdump eines DNS-Pakets oder Zeilen mit Steuerzeichen (Paketinhalt)"""  # v1.06
+    text = str(line)  # v1.06
+    return any(m in text for m in IDE_NOISE_MARKERS) or bool(IDE_NOISE_HEXDUMP.match(text)) or "\x00" in text  # v1.06
+
 
 HIGHLIGHT_CLASSES = {"Error": "text-red-8", "OK": "text-green-8", "O": "text-green-8"}
 CLOSE_DELAY = 10          # Sekunden, die die Erfolgsmeldung nach einem erfolgreichen Lauf lesbar bleibt
@@ -44,6 +65,7 @@ class WebLog:
     # ------------------------------------------------------------------ Schnittstelle der Tk-Seite
     def delete_text_from_textwindow(self):
         self.lines.clear()
+        self._noise_count = 0  # v1.06
         arduino_log.info("----- %s: neuer Lauf -----", self.title)
         self._on_loop(self._cancel_close)
         self._on_loop(lambda: self._log.clear() if self._log is not None else None)
@@ -60,6 +82,11 @@ class WebLog:
         if txt.endswith("\n"):                 # ein abschliessender Zeilenumbruch erzeugt keine Leerzeile
             txt = txt[:-1]
         for line in txt.split("\n"):
+            if is_ide_network_noise(line):                          # v1.06: Netzwerkmeldungen der IDE nicht anzeigen
+                self._noise_count = getattr(self, "_noise_count", 0) + 1  # v1.06
+                if self._noise_count == 1:  # v1.06
+                    arduino_log.info("Meldungen der ARDUINO IDE zum Netzwerk (JmDNS) werden nicht angezeigt und nicht protokolliert")  # v1.06
+                continue  # v1.06
             self.lines.append((line, classes))
             if line.strip():
                 arduino_log.log(logging.WARNING if highlight == "Error" else logging.INFO, "%s", line)

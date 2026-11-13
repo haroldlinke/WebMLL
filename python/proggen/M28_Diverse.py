@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-27) - M28_Diverse.py
+# Datei-Version: 1.02 (2026-11-12) - M28_Diverse.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M28_Diverse.py
 # Path:           proggen/M28_Diverse.py
-# Version:        1.01
-# Last Update:    2026-10-27
+# Version:        1.02
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-27  Is_PlatformIO: ist PlatformIO als Entwicklungsumgebung eingestellt?
+#   1.02  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -332,9 +333,8 @@ def Get_Old_Board(LeftArduino):
         _ret = M02.BOARD_NANO_OLD
     elif InStr(BuildOpt, M02.BOARD_UNO_NORM) > 0:
         _ret = M02.BOARD_UNO_NORM
-    elif InStr(BuildOpt, M02.BOARD_NANO_EVERY) > 0:
-        _ret = M02.BOARD_NANO_EVERY
-        # 28.10.20: Jürgen
+    # elif InStr(BuildOpt, M02.BOARD_NANO_EVERY) > 0:  # v1.02 (entfallen)
+    #     _ret = M02.BOARD_NANO_EVERY  # v1.02 (entfallen)
     elif InStr(BuildOpt, M02.BOARD_NANO_FULL) > 0:
         _ret = M02.BOARD_NANO_FULL
         # 28.10.20: Jürgen

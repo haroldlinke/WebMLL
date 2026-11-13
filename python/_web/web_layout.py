@@ -1,4 +1,14 @@
-# Datei-Version: 1.08 (2026-11-03) - web_layout.py
+# Datei-Version: 1.09 (2026-11-12) - web_layout.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_layout.py
+# Path:           _web/web_layout.py
+# Version:        1.09
+# Last Update:    2026-11-12
+# Author:         Harold Linke
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.09  2026-11-12  Knoepfe Tabelle, Grafik, Beides (web_viewswitch): der Knopf der gewaehlten Ansicht ist gelb hinterlegt (mll-view-on) (fruehere Versionen ohne Eintrag)
+# ----------------------------------------------------------------------------------------------
 """Kompaktes Layout fuer kleine Bildschirme (Programm Einstellungen -> Darstellung).
 
 Drei Stufen: "normal" (Aus), "compact" (Ein) und "auto" (kompakt, wenn das Browserfenster niedriger als AUTO_HEIGHT Pixel ist). Die Umschaltung
@@ -39,6 +49,12 @@ CSS = """
 .body--dark .q-btn.mll-tool:hover { background: linear-gradient(#546e7a, #455a64); border-color: #78909c; }
 .body--dark .q-btn.mll-tool:active, .body--dark .q-btn.mll-tool.mll-pressed { background: #263238; border-color: #90a4ae; box-shadow: inset 0 2px 5px rgba(0, 0, 0, .6); }
 .body--dark .mll-tool-text { color: #eceff1; }
+/* Umschalter Tabelle, Grafik, Beides (web_viewswitch): die gewaehlte Ansicht ist gelb hinterlegt, auch im dunklen Modus */
+.q-btn.mll-tool.mll-view-on { background: #fff176; border-color: #f9a825; box-shadow: inset 0 0 0 2px #f9a825; }
+.q-btn.mll-tool.mll-view-on:hover { background: #ffee58; }
+.q-btn.mll-tool.mll-view-on .mll-tool-text { color: #000; font-weight: 600; }
+.body--dark .q-btn.mll-tool.mll-view-on { background: #fff176; border-color: #f9a825; }
+.body--dark .q-btn.mll-tool.mll-view-on .mll-tool-text { color: #000; }
 .mll-connect { white-space: nowrap; }
 
 /* ---------- Kompaktes Layout (Klasse mll-compact am html-Element) ---------- */

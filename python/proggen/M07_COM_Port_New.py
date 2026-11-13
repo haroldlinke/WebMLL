@@ -1,9 +1,9 @@
-# Datei-Version: 1.03 (2026-10-28) - M07_COM_Port_New.py
+# Datei-Version: 1.04 (2026-11-11) - M07_COM_Port_New.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port_New.py
 # Path:           proggen/M07_COM_Port_New.py
-# Version:        1.03
-# Last Update:    2026-10-28
+# Version:        1.04
+# Last Update:    2026-11-11
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.01  2026-10-28  Hinweis 'PICO im Bootmodus gefunden' funktioniert: Test_IsPicoInBootMode war ein leerer Rumpf, AskBootPico wurde nie auf True gesetzt
 #   1.02  2026-10-28  M12 im Aufruf importieren (nicht am Anfang des Moduls)
 #   1.03  2026-10-28  Zeitgeber der blinkenden LEDs: Pico/ESP32 unter Linux und macOS nicht jede Sekunde oeffnen; Pruefung des Bootmodus darf den Zeitgeber nicht beenden
+#   1.04  2026-11-11  Das Auswahlfenster der Anschluesse nennt den Arduino 'LED Arduino' (vorher 'LED Arduino Arduino': SetArduName haengt 'Arduino' selbst an)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -358,7 +359,8 @@ def Show_USB_Port_Dialog(ComPortColumn, ComPort):
             IsArduino = False
         else:
             Picture = 'LED_Image'
-            M08.SetArduName('LED Arduino')
+            # M08.SetArduName('LED Arduino')  # v1.04 (entfallen: ergab 'LED Arduino Arduino')
+            M08.SetArduName('LED')  # v1.04
     elif (ComPortColumn == M25.COMPrtR_COL):
         Picture = 'DCC_image'
         M08.SetArduName(M25.Page_ID)
