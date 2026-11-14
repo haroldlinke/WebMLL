@@ -12,6 +12,8 @@ Dieser Fork von [haroldlinke/WebMLL](https://github.com/haroldlinke/WebMLL) verb
 
 **Verbinden → WLAN** öffnet die Geräteverbindung für Testtasten und Farbtest. Der ESP32 kann alternativ über seine IP-Adresse angesprochen werden, wenn der Hostname im Netz nicht aufgelöst wird. Für einen Passwortwechsel per OTA im Übertragungsdialog das bisherige Passwort eingeben. Die neue Firmware erhält das im OTA-Reiter gespeicherte Passwort.
 
+Farbtest, Servo, DM Servo und Sound verwenden beim automatischen Verbinden dieselbe USB/WLAN-Auswahl wie **Verbinden**. Eine offene Verbindung wird weiterverwendet.
+
 ## OLED-Modus 4
 
 In der Spalte **Beleuchtung, Sound oder andere Effekte** kann eine Zeile **Display** diesen Block enthalten:

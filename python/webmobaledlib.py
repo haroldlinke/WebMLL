@@ -4688,21 +4688,24 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             except Exception:                              # noqa: BLE001  # v2.01
                 logger.warning("Reiter %s nach dem Verbinden nicht aktualisiert", tabs.value, exc_info=True)  # v2.01
 
-    async def connect_arduino():  # v2.01
+    async def connect_device():
         settings = headless_esp32_ota.load_settings()
         if esp32_board() and settings["wifi"] and settings["ota"]:
             target = await web_esp32_ota.ask_target(web_esp32_ota.target_address(settings), allow_usb=True, connect=True, saved_password=settings["password"])
             if target is None:
-                return
+                return False
             if target != "usb":
                 host, password = target
                 await run_command(lambda: ctrl.connect_esp32(host, password), "ESP32 über WLAN verbinden")()
                 if not ctrl.is_connection_open():
                     ui.notify("Keine ESP32-WLAN-Verbindung. IP-Adresse, Firmware und OTA-Passwort prüfen.", type="negative")
-                after_connect()
-                return
+                return True
         await _connect_command()  # v2.01
-        after_connect()  # v2.01
+        return True
+
+    async def connect_arduino():  # v2.01
+        if await connect_device():
+            after_connect()
 
     async def connect_from_header():  # v2.01
         """Knopf Mit ARDUINO verbinden: ohne Verbindung wie ARDUINO -> Verbinden; mit Verbindung geschieht nichts (Trennen im Menue ARDUINO)"""  # v2.01
@@ -5183,7 +5186,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if new_tab in ("farb", "servo1", "servo2", "sound") and old_tab != new_tab and not state["busy"]:  # v3.25: Seiten mit Direktmodus verbinden selbst
             try:  # v3.25
                 if not ctrl.is_connection_open():  # v3.25
-                    await _connect_command()  # v3.25: ohne after_connect: tab_selected startet den Direktmodus gleich danach
+                    await connect_device()  # tab_selected startet den Direktmodus gleich danach
             except Exception:                              # noqa: BLE001  # v3.25
                 logger.warning("Automatisches Verbinden beim Oeffnen des Reiters %s fehlgeschlagen", new_tab, exc_info=True)  # v3.25
         if new_tab == "farb" and old_tab != "farb":
