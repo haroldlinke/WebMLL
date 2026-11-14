@@ -1,13 +1,14 @@
-# Datei-Version: 1.05 (2026-11-05) - web_colorcheck.py
+# Datei-Version: 1.06 (2026-11-14) - web_colorcheck.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_colorcheck.py
 # Path:           _web/web_colorcheck.py
-# Version:        1.05
-# Last Update:    2026-11-05
+# Version:        1.06
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.05  2026-11-05  Beschreibungstext der Seite wird uebersetzt (description_text) (fruehere Versionen ohne Eintrag)
+#   1.06  2026-11-14  Dialog Farbpalette: Reihenfolge Ja, Nein, Abbrechen
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Farb Test" (ColorCheckPage + ColorWheel + LightGradientBar ohne Tk).
 
@@ -610,9 +611,10 @@ def build(ctrl, goto_generator=None, is_active=None, run_command=None):
                 ui.label(title).classes("text-h6")
                 ui.label(text).style("white-space: pre-line")
                 with ui.row().classes("justify-end w-full"):
-                    ui.button("Abbrechen (A)", on_click=lambda: dlg.submit(None)).props("flat data-key=A").classes("mll-cancel")
-                    ui.button("Nein (N)", on_click=lambda: dlg.submit(False)).props("outline data-key=N")
-                    ui.button("Ja (J)", on_click=lambda: dlg.submit(True)).props("color=primary data-key=J").classes("mll-default")
+                    # ui.button("Abbrechen (A)", ...)  # v1.06 (entfallen: steht jetzt rechts)
+                    ui.button("Ja (J)", on_click=lambda: dlg.submit(True)).props("color=primary data-key=J").classes("mll-default")  # v1.06
+                    ui.button("Nein (N)", on_click=lambda: dlg.submit(False)).props("outline data-key=N")  # v1.06
+                    ui.button("Abbrechen (A)", on_click=lambda: dlg.submit(None)).props("flat data-key=A").classes("mll-cancel")  # v1.06
             res = await dlg
             wd.safe_delete(dlg)
             return res

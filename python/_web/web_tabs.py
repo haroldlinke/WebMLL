@@ -1,9 +1,9 @@
-# Datei-Version: 1.14 (2026-11-12) - web_tabs.py
+# Datei-Version: 1.15 (2026-11-14) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.14
-# Last Update:    2026-11-12
+# Version:        1.15
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -22,6 +22,7 @@
 #   1.12  2026-11-05  Anfaenger Modus: Einstellung BeginnerMode (Programm Einstellungen), is_beginner_mode, BEGINNER_HIDDEN_TABS (Patterngenerator, Z21 Simulator, ProgGenerator Einstellungen); tab_enabled beachtet den Modus
 #   1.13  2026-11-11  Neue Einstellung DetectBootloader (Programm Einstellungen, Spezialeinstellungen): Bootloader des Nano beim Pruefen erkennen
 #   1.14  2026-11-12  Einstellung 'Bootloader des Nano beim Prüfen erkennen': Vorgabe AN, neuer Name NanoBootloaderDetection (vorher DetectBootloader, Vorgabe aus)
+#   1.15  2026-11-14  Neue Option ColoredRowsBold (Programm Einstellungen): Schrift in eingefaerbten Zeilen fett
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -66,7 +67,11 @@ PARAM_OVERRIDES = {"ShowProgramGenerator": {"Input Text": "DM Servo Einstellunge
 
 
 # Neue Optionen der Programm Einstellungen (nur im Web; die JSON-Dateien gehoeren zum Tk-Programm und bleiben unveraendert): Name -> (Definition, Name der Option, hinter der sie erscheint)
-PARAM_ADDITIONS = {"SaveExcelCharset": ({"ParName": "SaveExcelCharset", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "SaveExcelCharset", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.06
+PARAM_ADDITIONS = {"ColoredRowsBold": ({"ParName": "ColoredRowsBold", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "ColoredRowsBold", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.15
+                                       "Input Text": "Schrift in eingefärbten Zeilen fett",  # v1.15
+                                       "Hint": "Mit Haken wird die Schrift in eingefärbten Zeilen und Zellen fett dargestellt. Die Schriftfarbe wird immer passend zur Hintergrundfarbe gewählt (schwarz auf hellem, weiß auf dunklem Grund)."},  # v1.15
+                                      "GraphDefaultView"),  # v1.15
+                 "SaveExcelCharset": ({"ParName": "SaveExcelCharset", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "SaveExcelCharset", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.06
                                          "Input Text": "Dateien für das Excel-Programm speichern",  # v1.06
                                          "Hint": "Gespeicherte Dateien (.MLL_pcf und .MLL_pgf) werden im Windows-Zeichensatz geschrieben, damit das Excel-Programm sie lesen kann (Umlaute und Trennzeichen). Enthält eine Datei Zeichen, die dort keinen Platz haben, bleibt sie UTF-8. Das Laden geht mit beiden."},  # v1.06
                                         # "ShowZ21Simulator")}  # v1.08 (entfallen)

@@ -1,14 +1,15 @@
-# Datei-Version: 1.07 (2026-11-05) - web_params.py
+# Datei-Version: 1.08 (2026-11-14) - web_params.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_params.py
 # Path:           _web/web_params.py
-# Version:        1.07
-# Last Update:    2026-11-05
+# Version:        1.08
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.06  2026-11-05  Einstellungsseite Programm Einstellungen in Gruppen mit Ueberschrift (SETTINGS_GROUPS, Plaetze @layout, @table, @network fuer die Zusatzkarten); Beschreibungstext wird uebersetzt (description_text) (fruehere Versionen ohne Eintrag)
 #   1.07  2026-11-05  Anfaenger Modus: der Haken steht als erste Einstellung in den Allgemeinen Einstellungen
+#   1.08  2026-11-14  Option ColoredRowsBold in der Gruppe Programm Generator
 # ----------------------------------------------------------------------------------------------
 """Web-Version von create_macroparam_frame/create_macroparam_content (pyMobaLedLib.py) fuer die Einstellungsseiten.
 
@@ -49,7 +50,8 @@ SETTINGS_GROUPS = {  # v1.06
     "ConfigurationPage": [  # v1.06
         # ("Allgemeine Einstellungen", ["Language", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.06 (entfallen)
         ("Allgemeine Einstellungen", ["BeginnerMode", "Language", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.07
-        ("Programm Generator", ["GraphDefaultView", "ShowHiddentables", "@table"]),  # v1.06
+        # ("Programm Generator", ["GraphDefaultView", "ShowHiddentables", "@table"]),  # v1.06 (entfallen v1.08)
+        ("Programm Generator", ["GraphDefaultView", "ColoredRowsBold", "ShowHiddentables", "@table"]),  # v1.08
         ("Farb Test Einstellungen", ["Farbauswahl", "LEDColourCorrection"]),  # v1.06
         ("Zugriff aus dem Netz", ["@network"]),  # v1.06
         ("Spezialeinstellungen", None)],  # v1.06

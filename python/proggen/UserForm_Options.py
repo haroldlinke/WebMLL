@@ -1,9 +1,9 @@
-# Datei-Version: 1.03 (2026-11-12) - UserForm_Options.py
+# Datei-Version: 1.04 (2026-11-13) - UserForm_Options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           UserForm_Options.py
 # Path:           proggen/UserForm_Options.py
-# Version:        1.03
-# Last Update:    2026-11-12
+# Version:        1.04
+# Last Update:    2026-11-13
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.01  2026-10-26  Beschriftungen: Installiere Korrekturversion (vorher Installiere Beta Test) und Hilfe im Forum (vorher Mail an Hardi) (Aenderung des Entwicklers)
 #   1.02  2026-10-27  PlatformIO: ESP32 und Pico sind waehlbar, auch wenn die Pakete der ARDUINO IDE fehlen
 #   1.03  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26)
+#   1.04  2026-11-13  Schreibfehler im Titel: 'Optionen und spezielle Funktionen' (vorher 'Funktionien')
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -673,7 +674,8 @@ class CUserForm_Options:
         #self.top.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))                 
         self.top.geometry("+{}+{}".format(x_cordinate, y_cordinate))                   
         
-        self.top.title(M09.Get_Language_Str("Optionen und spezielle Funktionien")) 
+        # self.top.title(M09.Get_Language_Str("Optionen und spezielle Funktionien"))  # v1.04 (entfallen: Schreibfehler)
+        self.top.title(M09.Get_Language_Str("Optionen und spezielle Funktionen"))  # v1.04
          
         self.container = ttk.Notebook(self.top)
         self.container.grid(row=0,column=0,sticky="nesw")

@@ -1,9 +1,9 @@
-# Datei-Version: 1.12 (2026-11-05) - web_access.py
+# Datei-Version: 1.13 (2026-11-14) - web_access.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_access.py
 # Path:           _web/web_access.py
-# Version:        1.12
-# Last Update:    2026-11-05
+# Version:        1.13
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -15,6 +15,7 @@
 #   1.10  2026-10-23  Texte mit eingesetzten Werten (f-Strings) mit tr("... {name}", name=...) umgestellt, damit sie uebersetzt werden
 #   1.11  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 #   1.12  2026-11-05  Zusatzkarten einzeln aufbaubar (build_layout, build_table, build_network) und als Plaetze (slots) fuer die Gruppen der Seite Programm Einstellungen
+#   1.13  2026-11-14  Dialoge Passwort/Namen: Einschalten bzw. Namen aendern links, Abbrechen rechts
 # ----------------------------------------------------------------------------------------------
 """Zusatzfelder der Seite Programm Einstellungen: Passwort fuer den Zugriff auf die Web-Oberflaeche aus dem Netz aendern und (nur auf
 dem Raspberry Pi mit installiertem Hilfsprogramm) den Namen des Rechners im Netz aendern.
@@ -220,8 +221,8 @@ class WebAccess:
             ui.label(tr('Es ist noch kein Passwort eingerichtet. Ohne Passwort kann jeder, der dein Heimnetz erreicht, die Oberfläche benutzen und Programme auf den angeschlossenen Arduino laden. Besser jetzt ein Passwort eingeben (mindestens 4 Zeichen). Der Benutzername ist „{benutzer}“. Leer lassen: ohne Passwort.', benutzer=web_password.username())).classes("text-body2")  # v1.10
             entry = ui.input("Passwort", password=True, password_toggle_button=True).props("dense outlined").classes("w-full")  # v1.08
             with ui.row().classes("justify-end w-full gap-2"):  # v1.08
-                ui.button("Abbrechen", on_click=lambda: dlg.submit(None)).props("flat no-caps")  # v1.08
-                ui.button("Einschalten", on_click=lambda: dlg.submit(str(entry.value or ""))).props("color=primary no-caps")  # v1.08
+                ui.button("Einschalten", on_click=lambda: dlg.submit(str(entry.value or ""))).props("color=primary no-caps").classes("mll-default")  # v1.13
+                ui.button("Abbrechen", on_click=lambda: dlg.submit(None)).props("flat no-caps").classes("mll-cancel")  # v1.13
         result = await dlg  # v1.08
         dlg.delete()  # v1.08
         if result:  # v1.08
@@ -408,8 +409,8 @@ class WebAccess:
                      # f"({self.host_url(socket.gethostname())}) gilt dann nicht mehr: Öffne die Oberfläche künftig mit der neuen Adresse.")  # v1.10 (entfallen)
             ui.label(tr('Der Raspberry Pi heißt danach „{name}“ und ist unter {adresse} erreichbar. Die bisherige Adresse ({alte_adresse}) gilt dann nicht mehr: Öffne die Oberfläche künftig mit der neuen Adresse.', name=name, adresse=self.host_url(name), alte_adresse=self.host_url(socket.gethostname())))  # v1.10
             with ui.row().classes("justify-end w-full"):
-                ui.button("Abbrechen", on_click=lambda: dlg.submit(False)).props("flat").classes("mll-cancel")
-                ui.button("Namen ändern", on_click=lambda: dlg.submit(True)).props("color=primary").classes("mll-default")
+                ui.button("Namen ändern", on_click=lambda: dlg.submit(True)).props("color=primary").classes("mll-default")  # v1.13
+                ui.button("Abbrechen", on_click=lambda: dlg.submit(False)).props("flat").classes("mll-cancel")  # v1.13
         answer = await dlg
         wd.safe_delete(dlg)
         if not answer:

@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-11-12) - headless_graph.py
+# Datei-Version: 1.05 (2026-11-13) - headless_graph.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph.py
 # Path:           headless/headless_graph.py
-# Version:        1.04
-# Last Update:    2026-11-12
+# Version:        1.05
+# Last Update:    2026-11-13
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.02  2026-10-30  Knoten haben icon_large (Symbol mit hoher Aufloesung), wenn es eines gibt
 #   1.03  2026-11-01  Knoten haben tests (Testtasten der Zeile)
 #   1.04  2026-11-12  build_model(..., all_rows): alle aktiven Zeilen in die Ketten, auch die ohne LEDs (in die Kette der nachfolgenden LED-Zeile, am Ende in die der letzten); Knoten haben noled
+#   1.05  2026-11-13  Inaktive Zeilen (Spalte Aktiv leer) und mit dem Filter ausgeblendete Zeilen erscheinen in der Grafik nie, auch ohne 'Alle Zeilen' (Rueckmeldung des Excel-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht des Programm Generators, Stufe 1: das Modell der Ketten.
@@ -97,7 +98,7 @@ def build_model(ws, icons=None, display=None, icon_large=None, tests=None, all_r
       {"sheet": Blattname, "ok": True, "count": Anzahl Knoten,
        "chains": [{"channel": Kanal, "led_count": Summe der LEDs, "nodes": [Knoten ...]}, ...],   # nach Kanal sortiert
        "other": [Knoten ohne LEDs ...], "all_rows": False oder True}
-    all_rows (v1.04): alle AKTIVEN Zeilen (Spalte Aktiv nicht leer, Zeile nicht ausgeblendet) stehen in der Reihenfolge der Tabelle in den Ketten, auch die ohne LEDs. Eine Zeile ohne LEDs
+    Inaktive Zeilen (v1.05: in beiden Ansichten nie) fehlen immer. all_rows (v1.04): alle AKTIVEN Zeilen (Spalte Aktiv nicht leer, Zeile nicht ausgeblendet) stehen in der Reihenfolge der Tabelle in den Ketten, auch die ohne LEDs. Eine Zeile ohne LEDs
     kommt in die Kette der NACHFOLGENDEN Zeile mit LEDs (direkt vor sie: solche Makros gehoeren meist zu ihr); Zeilen hinter der letzten Zeile mit LEDs ans Ende der Kette dieser
     letzten Zeile; gibt es keine Zeile mit LEDs, bleiben sie in der Liste 'other'. Inaktive Zeilen fehlen in diesem Modus (auch die mit LEDs).
       Knoten: {"row": Zeile (0-basiert), "id": Zeilenkennung, "makro", "label", "descrip", "config", "icon" (URL oder ""),
@@ -127,8 +128,9 @@ def build_model(ws, icons=None, display=None, icon_large=None, tests=None, all_r
         config = str(sh.get_cell_data(r, c_cfg) or "").strip()
         if config == "":
             continue
-        if all_rows and not _row_active(ws, sh, r, c_enable):  # v1.04: inaktive und ausgeblendete Zeilen fehlen in diesem Modus
-            continue  # v1.04
+        # if all_rows and not _row_active(ws, sh, r, c_enable):  # v1.04 (entfallen v1.05: gilt in beiden Ansichten)
+        if not _row_active(ws, sh, r, c_enable):  # v1.05: inaktive und ausgeblendete Zeilen erscheinen nie in der Grafik
+            continue  # v1.05
         # leds = to_int(sh.get_cell_data(r, c_leds), 0)  # v1.01 (entfallen)
         # led_from = to_int(sh.get_cell_data(r, c_nr))  # v1.01 (entfallen)
         # channel = to_int(sh.get_cell_data(r, c_ch), 0)  # v1.01 (entfallen)

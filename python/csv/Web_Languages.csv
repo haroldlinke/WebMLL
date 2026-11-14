@@ -70,7 +70,7 @@ Web interface: webMobaLedLib ";Webinterface: webMobaLedLib;Interface web : webMo
 0 = aus (es wird nichts gesendet);0 = off (nothing is sent);0 = uit (er wordt niets verzonden);0 = désactivé (rien n'est envoyé);0 = spento (non viene inviato nulla);0 = apagado (no se envía nada);0 = fra (der sendes ikke noget)
 6 = Servo zurücksetzen;6 = reset servo;6 = servo resetten;6 = réinitialiser le servo;6 = reimposta il servo;6 = restablecer el servo;6 = nulstil servo
 8 = Letzte Position zurücksetzen;8 = reset last position;8 = laatste positie resetten;8 = réinitialiser la dernière position;8 = reimposta l'ultima posizione;8 = restablecer la última posición;8 = nulstil sidste position
-Abbrechen;Cancel;;;;;
+Abbrechen;Cancel;Annuleren;Annuler;Annulla;Cancelar;Annuller
 Abbrechen (A);Cancel (A);Annuleren (A);Annuler (A);Annulla (A);Cancelar (A);Annuller (A)
 Abhilfe: Menü Hilfe → Update webMobaLedLib … (stellt die Dateien wieder her), oder die Anleitung, Kapitel „Wenn nichts mehr geht“.;Remedy: menu Help → Update webMobaLedLib … (restores the files), or the manual, chapter “When nothing works any more”.;Oplossing: menu Help → Update webMobaLedLib … (herstelt de bestanden), of de handleiding, hoofdstuk „Als niets meer werkt”.;Remède : menu Aide → Mettre à jour webMobaLedLib … (rétablit les fichiers), ou le manuel, chapitre « Quand plus rien ne fonctionne ».;Rimedio: menu Aiuto → Aggiorna webMobaLedLib … (ripristina i file), oppure il manuale, capitolo “Quando non funziona più niente”.;Solución: menú Ayuda → Actualizar webMobaLedLib … (restaura los archivos), o el manual, capítulo “Cuando ya no funciona nada”.;Afhjælpning: menuen Hjælp → Opdater webMobaLedLib … (genopretter filerne), eller vejledningen, kapitlet “Når intet virker mere”.
 Abschnitt oder Schlüssel zum Lesen Nicht angegeben !!!;Section or key for reading not specified !!!;Sectie of sleutel voor lezen niet opgegeven !!!;Section ou clé pour la lecture non indiquée !!!;Sezione o chiave per la lettura non indicata !!!;Sección o clave para la lectura no indicada !!!;Sektion eller nøgle til læsning er ikke angivet !!!
@@ -1143,7 +1143,7 @@ Interne Fehler beim importieren des Macros;Internal error while importing the ma
 Interner Fehler: Die Event Routinen wurden nicht gefunden;Internal error: The event routines were not found;Interne fout: De eventroutines zijn niet gevonden;Erreur interne : les routines d'événements sont introuvables;Errore interno: le routine degli eventi non sono state trovate;Error interno: no se encontraron las rutinas de eventos;Intern fejl: Hændelsesrutinerne blev ikke fundet
 Interner Macro Fehler;Internal macro error;Interne macrofout;Erreur interne de macro;Errore interno della macro;Error interno de macro;Intern makrofejl
 IP Upload Timeout;IP upload timeout;IP-upload time-out;Délai d'attente du téléversement IP;Timeout upload IP;Tiempo de espera de carga IP;IP-upload timeout
-Ja;Yes;;;;;
+Ja;Yes;Ja;Oui;Sì;Sí;Ja
 Ja (J);Yes (J);Ja (J);Oui (J);Sì (J);Sí (J);Ja (J)
 Ja, {anzahl} Dateien löschen und aktualisieren;Yes, delete {anzahl} files and update;Ja, {anzahl} bestanden verwijderen en bijwerken;Oui, supprimer {anzahl} fichiers et mettre à jour;Sì, elimina {anzahl} file e aggiorna;Sí, eliminar {anzahl} archivos y actualizar;Ja, slet {anzahl} filer og opdater
 Jetzt neu starten;Restart now;Nu herstarten;Redémarrer maintenant;Riavvia ora;Reiniciar ahora;Genstart nu
@@ -1370,7 +1370,7 @@ Name des Raspberry Pi im Netz;Name of the Raspberry Pi on the network;Naam van d
 Name muss mit 'multiplexer_' beginnen' !;Name must start with 'multiplexer_' !;Naam moet met 'multiplexer_' beginnen !;Le nom doit commencer par 'multiplexer_' !;Il nome deve iniziare con 'multiplexer_' !;¡El nombre debe empezar por 'multiplexer_'!;Navnet skal begynde med 'multiplexer_' !
 Namen des Raspberry Pi ändern?;Change the name of the Raspberry Pi?;De naam van de Raspberry Pi wijzigen?;Modifier le nom du Raspberry Pi ?;Cambiare il nome del Raspberry Pi?;¿Cambiar el nombre de la Raspberry Pi?;Ændre Raspberry Pi'ens navn?
 Namen ändern;Change name;Naam wijzigen;Modifier le nom;Cambia nome;Cambiar nombre;Skift navn
-Nein;No;;;;;
+Nein;No;Nee;Non;No;No;Nej
 Nein (N);No (N);Nee (N);Non (N);No (N);No (N);Nej (N)
 Neu berechnen;Recalculate;Herberekenen;Recalculer;Ricalcola;Recalcular;Genberegn
 Neue Adresse (in einem Lesezeichen oder dem Desktop-Symbol anpassen):;New address (adapt it in a bookmark or the desktop icon):;Nieuw adres (pas het aan in een bladwijzer of het bureaubladpictogram):;Nouvelle adresse (à adapter dans un signet ou l'icône du bureau) :;Nuovo indirizzo (adattalo in un segnalibro o nell'icona del desktop):;Nueva dirección (adáptala en un marcador o en el icono del escritorio):;Ny adresse (tilpas den i et bogmærke eller skrivebordsikonet):
@@ -1427,7 +1427,7 @@ Online Wiki;Online Wiki;Online Wiki;Online Wiki;Online Wiki;Online Wiki;Online W
 Online Wiki im Webbrowser öffnen;Open the online wiki in the web browser;Het online wiki in de webbrowser openen;Ouvrir le wiki en ligne dans le navigateur web;Apri la wiki online nel browser web;Abrir la wiki en línea en el navegador web;Åbn online wiki i webbrowseren
 Optionen;Options;;;;;
 Optionen anzeigen;Show options;Opties tonen;Afficher les options;Mostra opzioni;Mostrar opciones;Vis indstillinger
-Optionen und spezielle Funktionien;Options and special functions;Opties en speciale functies;Options et fonctions spéciales;Opzioni e funzioni speciali;Opciones y funciones especiales;Indstillinger og specialfunktioner
+Optionen und spezielle Funktionen;Options and special functions;Opties en speciale functies;Options et fonctions spéciales;Opzioni e funzioni speciali;Opciones y funciones especiales;Indstillinger og specialfunktioner
 Optionen Werkzeuge;"Options
 Tools";"Opties
 Hulpmiddelen";"Options
@@ -2058,3 +2058,20 @@ Detaljerne står i loggen (Hjælp → Vis logfil)."
 Überprüfung des mDNS-Gerät;Check of the mDNS device;Controle van het mDNS-apparaat;Vérification de l'appareil mDNS;Controllo del dispositivo mDNS;Comprobación del dispositivo mDNS;Kontrol af mDNS-enheden
 übersetzt;translated;vertaald worden;doit être traduite;deve essere tradotta;traducirse;oversættes
 Übersetzte Dateien und Kopien der Bibliotheken im Projekt: {pfad} ({groesse});Compiled files and copies of the libraries in the project: {pfad} ({groesse});Gecompileerde bestanden en kopieën van de bibliotheken in het project: {pfad} ({groesse});Fichiers compilés et copies des bibliothèques dans le projet : {pfad} ({groesse});File compilati e copie delle librerie nel progetto: {pfad} ({groesse});Archivos compilados y copias de las bibliotecas en el proyecto: {pfad} ({groesse});Kompilerede filer og kopier af bibliotekerne i projektet: {pfad} ({groesse})
+Suchen;Search;Zoeken;Chercher;Cerca;Buscar;Søg
+Weiter;Continue;Doorgaan;Continuer;Continua;Continuar;Fortsæt
+Mit 'Suchen' wird mit einem anderen #2# oder einem anderen COM Port noch einmal gesucht.;With 'Search' the check is repeated with another #2# or another COM port.;Met 'Zoeken' wordt de controle herhaald met een andere #2# of een andere COM-poort.;Avec « Chercher », la vérification est répétée avec un autre #2# ou un autre port COM.;Con 'Cerca' il controllo viene ripetuto con un altro #2# o un'altra porta COM.;Con 'Buscar' se repite la comprobación con otro #2# u otro puerto COM.;Med 'Søg' gentages kontrollen med en anden #2# eller en anden COM-port.
+Mit 'Weiter' wird die Meldung ignoriert und versucht den #2# trotzdem zu programmieren.;With 'Continue' the message is ignored and the attempt is made to program the #2# anyway.;Met 'Doorgaan' wordt de melding genegeerd en wordt geprobeerd de #2# toch te programmeren.;Avec « Continuer », le message est ignoré et on essaie quand même de programmer l'#2#.;Con 'Continua' il messaggio viene ignorato e si tenta comunque di programmare l'#2#.;Con 'Continuar' se ignora el mensaje y se intenta programar el #2# de todos modos.;Med 'Fortsæt' ignoreres meddelelsen, og der forsøges alligevel at programmere #2#.
+Mit 'Abbrechen' wird der Vorgang beendet.;With 'Cancel' the process is aborted.;Met 'Annuleren' wordt de actie afgebroken.;Avec « Annuler », l'opération est interrompue.;Con 'Annulla' l'operazione viene interrotta.;Con 'Cancelar' se interrumpe el proceso.;Med 'Annuller' afbrydes forløbet.
+Es läuft noch ein Vorgang – bitte warten.;An operation is still running – please wait.;Er loopt nog een bewerking – even wachten.;Une opération est encore en cours – veuillez patienter.;È ancora in corso un'operazione – attendere prego.;Todavía hay una operación en curso – espere, por favor.;Der kører stadig en proces – vent venligst.
+Schrift in eingefärbten Zeilen fett;Bold text in coloured rows;Vette tekst in gekleurde rijen;Texte en gras dans les lignes colorées;Testo in grassetto nelle righe colorate;Texto en negrita en las filas coloreadas;Fed tekst i farvede rækker
+Mit Haken wird die Schrift in eingefärbten Zeilen und Zellen fett dargestellt. Die Schriftfarbe wird immer passend zur Hintergrundfarbe gewählt (schwarz auf hellem, weiß auf dunklem Grund).;With a tick the text in coloured rows and cells is shown in bold. The text colour is always chosen to match the background colour (black on light, white on dark).;Met vinkje wordt de tekst in gekleurde rijen en cellen vet weergegeven. De tekstkleur past altijd bij de achtergrondkleur (zwart op licht, wit op donker).;Avec la coche, le texte des lignes et cellules colorées est affiché en gras. La couleur du texte est toujours adaptée à la couleur de fond (noir sur clair, blanc sur foncé).;Con la spunta il testo nelle righe e celle colorate è in grassetto. Il colore del testo si adatta sempre allo sfondo (nero su chiaro, bianco su scuro).;Con la marca el texto de las filas y celdas coloreadas se muestra en negrita. El color del texto se adapta siempre al fondo (negro sobre claro, blanco sobre oscuro).;Med flueben vises teksten i farvede rækker og celler med fed. Tekstfarven tilpasses altid baggrundsfarven (sort på lys, hvid på mørk).
+Suchen (Strg+F);Search (Ctrl+F);Zoeken (Ctrl+F);Chercher (Ctrl+F);Cerca (Ctrl+F);Buscar (Ctrl+F);Søg (Ctrl+F)
+Voriger Treffer (Umschalt+Eingabetaste);Previous match (Shift+Enter);Vorige treffer (Shift+Enter);Résultat précédent (Maj+Entrée);Risultato precedente (Maiusc+Invio);Resultado anterior (Mayús+Intro);Forrige fund (Skift+Enter)
+Nächster Treffer (Eingabetaste);Next match (Enter);Volgende treffer (Enter);Résultat suivant (Entrée);Risultato successivo (Invio);Resultado siguiente (Intro);Næste fund (Enter)
+Kein Treffer;No match;Geen treffer;Aucun résultat;Nessun risultato;Sin resultados;Ingen fund
+Ganzes Wort;Whole word;Heel woord;Mot entier;Parola intera;Palabra completa;Helt ord
+Alle Blätter;All sheets;Alle bladen;Toutes les feuilles;Tutti i fogli;Todas las hojas;Alle ark
+Wort;Word;Woord;Mot;Parola;Palabra;Ord
+Alle;All;Alle;Tous;Tutti;Todas;Alle
+Zentrale auf %1 umstellen und %2 verwenden?;Switch the controller to %1 and use %2?;Centrale omzetten naar %1 en %2 gebruiken?;Passer la centrale sur %1 et utiliser %2 ?;Passare la centrale a %1 e usare %2?;¿Cambiar la central a %1 y usar %2?;Skift centralen til %1 og brug %2?

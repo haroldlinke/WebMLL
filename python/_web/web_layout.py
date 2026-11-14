@@ -1,13 +1,16 @@
-# Datei-Version: 1.09 (2026-11-12) - web_layout.py
+# Datei-Version: 1.12 (2026-11-14) - web_layout.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_layout.py
 # Path:           _web/web_layout.py
-# Version:        1.09
-# Last Update:    2026-11-12
+# Version:        1.12
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.09  2026-11-12  Knoepfe Tabelle, Grafik, Beides (web_viewswitch): der Knopf der gewaehlten Ansicht ist gelb hinterlegt (mll-view-on) (fruehere Versionen ohne Eintrag)
+#   1.10  2026-11-14  Einheitliche Knopfreihenfolge in allen Dialogen: der Abbrechen-Knopf (mll-cancel) steht immer ganz rechts
+#   1.11  2026-11-14  Kompaktes Layout: Suchleiste so hoch (22 px) und so gross beschriftet (12 px) wie die Werkzeugleistenknoepfe
+#   1.12  2026-11-14  Suchfeld: Loeschkreuz (Marginal) mittig
 # ----------------------------------------------------------------------------------------------
 """Kompaktes Layout fuer kleine Bildschirme (Programm Einstellungen -> Darstellung).
 
@@ -51,6 +54,7 @@ CSS = """
 .body--dark .mll-tool-text { color: #eceff1; }
 /* Umschalter Tabelle, Grafik, Beides (web_viewswitch): die gewaehlte Ansicht ist gelb hinterlegt, auch im dunklen Modus */
 .q-btn.mll-tool.mll-view-on { background: #fff176; border-color: #f9a825; box-shadow: inset 0 0 0 2px #f9a825; }
+.q-card .mll-cancel { order: 99; }  /* v1.10: Abbrechen immer rechts */
 .q-btn.mll-tool.mll-view-on:hover { background: #ffee58; }
 .q-btn.mll-tool.mll-view-on .mll-tool-text { color: #000; font-weight: 600; }
 .body--dark .q-btn.mll-tool.mll-view-on { background: #fff176; border-color: #f9a825; }
@@ -76,6 +80,15 @@ CSS = """
 .mll-compact .mll-pg { gap: 2px !important; }
 .mll-compact .mll-toolbar { gap: 3px !important; }
 .mll-compact .mll-tool { min-height: 22px; padding: 0 7px; border: 1px solid #b7c0cc; border-radius: 3px; background: #f4f6f9; }
+/* Suchleiste (v1.11): im kompakten Layout so hoch und so gross beschriftet wie die Werkzeugleistenknoepfe (22 px, Schrift 12 px) */
+.mll-compact .mll-find { min-height: 22px; padding: 0 5px !important; gap: 2px !important; }
+.mll-compact .mll-find .q-field--dense .q-field__control, .mll-compact .mll-find .q-field--dense .q-field__marginal { height: 20px; min-height: 20px; }
+.mll-compact .mll-find .q-field__native, .mll-compact .mll-find .q-field__input { font-size: 12px !important; min-height: 20px; padding: 0 4px; }
+.mll-compact .mll-find .q-field__marginal { align-items: center; }
+.mll-compact .mll-find .q-checkbox { min-height: 20px; }
+.mll-compact .mll-find .q-checkbox__label, .mll-compact .mll-find .text-caption { font-size: 12px !important; line-height: 1.2; }
+.mll-compact .mll-find .q-checkbox__inner { font-size: 16px; }
+.mll-compact .mll-find .q-btn { min-height: 20px; min-width: 20px; padding: 0; }
 .mll-compact .mll-tool-img { display: none !important; }
 .mll-compact .mll-tool-text.mll-hide-normal { display: block; }
 .mll-compact .mll-tool-text { font-size: 12px !important; white-space: nowrap !important; line-height: 1.2; min-height: 0 !important; }

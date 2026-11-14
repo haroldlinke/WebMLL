@@ -1,15 +1,16 @@
-# Datei-Version: 1.02 (2026-11-12) - web_form_firmware.py
+# Datei-Version: 1.03 (2026-11-14) - web_form_firmware.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_firmware.py
 # Path:           _web/web_form_firmware.py
-# Version:        1.02
-# Last Update:    2026-11-12
+# Version:        1.03
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-28  Neu: Firmware-Dialog fuer den Raspberry Pi Pico (Select_Firmware_Form der Version K)
 #   1.01  2026-11-12  Excel-Programm 3.5.0L3: Knopf Firmware laden (Download aus dem Internet, danach wird die neue Firmware vorgewaehlt); der Dialog oeffnet auch ohne Firmware-Dateien (mit Hinweis, Installieren gesperrt)
 #   1.02  2026-11-12  Knopf: 'Firmware herunterladen' (vorher 'Firmware laden')
+#   1.03  2026-11-14  Dialog Firmware installieren: Installieren links, Abbrechen rechts
 # ----------------------------------------------------------------------------------------------
 
 """Firmware-Dialog fuer den Raspberry Pi Pico (Select_Firmware_Form des Excel-Programms 3.5.0-K) im Browser.
@@ -109,9 +110,9 @@ async def firmware_async(groups: list, folder: str, download=None, rescan=None, 
                 else:  # v1.01
                     ui.label("")  # v1.01
                 with ui.row():  # v1.01
-                    ui.button(tr("Abbrechen"), on_click=lambda: dlg.submit(None)).props("flat")
-                    ref["ok"] = ui.button(tr("Installieren"), on_click=ok).props("color=primary")  # v1.01
+                    ref["ok"] = ui.button(tr("Installieren"), on_click=ok).props("color=primary").classes("mll-default")  # v1.01 / v1.03
                     ref["ok"].set_enabled(bool(groups))  # v1.01
+                    ui.button(tr("Abbrechen"), on_click=lambda: dlg.submit(None)).props("flat").classes("mll-cancel")  # v1.03
     dlg.open()
     answer = await dlg
     wd.safe_delete(dlg)

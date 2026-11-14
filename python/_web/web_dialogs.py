@@ -1,9 +1,9 @@
-# Datei-Version: 1.09 (2026-11-01) - web_dialogs.py
+# Datei-Version: 1.10 (2026-11-14) - web_dialogs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_dialogs.py
 # Path:           _web/web_dialogs.py
-# Version:        1.09
-# Last Update:    2026-11-01
+# Version:        1.10
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.07  2026-10-28  open_url: Adresse in einem neuen Tab des Webbrowsers oeffnen
 #   1.08  2026-10-28  show_busy und hide_busy: Hinweisfenster mit Drehzeichen fuer lange Aktionen
 #   1.09  2026-11-01  color_input: Farbwahl geht rechts neben dem Pipettenknopf auf, nicht ueber den Knoepfen OK und Abbrechen
+#   1.10  2026-11-14  Beschriftete Knoepfe (web_msgbox_labelled, X02.MsgBoxLabelled): Suchen/Weiter/Abbrechen statt Ja/Nein/Abbrechen; Abbrechen steht immer rechts (CSS in web_layout)
 # ----------------------------------------------------------------------------------------------
 """Web-Dialoge fuer MsgBox und InputBox (NiceGUI) mit Bruecke aus dem Worker-Thread.
 
@@ -192,7 +193,7 @@ def call_in_loop(coro_func, *args, default=None):
 
 
 # --------------------------------------------------------------------------- Dialoge (Event-Loop)
-async def _msgbox_async(prompt, msg_type, title):
+async def _msgbox_async(prompt, msg_type, title, labels=None):  # v1.10 (labels)
     from nicegui import ui
     client = _bridge["client"]
     with client:
@@ -205,6 +206,8 @@ async def _msgbox_async(prompt, msg_type, title):
             ui.label(clean_text(prompt)).style("white-space: pre-line")
             with ui.row().classes("justify-end w-full"):
                 btns = buttons_for(msg_type)
+                if labels:  # v1.10: eigene Beschriftung je Rueckgabewert
+                    btns = [(labels.get(c, lab), c) for lab, c in btns]  # v1.10
                 codes = [c for _, c in btns]
                 cancel_code = (vbCancel if vbCancel in codes else vbOK if codes == [vbOK]
                                else vbNo if vbNo in codes else None)
@@ -260,6 +263,15 @@ def web_msgbox(ErrorMessage, msg_type=vbOKOnly, ErrorTitle=""):
     return _original["MsgBox"](ErrorMessage, msg_type, ErrorTitle)
 
 
+def web_msgbox_labelled(ErrorMessage, msg_type=vbOKOnly, ErrorTitle="", labels=None):  # v1.10
+    """Wie MsgBox, aber mit eigener Beschriftung der Knoepfe: labels = {Rueckgabewert: Text}, z.B. {vbYes: "Suchen", vbNo: "Weiter"}.
+    Rueckgabewerte und Reihenfolge bleiben die der VBA-Knopfart (bestaetigen links, Abbrechen rechts)."""
+    _log_msgbox(ErrorMessage, ErrorTitle)
+    if bridge_usable():
+        return call_in_loop(_msgbox_async, ErrorMessage, msg_type, ErrorTitle, labels, default=default_result(msg_type))
+    return _original["MsgBox"](ErrorMessage, msg_type, ErrorTitle)
+
+
 def web_inputbox(Message, Title="", Default=""):
     """VBA-InputBox: liefert den Text, bei Abbrechen einen leeren String."""
     if bridge_usable():
@@ -304,6 +316,7 @@ def install():
         _original["Shell"] = X02.Shell
     X02.Shell = web_shell
     X02.MsgBox = web_msgbox
+    X02.MsgBoxLabelled = web_msgbox_labelled  # v1.10
     install_filedialogs()
     G00.InputBox = web_inputbox
     logger.info("Web-Dialoge installiert (MsgBox, InputBox)")

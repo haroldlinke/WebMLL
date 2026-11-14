@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-11-04) - headless_gridmodel.py
+# Datei-Version: 1.06 (2026-11-14) - headless_gridmodel.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_gridmodel.py
 # Path:           headless/headless_gridmodel.py
-# Version:        1.05
-# Last Update:    2026-11-04
+# Version:        1.06
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.03  2026-10-23  build_grid: Parameter display_cols (uebersetzte Anzeige einzelner Spalten, gespeichert bleibt der neutrale Wert)
 #   1.04  2026-10-23  build_grid: Parameter display_cells (einzelne Zellen uebersetzt anzeigen)
 #   1.05  2026-11-04  Zeile 2 (Ueberschriften) der Datenblaetter: Hintergrund RGB(26, 117, 210) = #1A75D2 statt reinem Blau #0000FF
+#   1.06  2026-11-14  Zellen mit Hintergrundfarbe: passende Schriftfarbe (contrast_color), Parameter bold_colored: fette Schrift
 # ----------------------------------------------------------------------------------------------
 """Uebersetzt ein HeadlessSheet in Spalten- und Zeilendaten fuer AG Grid (ohne NiceGUI-Import,
 daher einzeln testbar)."""
@@ -54,6 +55,20 @@ def _json_value(v: Any):
     return str(v)
 
 
+def contrast_color(bg) -> str | None:  # v1.06
+    """Schriftfarbe zur Hintergrundfarbe: schwarz auf hellem, weiss auf dunklem Grund (wie der Farbwaehler). Unbekannte Farbangabe: None (Standardfarbe)."""  # v1.06
+    text = str(bg or "").strip().lstrip("#")  # v1.06
+    if len(text) == 3:  # v1.06
+        text = "".join(ch * 2 for ch in text)  # v1.06
+    if len(text) != 6:  # v1.06
+        return None  # v1.06
+    try:  # v1.06
+        red, green, blue = (int(text[k:k + 2], 16) for k in (0, 2, 4))  # v1.06
+    except ValueError:  # v1.06
+        return None  # v1.06
+    return "#000000" if (red * 299 + green * 587 + blue * 114) / 1000 >= 140 else "#FFFFFF"  # v1.06
+
+
 def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None,
                check_cols: set | None = None, max_col: int | None = None,
                tooltip_cols: set | None = None, test_buttons: dict | None = None,  # v1.01
@@ -63,6 +78,7 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
                # display_cols: dict | None = None  # {Spaltenindex: Funktion Wert -> Anzeigetext}: die Zelle wird uebersetzt angezeigt, gespeichert bleibt der Wert (neutrale Tokens)  # v1.04 (entfallen)
                display_cols: dict | None = None,  # {Spaltenindex: Funktion Wert -> Anzeigetext}: die Zelle wird uebersetzt angezeigt, gespeichert bleibt der Wert (neutrale Tokens)  # v1.04
                display_cells: dict | None = None  # {(Zeile, Spalte): Anzeigetext} (0-basiert): einzelne Zellen uebersetzt anzeigen (Spaltenkoepfe mit Tooltip, Namensspalte)  # v1.04
+               ,bold_colored: bool = False  # v1.06: Schrift in eingefaerbten Zellen fett
                ) -> tuple[list[dict], list[dict], list[dict], dict]:
     """Liefert (columnDefs, rowData, pinnedTopRowData, info).
 
@@ -159,8 +175,13 @@ def build_grid(sheet, icons: dict | None = None, no_edit_cols: set | None = None
                 style = {}
                 if hl.bg:
                     style["backgroundColor"] = hl.bg
-                if hl.fg:
-                    style["color"] = hl.fg
+                # if hl.fg:  # v1.06 (ersetzt)
+                    # style["color"] = hl.fg  # v1.06 (ersetzt)
+                fg = hl.fg or (contrast_color(hl.bg) if hl.bg else None)  # v1.06: ohne eigene Schriftfarbe die zur Hintergrundfarbe passende (schwarz/weiss)
+                if fg:  # v1.06
+                    style["color"] = fg  # v1.06
+                if bold_colored and hl.bg:  # v1.06
+                    style["fontWeight"] = "bold"  # v1.06
                 st[f"c{c}"] = style
         d["_st"] = st
         img = {f"c{c}": icons[(r, c)] for c in range(ncols) if (r, c) in icons}

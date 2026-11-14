@@ -1,9 +1,9 @@
-# Datei-Version: 1.06 (2026-11-09) - M09_Language.py
+# Datei-Version: 1.07 (2026-11-14) - M09_Language.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M09_Language.py
 # Path:           proggen/M09_Language.py
-# Version:        1.06
-# Last Update:    2026-11-09
+# Version:        1.07
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,6 +14,7 @@
 #   1.04  2026-10-26  Get_Language_Str: Fehlt der Text in der Tabelle Languages, wird im Katalog der Web-Oberflaeche (csv/Web_Languages.csv) nachgeschlagen
 #   1.05  2026-11-04  Kopfzeilen der Datenblaetter: die Uebersetzung wird ueber den TEXT der Ueberschrift gefunden, nicht ueber die Adresse in der Tabelle Languages (J2 ...): im Web sind die Spalten Icon und Name eingefuegt, die Adressen stimmten nicht mehr (Name, Beleuchtung ..., Start LedNr ... und ihre Tooltips blieben deutsch); Spalten ohne Eintrag (Name, LED/ Sound Kanal) aus dem Katalog der Web-Oberflaeche
 #   1.06  2026-11-09  Tooltips der Kopfzeilen (Text nach dem §): Ohne Eintrag in der Tabelle Languages wird der Text im Katalog der Web-Oberflaeche gesucht (Name, LED/ Sound Kanal, LNet, Selectrix); vorher blieben sie deutsch
+#   1.07  2026-11-14  Testrest entfernt: Zeilen 939/940 setzten den Namen 'Pico Config' fuer Pins LED Bus, LED Nummer definieren, NextLED, Reserve LED (Meldung Tester Win11)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -936,8 +937,8 @@ def __Display_Name(Config, Lang):  # v1.03
                 name = M09SM.Get_Language_Text(LibMacRow, M02.SM_LName_COL, Lang)  # v1.03
                 if name == '':  # v1.03
                     name = PG.ThisWorkbook.Sheets(M02.LIBMACROS_SH).Cells(LibMacRow, M02.SM_Name__COL)  # v1.03
-            elif str(Config).startswith('//'):  # v1.03
-                name = 'Pico Config'  # v1.03
+            # elif str(Config).startswith('//'):  # v1.03 (entfallen v1.07)
+                # name = 'Pico Config'  # v1.03 (entfallen v1.07: Testrest, setzte bei Pins LED Bus, LED Nummer, NextLED, Reserve LED nach dem PGF-Import den Namen Pico Config)
             elif 'Pattern' in str(Config):  # v1.03
                 name = Get_Language_Str('Muster') + ' Pattern_Configurator'  # v1.03
         except Exception:  # v1.03

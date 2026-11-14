@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-11-12) - web_form_firmware_download.py
+# Datei-Version: 1.02 (2026-11-14) - web_form_firmware_download.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_firmware_download.py
 # Path:           _web/web_form_firmware_download.py
-# Version:        1.01
-# Last Update:    2026-11-12
+# Version:        1.02
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-11-12  Neu: Dialog Firmware Herunterladen (UserForm_FirmwareDownload, M34_FirmwareDownload und UserForm_Worker des Excel-Programms 3.5.0L3)
 #   1.01  2026-11-12  Der ausgewaehlte Eintrag im Baum ist gelb hinterlegt (vorher wechselte nur die Schriftfarbe von Schwarz nach Grau)
+#   1.02  2026-11-14  Dialog Firmware herunterladen: Herunterladen links, Abbrechen rechts
 # ----------------------------------------------------------------------------------------------
 
 """Dialog "Firmware Herunterladen" fuer den Raspberry Pi Pico im Browser.
@@ -241,8 +242,8 @@ async def firmware_download_async(folder: str, texts: dict, lang: str = "EN"):
                 if done:
                     dlg.submit(entry)
             with ui.row().classes("justify-end w-full"):
-                cancel_btn = ui.button(flow.t(T_CANCEL), on_click=lambda: dlg.submit(None)).props("flat")
-                ok_btn = ui.button(flow.t(T_DOWNLOAD), on_click=on_download).props("color=primary")
+                ok_btn = ui.button(flow.t(T_DOWNLOAD), on_click=on_download).props("color=primary").classes("mll-default")  # v1.02
+                cancel_btn = ui.button(flow.t(T_CANCEL), on_click=lambda: dlg.submit(None)).props("flat").classes("mll-cancel")  # v1.02
                 ok_btn.set_enabled(False)
     dlg.open()
     answer = await dlg

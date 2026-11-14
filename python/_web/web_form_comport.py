@@ -1,13 +1,15 @@
-# Datei-Version: 1.05 (2026-10-28) - web_form_comport.py
+# Datei-Version: 1.07 (2026-11-14) - web_form_comport.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_comport.py
 # Path:           _web/web_form_comport.py
-# Version:        1.05
-# Last Update:    2026-10-28
+# Version:        1.07
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.02  2026-10-15  Web-Ersatz fuer Select_COM_Port_Userform (Original, nicht erfasst)
+#   1.07  2026-11-14  'Andere Typen' anklickbar: Rueckfrage, Typwechsel (zuletzt benutzte Variante), Anschluss waehlen; Abbrechen stellt den alten Typ wieder her
+#   1.06  2026-11-14  Zeile 'Andere Typen: COM3(ESP32), COM5(Pico)' wie in Excel
 #   1.03  2026-10-21  Update_SpinButton: ohne offenen Dialog den Zeitgeber der blinkenden LEDs beenden (stand 10 Minuten lang auf COM6 und blockierte esptool)
 #   1.04  2026-10-26  Unbekannte Ports anzeigen ist unter Linux und macOS nur noch an, wenn kein bekannter Anschluss (zum Beispiel ttyUSB0) gefunden wird
 #   1.05  2026-10-28  neu angeschlossenes Geraet wird gewaehlt (0 = keine Vorgabe, Anschluss am Ende der Liste); Protokollzeile bei Aenderung der Anschlussliste
@@ -78,11 +80,12 @@ async def _comport_async(form, spec):
                     status = ui.label("").classes("text-grey-8").style("white-space: pre-line")
                     error = ui.label("").classes("text-red-8 text-bold").style("white-space: pre-line")
                     error.set_visibility(False)
-                    sel = chk = avail = None
+                    sel = chk = avail = other_box = None  # v1.07
                     if spec["show_port"]:
                         sel = ui.select(spec["ports"], value=spec["port"], label="COM Port").props("outlined dense").classes("w-80")
                         chk = ui.checkbox(spec["unknown_text"], value=spec["show_unknown"])
-                        avail = ui.label(spec["avail"]).classes("text-caption")
+                        avail = ui.label(spec["avail"]).classes("text-caption").style("white-space: pre-line")
+                        other_box = ui.row().classes("items-center gap-1 text-caption")  # v1.07: Andere Typen, anklickbar
                         ui.label(spec["hint"]).style("white-space: pre-line")
                 with ui.column().classes("items-end gap-2").style("min-width: 200px"):
                     if spec["red_hint"]:
@@ -103,7 +106,35 @@ async def _comport_async(form, spec):
             def spec_ports():
                 return (list(sel.options) if sel is not None else [],)
 
-            form._ui = {"loop": wd._bridge["loop"], "status": status, "error": error, "select": sel, "avail": avail}
+            async def on_pick(dev, typ):  # v1.07: Klick auf einen Anschluss anderen Typs: nachfragen, Typ wechseln, Anschluss waehlen
+                with wd._bridge["client"]:
+                    with ui.dialog().props("persistent") as d, ui.card():
+                        ui.label(spec["switch_text"].replace("%1", typ).replace("%2", dev)).style("white-space: pre-line")
+                        with ui.row().classes("justify-end w-full"):
+                            ui.button(spec["no_text"], on_click=lambda: d.submit(False)).props("outline")
+                            ui.button(spec["yes_text"], on_click=lambda: d.submit(True))
+                    yes = await d
+                    wd.safe_delete(d)
+                if yes and form._switch_type(typ):
+                    ports_, port_, avail_ = form._compute(dev)
+                    sel.set_options(ports_, value=dev if dev in ports_ else (port_ if port_ in ports_ else None))
+                    avail.set_text(avail_)
+                    render_other()
+
+            def render_other():  # v1.07
+                if other_box is None:
+                    return
+                other_box.clear()
+                items = getattr(form, "_other", [])
+                if not items:
+                    return
+                with other_box:
+                    ui.label(spec["other_text"])
+                    for dev, typ in items:
+                        ui.button("%s(%s)" % (dev, typ), on_click=lambda dev=dev, typ=typ: on_pick(dev, typ)).props("flat dense no-caps size=sm color=primary")
+
+            render_other()
+            form._ui = {"loop": wd._bridge["loop"], "status": status, "error": error, "select": sel, "avail": avail, "render_other": render_other}
             form.isInitialised = True
         res = await dlg
         form.isInitialised = False
@@ -137,6 +168,60 @@ def make_class(Base):
             except Exception:                                              # noqa: BLE001  # v1.04
                 logger.debug("Anschluesse konnten nicht gelesen werden", exc_info=True)  # v1.04
                 return True  # v1.04
+
+        # ------------------------------------------------------------ Typwechsel (v1.07)
+        _VARIANTS = {}                                                      # Typ -> zuletzt benutzte Build-Optionen (ohne WLAN-Varianten), gilt bis zum Neustart
+
+        def _read_buildopt(self):  # v1.07
+            v = P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL).Value
+            return "" if v is None else str(v)
+
+        def _write_buildopt(self, text):  # v1.07
+            P01.CellDict[M02.SH_VARS_ROW, M25.BUILDOP_COL] = text
+
+        def _remember_variant(self, buildopt):  # v1.07
+            if "WLAN" in buildopt:
+                return
+            if "rp2040" in buildopt:
+                typ = "Pico"
+            elif "esp32" in buildopt:
+                typ = "ESP32"
+            else:
+                for b in (M02.BOARD_NANO_OLD, M02.BOARD_NANO_FULL, M02.BOARD_NANO_NEW, M02.BOARD_UNO_NORM):
+                    if b in buildopt:
+                        WebSelectComPort._VARIANTS["Nano"] = b               # nur der Board-Teil, weitere Optionen bleiben beim Wechsel erhalten
+                        break
+                return
+            WebSelectComPort._VARIANTS[typ] = buildopt.replace(M02.AUTODETECT_STR, "").strip()
+
+        def _switch_type(self, typ):  # v1.07
+            """Zentralentyp wechseln (linker Arduino): zuletzt benutzte Variante des Typs, sonst die Standardvariante. True, wenn gewechselt wurde."""
+            try:
+                import proggen.M28_Diverse as M28
+                cur = self._read_buildopt()
+                self._remember_variant(cur)
+                default = {"Nano": M02.BOARD_NANO_NEW, "ESP32": M02.BOARD_ESP32, "Pico": M02.BOARD_PICO}.get(typ)
+                if default is None:
+                    return False
+                new = WebSelectComPort._VARIANTS.get(typ) or default
+                if typ == "Nano":
+                    if M28.Get_Old_Board(True) == "":
+                        self._write_buildopt(new)
+                    else:
+                        M28.Change_Board_Typ(True, new)
+                else:
+                    self._write_buildopt(new)                               # ESP32 und Pico: die Build-Optionen ersetzen (Autodetect gibt es dort nicht)
+                try:
+                    import mlpyproggen.Prog_Generator as PG
+                    if PG.global_controller.is_connection_open():
+                        PG.global_controller.disconnect()                   # wie beim Wechsel in den Optionen
+                except Exception:                                           # noqa: BLE001
+                    logger.debug("Trennen beim Typwechsel fehlgeschlagen", exc_info=True)
+                logger.info("Port-Auswahl: Zentralentyp von %r auf %s gewechselt (%r)", cur, typ, self._read_buildopt())
+                return True
+            except Exception:                                               # noqa: BLE001
+                logger.exception("Typwechsel in der Port-Auswahl fehlgeschlagen")
+                return False
 
         # ------------------------------------------------------------ Aktualisierung (auch aus dem Zeitgeber-Thread)
         def _compute(self, DefaultPort):
@@ -177,7 +262,12 @@ def make_class(Base):
                 except Exception:                                           # noqa: BLE001  # v1.05
                     logger.debug("Anschlussliste nicht protokolliert", exc_info=True)  # v1.05
             ns["OldL_ComPorts"] = LocalComPorts
-            return LocalComPorts, port, M30.DelLast("".join(p + " " for p in LocalComPorts)) if LocalComPorts else ""
+            avail_txt = M30.DelLast("".join(p + " " for p in LocalComPorts)) if LocalComPorts else ""
+            try:                                                            # v1.06/v1.07: "Andere Typen" als anklickbare Liste (Anschluss, Typ)
+                self._other = M07.Other_Type_Port_List()
+            except Exception:                                               # noqa: BLE001
+                self._other = []
+            return LocalComPorts, port, avail_txt
 
         def Update_SpinButton(self, DefaultPort):
             if not getattr(self, "IsActive", False):  # v1.03
@@ -196,6 +286,7 @@ def make_class(Base):
                     sel = ui_["select"]
                     sel.set_options(ports, value=port if port in ports else None)
                     ui_["avail"].set_text(avail)
+                    ui_["render_other"]()  # v1.07
                 ui_["loop"].call_soon_threadsafe(apply)
             if self._sel_index != self._old_spin:
                 self._old_spin = self._sel_index
@@ -256,16 +347,27 @@ def make_class(Base):
             ns["Pressed_Button"] = 0
             ports, port, avail = [], "", ""
             self.isInitialised = False
+            self._other = []  # v1.07
+            self._orig_buildopt = None  # v1.07: Build-Optionen beim Oeffnen, fuer 'Abbrechen' nach einem Typwechsel
+            if Show_ComPort and not wlan_device:  # v1.07
+                self._orig_buildopt = self._read_buildopt()
+                self._remember_variant(self._orig_buildopt)
             if Show_ComPort:
                 ports, port, avail = self._compute(ComPort_IO)
             spec = {"title": Title, "text": Text, "red_hint": Red_Hint, "image": image, "show_port": Show_ComPort,
                     "ports": ports, "port": port if port in ports else None, "avail": avail,
                     "unknown_text": M09.Get_Language_Str(info["unknown"] or "Unbekante Ports anzeigen"),
-                    "show_unknown": self._show_unknown, "hint": hint, "buttons": buttons}
+                    "show_unknown": self._show_unknown, "hint": hint, "buttons": buttons,
+                    "other_text": M09.Get_Language_Str("Andere Typen:"),
+                    "switch_text": M09.Get_Language_Str("Zentrale auf %1 umstellen und %2 verwenden?"),
+                    "yes_text": M09.Get_Language_Str("Ja"), "no_text": M09.Get_Language_Str("Nein")}  # v1.07
             self.IsActive = True
             pressed = wd.call_in_loop(_comport_async, self, spec, default=2)
             self.IsActive = False
             M07.CheckCOMPort = " "
+            if pressed == 2 and self._orig_buildopt is not None and self._read_buildopt() != self._orig_buildopt:  # v1.07: Abbrechen macht den Typwechsel rueckgaengig
+                self._write_buildopt(self._orig_buildopt)
+                logger.info("Typwechsel in der Port-Auswahl durch Abbrechen rueckgaengig gemacht")
             ns["Pressed_Button"] = pressed
             if Show_ComPort and M30.isInitialised(ns["LocalComPorts"]):
                 ComPort_IO = ns["LocalComPorts"][max(0, min(self.Com_Port_No, len(ns["LocalComPorts"]) - 1))]

@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-11-09) - web_serial.py
+# Datei-Version: 1.06 (2026-11-13) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.05
-# Last Update:    2026-11-09
+# Version:        1.06
+# Last Update:    2026-11-13
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,7 @@
 #   1.03  2026-10-21  rx_listeners: Funktionen, die jede Zeile vom Arduino bekommen (Rueckmeldung des Z21 Simulators)
 #   1.04  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 #   1.05  2026-11-09  Der Verbindungsstatus wird uebersetzt (Nicht Verbunden, Verbunden <Port> - DIRECT/EFFECT Mode)
+#   1.06  2026-11-13  Mit ARDUINO verbinden: DTR und RTS werden vor dem Oeffnen ausgeschaltet (der Nano wurde beim Verbinden zurueckgesetzt: das verzoegerte den Verbindungsaufbau und unterbrach die Anlagensteuerung); der Pico behaelt DTR und RTS an (Excel: 'pico serial USB port needs DTR to be on'); _open_serial, _board_needs_dtr
 # ----------------------------------------------------------------------------------------------
 """Serielle Verbindung zum Arduino/Pico ohne Tk (Mixin fuer HeadlessAppController).
 
@@ -483,6 +484,33 @@ class SerialMixin:
     def is_connection_open(self):
         return bool(self.arduino and getattr(self.arduino, "is_open", False))
 
+    def _board_needs_dtr(self) -> bool:  # v1.06
+        """Braucht der Anschluss DTR (und RTS) an? Nur der Pico: sein serieller USB-Anschluss sendet nur mit DTR (Excel-Programm M07_COM_Port: 'pico serial USB port needs DTR to be on').
+        Alle anderen (Nano, Uno, ESP32) werden von DTR zurueckgesetzt. Unbekannter Typ: wie bisher (an)."""  # v1.06
+        try:  # v1.06
+            import proggen.M02_Public as M02  # v1.06
+            import proggen.M02a_Public as M02a  # v1.06
+            return M02a.Get_BoardTyp() == M02.HT_PICO  # v1.06
+        except Exception:                                          # noqa: BLE001  # v1.06
+            logger.debug("Board-Typ unbekannt: DTR bleibt an", exc_info=True)  # v1.06
+            return True  # v1.06
+
+    def _open_serial(self, serial_module, port):  # v1.06
+        """Serielle Verbindung oeffnen: erst die Eigenschaften setzen, DTR und RTS (ausser beim Pico) AUSschalten, dann open(). Beim klassischen serial.Serial(port, ...) steigt DTR
+        beim Oeffnen und setzt den Nano zurueck (Rueckmeldung des Excel-Entwicklers: Verbinden loest einen Reset aus, das verzoegert den Aufbau und unterbricht die Anlagensteuerung)."""  # v1.06
+        ser = serial_module.Serial()  # v1.06: ohne Port, noch nicht geoeffnet
+        ser.port = port  # v1.06
+        ser.baudrate = 115200  # v1.06
+        ser.timeout = 2  # v1.06
+        ser.parity = serial_module.PARITY_NONE  # v1.06
+        ser.stopbits = serial_module.STOPBITS_ONE  # v1.06
+        ser.bytesize = serial_module.EIGHTBITS  # v1.06
+        if not self._board_needs_dtr():  # v1.06
+            ser.dtr = False  # v1.06
+            ser.rts = False  # v1.06
+        ser.open()  # v1.06
+        return ser  # v1.06
+
     def connect_if_not_connected(self, port=None):
         if self.is_connection_open():
             return True
@@ -524,8 +552,9 @@ class SerialMixin:
         try:
             import serial
             self.ARDUINO_status = "Connecting"
-            self.arduino = serial.Serial(port, baudrate=115200, timeout=2, parity=serial.PARITY_NONE,
-                                         stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)
+            # self.arduino = serial.Serial(port, baudrate=115200, timeout=2, parity=serial.PARITY_NONE,  # v1.06 (entfallen: oeffnete mit DTR an: Reset des Nano)
+            #                              stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)  # v1.06 (entfallen)
+            self.arduino = self._open_serial(serial, port)  # v1.06
         except BaseException as e:                        # noqa: BLE001
             logger.info("Port %s nicht zu oeffnen: %s", port, e)
             macro = self.MacroDef.data.get("StartPage", {}) if getattr(self, "MacroDef", None) else {}

@@ -1,9 +1,9 @@
-# Datei-Version: 1.17 (2026-11-12) - M08_ARDUINO.py
+# Datei-Version: 1.18 (2026-11-14) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.17
-# Last Update:    2026-11-12
+# Version:        1.18
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -25,6 +25,7 @@
 #   1.15  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26); Pruefung des gewaehlten Anschlusses mit dem Board-Typ des Blatts (Check_If_Port_is_Available(_And_Get_Name)(Port, Board-Typ) wie im Excel-Programm)
 #   1.16  2026-11-12  Excel-Programm 3.5.0L3: platformio.ini: die Bibliothek MobaLedLib wird mit symlink:// verknuepft statt kopiert (file://), wenn der Rechner symbolische Verknuepfungen erlaubt (Lib_Link_Scheme, sonst wie bisher file://); Write_PIO_Extension einmal im Abschnitt [env] statt in jedem Abschnitt (damit auch fuer den Pico); WriteGenButtonReleaseDefine: Text plus Zahl (TypeError bei GEN_BUTTON_RELEASE_COM 2 oder 3) behoben
 #   1.17  2026-11-12  Einstellung 'Test ARDUINO Programm Creation' (ARDUINOTest): Die Fragen nach jedem Schritt kommen jetzt als Web-Dialog (P01.MsgBox) statt tk.messagebox (ohne Tk lieferte askyesno immer Nein: 'Headerfileerstellung abgebrochen - Die Headerdatei wurde nicht geschrieben', Windows 11, Log des Testers)
+#   1.18  2026-11-14  Dialog 'Fehler bei der Ueberpruefung des angeschlossenen Arduino': Knoepfe Suchen / Weiter / Abbrechen (P01.MsgBoxLabelled), Text angepasst
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -2143,8 +2144,16 @@ def Check_If_Arduino_could_be_programmed_and_set_Board_type(ComPortColumn, Build
             else:
                 Msg = M09.Get_Language_Str('Fehler: Der COM Port #1# wird bereits von einem anderen Programm benutzt.' + vbCr + 'Das kann z.B. der serielle Monitor der Arduino IDE oder das Farbtestprogramm sein.' + vbCr + vbCr + 'Das entsprechende Programm muss geschlossen werden.')
             Msg = Replace(Msg, "#3#", str(BaudRate))  # v1.14: Fehlercode der Prüfung
-            Msg = Replace(Replace(Msg, "#1#", ComPort), "#2#", GetArduName()) + vbCr + vbCr + Replace(M09.Get_Language_Str("Wollen sie es noch mal mit einem anderen #2# oder einem anderen COM Port versuchen?"), "#2#", GetArduName()) + vbCr + vbCr + Replace(M09.Get_Language_Str("Mit 'Nein' wird die Meldung ignoriert und versucht den #2# trotzdem zu programmieren."), "#2#", GetArduName())
-            select_variable_ = P01.MsgBox(Msg, vbYesNoCancel + vbQuestion, Replace(M09.Get_Language_Str("Fehler bei der Überprüfung des angeschlossenen #2#"), "#2#", GetArduName()))
+            Msg = Replace(Replace(Msg, "#1#", ComPort), "#2#", GetArduName())  # v1.18
+            Title_ = Replace(M09.Get_Language_Str("Fehler bei der Überprüfung des angeschlossenen #2#"), "#2#", GetArduName())  # v1.18
+            if getattr(P01, "MsgBoxLabelled", None) is not None:  # v1.18: Web: beschriftete Knoepfe Suchen / Weiter / Abbrechen
+                Msg = Msg + vbCr + vbCr + Replace(M09.Get_Language_Str("Mit 'Suchen' wird mit einem anderen #2# oder einem anderen COM Port noch einmal gesucht."), "#2#", GetArduName()) + vbCr + Replace(M09.Get_Language_Str("Mit 'Weiter' wird die Meldung ignoriert und versucht den #2# trotzdem zu programmieren."), "#2#", GetArduName()) + vbCr + M09.Get_Language_Str("Mit 'Abbrechen' wird der Vorgang beendet.")  # v1.18
+                select_variable_ = P01.MsgBoxLabelled(Msg, vbYesNoCancel + vbQuestion, Title_, {vbYes: M09.Get_Language_Str("Suchen"), vbNo: M09.Get_Language_Str("Weiter"), vbCancel: M09.Get_Language_Str("Abbrechen")})  # v1.18
+            else:  # v1.18 (Rueckfall: Excel-Fassung mit Ja / Nein / Abbrechen)
+                Msg = Msg + vbCr + vbCr + Replace(M09.Get_Language_Str("Wollen sie es noch mal mit einem anderen #2# oder einem anderen COM Port versuchen?"), "#2#", GetArduName()) + vbCr + Replace(M09.Get_Language_Str("Mit 'Nein' wird die Meldung ignoriert und versucht den #2# trotzdem zu programmieren."), "#2#", GetArduName())  # v1.18
+                select_variable_ = P01.MsgBox(Msg, vbYesNoCancel + vbQuestion, Title_)  # v1.18
+            # Msg = Replace(Replace(Msg, "#1#", ComPort), "#2#", GetArduName()) + vbCr + vbCr + Replace(M09.Get_Language_Str("Wollen sie es noch mal mit einem anderen #2# oder einem anderen COM Port versuchen?"), "#2#", GetArduName()) + vbCr + vbCr + Replace(M09.Get_Language_Str("Mit 'Nein' wird die Meldung ignoriert und versucht den #2# trotzdem zu programmieren."), "#2#", GetArduName())  # v1.18 (entfallen: aufgeteilt)
+            # select_variable_ = P01.MsgBox(Msg, vbYesNoCancel + vbQuestion, Replace(M09.Get_Language_Str("Fehler bei der Überprüfung des angeschlossenen #2#"), "#2#", GetArduName()))  # v1.18 (entfallen: aufgeteilt)
             if (select_variable_ == vbYes):
                 Retry = True
                 #P01.Cells(M02.SH_VARS_ROW, ComPortColumn).Value = - P01.val(P01.Cells(M02.SH_VARS_ROW, ComPortColumn).Value)

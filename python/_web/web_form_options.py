@@ -1,9 +1,9 @@
-# Datei-Version: 1.21 (2026-11-12) - web_form_options.py
+# Datei-Version: 1.23 (2026-11-13) - web_form_options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_options.py
 # Path:           _web/web_form_options.py
-# Version:        1.21
-# Last Update:    2026-11-12
+# Version:        1.23
+# Last Update:    2026-11-13
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,8 @@
 #   1.19  2026-11-12  Excel-Programm 3.5.0L3: Firmware installieren oeffnet die Auswahl auch ohne Firmware-Dateien; der Knopf Firmware laden holt Firmware aus dem Internet (web_form_firmware_download, headless_firmware_dl) und waehlt sie danach vor
 #   1.20  2026-11-12  Reiter LED ARDUINO: der Kommentar zum Knopf Firmware installieren steht unter dem Knopf (schmal) statt daneben; die Auswahl des Boards behaelt ihre Breite (keine umbrochenen Beschriftungen) und rutscht auf schmalen Bildschirmen unter die Knoepfe
 #   1.21  2026-11-12  Knopf im Dialog Firmware installieren: 'Firmware herunterladen' (vorher 'Firmware laden')
+#   1.22  2026-11-13  Schreibfehler im Titel: 'Optionen und spezielle Funktionen' (vorher 'Funktionien')
+#   1.23  2026-11-13  Wechsel des Arduino-Typs (Optionen): eine bestehende serielle Verbindung wird getrennt und der gewaehlte COM Port zurueckgesetzt (_web_board_changed), damit beim naechsten Mal die Port-Erkennung startet ohne die Meldung 'Es ist kein ... angeschlossen' (Rueckmeldung des Excel-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
@@ -420,7 +422,8 @@ def make_class(Base):
                     # "ide_only": not wlan_inst})                      # der schnelle Bootloader braucht ArduinoISP und avrdude der IDE; der Knopf fuer den WLAN-Pico nur eine Webseite  # v1.17 (entfallen)
                     "ide_only": False})                      # der schnelle Bootloader braucht ArduinoISP und avrdude der IDE; der Knopf fuer den WLAN-Pico nur eine Webseite  # v1.17
             lower = [dict(buttons[h][0], handler=h) for h in ("__HardiForum_Button_Click", "__Close_Button_Click") if h in buttons]
-            return {"title": M09.Get_Language_Str("Optionen und spezielle Funktionien"), "tabs": tabs,
+            # return {"title": M09.Get_Language_Str("Optionen und spezielle Funktionien"), "tabs": tabs,  # v1.22 (entfallen: Schreibfehler)
+            return {"title": M09.Get_Language_Str("Optionen und spezielle Funktionen"), "tabs": tabs,  # v1.22
                     "pages": pages, "lower": lower}
 
         def _web_ensure_text(self, left):
@@ -450,8 +453,25 @@ def make_class(Base):
                 getattr(self, PFX + "__Autodetect_Typ_R_CheckBox_Click")()
             if vals["L"] != initial["L"] and self.rb_res["_L"].get():
                 self.Change_Board(True, self.boardlist[self.rb_res["_L"].get()])
+                self._web_board_changed(True)  # v1.23
             if vals["R"] != initial["R"] and self.rb_res["_R"].get():
                 self.Change_Board(False, self.boardlist[self.rb_res["_R"].get()])
+                self._web_board_changed(False)  # v1.23
+
+        def _web_board_changed(self, left):  # v1.23
+            """Der Arduino-Typ wurde gewechselt: eine bestehende serielle Verbindung trennen und den gewaehlten COM Port zuruecksetzen. Beim naechsten Setup uebertragen startet dann
+            die Port-Erkennung (port_is_available(' ') ist falsch) und es kommt nicht die Meldung 'Es ist kein ... an COM ... angeschlossen'."""  # v1.23
+            try:  # v1.23
+                import mlpyproggen.Prog_Generator as PG  # v1.23
+                if PG.global_controller.is_connection_open():  # v1.23
+                    PG.global_controller.disconnect()  # v1.23
+            except Exception:                                  # noqa: BLE001  # v1.23
+                logger.debug("Trennen beim Typwechsel fehlgeschlagen", exc_info=True)  # v1.23
+            try:  # v1.23
+                P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL if left else M25.COMPrtR_COL).Value = " "  # v1.23
+            except Exception:                                  # noqa: BLE001  # v1.23
+                logger.debug("COM Port nicht zurueckgesetzt", exc_info=True)  # v1.23
+            logger.info("Optionen: Arduino-Typ links/rechts gewechselt (%s): Verbindung getrennt, COM Port zurueckgesetzt", "links" if left else "rechts")  # v1.23
 
         def _web_ide_libs_question(self):  # v1.07
             """Zurueck auf die ARDUINO IDE: Gibt es sie, und sollen die Bibliotheken und Boards jetzt geprueft werden (beim Start war das wegen PlatformIO entfallen)?"""  # v1.07
