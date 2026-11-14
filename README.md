@@ -1,6 +1,6 @@
-# WebMLL 3.23 mit ESP32-WLAN und OTA
+# WebMLL 3.36 mit ESP32-WLAN und OTA
 
-Dieser Fork von [haroldlinke/WebMLL](https://github.com/haroldlinke/WebMLL) verbindet die Upstream-Version 3.23 mit den hier entwickelten Erweiterungen. Das Installationsverzeichnis und die Startskripte sind in der [Installationsanleitung](python/install/ANLEITUNG_Installation.md) beschrieben.
+Dieser Fork von [haroldlinke/WebMLL](https://github.com/haroldlinke/WebMLL) verbindet die Upstream-Version 3.36 mit den hier entwickelten Erweiterungen. Das Installationsverzeichnis und die Startskripte sind in der [Installationsanleitung](python/install/ANLEITUNG_Installation.md) beschrieben.
 
 ## ESP32 WROOM einrichten
 
@@ -38,6 +38,12 @@ Modus 4 zeigt WLAN-Status, IP-Adresse, LDR und MobaLedLib-Zeit in vier zentriert
 - Per Rechtsklick auf eine Schrittzelle und **LED-Farbe wählen** werden im RGB-Modus die drei Kanalwerte für den gewählten Schritt gesetzt. In Spalte E lässt sich der Schritt im Dialog auswählen oder **Nur Zeilenfarbe** anwenden.
 - DCC-Adressspannen werden aus der Zahl der Funktionen berechnet und in die Tabelle geschrieben. Sechs Rot/Grün-Funktionen ab Adresse 2 ergeben `2 - 4`. Die Testtasten nutzen eine bereits aktive WLAN-Verbindung.
 
+## Neuerungen aus WebMLL 3.36
+
+- Im Programm-Generator gibt es eine Suche über das aktuelle oder alle Blätter mit **Strg+F**.
+- Die USB-Portauswahl filtert nach Zentralentyp. Unter **Andere Typen** lässt sich nach Bestätigung zum passenden Typ wechseln.
+- Farbtest, Servo, DM Servo und Sound verbinden sich beim Öffnen automatisch, wenn noch keine Geräteverbindung besteht.
+
 ## Geprüfter Stand
 
-Für den zusammengeführten 3.23-Stand wurden die Python-Syntax aller beim Merge geänderten Dateien, der Start der Weboberfläche und ein PlatformIO-Build für den ESP32 mit OLED-Modus 4 geprüft. Ein erneuter OTA-Upload und ein vollständiger Hardwaretest mit 3.23 stehen aus.
+Die Installationsprüfung unter Windows und die Python-Syntaxprüfung waren für den zusammengeführten Stand 3.36 erfolgreich. OTA-Upload und Wechsel zwischen Direkt- und Effektmodus am ESP32 wurden für diesen Stand noch nicht am Gerät geprüft.
