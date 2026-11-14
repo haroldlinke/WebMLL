@@ -169,6 +169,42 @@ public:
       dsp->drawStr(10, 40, timeStr);	// 30.03.25
       dsp->sendBuffer();	
     }
+#elif UI_MLLTime == 4
+    const uint32_t now = millis();
+    if (update || lastUIUpdate == 0 || now - lastUIUpdate >= 500)
+    {
+      update = false;
+      lastUIUpdate = now;
+      const uint16_t offset = uint32_t(Darkness) * 720 / 255;
+      const unsigned minutes = (DayState <= SunSet ? 720 + offset : 720 - offset) % 1440;
+      char line[32];
+      dsp->clearBuffer();
+      dsp->setFont(u8g2_font_7x13_tf);
+      dsp->setFontPosTop();
+      const auto center = [this](uint8_t y, const char *text) {
+        const int x = (int(dsp->getDisplayWidth()) - int(dsp->getStrWidth(text))) / 2;
+        dsp->drawStr(x > 0 ? x : 0, y, text);
+      };
+#ifdef USE_WIFI
+      center(3, connected ? "WLAN verbunden" : "WLAN getrennt");
+      center(18, ipAddress.length() ? ipAddress.c_str() : "IP: -");
+#else
+      center(3, "WLAN deaktiviert");
+      center(18, "IP: -");
+#endif
+#ifdef READ_LDR
+      snprintf(line, sizeof(line), "LDR: %d  D: %d", int(Get_Act_Darkness()), int(Darkness));
+#else
+      snprintf(line, sizeof(line), "LDR: aus  D: %d", int(Darkness));
+#endif
+      center(33, line);
+      if (DayState == Unknown)
+        snprintf(line, sizeof(line), "MLL-Zeit: --:--");
+      else
+        snprintf(line, sizeof(line), "MLL-Zeit: %02u:%02u", minutes / 60, minutes % 60);
+      center(48, line);
+      dsp->sendBuffer();
+    }
 // Peter Ende
 #else
     if (delayCount!=-1)     // display of fault count is on?

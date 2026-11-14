@@ -808,9 +808,9 @@ def Complete_Addr_Column_with_InCnt(r):
                         EndAddr = Addr + InCnt - 1
             # if Addr != EndAddr and EndAddr != 0 or  ( InCnt > 1 and EBit_Str != '' ) :  # v1.03 (entfallen)
             if ( Addr != EndAddr and EndAddr != 0 or  ( InCnt > 1 and EBit_Str != '' ) ) and P01.val(Addr) > 0 :      # 08.12.25: Juergen address must be at least 1  # v1.03
-                Target = str(Addr) + SBit_Str + ' - ' + str(EndAddr) + EBit_Str
+                Target.Value = str(Addr) + SBit_Str + ' - ' + str(EndAddr) + EBit_Str
             else:
-                Target = Addr
+                Target.Value = Addr
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Target - ByVal 
 def Global_Worksheet_SelectionChange(Target):

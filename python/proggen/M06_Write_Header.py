@@ -1696,6 +1696,15 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     VBFiles.writeText(fp, '// *** Configuration array which defines the behavior of the LEDs ***', '\n')
     VBFiles.writeText(fp, 'MobaLedLib_Configuration()', '\n')
     VBFiles.writeText(fp, '  {', '\n')
+    import re
+    # Browser cell editing can collapse the ESP32 display block onto one line.
+    display_block = (r"(?m)^([ \t]*)#ifdef[ \t]+ESP32[ \t]+"
+                     r"#define[ \t]+USE_ESP32_EXTENSIONS[ \t]+"
+                     r"#define[ \t]+USE_UI[ \t]+"
+                     r"#define[ \t]+UI_MLLTime[ \t]+([0-4])[ \t]*#endif\b")
+    ConfigTxt = re.sub(display_block,
+                       r"\1#ifdef ESP32\n\1#define USE_ESP32_EXTENSIONS\n\1#define USE_UI\n"
+                       r"\1#define UI_MLLTime \2\n\1#endif", ConfigTxt)
     VBFiles.writeText(fp, ConfigTxt, '\n')
     VBFiles.writeText(fp, '  EndCfg // End of the configuration', '\n')
     VBFiles.writeText(fp, '  };', '\n')

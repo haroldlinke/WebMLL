@@ -975,7 +975,7 @@ def cell_renderer_js(bridge_id: int) -> str:
             # "if (params.value) box.append(' '); } "  # v2.77 (entfallen)
             "} "  # v2.77
             "const v = (params.valueFormatted !== undefined && params.valueFormatted !== null) ? params.valueFormatted : params.value; "
-            "if (v !== undefined && v !== null) box.append(String(v)); "
+            "if (v !== undefined && v !== null) { box.style.whiteSpace = 'pre-line'; box.append(String(v)); } "
             "const tb = params.data && params.data._tb && params.data._tb[params.colDef.field]; "
             "if (tb) { box.style.display = 'flex'; box.style.alignItems = 'center'; "
             "const holder = document.createElement('span'); holder.style.marginLeft = tb[0].lead ? 'auto' : '0'; holder.style.whiteSpace = 'nowrap'; "
@@ -1559,7 +1559,7 @@ def font_css(ctrl) -> str:
             "--mll-small-scale:%.3f;--mll-grid-font:'%s';}" % (s["title"], s["label"], s["input"], s["grid"], s["small"], s["name"]))
 
 JS_ROW_HEIGHT = ("params => Math.round((params.node.rowPinned ? "
-                 "(params.data && params.data._r === 0 ? 18 : 46) : 22) * (window.mllGridScale || 1))")
+                 "(params.data && params.data._r === 0 ? 18 : 46) : (22 * (params.data?._lines || 1))) * (window.mllGridScale || 1))")
 
 JS_DBLCLICK = """
 <script>
@@ -3089,6 +3089,15 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                                                      display_cols=({typ_column(ws): M09.Token_Display} if M09.CANONICAL_TOKENS and typ_column(ws) is not None else None),  # v2.14
                                                      display_cells=M09.Get_Display_Cells(ws),        # Spaltenkoepfe (mit Tooltip) und Namensspalte in der eingestellten Sprache  # v2.15
                                                      row_number_width=row_number_width(max_row_number, font_scales(ctrl)["grid"]))  # v1.96
+        if M28.Is_Data_Sheet(ws):
+            M25.Make_sure_that_Col_Variables_match(ws)
+            config_field = f"c{M25.Config__Col - 1}"
+            for column in column_defs:
+                if column.get("field") == config_field:
+                    column.update(cellEditor="agLargeTextCellEditor", cellEditorPopup=True,
+                                  cellEditorParams={"rows": 8, "cols": 65, "maxLength": 20000})
+            for row in rows:
+                row["_lines"] = len(str(row.get(config_field) or "").splitlines()) or 1
         t_build = time.perf_counter()  # v1.49
         if SHAPES_DEBUG:  # v1.51
             logger.info("SHAPES: show(%s): %s | Zeilen mit Testtasten %s | Zeilen mit Symbol %s", ws.Name, shapes_report(ws),  # v1.51
@@ -3149,6 +3158,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     grid.run_grid_method("setGridOption", "pinnedTopRowData", pinned)
                 if changed_rows:
                     grid.run_grid_method("applyTransaction", {"update": changed_rows})
+                    if any(r.get("_lines") != old_by_id[r["_r"]].get("_lines") for r in changed_rows):
+                        grid.run_grid_method("resetRowHeights")
                     refresh_cols = renderer_columns(changed_rows) | renderer_columns([old_by_id[r["_r"]] for r in changed_rows])  # v1.50
                     refresh_cols |= style_columns(old_rows, changed_rows)  # Farben, die sich geaendert haben (Zeilen faerben)  # v2.23
             else:                                          # Zeilen eingefuegt/geloescht/ausgeblendet: alle Zeilen austauschen
