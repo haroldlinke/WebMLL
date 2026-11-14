@@ -301,7 +301,6 @@ class PatternView:
             ui.button("Import von ProgGen", on_click=self.on_import).props("dense outline no-caps").tooltip("Makro aus einer Zeile des Programm Generators einlesen")  # v1.06
             ui.button("Optionen", on_click=self.on_options).props("dense outline no-caps").tooltip("Beispiele laden, Seiten speichern und löschen")  # v1.07
             ui.button("Bild einfügen", on_click=self.on_insert_picture).props("dense outline no-caps").tooltip("PNG- oder JPG-Bild unter der Tabelle einfügen")  # v1.12
-            self.rgb = ui.checkbox("RGB LED", on_change=self.on_rgb)  # v1.01
             self.info = ui.label("").classes("text-caption text-grey-8")
 
         # text = page.info_text()  # v1.21 (entfallen)
@@ -353,6 +352,7 @@ class PatternView:
             }, **grid_args()).classes("w-full").style("position: absolute; top: 0; left: 0; right: 0; bottom: 0; height: 100%")  # v1.02
         self.grid.on("cellClicked", self.on_cell_clicked)  # v1.01
         self.grid.on("cellValueChanged", self.on_cell_changed)  # v1.01
+        ui.on("mll_pattern_rgb", self.on_rgb)
         ui.on("mll_pcell_op", self.on_cell_op)  # v1.03
         ui.on("mll_pcell_dbl", self.on_cell_dbl)  # v1.10
         with self.grid_wrap:                              # Kontextmenue der Zellen (wie im Programmgenerator)  # v1.03
@@ -732,18 +732,8 @@ class PatternView:
     async def on_del_columns(self):  # v1.01
         await self.action(self.page.del_columns)  # v1.01
 
-    async def on_rgb(self, e):  # v1.01
-        if self._rgb_guard:  # v1.01
-            return  # v1.01
-        await self.action(lambda ws: self.page.set_rgb_led(ws, e.value))  # v1.01
-
-    def sync_rgb(self):  # v1.01
-        control = getattr(self.ws, "RGB_LED_CheckBox", None)  # v1.01
-        self._rgb_guard = True  # v1.01
-        try:  # v1.01
-            self.rgb.set_value(bool(control.Value) if control is not None else False)  # v1.01
-        finally:  # v1.01
-            self._rgb_guard = False  # v1.01
+    async def on_rgb(self, e):
+        await self.action(lambda ws: self.page.set_rgb_led(ws, bool(e.args["enabled"])))
 
     # ------------------------------------------------------------------ Blattreiter
     def show_hidden(self) -> bool:
@@ -867,6 +857,24 @@ class PatternView:
         self.row_scale = row_px / ROW_PX  # v1.01
         column_defs, rows, pinned, meta = build_grid(ws.tksheet, no_edit_cols=self.page.protected_columns(ws.Name),  # v1.01
                                                      data_header=False, tooltips_in_cells=True)  # v1.01
+        for column in column_defs:
+            if column.get("field") == "c4":
+                column[":cellRenderer"] = """p => {
+                    if (p.data?._rgb_control === undefined) return p.value ?? '';
+                    const label = document.createElement('label');
+                    label.style.cssText = 'display:inline-flex;align-items:center;gap:6px;cursor:pointer';
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.checked = p.data._rgb_control;
+                    input.addEventListener('change', () => emitEvent('mll_pattern_rgb', {enabled: input.checked}));
+                    for (const type of ['click', 'dblclick', 'keydown'])
+                        label.addEventListener(type, e => e.stopPropagation());
+                    label.append(input, 'RGB LED');
+                    return label;
+                }"""
+                previous_editable = column.get("editable", True)
+                if previous_editable:
+                    column[":editable"] = "p => !window.mllPNoEdit && p.data?._rgb_control === undefined"
         right = self.page.right_aligned_columns(ws.Name)  # v1.02
         for c in column_defs:                              # Breiten gelten wie im Blatt (keine Anpassung an das Fenster, kein Mindestmass)  # v1.02
             c["suppressSizeToFit"] = True  # v1.02
@@ -892,6 +900,12 @@ class PatternView:
             row["_h"] = scaled_height(sheet.data_row_height(row["_r"]), self.row_scale) if has_heights else row_px  # v1.15
         led_count = self.page.led_row_count(ws)
         self.apply_design(ws, rows, led_count)
+        for row in rows:
+            if row["_r"] == DESIGN_GOTO_ROW - 2:
+                row["_h"] = min(row["_h"], max(52, row_px * 2))
+            elif row["_r"] == DESIGN_HEAD_ROW - 2:
+                row["_h"] = row_px + 4
+                row["_rgb_control"] = bool(ws.RGB_LED_CheckBox.Value)
         shapes = self.shapes_payload(ws)
         pictures = sorted((shape for shape in shapes if shape.get("kind") == "pic"),
                           key=lambda shape: (shape["x"], shape["y"]))
@@ -980,7 +994,6 @@ class PatternView:
             logger.debug("Zellen mit Dialog nicht ermittelt", exc_info=True)  # v1.10
             keys = []  # v1.10
         ui.run_javascript("window.mllPDlg = new Set(%s)" % json.dumps(keys))  # v1.10
-        self.sync_rgb()  # v1.01
         text = f"Blatt {ws.Name}: {meta['rows']} Zeilen"
         if meta["shown_rows"] != meta["rows"]:
             text += f", {meta['shown_rows']} sichtbar"
@@ -1053,17 +1066,17 @@ class PatternView:
                 mark = str(value(DESIGN_GOTO_ROW, col) or "").upper()
                 glyphs = []
                 if col == 5 or "S" in mark:
-                    glyphs.append(f'<text x="3" y="9" font-size="9">{start_number}</text>')
-                    glyphs.append('<path d="M10 5l11 13m-1-6 1 6-6-2" stroke="#20722b" fill="none"/>')
+                    glyphs.append(f'<text x="2" y="12" font-size="12">{start_number}</text>')
+                    glyphs.append('<path d="M10 10l14 19m-2-8 2 8-8-3" stroke="#20722b" stroke-width="1.7" fill="none"/>')
                     start_number += 1
                 if "E" in mark:
-                    glyphs.append('<path d="M34 18L46 5m-6 2 6-2-1 6" stroke="#a42727" fill="none"/>')
+                    glyphs.append('<path d="M31 29L47 10m-8 3 8-3-2 8" stroke="#a42727" stroke-width="1.7" fill="none"/>')
                 if glyphs:
-                    svg = '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="20">' + "".join(glyphs) + '</svg>'
+                    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 32">' + "".join(glyphs) + '</svg>'
                     style(DESIGN_GOTO_ROW - 1, col,
                           backgroundImage=f'url("data:image/svg+xml,{quote(svg, safe="")}")',
                           backgroundRepeat="no-repeat", backgroundPosition="center bottom",
-                          backgroundSize="100% 20px")
+                          backgroundSize="100% 32px")
         if "1" in display or "L" in display:
             from urllib.parse import quote
 
@@ -1074,7 +1087,8 @@ class PatternView:
                 not value(r, 4) and value(r + 1, 4) and not value(r + 2, 4)
                 for r in triples
             )
-            group = 3 if rgb or centered_labels else 1
+            saved_mode = (getattr(ws, "persistent_controls_dict", None) or {}).get("pattern_rgb")
+            group = 3 if (rgb or (saved_mode is None and centered_labels)) else 1
             bits = max(1, min(8, int(number(value(6, 4), 8))))
             low, high = (0, 255) if bits == 8 else (number(value(7, 4)), number(value(8, 4), 255))
             fade = str(value(11, 4) or "").upper() in {"1", "X"}
