@@ -976,6 +976,8 @@ class HeadlessPatternGeneratorPage:
         for shape in self.pictures_of(ws):  # v1.10
             try:  # v1.10
                 entries.append({"path": str(shape.Name), "left": float(shape.Left), "top": float(shape.Top), "width": float(shape.Width), "height": float(shape.Height)})  # v1.10
+                if getattr(shape, "pattern_step", None) is not None:
+                    entries[-1]["step"] = shape.pattern_step
             except (TypeError, ValueError):  # v1.10
                 continue  # v1.10
         if getattr(ws, "persistent_controls_dict", None) is None:  # v1.10
@@ -987,16 +989,18 @@ class HeadlessPatternGeneratorPage:
     def restore_pictures(self, ws):  # v1.10
         """Bilder nach dem Neustart wieder anlegen (sofern die Datei noch da ist)"""  # v1.10
         entries = (getattr(ws, "persistent_controls_dict", None) or {}).get("pcf_pictures") or []  # v1.10
-        have = {str(shape.Name) for shape in self.pictures_of(ws)}  # v1.10
+        have = {(str(shape.Name), float(shape.Left), float(shape.Top)) for shape in self.pictures_of(ws)}  # v1.10
         for entry in entries:  # v1.10
             path = entry.get("path")  # v1.10
-            if not path or path in have:  # v1.10
+            key = (path, entry["left"], entry["top"])
+            if not path or key in have:  # v1.10
                 continue  # v1.10
             if not os.path.exists(path):  # v1.10
                 logger.info("Bild %s fehlt (Blatt %s): nicht wiederhergestellt", path, ws.Name)  # v1.10
                 continue  # v1.10
-            ws.addPicture(path, entry["left"], entry["top"], entry["width"], entry["height"])  # v1.10
-            have.add(path)  # v1.10
+            shape = ws.addPicture(path, entry["left"], entry["top"], entry["width"], entry["height"])
+            shape.pattern_step = entry.get("step")  # v1.10
+            have.add(key)  # v1.10
 
     def restore_dynamic_rows(self):  # v1.12
         """Nach dem Neustart die Goto-Zeilen und die Zeilen des Spezial Modes neu bestimmen (wie Set_Defaults_for_Sheet nach dem Laden einer Datei): Das Blatt legt die versteckten Zeilen
@@ -1020,7 +1024,7 @@ class HeadlessPatternGeneratorPage:
             except Exception:                                                    # noqa: BLE001  # v1.10
                 logger.exception("Bilder des Blatts %s nicht wiederhergestellt", ws.Name)  # v1.10
 
-    def insert_picture(self, ws, source):  # v1.10
+    def insert_picture(self, ws, source, step=None):  # v1.10
         """Ein Bild (PNG oder JPG) unter der Tabelle einfuegen (wie M80.Load_New_Picture: an der Zelle B63, natuerliche Groesse). Die hochgeladene Datei ist
         nur eine Zwischendatei und wird in den Bilderordner kopiert. Rueckgabe: Dateiname"""
         extension = os.path.splitext(source)[1].lower()  # v1.10
@@ -1042,16 +1046,19 @@ class HeadlessPatternGeneratorPage:
             shutil.copy2(source, dest)  # v1.10
         with self.activated():  # v1.10
             ws.Activate()  # v1.10
-            cell = X02.Cells(63, 2)  # v1.10
+            cell = X02.Cells(63, 2 if step is None else PATTERN_COLUMN_FIRST + step)  # v1.10
             factor = float(X02.guifactor) * 0.75                                 # Pixel in Punkte, dann der Faktor der Oberflaeche (so legt Load_Picture sie an)  # v1.10
-            ws.addPicture(dest, float(cell.Left), float(cell.Top), width * factor, height * factor)  # v1.10
+            shape = ws.addPicture(dest, float(cell.Left), float(cell.Top), width * factor, height * factor)
+            shape.pattern_step = step  # v1.10
         self.sync_pictures(ws)  # v1.10
         return os.path.basename(dest)  # v1.10
 
-    def remove_pictures(self, ws):  # v1.10
+    def remove_pictures(self, ws, selected=None):  # v1.10
         """Alle Bilder des Blatts entfernen. Rueckgabe: Zahl der Bilder"""  # v1.10
         shapes = self.pictures_of(ws)  # v1.10
-        for shape in list(shapes):  # v1.10
+        if selected is not None:
+            shapes = [shape for shape in shapes if shape is selected]
+        for shape in shapes:  # v1.10
             ws.shapelist.remove(shape)  # v1.10
         self.sync_pictures(ws)  # v1.10
         return len(shapes)  # v1.10

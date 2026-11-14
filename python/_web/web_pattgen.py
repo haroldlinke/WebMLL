@@ -301,6 +301,7 @@ class PatternView:
             ui.button("Import von ProgGen", on_click=self.on_import).props("dense outline no-caps").tooltip("Makro aus einer Zeile des Programm Generators einlesen")  # v1.06
             ui.button("Optionen", on_click=self.on_options).props("dense outline no-caps").tooltip("Beispiele laden, Seiten speichern und löschen")  # v1.07
             ui.button("Bild einfügen", on_click=self.on_insert_picture).props("dense outline no-caps").tooltip("PNG- oder JPG-Bild unter der Tabelle einfügen")  # v1.12
+            ui.button("Bilder löschen", on_click=self.on_delete_picture).props("dense outline no-caps")
             self.info = ui.label("").classes("text-caption text-grey-8")
 
         # text = page.info_text()  # v1.21 (entfallen)
@@ -527,32 +528,60 @@ class PatternView:
         await self.action(lambda ws: self.page.run_cell_dialog(ws, r, c))  # v1.10
 
     async def on_insert_picture(self):  # v1.12
-        """Knopf Bild einfügen (wie Load_New_Picture): Bild hochladen, es erscheint unter der Tabelle (Zelle B63). Die Datei wird in den Bilderordner kopiert."""  # v1.12
+        ws = self.ws
+        steps = sum(1 for c in self.grid.options["columnDefs"]
+                    if not c.get("hide") and c.get("field", "").startswith("c")
+                    and c["field"][1:].isdigit() and int(c["field"][1:]) >= 5)
+        if not steps:
+            ui.notify("Keine Spalten verfügbar.", type="warning")
+            return
+        with ui.dialog() as dlg, ui.card():
+            ui.label("Wo soll das Bild unter der LED-Tabelle stehen?")
+            step = ui.number("Spalten-Nr.", value=min(2, steps), min=1, max=steps, step=1).props("precision=0")
+            with ui.row():
+                ui.button("Abbrechen", on_click=lambda: dlg.submit(None)).props("flat")
+                ui.button("Weiter zur Bildauswahl", on_click=lambda: dlg.submit(step.value))
+        value = await dlg
+        web_dialogs.safe_delete(dlg)
+        if value is None or self.ws is not ws:
+            return
+        if not 1 <= value <= steps or int(value) != value:
+            ui.notify(f"Bitte eine Spalten-Nr. von 1 bis {steps} eingeben.", type="warning")
+            return
         result = {}  # v1.12
 
         def fn(ws):  # v1.12
             path = web_dialogs.web_askopenfilename(title="Bild einfügen (PNG oder JPG)", filetypes=[("Bilder", "*.png *.jpg *.jpeg")])  # v1.12
             if path:  # v1.12
-                result["name"] = self.page.insert_picture(ws, path)  # v1.12
+                result["name"] = self.page.insert_picture(ws, path, int(value))  # v1.12
         ok = await self.action(fn)  # v1.12
         if ok and result.get("name"):  # v1.12
             # ui.notify(f"Das Bild {result['name']} ist unter der Tabelle eingefügt.", type="positive")  # v1.18 (entfallen)
             ui.notify(tr('Das Bild {name} ist unter der Tabelle eingefügt.', name=result['name']), type="positive")  # v1.18
 
-    async def remove_pictures(self, dlg):  # v1.12
-        count = len(self.page.pictures_of(self.ws))  # v1.12
-        if not count:  # v1.12
-            ui.notify("Auf dieser Seite sind keine Bilder.", type="warning")  # v1.12
-            return  # v1.12
-        # if not await self.confirm(f"Alle {count} Bilder der Seite {self.ws.Name} entfernen?\nDie Bilddateien selbst bleiben erhalten.", yes="Entfernen"):  # v1.19 (entfallen)
-        if not await self.confirm(tr('Alle {count} Bilder der Seite {blatt} entfernen?\nDie Bilddateien selbst bleiben erhalten.', count=count, blatt=self.ws.Name), yes="Entfernen"):  # v1.19
-            return  # v1.12
-        dlg.close()  # v1.12
-        result = {}  # v1.12
-        ok = await self.action(lambda ws: result.update(n=self.page.remove_pictures(ws)))  # v1.12
-        if ok:  # v1.12
-            # ui.notify(f"{result.get('n', 0)} Bild(er) entfernt", type="positive")  # v1.18 (entfallen)
-            ui.notify(tr('{anzahl} Bild(er) entfernt', anzahl=result.get('n', 0)), type="positive")  # v1.18
+    async def on_delete_picture(self):
+        ws = self.ws
+        pictures = self.page.pictures_of(ws)
+        if not pictures:
+            ui.notify("Auf dieser Seite sind keine Bilder.", type="warning")
+            return
+        options = {-1: "Alle Bilder dieses Blatts"}
+        for index, picture in enumerate(pictures):
+            step = getattr(picture, "pattern_step", None)
+            position = f" · Spalte {step}" if step is not None else ""
+            options[index] = f"{index + 1}. {os.path.basename(picture.Name)}{position}"
+        with ui.dialog() as dlg, ui.card().classes("min-w-72"):
+            choice = ui.select(options, label="Bild zum Löschen auswählen").classes("w-full")
+            with ui.row():
+                ui.button("Abbrechen", on_click=lambda: dlg.submit(None)).props("flat")
+                ui.button("Löschen", on_click=lambda: dlg.submit(choice.value)).props("color=negative")
+        index = await dlg
+        web_dialogs.safe_delete(dlg)
+        if index is None or self.ws is not ws:
+            return
+        selected = None if index == -1 else pictures[index]
+        if await self.confirm(f"{options[index]} entfernen?", yes="Entfernen") and self.ws is ws:
+            await self.action(lambda ws: self.page.remove_pictures(ws, selected))
 
     async def on_new_sheet(self):  # v1.01
         before = {ws.Name for ws in self.page.workbook.sheets}  # v1.01
@@ -620,7 +649,11 @@ class PatternView:
             with ui.row().classes("gap-2"):  # v1.07
                 ui.button("Aktuelle Seite löschen", on_click=lambda: self.delete_pages(False, dlg)).props("outline no-caps color=negative")  # v1.07
                 ui.button("Alle Beispiele löschen", on_click=lambda: self.delete_pages(True, dlg)).props("outline no-caps color=negative")  # v1.07
-                ui.button("Bilder dieser Seite entfernen", on_click=lambda: self.remove_pictures(dlg)).props("outline no-caps color=negative")  # v1.12
+                async def delete_picture():
+                    dlg.close()
+                    await self.on_delete_picture()
+
+                ui.button("Bilder löschen", on_click=delete_picture).props("outline no-caps color=negative")  # v1.12
             with ui.row().classes("justify-between items-center w-full"):  # v1.07
                 ui.link("Hilfe", "https://wiki.mobaledlib.de/anleitungen/spezial/patterngenerator", new_tab=True)  # v1.07
                 ui.button("Schließen", on_click=dlg.close).props("flat").classes("mll-cancel")  # v1.07
@@ -813,7 +846,7 @@ class PatternView:
                 if not os.path.isfile(name) or width <= 0 or height <= 0:  # v1.12
                     continue  # v1.12
                 y1, y2 = mapped(top), mapped(top + height)  # v1.12
-                item = {"kind": "pic", "url": picture_url(name), "x": round(left, 1), "y": y1, "w": round(width, 1), "h": round(max(y2 - y1, 1), 1)}  # v1.12
+                item = {"kind": "pic", "url": picture_url(name), "x": round(left, 1), "step": getattr(s, "pattern_step", None), "y": y1, "w": round(width, 1), "h": round(max(y2 - y1, 1), 1)}  # v1.12
                 target = pictures  # v1.12
             elif stype == "5" and name.startswith("Goto_Graph_CurvedArrow") and len(nodes) >= 4:     # gekruemmter Goto-Pfeil: Kurve mit Pfeilspitze  # v1.12
                 # Goto-Pfeile sind Zeichnungen fester Groesse am Ankerpunkt (hier der erste Punkt): nur der Anker wird auf das Zeilenraster umgerechnet, die Abstaende
@@ -916,8 +949,16 @@ class PatternView:
                        if not column.get("hide") and column.get("field") not in
                        {f"c{index}" for index in widths if index >= first_step})
         centers = []
-        for index in range(len(pictures)):
-            col = first_step + 1 + 2 * index
+        occupied = {pic["step"] for pic in pictures if pic["step"] is not None}
+        legacy_step = 2
+        for pic in pictures:
+            step = pic["step"]
+            if step is None:
+                while legacy_step in occupied:
+                    legacy_step += 2
+                step = legacy_step
+                legacy_step += 2
+            col = first_step + step - 1
             centers.append(position + sum(widths.get(c, step_width) for c in range(first_step, col))
                            + widths.get(col, step_width) / 2)
         if pictures:

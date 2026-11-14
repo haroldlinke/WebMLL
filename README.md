@@ -30,6 +30,7 @@ Modus 4 zeigt WLAN-Status, IP-Adresse, LDR und MobaLedLib-Zeit in vier zentriert
 
 - RGB-Rampen werden je Dreiergruppe dargestellt. Der RGB-Modus wird aus PCF-Dateien übernommen. Goto-Startnummern und Pfeile stehen über der Goto-Tabelle.
 - Der Schalter **RGB LED** aktiviert oder deaktiviert die Dreiergruppierung für das aktuelle Blatt. Größere Goto-Pfeile und kompaktere Abstände ober- und unterhalb der Goto-Tabelle machen mehr von der LED-Tabelle sichtbar.
+- **Bild einfügen** fragt nach der Spalten-Nr. und setzt das Bild mittig darunter, eine Zeile unter der letzten LED. **Bilder löschen** entfernt nach Bestätigung ein ausgewähltes Bild oder alle Bilder des aktuellen Blatts. Die Bilddateien bleiben erhalten.
 - **Test Pattern** spielt das Muster als LED-Vorschau im Browser ab. Die LED-Kreise zeigen bereits beim Öffnen die Farben des ersten Schritts und wechseln sie nach den eingestellten Schrittzeiten.
 - Signalbilder stehen mit einer Zeile Abstand unter der letzten LED-Zeile. Eigene PCF-Dateien mit Bildern können als ZIP geladen werden.
 - Per Rechtsklick auf eine Schrittzelle und **LED-Farbe wählen** werden im RGB-Modus die drei Kanalwerte für den gewählten Schritt gesetzt. In Spalte E lässt sich der Schritt im Dialog auswählen oder **Nur Zeilenfarbe** anwenden.
