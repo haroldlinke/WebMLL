@@ -36,6 +36,7 @@ import queue
 import re
 import select
 import socket
+import hmac
 import threading
 import time
 from collections import deque
@@ -247,6 +248,8 @@ class SerialMixin:
                 data = port.read(1)
             except Exception as ex:                       # noqa: BLE001
                 logger.info("Empfangsthread beendet: %s", ex)
+                if isinstance(port, TcpPort) and not stop.is_set() and self.arduino is port:
+                    self.close_arduino_connection_after_write_error(expected_port=port)
                 break
             if not data:
                 continue
@@ -312,6 +315,10 @@ class SerialMixin:
             try:
                 wait = wait_override if wait_override is not None else max(self.waittime_int, 1) / 1000.0  # v1.01
                 burst = self.ARDUINO_has_readbuffer and not (self.waittime_slowmode or slowmode)
+                if isinstance(port, TcpPort) and not (self.waittime_slowmode or slowmode or wait_override is not None):
+                    if port.is_open:
+                        port.write(message.encode())
+                    continue
                 for i, c in enumerate(message):
                     if port is None or not getattr(port, "is_open", False):
                         break
@@ -323,7 +330,7 @@ class SerialMixin:
             except Exception as ex:                       # noqa: BLE001
                 logger.info("Schreibfehler zum Arduino: %s", ex)
                 self.send_error = True
-                self.close_arduino_connection_after_write_error()
+                self.close_arduino_connection_after_write_error(expected_port=port)
             finally:
                 if self._tx_queue.empty():
                     self.send_active = False
@@ -594,22 +601,41 @@ class SerialMixin:
         self._start_reader()
         return True
 
-    def connectIP(self, IPAdresse=None):
-        """Verbindung zu einem WLAN-Pico (Telnet-Port 23)."""
+    def connect_esp32(self, host, password):
+        with self._conn_lock:
+            if self.arduino:
+                self.disconnect()
+            return self.connectIP(host, esp32_password=password)
+
+    def connectIP(self, IPAdresse=None, *, esp32_password=None):
+        """Connect to a WLAN Pico or authenticate to an ESP32 device session."""
         if not IPAdresse:
             return False
         # self._set_connect_status("Versuch sich mit dem PICO- IP: " + IPAdresse + " zu verbinden ...", "red")  # v1.04 (entfallen)
-        self._set_connect_status(tr('Versuch sich mit dem PICO- IP: ') + IPAdresse + " zu verbinden ...", "red")  # v1.04
+        if esp32_password is None:
+            self._set_connect_status(tr('Versuch sich mit dem PICO- IP: ') + IPAdresse + " zu verbinden ...", "red")
+        else:
+            self._set_connect_status("ESP32-WLAN-Verbindung zu " + IPAdresse + " …", "red")  # v1.04
         t1 = _const("SerialIF_teststring1", "#?LEDs_AutoProg")
         t3 = _const("SerialIF_teststring3", "#?LEDs_AutoProg3")
         try:
-            try:                                           # telnetlib (bis Python 3.12, danach als Paket telnetlib-313-and-up)
-                import telnetlib
-                self.arduino = telnetlib.Telnet(IPAdresse, 23, timeout=5)
-                self.arduino.is_open = True
-                self.arduino.portstr = IPAdresse
-            except ImportError:
-                self.arduino = TcpPort(IPAdresse, 23, timeout=5)   # einfacher Ersatz ohne Telnet-Aushandlung
+            if esp32_password is not None:
+                self.arduino = TcpPort(IPAdresse, 2323, timeout=5)
+                nonce = self.arduino.read_until(timeout=5).strip()
+                if len(nonce) != 32 or any(char not in b"0123456789abcdef" for char in nonce):
+                    raise ConnectionError("Keine gültige ESP32-Anmeldeanfrage")
+                digest = hmac.digest(esp32_password.encode("utf-8"), nonce, "sha256")
+                self.arduino.write(digest.hex().encode("ascii") + b"\n")
+                if self.arduino.read_until(timeout=5).strip() != b"OK":
+                    raise ConnectionError("ESP32-Anmeldung fehlgeschlagen")
+            else:
+                try:
+                    import telnetlib
+                    self.arduino = telnetlib.Telnet(IPAdresse, 23, timeout=5)
+                    self.arduino.is_open = True
+                    self.arduino.portstr = IPAdresse
+                except ImportError:
+                    self.arduino = TcpPort(IPAdresse, 23, timeout=5)
             self.arduino.write(b"#?\n")
             txt = self.arduino.read_until(b"\n", 5).decode(errors="ignore")
             pos = txt.find(t1)
@@ -659,7 +685,9 @@ class SerialMixin:
                 self.send_active = False
             self._set_connect_status("Nicht Verbunden", "black")
 
-    def close_arduino_connection_after_write_error(self):
+    def close_arduino_connection_after_write_error(self, expected_port=None):
+        if expected_port is not None and self.arduino is not expected_port:
+            return
         self._stop_reader()
         try:
             if self.arduino:

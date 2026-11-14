@@ -104,6 +104,7 @@ def tab_buttons(buttons: dict, handlers: list[str], frame_hint: str | None = Non
 # ------------------------------------------------------------------ Dialog (Event-Loop)
 async def _options_async(spec: dict, st: dict):
     from nicegui import ui
+    from _web.web_esp32_ota import settings_panel
     vals = dict(st)
 
     with wd._bridge["client"]:
@@ -207,7 +208,8 @@ async def _options_async(spec: dict, st: dict):
                         if e.value is None:
                             return
                         vals[k] = e.value
-                        update_pico_buttons()  # v1.09
+                        update_pico_buttons()
+                        ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)  # v1.09
                         update_dcc_tab()  # v1.06
                         other = g["b"] if which == "a" else g["a"]
                         if other is not None:
@@ -224,6 +226,7 @@ async def _options_async(spec: dict, st: dict):
                         g["b"] = None
                     boards.append((p, g))  # v1.08
 
+            esp32_value = spec["pages"]["left"].get("esp32_value")
             with ui.tabs().classes("w-full") as tabs:
                 tab_objs = [ui.tab(t["name"]) for t in spec["tabs"]]
                 for t, tab_obj in zip(spec["tabs"], tab_objs):  # v1.06
@@ -233,7 +236,11 @@ async def _options_async(spec: dict, st: dict):
                     if t.get("nano_only"):  # v1.06
                         dcc["tab"], dcc["initial"] = tab_obj, bool(t.get("visible", True))  # v1.06
                         set_tab_visible(tab_obj, dcc["initial"])  # v1.06
+                ota_tab = ui.tab("OTA")
+                ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)
             with ui.tab_panels(tabs, value=tab_objs[0]).classes("w-full"):
+                with ui.tab_panel(ota_tab):
+                    settings_panel()
                 for t, tab in zip(spec["tabs"], tab_objs):
                     with ui.tab_panel(tab):
                         if t["kind"] == "arduino":

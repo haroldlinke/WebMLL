@@ -166,20 +166,23 @@ def SendDCCAccessoryCommand(Addr, Direction, IsSwitch):
     M25.Make_sure_that_Col_Variables_match()
     # 04.03.22 Juergen: if using simulator only don't connect to Com Port
     #if M39.IsSimulatorActive and P01.val(M07.ComPortPage().Cells(M02.SH_VARS_ROW, M25.COMPort_COL)) <= 0:
-    if M39.IsSimulatorActive and F00.port_is_busy(M07.ComPortPage().Cells(M02.SH_VARS_ROW, M25.COMPort_COL)):
+    controller = PG.global_controller
+    wlan_connected = getattr(controller, 'ARDUINO_IP', False) and controller.is_connection_open()
+    if not wlan_connected and M39.IsSimulatorActive and F00.port_is_busy(M07.ComPortPage().Cells(M02.SH_VARS_ROW, M25.COMPort_COL)):
         _fn_return_value = True
         return _fn_return_value
-    if M07.Check_USB_Port_with_Dialog(M25.COMPort_COL) == False:
+    if not wlan_connected and not M07.Check_USB_Port_with_Dialog(M25.COMPort_COL):
         return _fn_return_value
         # 04.05.20: Added exit (Prior Check_USB_Port_with_Dialog ends the program in case of an error)
     # if ( Addr < 1 or Addr > 9999 ) :  # v1.01 (entfallen)
     if ( Addr < 0 or Addr > 9999 ) :  # v1.01
         P01.MsgBox(M09.Get_Language_Str('Die Adresse muss im Bereich 1 bis 9999 liegen'), vbCritical, M09.Get_Language_Str('Fehler: Decoder senden fehlgeschlagen'))
         return _fn_return_value
-    ComPort = P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL)
+    ComPort = None if wlan_connected else P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL)
     Output_Buffer = '@' + Left(str(Addr) + '   ', 4) + ' ' + Left(str(Direction) + ' ', 2) + ' 01' + Chr(10)
     #fn_return_value = M07.SendMLLCommand(ComPort, Output_Buffer, UseHardwareHandshake, M02.DEBUG_DCCSEND)
-    send_command_to_ARDUINO(Output_Buffer,comport=ComPort)
+    if not send_command_to_ARDUINO(Output_Buffer, comport=ComPort):
+        return False
     fn_return_value=True
     # 29.04.20: Incremented length to be able to use 4 digits 1000-9999
     fn_return_value=True    
@@ -205,11 +208,17 @@ def SendDCCAccessoryCommand(Addr, Direction, IsSwitch):
     return fn_return_value
 
 def send_command_to_ARDUINO(command,comport=None):
-    PG.global_controller.connect_if_not_connected(port=comport)
+    controller = PG.global_controller
+    if not controller.connect_if_not_connected(port=comport):
+        return False
+    if getattr(controller, "ARDUINO_IP", False):
+        controller.send_to_ARDUINO(command.rstrip("\r\n") + "\n")
+        return True
     for c in command:
         PG.global_controller.send_to_ARDUINO(c, comport=comport)
         #time.sleep(0.01)
     c = chr(10)
-    PG.global_controller.send_to_ARDUINO(c,comport=comport)    
+    PG.global_controller.send_to_ARDUINO(c,comport=comport)
+    return True
 
 # VB2PY (UntranslatedCode) Option Explicit

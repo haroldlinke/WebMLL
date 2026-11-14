@@ -46,11 +46,17 @@
     #define WIFI_DNS_NAME "MobaLedLib"
     #undef Sec
 #endif
+#include <atomic>
 #include <WiFi.h>
 #include <WiFiClient.h>
+#ifndef MLL_OTA_SAVED_WIFI
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#endif
 #include <WiFiUdp.h>
 #include <ESPmDNS.h>
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA)
+#include "ESP32DeviceConnection.h"
+#endif
 //#include "RASCIIInterface.h"
 //RASCIIInterface interface;
 
@@ -71,8 +77,13 @@ UserInterface ui(getUserInterface);
 
 #ifdef USE_WIFI
 bool isConnected = false;
-bool isInOTA = false;
+std::atomic<bool> isInOTA{false};
+#ifdef USE_OTA
+static bool otaRestartPending = false;
+#endif
+#ifndef MLL_OTA_SAVED_WIFI
 WiFiManager wm; // global wm instance
+#endif
 String hostString;
 
 String toStringIp(IPAddress ip) {
@@ -91,9 +102,8 @@ void setConnected(bool connected)
 	isConnected=connected;
 	if (isConnected)
 	{
-		Serial.println("starting config portal");
-		wm.startConfigPortal(hostString.c_str());
-		Serial.println("starting config portal done");
+		Serial.print("ESP32 WLAN-IP: ");
+		Serial.println(WiFi.localIP());
 #ifdef USE_OTA
 		Serial.println("starting Arduino OTA");
 
@@ -107,11 +117,12 @@ void setConnected(bool connected)
 
 			// NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
 			Serial.println("Start updating " + type);
-			FastLED.setBrightness(0); // turn leds off
-			FastLED.clear(256);
+
+
 		})
 		.onEnd([]() {
-			Serial.println("\nEnd");
+			Serial.println("\nOTA abgeschlossen, Neustart folgt.");
+                        otaRestartPending = true;
                         isInOTA = false;
 		})
 		.onProgress([](unsigned int progress, unsigned int total) {
@@ -125,15 +136,20 @@ void setConnected(bool connected)
 			else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
 			else if (error == OTA_END_ERROR) Serial.println("End Failed");
                         isInOTA = false;
-			FastLED.setBrightness(255); // turn leds on
+
 		});
 
-		ArduinoOTA.begin();
+#ifdef MLL_OTA_PASSWORD
+		ArduinoOTA.setPassword(MLL_OTA_PASSWORD);
 #endif
+		ArduinoOTA.setRebootOnSuccess(false);
+		ArduinoOTA.begin();
+#else
 
     if(!MDNS.begin(WIFI_DNS_NAME)) {
        Serial.println("Error starting mDNS");
     }
+#endif
    
 	}
 
@@ -158,8 +174,8 @@ void setupESP32Extensions() {
 #endif
 	
 #ifdef USE_WIFI
-	WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
 
+    #ifndef MLL_OTA_SAVED_WIFI
     //reset settings - wipe credentials for testing
     //wm.resetSettings();
 
@@ -168,16 +184,31 @@ void setupESP32Extensions() {
 
     //automatically connect using saved credentials if they exist
     //If connection fails it starts an access point with the specified name
+    #endif
     //generate the accespoint name
 
-	hostString = String(WIFI_getChipId(),HEX);
+	hostString = String(static_cast<uint32_t>(ESP.getEfuseMac()), HEX);
 	hostString.toUpperCase();
 	hostString = "MLL_" + hostString;
+#ifdef MLL_WIFI_HOSTNAME
+    hostString = MLL_WIFI_HOSTNAME;
+#endif
+    // New cores apply the DHCP hostname when the station starts.
+    const bool hostnameSet = WiFi.setHostname(hostString.c_str());
+    WiFi.mode(WIFI_STA);
+    // The legacy Arduino ESP32 core needs a running station interface.
+    if (!hostnameSet) WiFi.setHostname(hostString.c_str());
+#ifndef MLL_OTA_SAVED_WIFI
 	wm.setHostname(hostString.c_str());
+#endif
 #ifdef USE_OTA
 	ArduinoOTA.setHostname(hostString.c_str());
 #endif
 
+#ifdef MLL_OTA_SAVED_WIFI
+    WiFi.setAutoReconnect(true);
+    WiFi.begin();
+#else
 	bool connected = false;
 
 	for (int i=0;i<2&& !connected;i++)
@@ -197,19 +228,29 @@ void setupESP32Extensions() {
 	}
 #endif
 #endif
+#endif
 }
 
 
 void loopESP32Extensions() {
 #ifdef USE_WIFI
+#ifndef MLL_OTA_SAVED_WIFI
 	wm.process();
+#endif
+	setConnected(WiFi.status() == WL_CONNECTED);
 	#ifdef USE_OTA
 	if (isConnected) 
   {
     // handle and OTA upload and block other operations while OTA running
     do
     {
-       ArduinoOTA.handle();   
+       ArduinoOTA.handle();
+       if (otaRestartPending)
+       {
+         // Let ArduinoOTA finish sending the successful upload response.
+         delay(250);
+         ESP.restart();
+       }   
        if (isInOTA) 
        {
          esp_task_wdt_reset();                                                                                    // 05.03.21: Juergen -  reset watchdog timer, because we are in an endless loop

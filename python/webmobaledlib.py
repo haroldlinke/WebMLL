@@ -978,7 +978,7 @@ def cell_renderer_js(bridge_id: int) -> str:
             # "if (params.value) box.append(' '); } "  # v2.77 (entfallen)
             "} "  # v2.77
             "const v = (params.valueFormatted !== undefined && params.valueFormatted !== null) ? params.valueFormatted : params.value; "
-            "if (v !== undefined && v !== null) box.append(String(v)); "
+            "if (v !== undefined && v !== null) { box.style.whiteSpace = 'pre-line'; box.append(String(v)); } "
             "const tb = params.data && params.data._tb && params.data._tb[params.colDef.field]; "
             "if (tb) { box.style.display = 'flex'; box.style.alignItems = 'center'; "
             "const holder = document.createElement('span'); holder.style.marginLeft = tb[0].lead ? 'auto' : '0'; holder.style.whiteSpace = 'nowrap'; "
@@ -1565,7 +1565,7 @@ def font_css(ctrl) -> str:
             "--mll-small-scale:%.3f;--mll-grid-font:'%s';}" % (s["title"], s["label"], s["input"], s["grid"], s["small"], s["name"]))
 
 JS_ROW_HEIGHT = ("params => Math.round((params.node.rowPinned ? "
-                 "(params.data && params.data._r === 0 ? 18 : 46) : 22) * (window.mllGridScale || 1))")
+                 "(params.data && params.data._r === 0 ? 18 : 46) : (22 * (params.data?._lines || 1))) * (window.mllGridScale || 1))")
 
 JS_DBLCLICK = """
 <script>
@@ -3116,6 +3116,15 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                                                      display_cols=({typ_column(ws): M09.Token_Display} if M09.CANONICAL_TOKENS and typ_column(ws) is not None else None),  # v2.14
                                                      display_cells=M09.Get_Display_Cells(ws),        # Spaltenkoepfe (mit Tooltip) und Namensspalte in der eingestellten Sprache  # v2.15
                                                      row_number_width=row_number_width(max_row_number, font_scales(ctrl)["grid"]))  # v1.96
+        if M28.Is_Data_Sheet(ws):
+            M25.Make_sure_that_Col_Variables_match(ws)
+            config_field = f"c{M25.Config__Col - 1}"
+            for column in column_defs:
+                if column.get("field") == config_field:
+                    column.update(cellEditor="agLargeTextCellEditor", cellEditorPopup=True,
+                                  cellEditorParams={"rows": 8, "cols": 65, "maxLength": 20000})
+            for row in rows:
+                row["_lines"] = len(str(row.get(config_field) or "").splitlines()) or 1
         t_build = time.perf_counter()  # v1.49
         if SHAPES_DEBUG:  # v1.51
             logger.info("SHAPES: show(%s): %s | Zeilen mit Testtasten %s | Zeilen mit Symbol %s", ws.Name, shapes_report(ws),  # v1.51
@@ -3176,6 +3185,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     grid.run_grid_method("setGridOption", "pinnedTopRowData", pinned)
                 if changed_rows:
                     grid.run_grid_method("applyTransaction", {"update": changed_rows})
+                    if any(r.get("_lines") != old_by_id[r["_r"]].get("_lines") for r in changed_rows):
+                        grid.run_grid_method("resetRowHeights")
                     refresh_cols = renderer_columns(changed_rows) | renderer_columns([old_by_id[r["_r"]] for r in changed_rows])  # v1.50
                     refresh_cols |= style_columns(old_rows, changed_rows)  # Farben, die sich geaendert haben (Zeilen faerben)  # v2.23
             else:                                          # Zeilen eingefuegt/geloescht/ausgeblendet: alle Zeilen austauschen
@@ -4477,6 +4488,18 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 logger.warning("Reiter %s nach dem Verbinden nicht aktualisiert", tabs.value, exc_info=True)  # v2.01
 
     async def connect_arduino():  # v2.01
+        settings = headless_esp32_ota.load_settings()
+        if esp32_board() and settings["wifi"] and settings["ota"]:
+            target = await web_esp32_ota.ask_target(web_esp32_ota.target_address(settings), allow_usb=True, connect=True, saved_password=settings["password"])
+            if target is None:
+                return
+            if target != "usb":
+                host, password = target
+                await run_command(lambda: ctrl.connect_esp32(host, password), "ESP32 über WLAN verbinden")()
+                if not ctrl.is_connection_open():
+                    ui.notify("Keine ESP32-WLAN-Verbindung. IP-Adresse, Firmware und OTA-Passwort prüfen.", type="negative")
+                after_connect()
+                return
         await _connect_command()  # v2.01
         after_connect()  # v2.01
 
@@ -4488,6 +4511,81 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         except Exception:                                  # noqa: BLE001  # v2.01
             pass  # v2.01
         await connect_arduino()  # v2.01
+    from _web import web_esp32_ota
+    import proggen.M02a_Public as ota_boards
+    import proggen.M06_Write_Header as ota_header
+    import proggen.M08_ARDUINO as ota_arduino
+    import proggen.M28_Diverse as ota_options
+    from headless import headless_esp32_ota
+
+    def esp32_board():
+        options = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL).Value)
+        match = re.search(r"(?<![\w:])esp32:esp32:esp32(?=[:\s]|$)(?::[\w=,.-]+)?", options)
+        return match.group(0) if match else ""
+
+    async def transfer_setup():
+        board = esp32_board()
+        usb = run_command(page.upload_to_ARDUINO_Button_click, "Setup übertragen")
+        settings = headless_esp32_ota.load_settings()
+        if not board or not settings["wifi"] or (os.name != "nt" and not ota_options.Is_PlatformIO()):
+            await usb()
+            return
+        target = "usb"
+        if settings["ota"]:
+            target = await web_esp32_ota.ask_target(web_esp32_ota.target_address(settings), allow_usb=True, saved_password=settings["password"])
+            if target is None:
+                return
+        host, upload_password = ("", "") if target == "usb" else target
+        password = settings["password"]
+        port = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL).Value)
+
+        def transfer():
+            log = ctrl.weblog
+            log.set_title("ESP32-Setup über WLAN übertragen" if host else "ESP32-Setup über USB übertragen")
+            log.delete_text_from_textwindow()
+            log.show()
+            try:
+                if not ota_header.Create_HeaderFile(HeaderOnly=True):
+                    raise ValueError("Die Projektkonfiguration konnte nicht erzeugt werden.")
+                sketch = os.path.join(ota_arduino.GetWorkbookPath(), M02.Ino_Dir_LED)
+                log.add_text_to_textwindow("ESP32-Firmware wird kompiliert …")
+                pio = None
+                if ota_options.Is_PlatformIO():
+                    pio = ota_arduino.Find_PIO()
+                    log.add_text_to_textwindow("Build-Umgebung: PlatformIO")
+                    image, partitions = headless_esp32_ota.build_platformio_project(
+                        sketch, pio, password, log.add_text_to_textwindow,
+                        lambda path: ota_arduino.Write_PIO_Project("esp32", path),
+                        hostname=settings["hostname"], ota=settings["ota"],
+                    )
+                else:
+                    log.add_text_to_textwindow("Build-Umgebung: Arduino Builder")
+                    image, partitions = headless_esp32_ota.build_project(
+                        sketch, ota_arduino.Find_ArduinoExe(), ota_boards.Get_Sketchbook_Path(),
+                        board, password, log.add_text_to_textwindow,
+                        hostname=settings["hostname"], ota=settings["ota"],
+                    )
+                if ctrl.is_connection_open():
+                    ctrl.disconnect()
+                if not host:
+                    log.add_text_to_textwindow("Firmware wird per USB übertragen …")
+                    headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)
+                    log.add_text_to_textwindow("USB-Upload erfolgreich.", highlight="OK")
+                    return
+                log.add_text_to_textwindow("Firmware wird per WLAN übertragen …")
+                result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)
+                log.add_text_to_textwindow(output)
+                log.add_text_to_textwindow(
+                    "OTA-Upload erfolgreich." if result == 0 else "OTA-Upload fehlgeschlagen.",
+                    highlight="OK" if result == 0 else "Error",
+                )
+            except ValueError as error:
+                log.add_text_to_textwindow(str(error), highlight="Error")
+            except (OSError, subprocess.TimeoutExpired):
+                log.add_text_to_textwindow("Build oder Upload konnte nicht abgeschlossen werden.", highlight="Error")
+
+        await run_command(transfer, "ESP32-Setup übertragen")()
+
     MENU = {
         "Datei": [
             ("Jetzt zwischenspeichern", autosave_manual),
@@ -4511,6 +4609,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ("Tabelle reparieren (Symbole und Testtasten neu aufbauen) ...", run_command(repair_table, "Tabelle reparieren")),  # v2.11
         ],
         "ARDUINO": [
+            ("ESP32-Firmware über WLAN hochladen …", lambda: web_esp32_ota.open_dialog(pio=ota_arduino.Find_PIO() if ota_options.Is_PlatformIO() else None)),
             ("Verbinden", connect_arduino),  # v1.86
             ("Trennen", run_command(lambda: ctrl.disconnect(), "Trennen")),
             ("Alle LED aus", run_command(lambda: ctrl.led_off(), "Alle LED aus")),
@@ -4608,7 +4707,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 # else:  # v2.68 (entfallen)
                     # ui.label(label).classes("text-xs text-center mll-tool-text").style("white-space: pre-line")  # v2.68 (entfallen)
             # b.tooltip(M09.Get_Language_Str(tooltip))  # v2.68 (entfallen)
-            b = web_toolbar.build_tool_button(ui, icon, label, M09.Get_Language_Str(tooltip), run_command(func, web_toolbar.single_line(label)),  # v2.68
+            b = web_toolbar.build_tool_button(ui, icon, label, M09.Get_Language_Str(tooltip), (transfer_setup if icon == "Btn_Send_to_ARDUINO.png" else run_command(func, web_toolbar.single_line(label))),  # v2.68
                                               os.path.join(here, "images_btn"), icon_dir, toolbar_icons, toolbar_labels)     # Symbol (images_btn, ohne Text) und uebersetzter Text; eingedrueckt, solange der Befehl laeuft  # v2.68
             if icon == "Btn_Color_Row.png":  # v2.96
                 beginner_buttons.append(b)  # v2.96

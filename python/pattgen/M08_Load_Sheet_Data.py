@@ -473,6 +473,14 @@ def Load_Picture(Line, SourceDir):
     Edges = Split(M30.CorrectKomma(Params(0)), ';')
     # 02.07.19: Added: CorrectKomma()
     PicName = SourceDir + Params(1)
+    if Dir(PicName) == '':
+        import os
+        basename = os.path.basename(Params(1).replace('\\', '/'))
+        for subfolder in ('Bilder', 'images'):
+            candidate = os.path.join(SourceDir, subfolder, basename)
+            if os.path.isfile(candidate):
+                PicName = candidate
+                break
     # PicName=PicName.replace(".jpg",".png")  # v1.01 (ersetzt: ein JPG ohne PNG-Datei daneben wurde nie gefunden)
     if LCase(Right(PicName, 4)) == '.jpg' and Dir(Left(PicName, Len(PicName) - 4) + '.png') != '':  # v1.01
         PicName = Left(PicName, Len(PicName) - 4) + '.png'                  # die Beispiele liefern PNG-Dateien zu den JPG-Namen der Dateien mit  # v1.01
@@ -495,7 +503,9 @@ def Load_Picture(Line, SourceDir):
     X02.ActiveSheet.Shapes.AddPicture(PicName, linktofile= X01.msoFalse, savewithdocument= X01.msoCTrue, Left= Val(Edges(0))*X02.guifactor, Top= Correct_Top_Pos_by_Version(Val(Edges(1)))*X02.guifactor, Width= Val(Edges(2))*X02.guifactor, Height= Val(Edges(3))*X02.guifactor).Select()
     # 12.07.20: Old: Width:=-1, Height:=-1
     # VB2PY (UntranslatedCode) On Error GoTo 0
-    X02.Selection.Name = M30.NoExt(Params(1))
+    # WebMLL uses the picture name as its path for rendering and export.
+    if not getattr(type(X02.ActiveSheet.tksheet), "data_row_height", None):
+        X02.Selection.Name = M30.NoExt(Params(1))
     X02.Selection.Placement = X01.xlMove
     # 30.12.19: Old: Selection.Placement = xlFreeFloating
     #  Selection.ShapeRange.PictureFormat.TransparentBackground = msoTrue

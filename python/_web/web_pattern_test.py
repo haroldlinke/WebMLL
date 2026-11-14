@@ -14,12 +14,11 @@
 
 Das Excel-Programm spielt das Muster auf dem Bildschirm ab (Kreise als LEDs), es sendet nichts an einen ARDUINO; das Senden an ein Modul (ATtiny) ist ein eigener Knopf und noch nicht
 umgesetzt. Hier: ein Fenster mit einem Kreis je LED (bei RGB-Mustern je drei Kanaele), der mit den Zeiten des Musters die Farbe wechselt, darunter Start/Stop und bei Goto-Mustern die
-Knoepfe fuer den Start. Die Farben setzt eine kleine JavaScript-Zeile (eine Nachricht je Muster).
+Knoepfe fuer den Start. Die Farben werden direkt an den NiceGUI-Elementen gesetzt.
 """
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 
 from headless.headless_pattern_test import PatternPlayer
@@ -31,9 +30,6 @@ except ImportError:                                   # aeltere Installation ohn
 
 logger = logging.getLogger(__name__)
 
-SET_COLORS_JS = ("(function (ids, cols) { ids.forEach(function (id, i) { var e = document.getElementById(id); if (e) e.style.background = 'rgb(' + cols[i].join(',') + ')'; }); })(%s, %s);")
-
-
 def colors_at(data, step) -> list:
     """[R, G, B] je LED fuer das Muster step (1 bis steps)"""
     return [list(led["colors"][step - 1]) for led in data["leds"]]
@@ -44,7 +40,7 @@ async def show_pattern_test(data: dict, client):
     from nicegui import ui
     player = PatternPlayer(data["steps"], data["durations"], pingpong=data["pingpong"], goto=data["goto"], goto_list=data["goto_list"])
     st = {"task": None}
-    ids: list = []
+    dots = []
     with client:
         with ui.dialog().props("persistent") as dlg, ui.card().style("min-width: 340px; max-width: 96vw; max-height: 94vh; overflow: auto"):
             ui.label("%s: %s" % (tr("Test Pattern"), data["name"])).classes("text-h6")
@@ -53,7 +49,7 @@ async def show_pattern_test(data: dict, client):
                 for led in data["leds"]:
                     with ui.column().classes("items-center").style("gap: 2px; width: 60px"):
                         dot = ui.element("div").style("width: 34px; height: 34px; border-radius: 50%; background: rgb(0,0,0); border: 2px solid #90a4ae")
-                        ids.append("c%d" % dot.id)
+                        dots.append(dot)
                         ui.label(led["label"]).classes("text-caption").style("font-size: 10px; max-width: 60px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis").tooltip(led["label"])
             note = ui.label("").classes("text-caption text-grey-8")
             if data["goto"]:
@@ -69,7 +65,8 @@ async def show_pattern_test(data: dict, client):
         def show(step):
             with client:
                 step_lbl.set_text(tr("Muster {n} von {total}", n=step, total=data["steps"]))
-            client.run_javascript(SET_COLORS_JS % (json.dumps(ids), json.dumps(colors_at(data, step))))
+                for dot, (red, green, blue) in zip(dots, colors_at(data, step)):
+                    dot.style(f"background: rgb({red},{green},{blue})")
 
         async def play():
             me = asyncio.current_task()
@@ -118,6 +115,7 @@ async def show_pattern_test(data: dict, client):
                 start_task()
 
         player.start(0)
+        show(player.current)
         start_task()
         try:
             await dlg

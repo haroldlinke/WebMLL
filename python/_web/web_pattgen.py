@@ -138,7 +138,7 @@ JS_STYLE = """
 # JS_CELL_STYLE = ("params => (params.data && params.data._st && params.data._st[params.colDef.field]) "  # v1.20 (entfallen)
                  # "? params.data._st[params.colDef.field] : null")  # v1.20 (entfallen)
 JS_CELL_STYLE = ("params => { const st = (params.data && params.data._st) ? params.data._st[params.colDef.field] : null; "  # v1.20
-                 "return Object.assign({backgroundColor: '', color: ''}, st || {}); }")  # v1.20
+                 "return Object.assign({backgroundColor: '', backgroundImage: '', backgroundPosition: '', color: ''}, st || {}); }")  # v1.20
 
 # Balken der grafischen Anzeige: SVG im scrollenden Inhalt der Tabelle (.ag-center-cols-container), damit sie mit den Zellen wandern.
 # AG Grid baut den Inhalt asynchron auf; deshalb bis zu drei Sekunden lang erneut versuchen, bis der Behaelter da ist.
@@ -147,6 +147,7 @@ window.mllShapes = function (shapes, tries) {
   tries = tries || 0;
   const wrap = document.querySelector('.mll-pgrid-wrap');
   const cont = wrap && wrap.querySelector('.ag-center-cols-container');
+  if (wrap) wrap.mllLatestShapes = shapes;
   if (!cont) { if (tries < 30) setTimeout(() => window.mllShapes(shapes, tries + 1), 100); return; }
   const old = cont.querySelector('svg.mll-shapes');
   if (old) old.remove();
@@ -154,7 +155,8 @@ window.mllShapes = function (shapes, tries) {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('class', 'mll-shapes');
-  svg.style.cssText = 'position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none;z-index:3';
+  svg.setAttribute('aria-hidden', 'true');
+  svg.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:20';
   const add = (tag, attrs) => { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
   // Pfeilspitze in (x, y), Richtung (ux, uy) normiert
   const head = (x, y, ux, uy, color) => {
@@ -184,6 +186,15 @@ window.mllShapes = function (shapes, tries) {
     }
   }
   cont.appendChild(svg);
+  // AG Grid can replace its body after setGridOption or when a hidden tab opens.
+  if (!wrap.mllShapeObserver) {
+    wrap.mllShapeObserver = new MutationObserver(() => {
+      const body = wrap.querySelector('.ag-center-cols-container');
+      if (body && !body.querySelector('svg.mll-shapes') && wrap.mllLatestShapes?.length)
+        window.mllShapes(wrap.mllLatestShapes);
+    });
+    wrap.mllShapeObserver.observe(wrap, {childList:true, subtree:true});
+  }
 };
 """
 
@@ -290,7 +301,6 @@ class PatternView:
             ui.button("Import von ProgGen", on_click=self.on_import).props("dense outline no-caps").tooltip("Makro aus einer Zeile des Programm Generators einlesen")  # v1.06
             ui.button("Optionen", on_click=self.on_options).props("dense outline no-caps").tooltip("Beispiele laden, Seiten speichern und löschen")  # v1.07
             ui.button("Bild einfügen", on_click=self.on_insert_picture).props("dense outline no-caps").tooltip("PNG- oder JPG-Bild unter der Tabelle einfügen")  # v1.12
-            self.rgb = ui.checkbox("RGB LED", on_change=self.on_rgb)  # v1.01
             self.info = ui.label("").classes("text-caption text-grey-8")
 
         # text = page.info_text()  # v1.21 (entfallen)
@@ -304,7 +314,7 @@ class PatternView:
             self.desc_input = ui.textarea(placeholder="Beschreibung des Blatts (steht beim Speichern als msoTextBox0 in der Datei .MLL_pcf)").props("outlined dense autogrow debounce=600 input-class=text-caption").classes("w-full")  # v1.21
             self.desc_input.on_value_change(self.on_description_change)  # v1.21
 
-        self.grid_wrap = ui.element("div").classes("w-full mll-pgrid-wrap").style("flex: 1 1 0; min-height: 160px; position: relative")
+        self.grid_wrap = ui.element("div").classes("w-full mll-pgrid-wrap").style("flex: 1 1 0; min-height: 0; overflow: hidden; position: relative")
         with self.grid_wrap:
             self.grid = ui.aggrid({
                 "columnDefs": [],
@@ -314,6 +324,21 @@ class PatternView:
                 ":onGridReady": "e => { window.mllPApi = e.api; }",  # v1.05
                 ":onCellFocused": "e => { if (e.rowIndex !== null && e.rowIndex !== undefined && e.column) window.mllPFocus = {rowIndex: e.rowIndex, colId: e.column.getColId()}; }",  # v1.05
                 "rowHeight": ROW_PX,  # v1.01
+                ":isFullWidthRow": "p => Boolean(p.rowNode.data?._pictures)",
+                ":fullWidthCellRenderer": """p => {
+                    const frame = document.createElement('div');
+                    frame.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden';
+                    for (const pic of p.data._pictures) {
+                        const image = document.createElement('img');
+                        image.src = pic.url;
+                        image.alt = '';
+                        image.style.cssText = 'position:absolute;object-fit:contain';
+                        Object.assign(image.style, {left: pic.left + 'px', top: p.data._gap + 'px',
+                            width: pic.width + 'px', height: pic.height + 'px'});
+                        frame.appendChild(image);
+                    }
+                    return frame;
+                }""",
                 ":getRowHeight": JS_ROW_HEIGHT,  # v1.14
                 "headerHeight": 24,
                 "defaultColDef": {"resizable": False, "sortable": False, ":editable": "p => !window.mllPNoEdit", "cellDataType": False, "minWidth": 4,  # v1.10  (vorher "editable": True)
@@ -327,6 +352,7 @@ class PatternView:
             }, **grid_args()).classes("w-full").style("position: absolute; top: 0; left: 0; right: 0; bottom: 0; height: 100%")  # v1.02
         self.grid.on("cellClicked", self.on_cell_clicked)  # v1.01
         self.grid.on("cellValueChanged", self.on_cell_changed)  # v1.01
+        ui.on("mll_pattern_rgb", self.on_rgb)
         ui.on("mll_pcell_op", self.on_cell_op)  # v1.03
         ui.on("mll_pcell_dbl", self.on_cell_dbl)  # v1.10
         with self.grid_wrap:                              # Kontextmenue der Zellen (wie im Programmgenerator)  # v1.03
@@ -342,8 +368,14 @@ class PatternView:
                 with ui.menu_item().on("click", None, js_handler=JS_MENU_DELETE):  # v1.03
                     menu_row("Löschen", "Entf")  # v1.03
 
+                with ui.menu_item().on("click", None, js_handler="""() => {
+                    const c = window.mllPCtx;
+                    if (c) emitEvent('mll_pcell_op', {op: 'color', r: c.r, col: c.col});
+                }"""):
+                    menu_row("LED-Farbe wählen")
+
         self.sheet_tabs = ui.tabs(on_change=self.on_sheet_tab).props(
-            "dense align=left no-caps active-color=primary indicator-color=transparent").classes("w-full sheet-tabs")
+            "dense align=left no-caps active-color=primary indicator-color=transparent").classes("w-full sheet-tabs").style("flex-shrink: 0")
         self.rebuild_tabs()
         try:  # v1.02
             if getattr(page, "fresh", False):             # erster Start: Ergebnisse der CSV-Dateien einmal neu berechnen  # v1.02
@@ -431,12 +463,56 @@ class PatternView:
             ui.notify("Es laeuft noch ein Vorgang - bitte warten.", type="warning")  # v1.03
             return  # v1.03
         self._last_click = None  # v1.03
-        if a.get("op") == "delete":  # v1.03
+        if a.get("op") == "color":
+            await self.choose_led_color(r, c)
+        elif a.get("op") == "delete":  # v1.03
             await self.action(lambda ws: self.page.clear_cell(ws, r, c))  # v1.03
         elif a.get("op") == "paste":  # v1.03
             text = str(a.get("text") or "")  # v1.03
             if text:  # v1.03
                 await self.action(lambda ws: self.page.paste_text(ws, r, c, text))  # v1.03
+
+    async def choose_led_color(self, row, col):
+        ws = self.ws
+        first = DESIGN_FIRST_LED_ROW
+        count = self.page.led_row_count(ws)
+        if not first <= row < first + count or not 5 <= col <= ws.tksheet.get_total_columns():
+            ui.notify("Bitte eine LED-Namenszelle oder einen Pattern-Schritt auswählen.", type="info")
+            return
+
+        rgb = bool(ws.RGB_LED_CheckBox.Value)
+        if col >= 6 and not rgb:
+            ui.notify("Eine Schrittfarbe benötigt den RGB-Modus.", type="info")
+            return
+        initial = (ws.tksheet.getColorAt(row - 1, 4) or "#ffffff") if col == 5 else "#ffffff"
+        with ui.dialog().props("persistent") as dialog, ui.card().classes("w-[420px] max-w-full"):
+            ui.label("LED-Farbe wählen" if col == 5 else f"RGB-Farbe für Schritt {col - 5}").classes("text-h6")
+            color = web_dialogs.color_input(ui, label="Farbe", value=initial).classes("w-full")
+            step = None
+            if col == 5 and rgb:
+                step = ui.number("Pattern-Schritt", value=1, min=1,
+                                 max=ws.tksheet.get_total_columns() - 5, precision=0)
+            with ui.row().classes("justify-end w-full"):
+                ui.button("Abbrechen", on_click=lambda: dialog.submit(None)).props("flat")
+                if step is not None:
+                    ui.button("Nur Zeilenfarbe", on_click=lambda: dialog.submit((color.value, 5))).props("flat")
+                def apply():
+                    target = col
+                    if step is not None:
+                        if step.value is None or not 1 <= step.value <= ws.tksheet.get_total_columns() - 5:
+                            ui.notify("Bitte einen gültigen Pattern-Schritt auswählen.", type="warning")
+                            return
+                        target = int(step.value) + 5
+                    dialog.submit((color.value, target))
+                ui.button("Übernehmen", on_click=apply)
+        chosen = await dialog
+        web_dialogs.safe_delete(dialog)
+        if chosen and chosen[0] and self.ws is ws:
+            chosen, col = chosen
+            if col == 5:
+                await self.action(lambda sheet: self.page.set_led_color(sheet, row, chosen))
+            else:
+                await self.action(lambda sheet: self.page.set_step_color(sheet, row, col, chosen))
 
     async def on_cell_dbl(self, e):  # v1.10
         """Doppelklick auf eine Zelle mit Dialog (Spezial Mode, RGB Modul Nr): der Dialog erscheint im Browser, das Ergebnis wird eingetragen"""  # v1.10
@@ -656,18 +732,8 @@ class PatternView:
     async def on_del_columns(self):  # v1.01
         await self.action(self.page.del_columns)  # v1.01
 
-    async def on_rgb(self, e):  # v1.01
-        if self._rgb_guard:  # v1.01
-            return  # v1.01
-        await self.action(lambda ws: self.page.set_rgb_led(ws, e.value))  # v1.01
-
-    def sync_rgb(self):  # v1.01
-        control = getattr(self.ws, "RGB_LED_CheckBox", None)  # v1.01
-        self._rgb_guard = True  # v1.01
-        try:  # v1.01
-            self.rgb.set_value(bool(control.Value) if control is not None else False)  # v1.01
-        finally:  # v1.01
-            self._rgb_guard = False  # v1.01
+    async def on_rgb(self, e):
+        await self.action(lambda ws: self.page.set_rgb_led(ws, bool(e.args["enabled"])))
 
     # ------------------------------------------------------------------ Blattreiter
     def show_hidden(self) -> bool:
@@ -756,7 +822,7 @@ class PatternView:
                 item = {"kind": "curve", "points": [[round(float(x), 1), round(mapped(anchor) + (float(y) - anchor) * scale, 1)] for x, y in nodes[:4]],  # v1.13
                         "color": getattr(s, "Fillcolor", None) or "#0000ff"}  # v1.13
                 target = lines  # v1.12
-            elif stype == "5" and len(nodes) >= 3:                               # Balken  # v1.12
+            elif stype == "5" and len(nodes) >= 3 and not name.startswith("Analog_Trend"):                               # Balken  # v1.12
                 transparency = float(getattr(getattr(s, "Fill", None), "Transparency_val", 0) or 0)  # v1.12
                 item = {"points": [[round(float(x), 1), mapped(y)] for x, y in nodes], "color": getattr(s, "Fillcolor", None) or "#00b050",  # v1.12
                         "opacity": round(1 - transparency, 2) if transparency else 0.85}  # v1.12
@@ -791,6 +857,24 @@ class PatternView:
         self.row_scale = row_px / ROW_PX  # v1.01
         column_defs, rows, pinned, meta = build_grid(ws.tksheet, no_edit_cols=self.page.protected_columns(ws.Name),  # v1.01
                                                      data_header=False, tooltips_in_cells=True)  # v1.01
+        for column in column_defs:
+            if column.get("field") == "c4":
+                column[":cellRenderer"] = """p => {
+                    if (p.data?._rgb_control === undefined) return p.value ?? '';
+                    const label = document.createElement('label');
+                    label.style.cssText = 'display:inline-flex;align-items:center;gap:6px;cursor:pointer';
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.checked = p.data._rgb_control;
+                    input.addEventListener('change', () => emitEvent('mll_pattern_rgb', {enabled: input.checked}));
+                    for (const type of ['click', 'dblclick', 'keydown'])
+                        label.addEventListener(type, e => e.stopPropagation());
+                    label.append(input, 'RGB LED');
+                    return label;
+                }"""
+                previous_editable = column.get("editable", True)
+                if previous_editable:
+                    column[":editable"] = "p => !window.mllPNoEdit && p.data?._rgb_control === undefined"
         right = self.page.right_aligned_columns(ws.Name)  # v1.02
         for c in column_defs:                              # Breiten gelten wie im Blatt (keine Anpassung an das Fenster, kein Mindestmass)  # v1.02
             c["suppressSizeToFit"] = True  # v1.02
@@ -814,7 +898,43 @@ class PatternView:
             logger.warning("ExcelAPI/headless_sheet.py ist veraltet (ab Version 1.02 gehoeren die Zeilenhoehen zur Zeile): alle Zeilen werden gleich hoch gezeichnet. Bitte die Datei einspielen.")  # v1.15
         for row in rows:                                   # Hoehe je Zeile aus der Excel-Schicht (nach Datenzeile gespeichert)  # v1.14
             row["_h"] = scaled_height(sheet.data_row_height(row["_r"]), self.row_scale) if has_heights else row_px  # v1.15
-        self.apply_design(ws, rows, self.page.led_row_count(ws))  # v1.14
+        led_count = self.page.led_row_count(ws)
+        self.apply_design(ws, rows, led_count)
+        for row in rows:
+            if row["_r"] == DESIGN_GOTO_ROW - 2:
+                row["_h"] = min(row["_h"], max(52, row_px * 2))
+            elif row["_r"] == DESIGN_HEAD_ROW - 2:
+                row["_h"] = row_px + 4
+                row["_rgb_control"] = bool(ws.RGB_LED_CheckBox.Value)
+        shapes = self.shapes_payload(ws)
+        pictures = sorted((shape for shape in shapes if shape.get("kind") == "pic"),
+                          key=lambda shape: (shape["x"], shape["y"]))
+        # The reference places legacy pictures under columns 2, 4, 6, ….
+        first_step = 5
+        step_width = widths.get(first_step, 56)
+        position = sum(int(column.get("width", 0)) for column in column_defs
+                       if not column.get("hide") and column.get("field") not in
+                       {f"c{index}" for index in widths if index >= first_step})
+        centers = []
+        for index in range(len(pictures)):
+            col = first_step + 1 + 2 * index
+            centers.append(position + sum(widths.get(c, step_width) for c in range(first_step, col))
+                           + widths.get(col, step_width) / 2)
+        if pictures:
+            last_led_id = DESIGN_FIRST_LED_ROW + led_count - 2
+            for index, row in enumerate(rows):
+                if row["_r"] == last_led_id:
+                    images = []
+                    for pic, center in zip(pictures, centers):
+                        height = min(pic["h"], 215)
+                        width = pic["w"] * height / pic["h"]
+                        images.append(dict(url=pic["url"], left=center - width / 2,
+                                           width=width, height=height))
+                    rows.insert(index + 1, {
+                        "_r": -1, "_pictures": images, "_gap": row["_h"],
+                        "_h": row["_h"] + max(pic["height"] for pic in images),
+                    })
+                    break
         if not self._widths_logged:  # v1.02
             self._widths_logged = True  # v1.02
             logger.info("Patterngenerator: Spaltenbreiten A bis N: %s", [widths.get(i) for i in range(14)])  # v1.02
@@ -844,7 +964,11 @@ class PatternView:
                 old_by_id = {r["_r"]: r for r in old_rows}  # v1.04
                 changed = [r for r in rows if old_by_id[r["_r"]] != r]  # v1.04
                 if changed:  # v1.04
-                    self.grid.run_grid_method("applyTransaction", {"update": changed})  # v1.04
+                    self.grid.run_grid_method("applyTransaction", {"update": changed})
+                    # Ramp styles depend on neighboring cells even when their values stay unchanged.
+                    self.grid.run_grid_method("refreshCells", {"force": True})
+                    if any(row.get("_pictures") for row in changed):
+                        self.grid.run_grid_method("redrawRows")  # v1.04
                     sent = True  # v1.05
             else:                                       # Zeilen hinzugekommen oder weggefallen: alle Zeilen austauschen (gleiche Ids bleiben stehen)  # v1.04
                 self.grid.run_grid_method("setGridOption", "rowData", rows)  # v1.04
@@ -861,14 +985,15 @@ class PatternView:
             self.page.sync_pictures(ws)                      # Bilder des Blatts fuer das Sichern der Arbeitsmappe merken  # v1.12
         except Exception:                                    # noqa: BLE001  # v1.12
             logger.debug("Bilder nicht gemerkt", exc_info=True)  # v1.12
-        ui.run_javascript("window.mllShapes(%s)" % json.dumps(self.shapes_payload(ws)))  # v1.01
+        ui.run_javascript("window.mllShapes(%s)" % json.dumps([
+            shape for shape in shapes if shape.get("kind") != "pic"
+        ]))
         try:  # v1.10
             keys = [f"{r - 1},c{c - 1}" for r, c in self.page.dialog_cells(ws)]       # Zellen mit Dialog beim Doppelklick  # v1.10
         except Exception:                                    # noqa: BLE001  # v1.10
             logger.debug("Zellen mit Dialog nicht ermittelt", exc_info=True)  # v1.10
             keys = []  # v1.10
         ui.run_javascript("window.mllPDlg = new Set(%s)" % json.dumps(keys))  # v1.10
-        self.sync_rgb()  # v1.01
         text = f"Blatt {ws.Name}: {meta['rows']} Zeilen"
         if meta["shown_rows"] != meta["rows"]:
             text += f", {meta['shown_rows']} sichtbar"
@@ -921,6 +1046,106 @@ class PatternView:
             if row is not None and "backgroundColor" not in row.get("_st", {}).get(f"c{col}", {}):  # v1.14
                 style(r, col, backgroundColor=color)  # v1.14
         last_led = DESIGN_FIRST_LED_ROW + max(1, int(led_count)) - 1                   # die Tabelle hat so viele LED-Zeilen (Spalte D hat immer die Nummern 1 bis 20)  # v1.14
+        # Render ramps in the cells so AG Grid retains them during scrolling.
+        def value(row, col):
+            return by_row.get(row, {}).get(f"c{col}")
+
+        def number(raw, default=0):
+            try:
+                text = str(raw or "").strip()
+                return float(int(text, 16)) if text.lower().startswith("0x") else float(text)
+            except ValueError:
+                return default
+
+        display = str(value(14, 4) or "1").upper()
+        if ("1" in display or "G" in display) and str(value(12, 4)) == "1":
+            from urllib.parse import quote
+
+            start_number = 0
+            for col in range(5, DESIGN_LAST_COL + 1):
+                mark = str(value(DESIGN_GOTO_ROW, col) or "").upper()
+                glyphs = []
+                if col == 5 or "S" in mark:
+                    glyphs.append(f'<text x="2" y="12" font-size="12">{start_number}</text>')
+                    glyphs.append('<path d="M10 10l14 19m-2-8 2 8-8-3" stroke="#20722b" stroke-width="1.7" fill="none"/>')
+                    start_number += 1
+                if "E" in mark:
+                    glyphs.append('<path d="M31 29L47 10m-8 3 8-3-2 8" stroke="#a42727" stroke-width="1.7" fill="none"/>')
+                if glyphs:
+                    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 32">' + "".join(glyphs) + '</svg>'
+                    style(DESIGN_GOTO_ROW - 1, col,
+                          backgroundImage=f'url("data:image/svg+xml,{quote(svg, safe="")}")',
+                          backgroundRepeat="no-repeat", backgroundPosition="center bottom",
+                          backgroundSize="100% 32px")
+        if "1" in display or "L" in display:
+            from urllib.parse import quote
+
+            rgb = getattr(getattr(ws, "RGB_LED_CheckBox", None), "Value", False)
+            # Older saved sheets may lack the checkbox state but retain centered RGB labels.
+            triples = list(range(DESIGN_FIRST_LED_ROW, last_led + 1, 3))
+            centered_labels = len(triples) > 1 and all(
+                not value(r, 4) and value(r + 1, 4) and not value(r + 2, 4)
+                for r in triples
+            )
+            saved_mode = (getattr(ws, "persistent_controls_dict", None) or {}).get("pattern_rgb")
+            group = 3 if (rgb or (saved_mode is None and centered_labels)) else 1
+            bits = max(1, min(8, int(number(value(6, 4), 8))))
+            low, high = (0, 255) if bits == 8 else (number(value(7, 4)), number(value(8, 4), 255))
+            fade = str(value(11, 4) or "").upper() in {"1", "X"}
+            goto = str(value(12, 4)) == "1"
+            columns = [c for c in range(5, DESIGN_LAST_COL + 1)
+                       if value(DESIGN_GOTO_ROW, c) or value(DESIGN_DAUER_ROW, c)
+                       or any(value(r, c) not in (None, "") for r in range(DESIGN_FIRST_LED_ROW, last_led + 1))]
+            for first in range(DESIGN_FIRST_LED_ROW, last_led + 1, group):
+                end = min(last_led, first + group - 1)
+                color = by_row.get(first, {}).get("_st", {}).get("c4", {}).get("backgroundColor", "#dcdc00")
+                if color.lower() in {"#ffffff", "white"}:
+                    color = "#dcdc00"
+
+                maximum = (1 << bits) - 1
+
+                def channel_level(raw):
+                    text = str(raw if raw is not None else "").strip()
+                    if text in {"", ".", "-"}:
+                        return 0
+                    return max(0, min(maximum, number(text, maximum)))
+
+                def brightness(col):
+                    mean = sum(channel_level(value(r, col)) for r in range(first, end + 1)) / (end - first + 1)
+                    return max(0, min(1, (low + mean / maximum * (high - low)) / 255))
+
+                previous = brightness(max(columns)) if columns else 0
+                reachable = True
+                prior_mark = ""
+                for col in range(5, max(columns, default=4) + 1):
+                    mark = str(value(DESIGN_GOTO_ROW, col) or "").upper()
+                    start = col == 5 or "S" in mark
+                    reachable = not goto or start or (reachable and "E" not in prior_mark and "G" not in prior_mark)
+                    current = brightness(col)
+                    start_fade = goto and start and str(value(11, 4) or "").upper() == "X"
+                    left = max(0, min(1, high / 255)) if start_fade else previous if fade else current
+                    if reachable and (left or current):
+                        row_heights = [by_row.get(r, {}).get("_h", ROW_PX)
+                                       for r in range(first, end + 1)]
+                        height = sum(row_heights)
+                        polygon = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 {height}" '
+                                   f'width="100%" height="100%" overflow="hidden" preserveAspectRatio="none"><path d="M0 {height} H1 '
+                                   f'V{height * (1-current)} L0 {height * (1-left)} Z" '
+                                   f'fill="{color}" fill-opacity=".32"/></svg>')
+                        if start_fade and (low or current):
+                            second = (f'<path d="M0 {height} H1 V{height * (1-current)} '
+                                      f'L0 {height * (1-max(0, min(1, low / 255)))} Z" '
+                                      f'fill="{color}" fill-opacity=".5"/>')
+                            polygon = polygon.replace("</svg>", second + "</svg>")
+                        offset = 0
+                        for row, row_height in enumerate(row_heights, first):
+                            segment = polygon.replace(f'viewBox="0 0 1 {height}"',
+                                                      f'viewBox="0 {offset} 1 {row_height}"')
+                            offset += row_height
+                            style(row, col, backgroundImage=f'url("data:image/svg+xml,{quote(segment, safe="")}")',
+                                  backgroundSize="100% 100%", backgroundRepeat="no-repeat",
+                                  backgroundOrigin="border-box")
+                    previous, prior_mark = current, mark
         # Schrift der Ergebniszeilen
         style(20, 4, color="#0000FF", fontWeight="bold")                        # Ergebnis  # v1.14
         style(23, 4, color="#00B050", fontWeight="bold")                        # Makro  # v1.14
@@ -929,6 +1154,8 @@ class PatternView:
         # Farben
         style(DESIGN_HEAD_ROW, 3, backgroundColor="#FFF2CC")                  # LED Nr  # v1.14
         for r in range(DESIGN_FIRST_LED_ROW, last_led + 1):  # v1.14
+            if r in by_row:
+                by_row[r]["c3"] = str(r - DESIGN_FIRST_LED_ROW + 1)
             style(r, 3, backgroundColor="#FFF2CC")  # v1.14
         for c in range(4, DESIGN_LAST_COL + 1):  # v1.14
             fill(DESIGN_HEAD_ROW, c, "#BDD7EE")                                 # Spalte Nr -> und die Zahlen der Spalten  # v1.14

@@ -539,7 +539,9 @@ MobaLedLib_Prepare();
   LED_Heartbeat_C LED_HeartBeat(LED_HEARTBEAT_PIN); // Initialize the heartbeat LED which is flashing if the program runs.
 #endif
 
-#if defined USE_SPI_COM || defined USE_COMM_INTERFACE                                                         // 12.11.20 Juergen use second buffer for DCC interface communication
+#if defined MLL_OTA_SAVED_WIFI && defined(USE_OTA)
+  char Buffer[3][13] = {};
+#elif defined USE_SPI_COM || defined USE_COMM_INTERFACE                                                         // 12.11.20 Juergen use second buffer for DCC interface communication
   char Buffer[2][13] = {"",""};
 #else
   char Buffer[1][13] = {""};
@@ -570,7 +572,10 @@ bool Send_Disable_Pin_Active = 1;                                               
 
 // Forward defines to help the Arduino builder. They are important for the fast build of the ESP32
 void Proc_Color_Cmd(const char *Buffer);
-void Receive_LED_Color_per_RS232();
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA) && defined(RECEIVE_LED_COLOR_PER_RS232)
+static bool mllNetworkDirect = false;
+#endif
+void Receive_LED_Color_per_RS232(Stream &port, bool network = false);
 void Update_InputCh_if_Addr_exists(uint16_t ReceivedAddr, uint8_t Direction, uint8_t OutputPower);
 bool Get_Char_from_RS232_or_SPI(char &c, uint8_t &Buff_Nr);
 void Proc_Received_Char();
@@ -630,19 +635,50 @@ void Proc_Color_Cmd(const char *Buffer)                                         
 #endif
 
 //--------------------------------
-void Receive_LED_Color_per_RS232()                                                                            // 03.11.19:
+void Receive_LED_Color_per_RS232(Stream &port, bool network)                                                                            // 03.11.19:
 //--------------------------------
 {
 #ifdef SEND_DISABLE_PIN
   if (Send_Disable_Pin_Active) digitalWrite(SEND_DISABLE_PIN, 1); // Tell the DCC Arduino to be quiet         // 13.05.20:  Added: if (Send_Disable_Pin_Active)
 #endif
-  char Buffer[20] = "";
-  unsigned long lastLEDUpdate = 0;
+  char usbBuffer[32] = "";
+  bool usbOverflow = false;
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA)
+  static CRGB effectPixels[NUM_LEDS];
+  static char networkBuffer[32] = "";
+  static bool networkOverflow = false;
+  static unsigned long networkLastUpdate = 0;
+  if (network && !mllNetworkDirect)
+  {
+    memcpy(effectPixels, leds, sizeof(effectPixels));
+    networkBuffer[0] = 0;
+    networkOverflow = false;
+    mllNetworkDirect = true;
+  }
+#endif
+  unsigned long usbLastUpdate = 0;
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA)
+  char *Buffer = network ? networkBuffer : usbBuffer;
+  bool &overflow = network ? networkOverflow : usbOverflow;
+  unsigned long &lastLEDUpdate = network ? networkLastUpdate : usbLastUpdate;
+#else
+  char *Buffer = usbBuffer;
+  bool &overflow = usbOverflow;
+  unsigned long &lastLEDUpdate = usbLastUpdate;
+#endif
 #ifndef LEDS_PER_CHANNEL
   uint8_t JustStarted = 1;
 #endif
   while (1)
      {
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA)
+     if (network && !static_cast<WiFiClient &>(port).connected())
+     {
+         memcpy(leds, effectPixels, sizeof(effectPixels));
+         mllNetworkDirect = false;
+         return;
+     }
+#endif
      #if defined LED_HEARTBEAT_PIN && LED_HEARTBEAT_PIN >= 0                                                  // 13.05.20:
        LED_HeartBeat.Update(300); // Fast Flash
      #endif
@@ -651,17 +687,23 @@ void Receive_LED_Color_per_RS232()                                              
      // keep the LED bus alive even if external program doesn't send any data
      if ((millis()-lastLEDUpdate) > 900) 
      {
+#ifdef ESP32
+        lastFastledSend = millis();
+#endif
         FastLED.show();                       // Show the LEDs (send the leds[] array to the LED stripe)
         lastLEDUpdate = millis();
      }
 
-     while (Serial.available() > 0)
+     unsigned int processed = 0;
+     while (port.available() > 0 && (!network || processed++ < 128))
         {
-        char c = Serial.read();
+        char c = port.read();
         switch (c)
            {
-           case '#': *Buffer = '\0'; break;
+           case '#': *Buffer = '\0'; overflow = false; break;
+           case '\r': break;
            case '\n': // Proc buffer       (For tests with the serial console of Arduino use "Neue Zeile" and not "..(CR)" )
+                      if (overflow) { overflow = false; *Buffer = 0; break; }
 #ifndef LEDS_PER_CHANNEL
                       if (JustStarted)
                            JustStarted = 0;
@@ -672,13 +714,21 @@ void Receive_LED_Color_per_RS232()                                              
                              {
 #ifdef LEDS_PER_CHANNEL
 							 case '?':
-//                       char s[100]; sprintf(s, "#?%s%s", START_MSG,LEDS_PER_CHANNEL); Serial.println(s);  // Debug
+//                       char s[100]; sprintf(s, "#?%s%s", START_MSG,LEDS_PER_CHANNEL); port.println(s);  // Debug
 
-                             Serial.print("#?");															   // 13.03.21 Juergen inform farbtest about led count per channel
-										Serial.print(START_MSG);
-										 Serial.println(LEDS_PER_CHANNEL);
+                             port.print("#?");															   // 13.03.21 Juergen inform farbtest about led count per channel
+										port.print(START_MSG);
+										 port.println(LEDS_PER_CHANNEL);
 										break;
-                             case 'X': return;						                                                   // 13.03.21 Juergen stop Receive_LED_Color_per_RS232 without rebooting
+                             case 'X':
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA)
+                                       if (network)
+                                       {
+                                         memcpy(leds, effectPixels, sizeof(effectPixels));
+                                         mllNetworkDirect = false;
+                                       }
+#endif
+                                       return;						                                                   // 13.03.21 Juergen stop Receive_LED_Color_per_RS232 without rebooting
 #else
                              case 'E': ResetArduino(); // Restart the Arduino
 #endif
@@ -687,7 +737,8 @@ void Receive_LED_Color_per_RS232()                                              
                                lastLEDUpdate = 0;   // force an update
                                break;
                              }
-                             default:  Serial.print(F("#Unknown cmd:'")); Serial.print(Buffer); Serial.println(F("'"));// Debug
+                             default:  port.print(F("#Unknown cmd:'")); port.print(Buffer); port.println(F("'"));// Debug
+                                       if (network) break;
                                        return;									       // 02.01.22: Juergen avoid hangup
                              }
                            }
@@ -696,15 +747,17 @@ void Receive_LED_Color_per_RS232()                                              
 #endif
                       break;
            default:   { // Add character to Buffer
+                      if (overflow) break;
                       uint8_t len = strlen(Buffer);
-                      if (len < sizeof(Buffer)-1)
+                      if (len < sizeof(usbBuffer)-1)
                            {
                            Buffer[len++] = c;
                            Buffer[len]   = '\0';
                            }
                       else {
                            *Buffer = '\0';
-                           Serial.println(F("Buffer overflow")); // Debug
+                           overflow = true;
+                           port.println(F("Buffer overflow")); // Debug
 #ifdef ESP32
          esp_task_wdt_reset();                                                                                // 14.08.24: Juergen -  reset watchdog timer, even if serial data is always available
 #endif
@@ -712,6 +765,7 @@ void Receive_LED_Color_per_RS232()                                              
                       }
            }
         }
+     if (network) return;
      #if defined(USE_DMX_PIN)                                                                                 // 20.01.21:
          dmxInterface.loop();
      #endif
@@ -1200,7 +1254,11 @@ uint8_t Handle_Command(uint8_t Type, const uint8_t* arguments, bool process)
   }
 #endif // USE_SPI_COM
 
-#if defined USE_RS232_OR_SPI_AS_INPUT || defined RECEIVE_LED_COLOR_PER_RS232
+#ifdef MLL_OTA_SAVED_WIFI
+#include "ESP32WifiUsb.h"
+#endif
+
+#if defined USE_RS232_OR_SPI_AS_INPUT || defined RECEIVE_LED_COLOR_PER_RS232 || defined MLL_OTA_SAVED_WIFI
       //--------------------------------------------------------
       bool Get_Char_from_RS232_or_SPI(char &c, uint8_t &Buff_Nr)
       //--------------------------------------------------------
@@ -1233,10 +1291,26 @@ uint8_t Handle_Command(uint8_t Type, const uint8_t* arguments, bool process)
     }
 #endif
 #endif
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA)
+    if (mllDeviceAuthenticated && mllDeviceClient.connected() && mllDeviceClient.available())
+    {
+      if (mllDeviceNewSession)
+      {
+        *Buffer[2] = 0;
+        mllDeviceNewSession = false;
+      }
+      Buff_Nr = 2;
+      c = mllDeviceClient.read();
+      return 1;
+    }
+#endif
 	if (Serial.available() > 0)
 		{
 		Buff_Nr = 0;
 		c = Serial.read();
+#ifdef MLL_OTA_SAVED_WIFI
+        if (WifiUsbReceive(c)) return 0;
+#endif
 		//PORTB |= 3;   // Debug Speed Test
 		return 1;
 		}
@@ -1271,7 +1345,11 @@ uint8_t Handle_Command(uint8_t Type, const uint8_t* arguments, bool process)
        switch (c)
           {
           #if defined RECEIVE_LED_COLOR_PER_RS232
-             case '#': if (Buff_Nr==0) Receive_LED_Color_per_RS232(); // The first '#' is used to enable the serial color change mode  // 03.11.19:  // 13.05.20:  Added: if (Buff_Nr==0)
+             case '#':
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA)
+                       if (Buff_Nr==2) Receive_LED_Color_per_RS232(mllDeviceClient, true);
+#endif
+                       if (Buff_Nr==0) Receive_LED_Color_per_RS232(Serial); // The first '#' is used to enable the serial color change mode  // 03.11.19:  // 13.05.20:  Added: if (Buff_Nr==0)
                        break;
           #endif
           #if defined USE_RS232_OR_SPI_AS_INPUT
@@ -1441,7 +1519,7 @@ uint8_t Handle_Command(uint8_t Type, const uint8_t* arguments, bool process)
   }
 #endif
 
-#ifdef USE_ESP32_EXTENSIONS
+#if defined(USE_ESP32_EXTENSIONS) || defined(MLL_OTA_SAVED_WIFI)
 #include "ESP32Extensions.h"
 #endif
 
@@ -1855,7 +1933,7 @@ void setup(){
     #endif
   #endif
 
-  #ifdef USE_ESP32_EXTENSIONS
+  #if defined(USE_ESP32_EXTENSIONS) || defined(MLL_OTA_SAVED_WIFI)
      setupESP32Extensions();
   #endif
 
@@ -2286,7 +2364,7 @@ if ((millis()-lastMillis)>=10000)
 #endif
 
 #endif
-#ifdef USE_ESP32_EXTENSIONS
+#if defined(USE_ESP32_EXTENSIONS) || defined(MLL_OTA_SAVED_WIFI)
   loopESP32Extensions();
 #endif
 
@@ -2306,7 +2384,7 @@ void MLLTask( void * parameter )
   PERSISTENCE_SETUP(EEPROM_SIZE);
   while(1) {
     MLLMainLoop();
-#ifdef USE_ESP32_EXTENSIONS
+#if defined(USE_ESP32_EXTENSIONS) || defined(MLL_OTA_SAVED_WIFI)
   loopESP32Extensions2();
 #endif
     yield();
@@ -2321,6 +2399,10 @@ void MLLTask( void * parameter )
 
 //-----------------
 void MLLMainLoop(){
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA)
+  // Keep the TCP client on the same core as the command parser.
+  MllDevicePoll();
+#endif
 //-----------------
   //Eigene_loop();
   #ifdef Additional_Loop_Proc
@@ -2336,13 +2418,23 @@ void MLLMainLoop(){
     LED_HeartBeat.Update();
   #endif
 
+#if defined(MLL_OTA_SAVED_WIFI) && defined(USE_OTA) && defined(RECEIVE_LED_COLOR_PER_RS232)
+  if (mllNetworkDirect)
+  {
+    Receive_LED_Color_per_RS232(mllDeviceClient, true);
+    return;
+  }
+#endif
   MobaLedLib.Update();                  // Update the LEDs in the configuration
 
   #ifdef DayAndNightTimer_Period                                                                              // 07.10.20:
     Update_DayAndNightTimer();
   #endif
 
-  #if defined USE_RS232_OR_SPI_AS_INPUT || defined RECEIVE_LED_COLOR_PER_RS232
+  #ifdef MLL_OTA_SAVED_WIFI
+    WifiUsbPoll();
+  #endif
+  #if defined USE_RS232_OR_SPI_AS_INPUT || defined RECEIVE_LED_COLOR_PER_RS232 || defined MLL_OTA_SAVED_WIFI
     Proc_Received_Char();               // Process characters received from the RS232 (DCC, Selectrix, ... Arduino)
   #endif
 
