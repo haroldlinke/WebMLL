@@ -1,13 +1,14 @@
-# Datei-Version: 1.09 (2026-11-08) - headless_app_controller.py
+# Datei-Version: 1.10 (2026-11-12) - headless_app_controller.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_app_controller.py
 # Path:           headless/headless_app_controller.py
-# Version:        1.09
-# Last Update:    2026-11-08
+# Version:        1.10
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.09  2026-11-08  Die Suche nach der ARDUINO IDE schreibt keine Warnung mehr ins Protokoll, wenn PlatformIO installiert ist (Standard seit 2.92): dann nur eine Info (fruehere Versionen ohne Eintrag)
+#   1.10  2026-11-12  ARDUINOTest wird bei jedem Zugriff aus den Einstellungen gelesen (Eigenschaft); vorher einmal beim Start: das Einschalten von 'Test ARDUINO Programm Creation' wirkte erst nach einem Neustart (Rueckmeldung des Entwicklers zu 3.22: es kamen keine Fragen)
 # ----------------------------------------------------------------------------------------------
 """HeadlessAppController: Tk-freier Ersatz fuer pyMobaLedLibapp (Startprogramm).
 
@@ -361,9 +362,22 @@ class HeadlessAppController(SerialMixin, HeadlessController):
         self.IPUploadTimeout = g("IPUploadTimeout")
         self.smallscreen = False
         # Flags, die M06_Write_Header / M08_ARDUINO am globalen Controller lesen (wie pyMobaLedLibapp)
-        self.ARDUINOTest = g("ARDUINOTest")
+        # self.ARDUINOTest = g("ARDUINOTest")  # v1.10 (entfallen: Eigenschaft, immer der aktuelle Wert)
         self.useESP32WinBat = self.command_line_args.get("useESP32WINBAT", False)
         self.execute_upload = True
+
+    # ------------------------------------------------------------------ Test ARDUINO Programm Creation: immer der aktuelle Wert (v1.10)
+    # Bis 1.09 wurde der Wert einmal beim Start gelesen (_init_from_config): Das Einschalten in den ARDUINO Einstellungen wirkte erst nach einem Neustart des Programms.
+    # Die Zuweisung (zum Beispiel aus aelterem Code) bleibt erlaubt und wird ignoriert. (show_hiddentables, maxLEDcnt und IPUploadTimeout bleiben unveraendert: Sie werden anderswo gesetzt.)
+    @property
+    def ARDUINOTest(self):  # v1.10
+        """Test ARDUINO Programm Creation (ARDUINO Einstellungen): nach jedem Schritt der Erzeugung eine Frage; Wahrheitswert (auch der Text 'False' oder '0' ist aus)"""  # v1.10
+        value = self.getConfigData("ARDUINOTest")  # v1.10
+        return str(value if value is not None else "").strip().lower() in ("1", "true", "ja", "yes", "an", "ein", "on")  # v1.10
+
+    @ARDUINOTest.setter
+    def ARDUINOTest(self, value):  # v1.10
+        pass  # v1.10
 
     # ------------------------------------------------------------------ Excel-Schicht
     def create_excel_application(self):

@@ -1,9 +1,9 @@
-# Datei-Version: 1.13 (2026-11-01) - web_graph.py
+# Datei-Version: 1.14 (2026-11-12) - web_graph.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_graph.py
 # Path:           _web/web_graph.py
-# Version:        1.13
-# Last Update:    2026-11-01
+# Version:        1.14
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -21,6 +21,7 @@
 #   1.11  2026-10-28  Hintergrundbild ohne Pillow: Knopf oeffnet das Dateifenster im Browser, Upload per POST (mll_view_upload), Ereignis mll_graph_image
 #   1.12  2026-11-01  view_model und update bekommen chain_size (Groesse der Kaestchen in der Ansicht Ketten)
 #   1.13  2026-11-01  Groesse und Rueckgaengig in beiden Ansichten, Trennlinie zwischen Grafik und Tabelle (Ansicht Beides)
+#   1.14  2026-11-12  Schalter 'Alle Zeilen' in der Kopfzeile der Ansicht Ketten (all_rows je Blatt): Knoten ohne LEDs tragen den Text 'Ohne LEDs'; view_model meldet all_rows
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht des Programm Generators, Stufe 1: Verbindung zwischen Modell, Seite und Browser.
@@ -175,7 +176,7 @@ def plant_data(layout: dict, positions: dict, model: dict):  # v1.07
 # def view_model(model: dict, plant=None) -> dict:  # v1.12 (entfallen)
 def view_model(model: dict, plant=None, chain_size=None) -> dict:  # v1.12
     """Kopie des Modells mit den Texten in der gewaehlten Sprache (Kanal, Anzahl, LED-Nummern, Hinweis zum Knoten) fuer mll_graph.js"""
-    out = {"sheet": model.get("sheet", ""), "chains": [], "other": [], "count": model.get("count", 0)}
+    out = {"sheet": model.get("sheet", ""), "chains": [], "other": [], "count": model.get("count", 0), "all_rows": bool(model.get("all_rows"))}  # v1.14
     if chain_size:  # v1.12
         out["chain_size"] = float(chain_size)                                      # Breite der Kaestchen in der Ansicht Ketten (Pixel)  # v1.12
 
@@ -183,6 +184,9 @@ def view_model(model: dict, plant=None, chain_size=None) -> dict:  # v1.12
         parts = [n.get("label", "")] + ([n["descrip"]] if n.get("descrip") else []) + [n.get("config", "")]
         d = dict(n)
         d["led_text"] = led_text(n)
+        d["noled"] = bool(n.get("noled") and model.get("all_rows"))  # v1.14: nur in 'Alle Zeilen' zeichnet die Grafik Zeilen ohne LEDs anders (in der Liste Ohne LEDs bleibt alles wie bisher)
+        if d["noled"]:  # v1.14: Zeile ohne LEDs in einer Kette (Alle Zeilen)
+            d["led_text"] = tr("Ohne LEDs")  # v1.14
         d["tooltip"] = "\n".join(p for p in parts if p)
         return d
     for chain in model.get("chains", []):
@@ -240,6 +244,8 @@ class GraphPanel:
                 # Kopfzeile: Ansicht Ketten oder Anlage (Hintergrundbild), Bild laden und entfernen, Zoom
                 with ui.row().classes("items-center no-wrap q-pa-xs").style("gap: 6px; border-bottom: 1px solid #e0e0e0; min-height: 40px"):  # v1.07
                     self.mode_toggle = ui.toggle({"chains": tr("Ketten"), "plant": tr("Anlage")}, value="chains", on_change=lambda e: self._layout("mode", e.value)).props("dense no-caps unelevated size=sm")  # v1.07
+                    self.all_rows_box = ui.checkbox(tr("Alle Zeilen"), on_change=lambda e: self._layout("all_rows", bool(e.value))).props("dense")  # v1.14: nur in der Ansicht Ketten
+                    self.all_rows_box.tooltip(tr("Alle aktiven Zeilen in der Reihenfolge der Tabelle zeigen, auch die ohne LEDs (sie stehen in der Kette der nachfolgenden Zeile mit LEDs)"))  # v1.14
                     # self.image_button = ui.button(tr("Bild laden ..."), icon="image", on_click=lambda: self._layout("image_load")).props("dense flat no-caps size=sm")  # v1.11 (entfallen)
                     self.image_button = ui.button(tr("Bild laden ..."), icon="image").props("dense flat no-caps size=sm")  # v1.11
                     self.image_button.on("click", js_handler="() => mllGraph.pickImage()")                # im Browser: Dateifenster (nur direkt im Klick erlaubt), Verkleinern, Hochladen  # v1.11
@@ -368,7 +374,8 @@ class GraphPanel:
         return self.on_layout(action, value)  # v1.08
 
     # def set_plant_controls(self, mode: str, has_image: bool) -> None:  # v1.10 (entfallen)
-    def set_plant_controls(self, mode: str, has_image: bool, size=None, snap=False, undo=None) -> None:  # v1.10
+    # def set_plant_controls(self, mode: str, has_image: bool, size=None, snap=False, undo=None) -> None:  # v1.10 (entfallen)
+    def set_plant_controls(self, mode: str, has_image: bool, size=None, snap=False, undo=None, all_rows=False) -> None:  # v1.14
         """Kopfzeile an die Ansicht anpassen (ohne Ereignis): der Umschalter zeigt die Ansicht, Bild und Zoom nur in der Anlagenansicht"""  # v1.07
         self._guard = True  # v1.07
         try:  # v1.07
@@ -376,6 +383,7 @@ class GraphPanel:
             if size is not None:  # v1.10
                 self.size_slider.set_value(size)  # v1.10
             self.snap_box.set_value(bool(snap))  # v1.10
+            self.all_rows_box.set_value(bool(all_rows))  # v1.14
         finally:  # v1.07
             self._guard = False  # v1.07
         plant = mode == "plant"  # v1.07
@@ -386,6 +394,7 @@ class GraphPanel:
         for control in (self.size_label, self.size_slider, self.undo_button, self.undo_label):          # Groesse und Rueckgaengig gibt es in beiden Ansichten (Ketten und Anlage)  # v1.13
             control.set_visibility(True)  # v1.13
         self.image_remove.set_visibility(plant and bool(has_image))  # v1.07
+        self.all_rows_box.set_visibility(not plant)  # v1.14: der Schalter gilt nur fuer die Ketten
         self.undo_button.set_enabled(bool(undo))  # v1.10
         self.undo_label.set_text(tr("Rückgängig: {aktion}", aktion=undo) if undo else "")  # v1.10
 

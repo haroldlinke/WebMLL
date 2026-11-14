@@ -1,8 +1,8 @@
-# Datei-Version: 1.16 (2026-11-12) - M08_ARDUINO.py
+# Datei-Version: 1.17 (2026-11-12) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.16
+# Version:        1.17
 # Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -24,6 +24,7 @@
 #   1.14  2026-11-11  Pruefung des Arduino: eigene Meldung bei -2/-3 (Anschluss nicht ansprechbar) statt 'von einem anderen Programm benutzt'; das Board wird nur noch automatisch umgestellt, wenn die Einstellung DetectBootloader an ist (oder bei ESP32), mit Hinweis; Hochladen: Meldung 'Keine Antwort' bei stk500_getsync/not in sync (Upload_Failed_Not_In_Sync); Meldung 'Pruefung fehlgeschlagen' nennt beide Bootloader-Einstellungen
 #   1.15  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26); Pruefung des gewaehlten Anschlusses mit dem Board-Typ des Blatts (Check_If_Port_is_Available(_And_Get_Name)(Port, Board-Typ) wie im Excel-Programm)
 #   1.16  2026-11-12  Excel-Programm 3.5.0L3: platformio.ini: die Bibliothek MobaLedLib wird mit symlink:// verknuepft statt kopiert (file://), wenn der Rechner symbolische Verknuepfungen erlaubt (Lib_Link_Scheme, sonst wie bisher file://); Write_PIO_Extension einmal im Abschnitt [env] statt in jedem Abschnitt (damit auch fuer den Pico); WriteGenButtonReleaseDefine: Text plus Zahl (TypeError bei GEN_BUTTON_RELEASE_COM 2 oder 3) behoben
+#   1.17  2026-11-12  Einstellung 'Test ARDUINO Programm Creation' (ARDUINOTest): Die Fragen nach jedem Schritt kommen jetzt als Web-Dialog (P01.MsgBox) statt tk.messagebox (ohne Tk lieferte askyesno immer Nein: 'Headerfileerstellung abgebrochen - Die Headerdatei wurde nicht geschrieben', Windows 11, Log des Testers)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -2275,10 +2276,11 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
     #*HL Res = ShellAndWaitResult()
     PG.global_controller.execute_upload = True
     if PG.global_controller.ARDUINOTest:
-        answer = tk.messagebox.askyesnocancel ('ARDUINOTest','Kompilieren und Hochladen (ja)\nNur Kompilieren (Nein)\nAbbrechen',default='yes')
-        if answer == None:
+        # answer = tk.messagebox.askyesnocancel ('ARDUINOTest','Kompilieren und Hochladen (ja)\nNur Kompilieren (Nein)\nAbbrechen',default='yes')  # v1.17 (entfallen)
+        answer = P01.MsgBox('Kompilieren und Hochladen (Ja)\nNur Kompilieren (Nein)\nAbbrechen', vbQuestion + vbYesNoCancel, 'ARDUINOTest')  # v1.17: Web-Dialog
+        if answer == vbCancel:  # v1.17
             return False# cancelation return to "ConfigurationOage"
-        PG.global_controller.execute_upload = answer # True=compile and upload - False = only compile
+        PG.global_controller.execute_upload = (answer == vbYes) # True=compile and upload - False = only compile  # v1.17
             
 
     Start = Variant()
@@ -2347,10 +2349,11 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
         useARDUINO_IDE=False
         
     if PG.global_controller.ARDUINOTest:
-        answer = tk.messagebox.askyesnocancel ('ARDUINOTest','Use ARDUINO IDE (ja)\nuse ARDUINO Builder (Nein)\nAbbrechen',default='yes')
-        if answer == None:
+        # answer = tk.messagebox.askyesnocancel ('ARDUINOTest','Use ARDUINO IDE (ja)\nuse ARDUINO Builder (Nein)\nAbbrechen',default='yes')  # v1.17 (entfallen)
+        answer = P01.MsgBox('Use ARDUINO IDE (Ja)\nuse ARDUINO Builder (Nein)\nAbbrechen', vbQuestion + vbYesNoCancel, 'ARDUINOTest')  # v1.17: Web-Dialog
+        if answer == vbCancel:  # v1.17
             return False# cancelation return
-        useARDUINO_IDE = answer
+        useARDUINO_IDE = (answer == vbYes)  # v1.17
     
     if PG.get_global_controller().useARDUINO_IDE==True or (M02a.Get_BoardTyp() == M02.HT_ESP32 and PG.get_global_controller().useESP32WinBat==False) or M02a.Get_BoardTyp() == M02.HT_PICO:
         useARDUINO_IDE = True

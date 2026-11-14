@@ -124,6 +124,7 @@ colonnes";"Tutte le
 colonne";"Todas las
 columnas";"Alle
 kolonner"
+Alle aktiven Zeilen in der Reihenfolge der Tabelle zeigen, auch die ohne LEDs (sie stehen in der Kette der nachfolgenden Zeile mit LEDs);Show all active rows in the order of the table, including those without LEDs (they are placed in the chain of the following row with LEDs);Alle actieve rijen in de volgorde van de tabel tonen, ook die zonder LED's (ze staan in de keten van de volgende rij met LED's);Afficher toutes les lignes actives dans l'ordre du tableau, y compris celles sans LED (elles figurent dans la chaîne de la ligne suivante avec des LED);Mostra tutte le righe attive nell'ordine della tabella, anche quelle senza LED (si trovano nella catena della riga successiva con LED);Mostrar todas las filas activas en el orden de la tabla, también las que no tienen LED (están en la cadena de la fila siguiente con LED);Vis alle aktive rækker i tabellens rækkefølge, også dem uden LED'er (de står i kæden for den følgende række med LED'er)
 Alle Anschlüsse zeigen;Show all ports;Alle poorten tonen;Afficher tous les ports;Mostra tutte le porte;Mostrar todos los puertos;Vis alle porte
 Alle Beispiele;All examples;Alle voorbeelden;Tous les exemples;Tutti gli esempi;Todos los ejemplos;Alle eksempler
 Alle Beispiele löschen;Delete all examples;Alle voorbeelden verwijderen;Supprimer tous les exemples;Elimina tutti gli esempi;Eliminar todos los ejemplos;Slet alle eksempler
@@ -132,6 +133,7 @@ Alle LED aus;All LEDs off;Alle LED's uit;Toutes les LED éteintes;Tutti i LED sp
 Alle Multiplexer löschen ...;Delete all multiplexers ...;Alle multiplexers verwijderen ...;Supprimer tous les multiplexeurs ...;Elimina tutti i multiplexer ...;Eliminar todos los multiplexores ...;Slet alle multiplexere ...
 Alle Seiten speichern;Save all pages;Alle pagina's opslaan;Enregistrer toutes les pages;Salva tutte le pagine;Guardar todas las páginas;Gem alle sider
 Alle versteckten Zeilen einblenden;Show all hidden rows;Alle verborgen regels weergeven;Afficher toutes les lignes masquées;Mostra tutte le righe nascoste;Mostrar todas las filas ocultas;Vis alle skjulte rækker
+Alle Zeilen;All rows;Alle rijen;Toutes les lignes;Tutte le righe;Todas las filas;Alle rækker
 "Alle {count} Bilder der Seite {blatt} entfernen?
 Die Bilddateien selbst bleiben erhalten.";"Remove all {count} pictures of the page {blatt}?
 The picture files themselves are kept.";"Alle {count} afbeeldingen van de pagina {blatt} verwijderen?
@@ -1768,6 +1770,7 @@ Verknuepfungen im ZIP sind nicht erlaubt: {datei};Links in the ZIP are not allow
 Verknüpfung;Link;Koppeling;Lien;Collegamento;Enlace;Kobling
 Verknüpfung mit der nächsten Zeile mit: UND, ODER - Die Farbe der nächsten Zeile wird übernommen;Link with the next row with: AND, OR - the colour of the next row is taken over;Koppeling met de volgende regel met: EN, OF - de kleur van de volgende regel wordt overgenomen;Lien avec la ligne suivante avec : ET, OU - la couleur de la ligne suivante est reprise;Collegamento con la riga successiva con: E, O - il colore della riga successiva viene ripreso;Enlace con la fila siguiente con: Y, O - se toma el color de la fila siguiente;Kobling med den næste række med: OG, ELLER - den næste rækkes farve overtages
 Verschieben abgebrochen;Move cancelled;Verplaatsen geannuleerd;Déplacement annulé;Spostamento annullato;Movimiento cancelado;Flytning annulleret
+Verschieben nicht möglich: Eine Zeile ohne LEDs gehört zur nachfolgenden Zeile mit LEDs und würde dabei in eine andere Kette wechseln.;Moving is not possible: a row without LEDs belongs to the following row with LEDs and would change to another chain.;Verplaatsen niet mogelijk: een rij zonder LED's hoort bij de volgende rij met LED's en zou daarbij naar een andere keten wisselen.;Déplacement impossible : une ligne sans LED appartient à la ligne suivante avec des LED et passerait ainsi dans une autre chaîne.;Spostamento non possibile: una riga senza LED appartiene alla riga successiva con LED e passerebbe così a un'altra catena.;No se puede mover: una fila sin LED pertenece a la fila siguiente con LED y pasaría a otra cadena.;Flytning er ikke mulig: En række uden LED'er hører til den følgende række med LED'er og ville dermed skifte til en anden kæde.
 Verschieben von {n} Kästchen;Move of {n} boxes;Verplaatsen van {n} vakjes;Déplacement de {n} cadres;Spostamento di {n} riquadri;Movimiento de {n} cuadros;Flytning af {n} bokse
 Verschieben von „{name}“;Move of “{name}”;Verplaatsen van “{name}”;Déplacement de « {name} »;Spostamento di «{name}»;Movimiento de «{name}»;Flytning af “{name}”
 Version;Version;Versie;Version;Versione;Versión;Version

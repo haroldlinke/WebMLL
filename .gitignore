@@ -188,3 +188,6 @@ cython_debug/
 .vscode/ipch
 webmobaledlib.zip
 webmobaledlib_vorheriges.zip
+webmobaledlib_2.77.zip
+webmobaledlib_3.00.zip
+webmobaledlib_3.19.zip

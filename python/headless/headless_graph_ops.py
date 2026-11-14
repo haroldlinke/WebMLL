@@ -1,9 +1,9 @@
-# Datei-Version: 1.07 (2026-11-01) - headless_graph_ops.py
+# Datei-Version: 1.08 (2026-11-12) - headless_graph_ops.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph_ops.py
 # Path:           headless/headless_graph_ops.py
-# Version:        1.07
-# Last Update:    2026-11-01
+# Version:        1.08
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -15,6 +15,7 @@
 #   1.05  2026-10-28  plan_move: 'Ende der Kette' mit dem Kanal einer anderen Kette wird abgelehnt
 #   1.06  2026-10-28  macro_of_row: Makro einer Zeile (Name, Zeile in Lib_Macros) fuer Umschalt-Doppelklick
 #   1.07  2026-11-01  plan_move_many und move_many: mehrere markierte Knoten einer Kette gemeinsam verschieben
+#   1.08  2026-11-12  Ansicht 'Alle Zeilen' (all_rows): target_channel nimmt auch Knoten ohne LEDs; plan_move und plan_move_many lehnen ein Verschieben ab, bei dem eine Zeile in eine andere Kette wechseln wuerde (chain_assignment, would_change_chains, plan_move_ex)
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht, Stufe 2: Operationen auf der Tabelle (Zeile einfuegen am Ende einer Kette, Zeile entfernen).
@@ -30,7 +31,8 @@ def target_channel(model: dict, selected_row=None) -> int:
     """LED Kanal, an dessen Kette ein neues Makro haengt: der Kanal des markierten Knotens, sonst der erste Kanal der Grafik, sonst 0"""
     from headless import headless_graph
     node = headless_graph.find_node(model, selected_row) if selected_row is not None else None
-    if node is not None and node.get("leds", 0) + (1 if node.get("single") else 0) > 0:
+    # if node is not None and node.get("leds", 0) + (1 if node.get("single") else 0) > 0:  # v1.08 (entfallen)
+    if node is not None and (node.get("leds", 0) + (1 if node.get("single") else 0) > 0 or model.get("all_rows")):  # v1.08: in 'Alle Zeilen' hat auch ein Knoten ohne LEDs seine Kette
         return int(node["channel"])
     chains = model.get("chains") or []
     return int(chains[0]["channel"]) if chains else 0
@@ -133,7 +135,48 @@ def move_destination(row: int, kind: str, target_row: int):  # v1.04
     return None  # v1.04
 
 
-def plan_move(model: dict, row: int, target: dict):  # v1.04
+def chain_assignment(nodes: list) -> dict:  # v1.08
+    """Kette (Kanal) je Zeile fuer Knoten in der Reihenfolge der Tabelle nach der Regel der Ansicht 'Alle Zeilen': eine Zeile mit LEDs hat ihren Kanal, eine Zeile ohne LEDs
+    (noled) den der NACHFOLGENDEN Zeile mit LEDs, Zeilen hinter der letzten den der letzten; gibt es keine Zeile mit LEDs, ist der Kanal None. Rueckgabe {Zeile: Kanal oder None}"""  # v1.08
+    result, pending, last = {}, [], None  # v1.08
+    for n in nodes:  # v1.08
+        if n.get("noled"):  # v1.08
+            pending.append(n["row"])  # v1.08
+        else:  # v1.08
+            for r in pending:  # v1.08
+                result[r] = int(n["channel"])  # v1.08
+            pending = []  # v1.08
+            result[n["row"]] = last = int(n["channel"])  # v1.08
+    for r in pending:  # v1.08
+        result[r] = last  # v1.08
+    return result  # v1.08
+
+
+def all_nodes(model: dict) -> list:  # v1.08
+    """Alle Knoten des Modells (Ketten und Liste 'other') in der Reihenfolge der Tabelle"""  # v1.08
+    nodes = [n for c in model.get("chains", []) for n in c["nodes"]] + list(model.get("other", []))  # v1.08
+    return sorted(nodes, key=lambda n: n["row"])  # v1.08
+
+
+def would_change_chains(model: dict, new_rows: list) -> bool:  # v1.08
+    """Wuerde die Reihenfolge new_rows (Zeilen aller Knoten in der Reihenfolge der Tabelle nach dem Verschieben) eine Zeile in eine andere Kette bringen? Nur fuer 'Alle Zeilen':
+    Dort haengt die Kette einer Zeile ohne LEDs an der nachfolgenden Zeile mit LEDs, ein Verschieben kann sie deshalb in eine andere Kette werfen."""  # v1.08
+    by_row = {n["row"]: n for n in all_nodes(model)}  # v1.08
+    current = {n["row"]: int(c["channel"]) for c in model.get("chains", []) for n in c["nodes"]}  # v1.08
+    current.update({n["row"]: None for n in model.get("other", [])})  # v1.08
+    new = chain_assignment([by_row[r] for r in new_rows])  # v1.08
+    return any(new.get(r) != channel for r, channel in current.items())  # v1.08
+
+
+def plan_move_ex(model: dict, row: int, target: dict):  # v1.08
+    """Wie plan_move, aber mit Grund: (move_to oder None, grund); grund 'kette': Verschieben abgelehnt, weil eine Zeile in eine andere Kette wechseln wuerde"""  # v1.08
+    why: list = []  # v1.08
+    move_to = plan_move(model, row, target, why)  # v1.08
+    return move_to, (why[0] if why else "")  # v1.08
+
+
+# def plan_move(model: dict, row: int, target: dict):  # v1.04 (entfallen)
+def plan_move(model: dict, row: int, target: dict, why=None):  # v1.08
     """Verschieben NUR INNERHALB der eigenen Kette (Entscheidung des Entwicklers: ein Wechsel des LED Kanals zerstoert zu leicht etwas).
     target: {kind: before|after, row} (Knoten derselben Kette) oder {kind: end} (ans Ende der eigenen Kette). Rueckgabe: move_to fuer tksheet.move_rows oder None
     (nichts zu tun, anderer Kette, unbekannter Knoten)."""
@@ -153,6 +196,14 @@ def plan_move(model: dict, row: int, target: dict):  # v1.04
             return None  # v1.04
     if kind not in ("before", "after") or target_row not in rows or target_row == row:  # v1.04
         return None  # v1.04
+    if model.get("all_rows"):  # v1.08: in 'Alle Zeilen' darf keine Zeile in eine andere Kette wechseln
+        order = [n["row"] for n in all_nodes(model)]  # v1.08
+        order.remove(row)  # v1.08
+        order.insert(order.index(target_row) + (1 if kind == "after" else 0), row)  # v1.08
+        if would_change_chains(model, order):  # v1.08
+            if why is not None:  # v1.08
+                why.append("kette")  # v1.08
+            return None  # v1.08
     return move_destination(row, kind, target_row)  # v1.04
 
 
@@ -199,6 +250,11 @@ def plan_move_many(model: dict, rows, target: dict):  # v1.07
     new_order = rest[:i + (1 if kind == "after" else 0)] + selected + rest[i + (1 if kind == "after" else 0):]  # v1.07
     if new_order == order:  # v1.07
         return None, ""                                       # liegt schon so  # v1.07
+    if model.get("all_rows"):  # v1.08: in 'Alle Zeilen' darf keine Zeile in eine andere Kette wechseln
+        table = [n["row"] for n in all_nodes(model) if n["row"] not in wanted]  # v1.08
+        at = table.index(anchor) + (1 if kind == "after" else 0)  # v1.08
+        if would_change_chains(model, table[:at] + selected + table[at:]):  # v1.08
+            return None, "kette"  # v1.08
     return {"ids": [ids[r] for r in selected], "kind": kind, "anchor": ids[anchor]}, ""  # v1.07
 
 

@@ -1,9 +1,9 @@
-# Datei-Version: 1.04 (2026-10-21) - M06_Write_Header.py
+# Datei-Version: 1.05 (2026-11-12) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.04
-# Last Update:    2026-10-21
+# Version:        1.05
+# Last Update:    2026-11-12
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.02  2026-10-18  Create_HeaderFile: vor dem Erzeugen alle Blaetter neu rechnen (Update_All_Start_LedNr), das aktive Blatt danach wieder auswaehlen
 #   1.03  2026-10-21  Version K des Excel-Programms: Makros Name_LED_Number und Name_LED_Offset (Proc_Special_Functions), Variable #ChannelOffset (Generate_Config_Line mit ChannelBaseOffset), Adresse 0 (Addr >= 1 in Create_Header_Entry, Addr >= 0 in ProcessLine), keine Pruefung des Boards bei nur Simulator, START_MSG ohne Test_Suffix, inch_t in HandleValue_t
 #   1.04  2026-10-21  Meldung 'Anzahl der verwendeten Eingangskanaele ist zu gross': MaxInput und Channel als Zeichenkette (Replace mit einer Zahl stuerzte ab) und die Klammern richtig gesetzt (MsgBox bekam nur den ersten Teil als Text, Titel und Symbol fehlten)
+#   1.05  2026-11-12  Einstellung 'Test ARDUINO Programm Creation' (ARDUINOTest): Die Fragen nach jedem Schritt kommen jetzt als Web-Dialog (P01.MsgBox) statt tk.messagebox (ohne Tk lieferte askyesno immer Nein: 'Headerfileerstellung abgebrochen - Die Headerdatei wurde nicht geschrieben', Windows 11, Log des Testers)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -1170,7 +1171,8 @@ def Create_HeaderFile(CreateFilesOnly = False, *, HeaderOnly=False): #20.12.21: 
     LED_Offset = vbObjectInitialize((M02.LED_CHANNELS - 1,), Long)
     
     if PG.global_controller.ARDUINOTest:
-        answer = tk.messagebox.askyesno ('ARDUINOTest','Erzeugen der Headerdatei wird gestartet',default='yes')
+        # answer = tk.messagebox.askyesno ('ARDUINOTest','Erzeugen der Headerdatei wird gestartet',default='yes')  # v1.05 (entfallen)
+        answer = P01.MsgBox('Erzeugen der Headerdatei wird gestartet', vbQuestion + vbYesNo, 'ARDUINOTest') == vbYes  # v1.05: Web-Dialog
         if answer == False:
             P01.set_statusmessage("Headerfileerstellung abgebrochen - Die Headerdatei wurde nicht geschrieben")
             return False # no continuation          
@@ -1443,7 +1445,8 @@ def Store_ValuesTxt_Used():
 def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=None, *, HeaderOnly=False): #20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files
     global ErrorText, Ext_AddrTxt, Store_ValuesTxt, InChTxt, LocInChNr, Channel, ConfigTxt, LEDs_per_ChannelList, Start_Values
     if PG.global_controller.ARDUINOTest:
-        answer = tk.messagebox.askyesno ('ARDUINOTest','Schreiben der Headerdatei wird gestartet',default='yes')
+        # answer = tk.messagebox.askyesno ('ARDUINOTest','Schreiben der Headerdatei wird gestartet',default='yes')  # v1.05 (entfallen)
+        answer = P01.MsgBox('Schreiben der Headerdatei wird gestartet', vbQuestion + vbYesNo, 'ARDUINOTest') == vbYes  # v1.05: Web-Dialog
         if answer == False:
             P01.set_statusmessage("Headerfileerstellung abgebrochen - Die Headerdatei wurde nicht geschrieben")
             return False # no continuation      
