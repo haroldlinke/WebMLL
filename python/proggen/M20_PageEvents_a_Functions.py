@@ -558,23 +558,20 @@ def Select_Typ_by_Dialog(Target):
         # 03.02.20:
     OldEvents = P01.Application.EnableEvents
     P01.Application.EnableEvents = False
-    Target.Select()
-    if M25.Page_ID == 'Selectrix':
-        F00.UserForm_Select_Typ_SX.setFocus(Target)
-        F00.UserForm_Select_Typ_SX.Show()
-        M02GV.Userform_Res = F00.UserForm_Select_Typ_SX.Userform_res
-        if F00.UserForm_Select_Typ_SX.Userform_res !="":
-            Target.set_value(F00.UserForm_Select_Typ_SX.Userform_res) #*HL        
-    else:
-        F00.UserForm_Select_Typ_DCC.setFocus(Target)
-        F00.UserForm_Select_Typ_DCC.Show()
-        M02GV.Userform_Res = F00.UserForm_Select_Typ_DCC.Userform_res
-        if F00.UserForm_Select_Typ_DCC.Userform_res !="":
-            Target.set_value(F00.UserForm_Select_Typ_DCC.Userform_res) #*HL
-    P01.Application.EnableEvents = True
-    #*HL if Userform_Res != '':
-    #*HL     Target = Userform_Res
-    P01.Application.EnableEvents = OldEvents
+    try:
+        Target.Select()
+        form = F00.UserForm_Select_Typ_SX if M25.Page_ID == 'Selectrix' else F00.UserForm_Select_Typ_DCC
+        form.setFocus(Target)
+        form.Show()
+        M02GV.Userform_Res = form.Userform_res
+        if M02GV.Userform_Res != '':
+            Target.set_value(M02GV.Userform_Res)
+            Complete_Addr_Column_with_InCnt(Target.Row)
+            Update_TestButtons(Target.Row)
+            Update_StartValue(Target.Row)
+    finally:
+        P01.Application.EnableEvents = OldEvents
+
 
 def Complete_Typ(Target, DialogIfEmpty=False):
     Txt = String()

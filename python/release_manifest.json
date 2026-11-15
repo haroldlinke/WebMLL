@@ -8887,8 +8887,8 @@
 "size": 26276
 },
 "proggen/M20_PageEvents_a_Functions.py": {
-"sha256": "c7cc8cef52b982cfef65f5694206ef445673ac7670c65f46275a958cab088aa3",
-"size": 70706
+"sha256": "a496f169cdb576db3f868cbff5dde5680251097a1efb1b57936591ba6aac9f11",
+"size": 68963
 },
 "proggen/M22_Hide_UnHide.py": {
 "sha256": "ed00d957f7ad995a43d46a61840a29287ef65f774c0e7be7f095955c349fa1fb",
@@ -9451,8 +9451,8 @@
 "size": 34
 },
 "webmobaledlib.py": {
-"sha256": "07ac5b4c80a2360966c128d2099cee7cb620e7deb4ada8bedb5ef7f4c7c9d545",
-"size": 517251
+"sha256": "21bb2bfb7282fc1d8a833f8dd5309e6a7276e01292c4be7e2d3aee69a415ec2a",
+"size": 517831
 }
 },
 "format": 1,

@@ -1634,24 +1634,15 @@ JS_ROW_HEIGHT = ("params => Math.round((params.node.rowPinned ? "
                  "(params.data && params.data._r === 0 ? 18 : 46) : (22 * (params.data?._lines || 1))) * (window.mllGridScale || 1))")
 
 JS_DBLCLICK = """
-<script>
-// Doppelklick auf Name und Beleuchtung (Spalten und erste Datenzeile setzt der Server in window.mllDbl): Makroauswahl statt Bearbeiten.
-// Schalter in den Programm Einstellungen (Standard aus). Die Capture-Phase faengt das Ereignis vor AG Grid ab, sonst startet das Bearbeiten.
-window.mllDbl = {on: false, cols: [], first: 0};
-document.addEventListener('dblclick', function (e) {
-  const d = window.mllDbl;
-  if (!d || !d.on) return;
-  const cell = e.target && e.target.closest ? e.target.closest('.ag-cell') : null;
-  if (!cell || cell.classList.contains('ag-cell-inline-editing')) return;          // im Editor selbst nichts abfangen
-  const col = cell.getAttribute('col-id');
-  if (!col || d.cols.indexOf(col) < 0) return;
-  const row = cell.closest('.ag-row');
-  const r = row ? parseInt(row.getAttribute('row-id'), 10) : NaN;
-  if (isNaN(r) || r < d.first) return;
-  e.stopPropagation(); e.stopImmediatePropagation(); e.preventDefault();
-  emitEvent('mll_dblmacro', {r: r, col: col});
-}, true);
-</script>
+params => {
+  const config = window.mllDbl;
+  const col = params.column.getColId();
+  const row = params.data?._r;
+  if (!config || params.node.rowPinned || !Number.isInteger(row) || row < config.first) return;
+  if (!config.inputs.includes(col) && !(config.on && config.cols.includes(col))) return;
+  params.api.stopEditing(true);
+  emitEvent('mll_dblmacro', {r: row, col});
+}
 """
 
 JS_SPACE_KEY = """
@@ -1746,7 +1737,6 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     from _web import web_tabs as _wt  # v1.96
     _wt.apply_param_overrides(ctrl)                    # Text der Option "DM Servo Einstellungen anzeigen" (vorher: Programmgenerator anzeigen), bevor die Einstellungsseiten entstehen  # v1.96
     ui.add_head_html(JS_DIALOG_KEYS)
-    ui.add_head_html(JS_DBLCLICK)
     ui.add_head_html(JS_SPACE_KEY)  # v2.93
     ui.add_head_html("<script>" + JS_COPY_HELPER + "</script>")
     ui.add_head_html("<script>" + JS_FIND + "</script>")  # v3.28
@@ -2216,23 +2206,30 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         finally:  # v2.32
             tree_state["loading"] = False  # v2.32
 
-    async def open_guided_dialog(ws):  # v2.35
-        """Wie der Knopf Dialog der Werkzeugleiste (F00.Dialog_Button_Click -> M03.Dialog_Guided_Input): die gefuehrte Eingabe ab der aktiven Zelle"""  # v2.35
-        import proggen.F00_mainbuttons as F00_dlg  # v2.35
+    async def open_guided_dialog(ws):
+        """Geführte Eingabe ab der aktiven Zelle im Programm-Generator."""
+        if state["busy"]:
+            ui.notify("Es läuft noch ein Vorgang. Bitte warten.", type="warning")
+            return
+        if not M28.Is_Data_Sheet(ws):
+            ui.notify("Bitte ein Datenblatt im Programm-Generator auswählen.", type="warning")
+            return
 
-        def work():  # v2.35
-            ws.Activate()  # v2.35
-            try:  # v2.35
-                X02.ActiveCell()  # v2.35
-                F00_dlg.Dialog_Button_Click()  # v2.35
-            except SystemExit:  # v2.35
-                raise RuntimeError("Der Dialog wurde mit EndProg beendet") from None  # v2.35
-        try:  # v2.35
-            await run_in_worker(work)  # v2.35
-        except Exception as ex:                      # noqa: BLE001  # v2.35
-            logger.exception("Dialog fehlgeschlagen")  # v2.35
-            ui.notify(tr('Makroauswahl: {ex}', ex=ex), type="negative")  # v2.35
-        show(ws)  # v2.35
+        def work():
+            from proggen import F00_mainbuttons
+            ws.Activate()
+            M25.Make_sure_that_Col_Variables_match(ws)
+            cell = X02.ActiveCell()
+            if cell.Row < M02.FirstDat_Row:
+                ws.Cells(M02.FirstDat_Row, M25.Config__Col).Select()
+            F00_mainbuttons.Dialog_Button_Click()
+
+        try:
+            await run_in_worker(work)
+        except (Exception, SystemExit):
+            logger.exception("Dialog Wizard fehlgeschlagen")
+            ui.notify("Dialog Wizard konnte nicht ausgeführt werden.", type="negative")
+        show(ws)
 
     def on_tree_filter(text):  # v2.32
         if tree_state["items"] is None:  # v2.32
@@ -2566,6 +2563,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                           ":tooltipValueGetter": JS_TOOLTIP, ":cellRenderer": cell_renderer_js(tb_bridge.id)},
         "rowSelection": "multiple",
         ":onCellContextMenu": JS_CELL_CONTEXT,
+        ":onCellDoubleClicked": JS_DBLCLICK,
         ":onCellKeyDown": JS_CELL_KEYDOWN,
         "preventDefaultOnContextMenu": True,
         "stopEditingWhenCellsLoseFocus": True,
@@ -2751,19 +2749,21 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
     def update_dbl(ws, force=False):
         """Dem Browser sagen, ob und in welchen Spalten ein Doppelklick die Makroauswahl oeffnet (nur Datenblaetter, Schalter in den Einstellungen)."""
-        cols, first = [], 0
+        cols, inputs, first = [], [], 0
         try:
             if M28.Is_Data_Sheet(ws):
                 M25.Make_sure_that_Col_Variables_match(ws)
                 cols = [f"c{int(M25.LanName_Col) - 1}", f"c{int(M25.Config__Col) - 1}"]
+                if str(M25.Page_ID) in ("DCC", "CAN", "LNet"):
+                    inputs = [f"c{int(M25.Inp_Typ_Col) - 1}"]
                 first = int(M02.FirstDat_Row) - 1
         except Exception:                                    # noqa: BLE001
             logger.debug("Spalten fuer den Doppelklick nicht ermittelbar", exc_info=True)
         on = bool(cols) and web_layout.get_dblclick(ctrl)
-        key = (on, tuple(cols), first)
+        key = (on, tuple(cols), tuple(inputs), first)
         if key != dbl_sent["key"] or force:
             dbl_sent["key"] = key
-            ui.run_javascript("window.mllDbl = %s;" % json.dumps({"on": on, "cols": cols, "first": first}))
+            ui.run_javascript("window.mllDbl = %s;" % json.dumps({"on": on, "cols": cols, "inputs": inputs, "first": first}))
 
     def is_libraries_sheet(ws) -> bool:
         return ws.Name == M02.LIBRARYS__SH
@@ -4070,18 +4070,33 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 menu_row("Farbe entfernen")
 
     async def on_dblmacro(e):
-        """Doppelklick auf Name oder Beleuchtung (nur mit dem Schalter in den Programm Einstellungen): wie in Excel die Makroauswahl"""
+        """Doppelklick auf Typ oder eine für die Makroauswahl konfigurierte Spalte."""
         a = e.args or {}
-        if state["busy"] or not web_layout.get_dblclick(ctrl):
+        if state["busy"]:
             return
         try:
             r, c = int(a["r"]), int(str(a["col"])[1:])
         except (KeyError, TypeError, ValueError):
             return
-        ws_ = state["ws"]
-        ws_.tksheet.set_selection(cells={(r, c)}, current=(r, c))
-        await fire_selection_event(ws_)
-        await open_macro_dialog(ws_)
+        ws = state["ws"]
+        if not M28.Is_Data_Sheet(ws) or r + 1 < M02.FirstDat_Row:
+            return
+        M25.Make_sure_that_Col_Variables_match(ws)
+        if str(M25.Page_ID) in ("DCC", "CAN", "LNet") and c + 1 == M25.Inp_Typ_Col:
+            def work():
+                ws.Activate()
+                target = X02.Cells(r + 1, c + 1)
+                M20.Select_Typ_by_Dialog(target)
+            try:
+                await run_in_worker(work)
+            except (Exception, SystemExit):
+                logger.exception("Schalterdialog fehlgeschlagen")
+                ui.notify("Schalterdialog konnte nicht ausgeführt werden.", type="negative")
+            show(ws)
+        elif web_layout.get_dblclick(ctrl) and c + 1 in (M25.LanName_Col, M25.Config__Col):
+            ws.tksheet.set_selection(cells={(r, c)}, current=(r, c))
+            await fire_selection_event(ws)
+            await open_macro_dialog(ws)
 
     ui.on("mll_ctx", on_ctx)
     ui.on("mll_dblmacro", on_dblmacro)
@@ -5014,7 +5029,15 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 # else:  # v2.68 (entfallen)
                     # ui.label(label).classes("text-xs text-center mll-tool-text").style("white-space: pre-line")  # v2.68 (entfallen)
             # b.tooltip(M09.Get_Language_Str(tooltip))  # v2.68 (entfallen)
-            b = web_toolbar.build_tool_button(ui, icon, label, M09.Get_Language_Str(tooltip), (transfer_setup if icon == "Btn_Send_to_ARDUINO.png" else run_command(func, web_toolbar.single_line(label))),  # v2.68
+            if icon == "Btn_Dialog.png":
+                async def open_toolbar_wizard():
+                    await open_guided_dialog(state["ws"])
+                handler = open_toolbar_wizard
+            elif icon == "Btn_Send_to_ARDUINO.png":
+                handler = transfer_setup
+            else:
+                handler = run_command(func, web_toolbar.single_line(label))
+            b = web_toolbar.build_tool_button(ui, icon, label, M09.Get_Language_Str(tooltip), handler,
                                               os.path.join(here, "images_btn"), icon_dir, toolbar_icons, toolbar_labels)     # Symbol (images_btn, ohne Text) und uebersetzter Text; eingedrueckt, solange der Befehl laeuft  # v2.68
             if icon == "Btn_Color_Row.png":  # v2.96
                 beginner_buttons.append(b)  # v2.96

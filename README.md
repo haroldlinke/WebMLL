@@ -36,7 +36,9 @@ Modus 4 zeigt WLAN-Status, IP-Adresse, LDR und MobaLedLib-Zeit in vier zentriert
 - **Test Pattern** spielt das Muster als LED-Vorschau im Browser ab. Die LED-Kreise zeigen bereits beim Öffnen die Farben des ersten Schritts und wechseln sie nach den eingestellten Schrittzeiten.
 - Signalbilder stehen mit einer Zeile Abstand unter der letzten LED-Zeile. Eigene PCF-Dateien mit Bildern können als ZIP geladen werden.
 - Per Rechtsklick auf eine Schrittzelle und **LED-Farbe wählen** werden im RGB-Modus die drei Kanalwerte für den gewählten Schritt gesetzt. In Spalte E lässt sich der Schritt im Dialog auswählen oder **Nur Zeilenfarbe** anwenden.
-- DCC-Adressspannen werden aus der Zahl der Funktionen berechnet und in die Tabelle geschrieben. Sechs Rot/Grün-Funktionen ab Adresse 2 ergeben `2 - 4`. Die Testtasten nutzen eine bereits aktive WLAN-Verbindung.
+- **Dialog Wizard** startet die geführte Eingabe in der aktiven Datenzeile. Ist eine Kopfzeile ausgewählt, beginnt der Assistent in der ersten Datenzeile.
+- **Adresse oder Name** lässt sich direkt in der Tabelle bearbeiten und akzeptiert eine DCC-Startadresse oder Freitext wie `Schalter D1`. Ein Doppelklick auf **Typ** öffnet bei gültiger Adresse den Schalterdialog für DCC, CAN und LNet.
+- DCC-Adressspannen werden aus der Zahl der Funktionen berechnet und in die Tabelle geschrieben. Sechs Rot/Grün-Funktionen ab Adresse 2 ergeben direkt nach der Schalterwahl `2 - 4`. Die Testtasten nutzen eine bereits aktive WLAN-Verbindung.
 
 ## Neuerungen aus WebMLL 3.42
 
