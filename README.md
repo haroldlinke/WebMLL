@@ -45,6 +45,8 @@ Modus 4 zeigt WLAN-Status, IP-Adresse, LDR und MobaLedLib-Zeit in vier zentriert
 - WLAN, OTA, Hostname und Zieladresse werden pro Blatt gespeichert. Das Passwort bleibt lokal auf dem Rechner.
 - Für die Ersteinrichtung steht im OTA-Reiter **Minimale Firmware per USB hochladen** zur Verfügung.
 
+Die Bilddateien aus Harolds 3.42-Release sind enthalten, einschließlich der Signalbilder, der Werkzeugleisten-Symbole und der beiden Grafiken unter `python/lib`.
+
 ## Geprüfter Stand
 
 Der Quellstand wurde mit dem offiziellen Release-ZIP abgeglichen. Python-Syntax und der Bildablauf wurden geprüft. OTA-Upload und Direktmodus stehen am ESP32 noch zur Prüfung aus.
