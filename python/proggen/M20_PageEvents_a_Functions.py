@@ -1,9 +1,9 @@
-# Datei-Version: 1.08 (2026-10-28) - M20_PageEvents_a_Functions.py
+# Datei-Version: 1.09 (2026-11-14) - M20_PageEvents_a_Functions.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M20_PageEvents_a_Functions.py
 # Path:           proggen/M20_PageEvents_a_Functions.py
-# Version:        1.08
-# Last Update:    2026-10-28
+# Version:        1.09
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -15,6 +15,7 @@
 #   1.06  2026-10-27  Update_TestButtons: der Name einer wiederverwendeten Testtaste wird wie im VBA-Original immer neu gesetzt (sonst schaltete eine Ein/Aus-Taste mit Startwert nach dem Neuzeichnen nicht mehr um)
 #   1.07  2026-10-28  Show_Help oeffnet das Online Wiki in einem neuen Tab des Webbrowsers statt der Hilfeseite
 #   1.08  2026-10-28  logging im Aufruf importieren
+#   1.09  2026-11-14  DCC-Adressspannen: Ergebnis in Target.Value schreiben (Beitrag des Fork-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #

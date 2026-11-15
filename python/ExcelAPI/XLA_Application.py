@@ -1,9 +1,9 @@
-# Datei-Version: 1.17 (2026-11-08) - XLA_Application.py
+# Datei-Version: 1.18 (2026-11-14) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.17
-# Last Update:    2026-11-08
+# Version:        1.18
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -24,6 +24,7 @@
 #   1.15  2026-11-01  Mehrfachauswahl von Zeilen: CWorksheet.getSelectedRows und CSelection._selectedRow liefern alle markierten Zeilen (Block von der ersten bis zur letzten), nicht nur die erste
 #   1.16  2026-11-01  CSelection.EntireRow: die markierten Zeilen (vorher um eine Zeile nach oben verschoben: Zeile kopieren, ausblenden und loeschen wirkten auf die Zeile darueber)
 #   1.17  2026-11-08  Das Scheitern der Importe von headless_sheet und XLF_FormGenerator wird ins Protokoll geschrieben (vorher wurde der ImportError verschluckt; die eigentliche Ursache war nicht zu sehen und es folgte der Ringimport mit P01_Worksheetcalc)
+#   1.18  2026-11-14  Esp32Wlan: WLAN-Einstellungen (esp32_wlan) je Blatt in der Arbeitsmappe sichern und laden
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -852,6 +853,7 @@ class CWorkbook(object):
             saveData["DataVersion"] = self.controller.DataVersion
             saveData["Workbookdata"]= copy.deepcopy(workbookdata)
             saveData["SheetOrder"] = [s.Name for s in self.sheets]                 # Reihenfolge der Reiter (auch der Kopien)  # v1.14
+            saveData["Esp32Wlan"] = {s.Name: dict(s.esp32_wlan) for s in self.sheets if getattr(s, "esp32_wlan", None)}   # WLAN-Einstellungen des ESP32 je Blatt (ohne Passwort)  # v1.18
             saveData["TabColors"] = {s.Name: s.tab_color for s in self.sheets if getattr(s, "tab_color", "")}      # Reiterfarben  # v1.14
             def _json_default(obj):  # v1.06
                 # Funktionen (Command der Steuerelemente) und andere Objekte kennt JSON nicht: nicht mitsichern statt die ganze Datei abzubrechen
@@ -876,6 +878,11 @@ class CWorkbook(object):
             for sheet in self.sheets:  # v1.14
                 if sheet.Name in colors:  # v1.14
                     sheet.set_tab_color(colors[sheet.Name])  # v1.14
+        wlan = savedData.get("Esp32Wlan") or {}  # v1.18
+        if isinstance(wlan, dict):  # v1.18
+            for sheet in self.sheets:  # v1.18
+                if isinstance(wlan.get(sheet.Name), dict):  # v1.18
+                    sheet.esp32_wlan = dict(wlan[sheet.Name])  # v1.18
         order = savedData.get("SheetOrder")  # v1.14
         if isinstance(order, list) and order:  # v1.14
             self.reorder_sheets([str(n) for n in order])  # v1.14

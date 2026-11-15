@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 2.55 (2026-11-14), gilt für webMobaLedLib 3.36*
+*Datei-Version: 2.59 (2026-11-14), gilt für webMobaLedLib 3.40*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -250,6 +250,14 @@ Trage das Ergebnis in die Tabelle am Ende ein.
 194. **Alle Blätter (3.28):** Haken **Alle Blätter**, Begriff, der nur auf einem anderen Blatt steht: Das Programm wechselt das Blatt und markiert den Treffer? Auf **Config**, **Serial Monitor** und anderen Reitern ist das Suchfeld **nicht** zu sehen und Strg+F öffnet die Suche des Browsers? Funktioniert die Suche auch in der Ansicht **Grafik** und **Beides**?
 195. **COM-Port nach Zentralentyp (3.35):** Mehrere Zentralen gleichzeitig angeschlossen (z. B. ESP32, Pico, Nano). Zentrale **Nano** gewählt, Dialog der Port-Auswahl: Nur die Nano-Anschlüsse in der Liste? Darunter die Zeile „Andere Typen: COM3(ESP32), COM5(Pico) …“? Dasselbe mit **Pico** (nur Pico-Anschlüsse, ESP32 nicht vorgewählt) und **ESP32**. Stimmt es mit der Anzeige im Excel-Programm überein?
 196. **Typ in der Port-Auswahl wechseln (3.36):** Falschen Zentralentyp einstellen (z. B. Nano), aber einen ESP32 oder Pico anschließen, „Verbinden“. In der Port-Auswahl auf den Eintrag unter „Andere Typen“ klicken (z. B. `COM3(ESP32)`): Rückfrage? Nach „Ja“ stellt das Programm den Typ um und wählt COM3, die Liste und „Andere Typen“ passen sich an? Mit „Nein“ bleibt alles. **Abbrechen** nach einem Wechsel: Ist der alte Typ wieder eingestellt (Optionen prüfen)? Mit „Verbinden“ nach dem Wechsel: Bleibt der neue Typ?
+197. **ESP32 neue Firmware (3.37):** Firmware-Dateien aus dem Paket „Firmware ESP32 OTA“ in `LEDs_AutoProg` kopieren. Zentrale **ESP32**, Reiter **OTA**: WLAN und OTA anhaken, Hostname und Passwort setzen, speichern. „Setup übertragen“ → **USB**: Wird die Firmware kompiliert und übertragen? Startet der ESP32 danach?
+198. **WLAN über USB einrichten (3.37):** Reiter OTA → „WLAN über USB einrichten“, USB-Port wählen, „WLANs suchen“: Erscheint die Liste? WLAN wählen, Passwort, „Verbinden“: Erscheint die IP-Adresse und wird sie als Zieladresse gespeichert?
+199. **Verbinden und Test per WLAN (3.37):** „Verbindung testen“ → „ESP32 antwortet“. Mit einer Fantasie-Adresse mit sehr langem Namen (über 63 Zeichen) → Meldung statt Absturz. „Verbinden“ → **WLAN**: Passwort, Verbindung steht?
+200. **Setup und Firmware per WLAN (3.37):** „Setup übertragen“ → **WLAN (OTA)** und Menü „ESP32-Firmware über WLAN hochladen …“ (mit einer .bin-Datei): Läuft die Übertragung, und kommt am Ende „erfolgreich“?
+201. **Patterngenerator, Sprachen, Linux/Mac (3.37):** RGB-Haken, LED-Farbe wählen, Rampen, Bilder. Die OTA-Dialoge in einer anderen Sprache (z. B. English): alles übersetzt? Unter Linux/macOS: USB-Upload mit `/dev/ttyUSB0` bzw. `/dev/cu.usbserial…`.
+202. **Firewall und WLAN-Upload (3.38):** Ohne Regel für TCP 32323 schlägt der Upload mit „No response from device“ fehl und der Hinweis erscheint. Nach dem Anlegen der Regel (Anleitung 9.2a) bei eingeschalteter Firewall: Upload erfolgreich?
+203. **Minimale Firmware (3.39):** Zentrale ESP32, Reiter OTA, Passwort eingeben, „Minimale Firmware per USB hochladen“: Wird gebaut und übertragen, blinkt die Heartbeat-LED? Danach „WLAN über USB einrichten“ (WLANs suchen, verbinden). Ist die eigene LEDs_AutoProg.h danach unverändert?
+204. **WLAN-Einstellungen je Blatt (3.40):** Zwei Blätter mit verschiedenen ESP32: Reiter OTA, auf Blatt 1 Hostname/Adresse A, auf Blatt 2 Hostname/Adresse B einstellen. Blatt wechseln: Zeigt der Reiter jeweils die eigenen Werte? Arbeitsmappe speichern und wieder laden (oder Programm neu starten): Bleiben die Werte? Blatt kopieren: Hat die Kopie dieselben Werte? Das Passwort steht nicht in der gespeicherten Datei.
 
 ## 4. Ergebnis
 

@@ -1,14 +1,15 @@
-# Datei-Version: 1.01 (2026-10-21) - M32_DCC.py
+# Datei-Version: 1.02 (2026-11-14) - M32_DCC.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M32_DCC.py
 # Path:           proggen/M32_DCC.py
-# Version:        1.01
-# Last Update:    2026-10-21
+# Version:        1.02
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-21  SendDCCAccessoryCommand: Adresse 0 ist erlaubt (Addr < 0 statt Addr < 1; Version K des Excel-Programms)
+#   1.02  2026-11-14  Testtasten nutzen eine bestehende WLAN-Verbindung; send_command_to_ARDUINO liefert den Erfolg (Beitrag des Fork-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #

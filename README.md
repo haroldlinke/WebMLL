@@ -1,6 +1,6 @@
-# WebMLL 3.36 mit ESP32-WLAN und OTA
+# WebMLL 3.42 mit ESP32-WLAN und OTA
 
-Dieser Fork von [haroldlinke/WebMLL](https://github.com/haroldlinke/WebMLL) verbindet die Upstream-Version 3.36 mit den hier entwickelten Erweiterungen. Das Installationsverzeichnis und die Startskripte sind in der [Installationsanleitung](python/install/ANLEITUNG_Installation.md) beschrieben.
+Dieser Fork von [haroldlinke/WebMLL](https://github.com/haroldlinke/WebMLL) verbindet die Upstream-Version 3.42 mit den hier entwickelten Erweiterungen. Das Installationsverzeichnis und die Startskripte sind in der [Installationsanleitung](python/install/ANLEITUNG_Installation.md) beschrieben.
 
 ## ESP32 WROOM einrichten
 
@@ -12,7 +12,7 @@ Dieser Fork von [haroldlinke/WebMLL](https://github.com/haroldlinke/WebMLL) verb
 
 **Verbinden → WLAN** öffnet die Geräteverbindung für Testtasten und Farbtest. Der ESP32 kann alternativ über seine IP-Adresse angesprochen werden, wenn der Hostname im Netz nicht aufgelöst wird. Für einen Passwortwechsel per OTA im Übertragungsdialog das bisherige Passwort eingeben. Die neue Firmware erhält das im OTA-Reiter gespeicherte Passwort.
 
-Farbtest, Servo, DM Servo und Sound verwenden beim automatischen Verbinden dieselbe USB/WLAN-Auswahl wie **Verbinden**. Eine offene Verbindung wird weiterverwendet.
+Farbtest, Servo, DM Servo und Sound verwenden eine offene Verbindung weiter. Beim automatischen Verbinden versucht WebMLL zuerst die für das Blatt gespeicherte ESP32-WLAN-Verbindung und greift bei Bedarf auf USB zurück. Über **Verbinden** lässt sich USB oder WLAN gezielt auswählen.
 
 ## OLED-Modus 4
 
@@ -38,12 +38,13 @@ Modus 4 zeigt WLAN-Status, IP-Adresse, LDR und MobaLedLib-Zeit in vier zentriert
 - Per Rechtsklick auf eine Schrittzelle und **LED-Farbe wählen** werden im RGB-Modus die drei Kanalwerte für den gewählten Schritt gesetzt. In Spalte E lässt sich der Schritt im Dialog auswählen oder **Nur Zeilenfarbe** anwenden.
 - DCC-Adressspannen werden aus der Zahl der Funktionen berechnet und in die Tabelle geschrieben. Sechs Rot/Grün-Funktionen ab Adresse 2 ergeben `2 - 4`. Die Testtasten nutzen eine bereits aktive WLAN-Verbindung.
 
-## Neuerungen aus WebMLL 3.36
+## Neuerungen aus WebMLL 3.42
 
 - Im Programm-Generator gibt es eine Suche über das aktuelle oder alle Blätter mit **Strg+F**.
 - Die USB-Portauswahl filtert nach Zentralentyp. Unter **Andere Typen** lässt sich nach Bestätigung zum passenden Typ wechseln.
-- Farbtest, Servo, DM Servo und Sound verbinden sich beim Öffnen automatisch, wenn noch keine Geräteverbindung besteht.
+- WLAN, OTA, Hostname und Zieladresse werden pro Blatt gespeichert. Das Passwort bleibt lokal auf dem Rechner.
+- Für die Ersteinrichtung steht im OTA-Reiter **Minimale Firmware per USB hochladen** zur Verfügung.
 
 ## Geprüfter Stand
 
-Die Installationsprüfung unter Windows und die Python-Syntaxprüfung waren für den zusammengeführten Stand 3.36 erfolgreich. OTA-Upload und Wechsel zwischen Direkt- und Effektmodus am ESP32 wurden für diesen Stand noch nicht am Gerät geprüft.
+Der Quellstand wurde mit dem offiziellen Release-ZIP abgeglichen. Python-Syntax und der Bildablauf wurden geprüft. OTA-Upload und Direktmodus stehen am ESP32 noch zur Prüfung aus.

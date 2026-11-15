@@ -1,14 +1,15 @@
-# Datei-Version: 1.00 (2026-11-04) - web_pattern_test.py
+# Datei-Version: 1.01 (2026-11-14) - web_pattern_test.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattern_test.py
 # Path:           _web/web_pattern_test.py
-# Version:        1.00
-# Last Update:    2026-11-04
+# Version:        1.01
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-11-04  Neu: Fenster "Test Pattern" des Patterngenerators im Browser: die LEDs des Musters als Kreise, die mit den Zeiten des Musters die Farbe wechseln (wie das Excel-Programm
 #                     auf dem Bildschirm); Wiederholen, PingPong, Goto-Muster mit Auswahl des Starts. Daten und Ablauf: headless_pattern_test.py
+#   1.01  2026-11-14  Farben der LED-Kreise direkt an den NiceGUI-Elementen statt per JavaScript; Anzeige des ersten Schritts beim Oeffnen (Beitrag des Fork-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 """Fenster "Test Pattern" des Patterngenerators.
 

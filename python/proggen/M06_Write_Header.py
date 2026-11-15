@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-11-12) - M06_Write_Header.py
+# Datei-Version: 1.06 (2026-11-14) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.05
-# Last Update:    2026-11-12
+# Version:        1.06
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -12,6 +12,7 @@
 #   1.03  2026-10-21  Version K des Excel-Programms: Makros Name_LED_Number und Name_LED_Offset (Proc_Special_Functions), Variable #ChannelOffset (Generate_Config_Line mit ChannelBaseOffset), Adresse 0 (Addr >= 1 in Create_Header_Entry, Addr >= 0 in ProcessLine), keine Pruefung des Boards bei nur Simulator, START_MSG ohne Test_Suffix, inch_t in HandleValue_t
 #   1.04  2026-10-21  Meldung 'Anzahl der verwendeten Eingangskanaele ist zu gross': MaxInput und Channel als Zeichenkette (Replace mit einer Zahl stuerzte ab) und die Klammern richtig gesetzt (MsgBox bekam nur den ersten Teil als Text, Titel und Symbol fehlten)
 #   1.05  2026-11-12  Einstellung 'Test ARDUINO Programm Creation' (ARDUINOTest): Die Fragen nach jedem Schritt kommen jetzt als Web-Dialog (P01.MsgBox) statt tk.messagebox (ohne Tk lieferte askyesno immer Nein: 'Headerfileerstellung abgebrochen - Die Headerdatei wurde nicht geschrieben', Windows 11, Log des Testers)
+#   1.06  2026-11-14  Create_HeaderFile(HeaderOnly): nur die Header-Datei erzeugen (ESP32-OTA); Display-Block des ESP32 (UI_MLLTime) nach Bearbeitung im Browser wieder auf mehrere Zeilen (Beitrag des Fork-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #

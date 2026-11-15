@@ -1,11 +1,29 @@
+# Datei-Version: 1.03 (2026-11-14) - web_esp32_ota.py
+# ----------------------------------------------------------------------------------------------
+# Name:           web_esp32_ota.py
+# Path:           _web/web_esp32_ota.py
+# Version:        1.03
+# Last Update:    2026-11-14
+# Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
+# Licence:        LGPL V2.1
+# History of Change:
+#   1.00  2026-11-14  Neu: Dialoge fuer ESP32-WLAN und OTA (Firmware hochladen, Ziel waehlen, Reiter OTA, WLAN ueber USB einrichten)
+#   1.01  2026-11-14  Firewall-Hinweis bei "No response from device" (Port 32323)
+#   1.02  2026-11-14  Reiter OTA: Knopf "Minimale Firmware per USB hochladen" (schaltet WLAN und OTA ein, ruft minimal_firmware_handler)
+#   1.03  2026-11-14  Knopf umbenannt (Minimale WLAN Firmware per USB hochladen), Reihenfolge: speichern, minimale Firmware, WLAN einrichten, testen
+# ----------------------------------------------------------------------------------------------
 from subprocess import TimeoutExpired
 
 from nicegui import run, ui
+
+from _web.web_i18n import tr
 
 from headless import headless_esp32_ota
 from _web import web_dialogs
 
 _upload_running = False
+minimal_firmware_handler = None  # v1.02: Funktion der Hauptseite (webmobaledlib.py), baut und laedt die minimale Firmware
+HINT_FIREWALL = 'Der ESP32 hat sich nicht zurückgemeldet. Meist blockiert eine Firewall die Rückverbindung: Eingehend TCP-Port {port} zulassen (Windows-Firewall: PowerShell als Administrator, New-NetFirewallRule -DisplayName "MLL OTA" -Direction Inbound -Protocol TCP -LocalPort {port} -Action Allow; andere Firewalls, z. B. ESET: Regel eingehend, TCP, lokaler Port {port}, Zulassen).'  # v1.01
 
 
 def target_address(settings):
@@ -19,7 +37,7 @@ def remember_target(host):
     try:
         headless_esp32_ota.save_settings(dict(settings, address=host))
     except (OSError, ValueError) as error:
-        ui.notify(f"Zieladresse konnte nicht gespeichert werden: {error}", type="negative")
+        ui.notify(tr("Zieladresse konnte nicht gespeichert werden: {error}", error=error), type="negative")
         return False
     return True
 
@@ -46,20 +64,20 @@ def open_dialog(*, pio=None):
         _upload_running = True
         send.disable()
         close.disable()
-        status.set_text("WLAN-Übertragung läuft …")
+        status.set_text(tr("WLAN-Übertragung läuft …"))
         output.set_text("")
         try:
             code, log = await run.io_bound(
                 headless_esp32_ota.upload, host.value, password.value or "", *image, pio=pio,
             )
-            status.set_text("Firmware übertragen." if code == 0 else "OTA-Upload fehlgeschlagen.")
-            output.set_text(log)
-        except ValueError as error:
-            status.set_text(str(error))
+            status.set_text(tr("Firmware übertragen.") if code == 0 else tr("OTA-Upload fehlgeschlagen."))
+            output.set_text(log + ((chr(10) + tr(HINT_FIREWALL, port=headless_esp32_ota.HOST_PORT)) if code and headless_esp32_ota.NO_RESPONSE in log else ""))
+        except ValueError as error:  # auch UnicodeError (Hostname)
+            status.set_text(tr(str(error)))
         except TimeoutExpired:
-            status.set_text("Zeitüberschreitung beim OTA-Upload.")
+            status.set_text(tr("Zeitüberschreitung beim OTA-Upload."))
         except OSError:
-            status.set_text("OTA-Uploader konnte nicht ausgeführt werden.")
+            status.set_text(tr("OTA-Uploader konnte nicht ausgeführt werden."))
         finally:
             password.set_value("")
             send.enable()
@@ -155,9 +173,22 @@ def settings_panel():
             return
         try:
             ok = await run.io_bound(probe, host, secret)
-        except OSError:
+        except (OSError, UnicodeError):  # UnicodeError: Adresse mit zu langem Namensteil ("label too long")
             ok = False
-        ui.notify("ESP32 antwortet." if ok else "Keine gültige Antwort vom ESP32.", type="positive" if ok else "negative")
+        ui.notify(tr("ESP32 antwortet.") if ok else tr("Keine gültige Antwort vom ESP32."), type="positive" if ok else "negative")
+
+    async def minimal():  # v1.02
+        if minimal_firmware_handler is None:
+            ui.notify(tr("Nur mit der Zentrale ESP32 möglich."), type="warning")
+            return
+        secret = password.value or settings["password"]
+        if not secret:
+            ui.notify(tr("Bitte zuerst ein OTA-Passwort eingeben."), type="warning")
+            return
+        wifi.set_value(True)
+        ota.set_value(True)
+        save()
+        await minimal_firmware_handler()
 
     def setup_usb():
         from mlpyproggen import Prog_Generator
@@ -167,9 +198,10 @@ def settings_panel():
             address.set_value(value)
         open_usb_wifi(Prog_Generator.get_global_controller(), use_address)
 
-    with ui.row():
-        ui.button("WLAN über USB einrichten", on_click=setup_usb).props("outline")
+    with ui.row():  # Reihenfolge v1.03: speichern, minimale Firmware, WLAN einrichten, testen
         ui.button("OTA-Einstellungen speichern", on_click=save)
+        ui.button("Minimale WLAN Firmware per USB hochladen", on_click=minimal).props("outline")
+        ui.button("WLAN über USB einrichten", on_click=setup_usb).props("outline")
         ui.button("Verbindung testen", on_click=check).props("outline")
 
 
@@ -189,14 +221,14 @@ def open_usb_wifi(controller, on_address):
 
         async def perform(join=False):
             if controller.is_connection_open() and controller.ARDUINO_current_portname == port.value:
-                status.set_text("Bitte zuerst die bestehende USB-Geräteverbindung trennen.")
+                status.set_text(tr("Bitte zuerst die bestehende USB-Geräteverbindung trennen."))
                 return
             if not port.value or (join and not ssid.value):
-                status.set_text("Bitte USB-Port und zum Verbinden den WLAN-Namen auswählen.")
+                status.set_text(tr("Bitte USB-Port und zum Verbinden den WLAN-Namen auswählen."))
                 return
             for button in (scan, connect, close):
                 button.disable()
-            status.set_text("ESP32 verbindet sich …" if join else "ESP32 sucht WLANs …")
+            status.set_text(tr("ESP32 verbindet sich …") if join else tr("ESP32 sucht WLANs …"))
             try:
                 result = await run.io_bound(
                     headless_esp32_ota.wifi_usb, port.value,
@@ -205,14 +237,14 @@ def open_usb_wifi(controller, on_address):
                 if join:
                     if remember_target(result):
                         on_address(result)
-                        status.set_text(f"Verbunden. Zieladresse gespeichert: {result}")
+                        status.set_text(tr("Verbunden. Zieladresse gespeichert: {result}", result=result))
                     else:
-                        status.set_text(f"Verbunden. IP-Adresse: {result}")
+                        status.set_text(tr("Verbunden. IP-Adresse: {result}", result=result))
                 else:
                     networks.set_options({name: f"{name} ({signal} dBm)" for name, signal in result})
-                    status.set_text(f"{len(result)} WLANs gefunden.")
+                    status.set_text(tr("{n} WLANs gefunden.", n=len(result)))
             except (ValueError, OSError) as error:
-                status.set_text(str(error))
+                status.set_text(tr(str(error)))
             finally:
                 if join:
                     password.set_value("")

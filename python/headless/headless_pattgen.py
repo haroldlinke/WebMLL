@@ -1,9 +1,9 @@
-# Datei-Version: 1.20 (2026-11-01) - headless_pattgen.py
+# Datei-Version: 1.21 (2026-11-14) - headless_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_pattgen.py
 # Path:           headless/headless_pattgen.py
-# Version:        1.20
-# Last Update:    2026-11-01
+# Version:        1.21
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -29,6 +29,7 @@
 #   1.18  2026-11-01  Beschreibung: das laengste Textfeld msoTextBox0 (die formatierte Ueberschrift zaehlt nicht), das Format (fetter Anfang) bleibt, solange der Anfang des Textes gleich ist
 #   1.19  2026-11-01  eine einzeilige Ueberschrift mit Farbe ist nie die Beschreibung
 #   1.20  2026-11-01  Format {Attrib}: die zweite Zahl ist das ENDE (nicht die Laenge), das Format bleibt bei gleichem Anfang des Textes
+#   1.21  2026-11-14  RGB-Modus je Blatt aus PCF-Dateien merken, set_led_color, set_step_color, PCF-ZIP mit Bildern (Beitrag des Fork-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 """Tk-freier Ersatz fuer Pattern_GeneratorPage: baut die Arbeitsmappe "PatternWorkbook" des Patterngenerators.
 

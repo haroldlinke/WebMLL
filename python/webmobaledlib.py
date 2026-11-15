@@ -1,8 +1,8 @@
-# Datei-Version: 3.36 (2026-11-14) - webmobaledlib.py
+# Datei-Version: 3.42 (2026-11-14) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        3.36
+# Version:        3.42
 # Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -207,6 +207,12 @@
 #   3.34  2026-11-14  Suche ueber alle Blaetter: die Wiederherstellung der alten Bildlaufposition (mllRestore, bis 1,5 s) wird abgebrochen, der Treffer bleibt sichtbar
 #   3.35  2026-11-14  COM-Port-Auswahl nach Zentralentyp: Nano- und Pico-Liste zeigen den ESP32 (CP210x) nicht mehr, Pico nur Pico-Kennungen; Zeile "Andere Typen: COM3(ESP32), COM5(Pico)" wie in Excel (M07_COM_Port 1.10, web_form_comport 1.06)
 #   3.36  2026-11-14  Port-Auswahl: 'Andere Typen' sind anklickbar - nach Rueckfrage wird der Zentralentyp (zuletzt benutzte Variante) gewechselt und der Anschluss gewaehlt; Abbrechen stellt den alten Typ wieder her (web_form_comport 1.07, M07_COM_Port 1.11, Web_Languages.csv)
+#   3.37  2026-11-14  ESP32-WLAN/OTA (Verbinden per WLAN, Setup per WLAN/USB uebertragen, Firmware hochladen), mehrzeilige Config-Spalte, Patterngenerator-Verbesserungen: Uebernahme der Aenderungen des Fork-Entwicklers; Hotfix wifi_usb; Dialogtexte uebersetzbar (Web_Languages.csv), USB-Upload auch unter Linux/Mac, ungueltiger Hostname wird gemeldet (web_esp32_ota 1.00, headless_esp32_ota 1.04, web_serial 1.08)
+#   3.38  2026-11-14  OTA-Upload: fester Rueckkanal-Port 32323 und Firewall-Hinweis bei "No response from device" (headless_esp32_ota 1.06, web_esp32_ota 1.01); Anleitung 9.2a
+#   3.39  2026-11-14  Reiter OTA: Knopf "Minimale Firmware per USB hochladen" (DCC + Heartbeat-LED, WLAN und OTA eingeschaltet) - danach WLAN ueber USB einrichten (web_esp32_ota 1.02, headless_esp32_ota 1.07)
+#   3.40  2026-11-14  WLAN-Einstellungen des ESP32 je Blatt statt je Installation (Hostname, Adresse, WLAN/OTA in der Arbeitsmappe; Passwort lokal je Geraet) - XLA_Application 1.18, headless_esp32_ota 1.08
+#   3.41  2026-11-14  Minimale Firmware: Knopf im Formular ARDUINO Einstellungen meldete immer "Es laeuft noch ein Vorgang" (das Formular selbst haelt state busy) - eigener Ablauf ohne run_command
+#   3.42  2026-11-14  Automatisches Verbinden (Reiter Farb Test, Servo, Sound, Direktmodus): ist fuer das Blatt eine ESP32-WLAN-Verbindung eingetragen, wird zuerst WLAN probiert, sonst USB; der Knopf Mit ARDUINO verbinden fragt weiter WLAN oder USB (web_serial 1.09)
 # ----------------------------------------------------------------------------------------------
 """Web-Oberflaeche (NiceGUI) fuer den Programmgenerator.
 
@@ -311,7 +317,8 @@ REQUIRED_FILES = {  # v1.75
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.09", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.07", "proggen/M08_ARDUINO.py": "1.10", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.74 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.11", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.09", "proggen/M07_COM_Port.py": "1.04", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.07", "proggen/M08_ARDUINO.py": "1.11", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.75 (entfallen)
     # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.12", "_web/web_colorcheck.py": "1.05", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.09", "proggen/M07_COM_Port.py": "1.09", "_web/web_form_comport.py": "1.05", "mlpyproggen/Prog_Generator.py": "1.08", "proggen/M08_ARDUINO.py": "1.17", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.75  # v3.24 (entfallen)
-    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.13", "_web/web_colorcheck.py": "1.06", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.10", "proggen/M07_COM_Port.py": "1.11", "_web/web_form_comport.py": "1.07", "mlpyproggen/Prog_Generator.py": "1.08", "proggen/M08_ARDUINO.py": "1.18", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.75
+    # "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.13", "_web/web_colorcheck.py": "1.06", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.10", "proggen/M07_COM_Port.py": "1.11", "_web/web_form_comport.py": "1.07", "mlpyproggen/Prog_Generator.py": "1.08", "proggen/M08_ARDUINO.py": "1.18", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.01",  # v1.78 (web_access 1.09)  # v2.75  # v3.37 (entfallen)
+    "_web/web_form_select.py": "1.01", "_web/web_access.py": "1.13", "_web/web_esp32_ota.py": "1.03", "headless/headless_esp32_ota.py": "1.08", "ExcelAPI/XLA_Application.py": "1.18", "_web/web_serial.py": "1.10", "_web/web_form_options.py": "1.24", "proggen/M06_Write_Header.py": "1.06", "_web/web_colorcheck.py": "1.06", "headless/headless_startup.py": "1.01", "no_tk.py": "1.01", "proggen/M37_Inst_Libraries.py": "1.06", "arduino_prefs.py": "1.02", "_web/web_dialogs.py": "1.10", "proggen/M07_COM_Port.py": "1.11", "_web/web_form_comport.py": "1.07", "mlpyproggen/Prog_Generator.py": "1.08", "proggen/M08_ARDUINO.py": "1.19", "_web/web_network.py": "1.01", "_web/web_firewall.py": "1.03", "pattgen/M08_Load_Sheet_Data.py": "1.02",  # v1.78 (web_access 1.09)  # v2.75  # v3.37
     # "proggen/M06_Write_Header.py": "1.02", "proggen/M20_PageEvents_a_Functions.py": "1.02", "proggen/M18_Save_Load.py": "1.01",  # v1.98 (entfallen)
     # "proggen/M06_Write_Header.py": "1.03", "proggen/M20_PageEvents_a_Functions.py": "1.03", "proggen/M18_Save_Load.py": "1.01",  # v2.03 (entfallen)
     # "proggen/M06_Write_Header.py": "1.04", "proggen/M20_PageEvents_a_Functions.py": "1.03", "vb2py/vbfunctions.py": "1.01", "proggen/M18_Save_Load.py": "1.01",  # v2.12 (entfallen)
@@ -1155,7 +1162,7 @@ def font_scales(ctrl) -> dict:
 
 
 # VERSION = "1.96 (2026-10-21)"  # v1.97 (entfallen)
-VERSION = "3.36 (2026-11-14)"  # v3.36 (vorher 3.35)
+VERSION = "3.42 (2026-11-14)"  # v3.42 (vorher 3.41)
 # VERSION = "3.23 (2026-11-12)"  # v3.24 (entfallen)
 # VERSION = "3.22 (2026-11-12)"  # v3.23 (entfallen)
 # VERSION = "3.21 (2026-11-12)"  # v3.22 (entfallen)
@@ -2696,6 +2703,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if getattr(src, "shapelist", None):              # Symbole und Testtasten gehoeren zur Zeile: Copy kopiert nur die Zellen  # v2.63
             import copy as _copy  # v2.63
             dst.setData(_copy.deepcopy(src.getData()), copyshapes=True)  # v2.63
+        if getattr(src, "esp32_wlan", None):  # v3.40: gleiche WLAN-Einstellungen wie das Original
+            dst.esp32_wlan = dict(src.esp32_wlan)
         dst.set_tab_color(getattr(src, "tab_color", ""))  # wie in Excel: die Kopie hat dieselbe Reiterfarbe  # v2.63
         return dst  # v2.63
 
@@ -4671,7 +4680,17 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
     import proggen.M06_Write_MLLConfig as M06cfg
     # connect_arduino = run_command(lambda: ctrl.connect(), "Verbinden")          # Menuepunkt ARDUINO -> Verbinden und die Taste Verbinden der Seite Servo Test 1  # v2.01 (entfallen)
-    _connect_command = run_command(lambda: ctrl.connect(), "Verbinden")        # Menuepunkt ARDUINO -> Verbinden und der Knopf Mit ARDUINO verbinden in der Kopfzeile  # v2.01
+    _connect_command = run_command(lambda: ctrl.connect(), "Verbinden")
+    _connect_usb_command = run_command(lambda: ctrl.connect(wlan=False), "Verbinden")   # v3.42: Antwort USB im Dialog WLAN oder USB: nicht erneut WLAN versuchen
+
+    def wifi_target():  # v3.42
+        """(Adresse, Passwort) der eingetragenen ESP32-WLAN-Verbindung des aktiven Blatts, sonst None -> USB"""
+        if not esp32_board():
+            return None
+        wanted = headless_esp32_ota.load_settings()
+        host = web_esp32_ota.target_address(wanted)
+        return (host, wanted["password"]) if wanted["wifi"] and wanted["ota"] and host and wanted["password"] else None
+    ctrl.wifi_target_provider = wifi_target        # Menuepunkt ARDUINO -> Verbinden und der Knopf Mit ARDUINO verbinden in der Kopfzeile  # v2.01
 
     def after_connect():  # v2.01
         """Nach dem Verbinden (Knopf oder Menue): ein offener Reiter mit Direktmodus (Servo Einstellungen, DM Servo Einstellungen, Sound Test) startet ihn neu"""  # v2.01
@@ -4688,24 +4707,21 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             except Exception:                              # noqa: BLE001  # v2.01
                 logger.warning("Reiter %s nach dem Verbinden nicht aktualisiert", tabs.value, exc_info=True)  # v2.01
 
-    async def connect_device():
+    async def connect_arduino():  # v2.01
         settings = headless_esp32_ota.load_settings()
         if esp32_board() and settings["wifi"] and settings["ota"]:
             target = await web_esp32_ota.ask_target(web_esp32_ota.target_address(settings), allow_usb=True, connect=True, saved_password=settings["password"])
             if target is None:
-                return False
+                return
             if target != "usb":
                 host, password = target
                 await run_command(lambda: ctrl.connect_esp32(host, password), "ESP32 über WLAN verbinden")()
                 if not ctrl.is_connection_open():
-                    ui.notify("Keine ESP32-WLAN-Verbindung. IP-Adresse, Firmware und OTA-Passwort prüfen.", type="negative")
-                return True
-        await _connect_command()  # v2.01
-        return True
-
-    async def connect_arduino():  # v2.01
-        if await connect_device():
-            after_connect()
+                    ui.notify(tr("Keine ESP32-WLAN-Verbindung. IP-Adresse, Firmware und OTA-Passwort prüfen."), type="negative")
+                after_connect()
+                return
+        await _connect_usb_command() if (esp32_board() and settings["wifi"] and settings["ota"]) else await _connect_command()  # v2.01 / v3.42: nach der Antwort USB nur USB
+        after_connect()  # v2.01
 
     async def connect_from_header():  # v2.01
         """Knopf Mit ARDUINO verbinden: ohne Verbindung wie ARDUINO -> Verbinden; mit Verbindung geschieht nichts (Trennen im Menue ARDUINO)"""  # v2.01
@@ -4745,25 +4761,25 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
         def transfer():
             log = ctrl.weblog
-            log.set_title("ESP32-Setup über WLAN übertragen" if host else "ESP32-Setup über USB übertragen")
+            log.set_title(tr("ESP32-Setup über WLAN übertragen") if host else tr("ESP32-Setup über USB übertragen"))
             log.delete_text_from_textwindow()
             log.show()
             try:
                 if not ota_header.Create_HeaderFile(HeaderOnly=True):
-                    raise ValueError("Die Projektkonfiguration konnte nicht erzeugt werden.")
+                    raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))
                 sketch = os.path.join(ota_arduino.GetWorkbookPath(), M02.Ino_Dir_LED)
-                log.add_text_to_textwindow("ESP32-Firmware wird kompiliert …")
+                log.add_text_to_textwindow(tr("ESP32-Firmware wird kompiliert …"))
                 pio = None
                 if ota_options.Is_PlatformIO():
                     pio = ota_arduino.Find_PIO()
-                    log.add_text_to_textwindow("Build-Umgebung: PlatformIO")
+                    log.add_text_to_textwindow(tr("Build-Umgebung: PlatformIO"))
                     image, partitions = headless_esp32_ota.build_platformio_project(
                         sketch, pio, password, log.add_text_to_textwindow,
                         lambda path: ota_arduino.Write_PIO_Project("esp32", path),
                         hostname=settings["hostname"], ota=settings["ota"],
                     )
                 else:
-                    log.add_text_to_textwindow("Build-Umgebung: Arduino Builder")
+                    log.add_text_to_textwindow(tr("Build-Umgebung: Arduino Builder"))
                     image, partitions = headless_esp32_ota.build_project(
                         sketch, ota_arduino.Find_ArduinoExe(), ota_boards.Get_Sketchbook_Path(),
                         board, password, log.add_text_to_textwindow,
@@ -4772,23 +4788,110 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 if ctrl.is_connection_open():
                     ctrl.disconnect()
                 if not host:
-                    log.add_text_to_textwindow("Firmware wird per USB übertragen …")
+                    log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))
                     headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)
-                    log.add_text_to_textwindow("USB-Upload erfolgreich.", highlight="OK")
+                    log.add_text_to_textwindow(tr("USB-Upload erfolgreich."), highlight="OK")
                     return
-                log.add_text_to_textwindow("Firmware wird per WLAN übertragen …")
+                log.add_text_to_textwindow(tr("Firmware wird per WLAN übertragen …"))
                 result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)
                 log.add_text_to_textwindow(output)
+                if result and headless_esp32_ota.NO_RESPONSE in output:  # v3.38
+                    log.add_text_to_textwindow(tr(web_esp32_ota.HINT_FIREWALL, port=headless_esp32_ota.HOST_PORT), highlight="Error")
                 log.add_text_to_textwindow(
-                    "OTA-Upload erfolgreich." if result == 0 else "OTA-Upload fehlgeschlagen.",
+                    tr("OTA-Upload erfolgreich.") if result == 0 else tr("OTA-Upload fehlgeschlagen."),
                     highlight="OK" if result == 0 else "Error",
                 )
             except ValueError as error:
-                log.add_text_to_textwindow(str(error), highlight="Error")
+                log.add_text_to_textwindow(tr(str(error)), highlight="Error")
             except (OSError, subprocess.TimeoutExpired):
-                log.add_text_to_textwindow("Build oder Upload konnte nicht abgeschlossen werden.", highlight="Error")
+                log.add_text_to_textwindow(tr("Build oder Upload konnte nicht abgeschlossen werden."), highlight="Error")
 
         await run_command(transfer, "ESP32-Setup übertragen")()
+
+    headless_esp32_ota.sheet_provider = lambda: state["ws"]  # v3.40: WLAN-Einstellungen gehoeren zum aktiven Blatt
+
+    minimal_state = {"running": False}  # v3.40a
+
+    async def minimal_firmware():  # v3.39
+        """Reiter OTA: minimale Firmware (DCC + Heartbeat-LED, WLAN und OTA an) ueber USB auf den ESP32 laden"""
+        board = esp32_board()
+        if not board:
+            ui.notify(tr("Nur mit der Zentrale ESP32 möglich."), type="warning")
+            return
+        settings = headless_esp32_ota.load_settings()
+        port = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL).Value)
+        password = settings["password"]
+
+        def transfer():
+            log = ctrl.weblog
+            log.set_title(tr("Minimale ESP32-Firmware über USB übertragen"))
+            log.delete_text_from_textwindow()
+            log.show()
+            header = None
+            saved = None
+            try:
+                if not ota_header.Create_HeaderFile(HeaderOnly=True):
+                    raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))
+                sketch = os.path.join(ota_arduino.GetWorkbookPath(), M02.Ino_Dir_LED)
+                header = os.path.join(sketch, "LEDs_AutoProg.h")
+                if os.path.isfile(header):
+                    with open(header, "rb") as handle:
+                        saved = handle.read()
+                with open(header, "w", encoding="utf-8", newline="\n") as handle:  # nur fuer diesen Build; danach wird die eigene Konfiguration wiederhergestellt
+                    handle.write(headless_esp32_ota.minimal_header())
+                log.add_text_to_textwindow(tr("ESP32-Firmware wird kompiliert …"))
+                pio = None
+                if ota_options.Is_PlatformIO():
+                    pio = ota_arduino.Find_PIO()
+                    log.add_text_to_textwindow(tr("Build-Umgebung: PlatformIO"))
+                    image, partitions = headless_esp32_ota.build_platformio_project(
+                        sketch, pio, password, log.add_text_to_textwindow,
+                        lambda path: ota_arduino.Write_PIO_Project("esp32", path),
+                        hostname=settings["hostname"], ota=True,
+                    )
+                else:
+                    log.add_text_to_textwindow(tr("Build-Umgebung: Arduino Builder"))
+                    image, partitions = headless_esp32_ota.build_project(
+                        sketch, ota_arduino.Find_ArduinoExe(), ota_boards.Get_Sketchbook_Path(),
+                        board, password, log.add_text_to_textwindow,
+                        hostname=settings["hostname"], ota=True,
+                    )
+                if ctrl.is_connection_open():
+                    ctrl.disconnect()
+                log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))
+                headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)
+                log.add_text_to_textwindow(tr("Minimale Firmware übertragen. Als Nächstes im Reiter OTA „WLAN über USB einrichten“."), highlight="OK")
+            except ValueError as error:
+                log.add_text_to_textwindow(tr(str(error)), highlight="Error")
+            except (OSError, subprocess.TimeoutExpired):
+                log.add_text_to_textwindow(tr("Build oder Upload konnte nicht abgeschlossen werden."), highlight="Error")
+            finally:
+                if header:
+                    try:
+                        if saved is not None:
+                            with open(header, "wb") as handle:
+                                handle.write(saved)
+                        elif os.path.isfile(header):
+                            os.remove(header)
+                    except OSError:
+                        pass
+
+        # nicht ueber run_command: Das Formular ARDUINO Einstellungen laeuft selbst als Befehl und haelt state["busy"] (sonst kam immer "Es laeuft noch ein Vorgang")  # v3.40a
+        if minimal_state["running"]:
+            ui.notify(tr("Es läuft noch ein Vorgang – bitte warten."), type="warning")
+            return
+        minimal_state["running"] = True
+        ws = state["ws"]
+
+        def work():
+            ws.Activate()
+            transfer()
+        try:
+            await run.io_bound(work)
+        finally:
+            minimal_state["running"] = False
+
+    web_esp32_ota.minimal_firmware_handler = minimal_firmware  # v3.39
 
     MENU = {
         "Datei": [
@@ -5186,7 +5289,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if new_tab in ("farb", "servo1", "servo2", "sound") and old_tab != new_tab and not state["busy"]:  # v3.25: Seiten mit Direktmodus verbinden selbst
             try:  # v3.25
                 if not ctrl.is_connection_open():  # v3.25
-                    await connect_device()  # tab_selected startet den Direktmodus gleich danach
+                    await _connect_command()  # v3.25: ohne after_connect: tab_selected startet den Direktmodus gleich danach
             except Exception:                              # noqa: BLE001  # v3.25
                 logger.warning("Automatisches Verbinden beim Oeffnen des Reiters %s fehlgeschlagen", new_tab, exc_info=True)  # v3.25
         if new_tab == "farb" and old_tab != "farb":

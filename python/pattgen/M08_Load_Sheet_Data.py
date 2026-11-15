@@ -1,13 +1,14 @@
-# Datei-Version: 1.01 (2026-10-19) - M08_Load_Sheet_Data.py
+# Datei-Version: 1.02 (2026-11-14) - M08_Load_Sheet_Data.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_Load_Sheet_Data.py
 # Path:           pattgen/M08_Load_Sheet_Data.py
-# Version:        1.01
-# Last Update:    2026-10-19
+# Version:        1.02
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.01  2026-10-19  Load_Picture: .jpg nur dann durch .png ersetzen, wenn die PNG-Datei existiert (ein eingefuegtes JPG-Bild wurde beim erneuten Laden nicht gefunden); davor Original-Port, nicht erfasst
+#   1.02  2026-11-14  Load_Picture: Bilder auch in den Ordnern Bilder und images suchen (Beitrag des Fork-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 from vb2py.vbfunctions import *
 from vb2py.vbdebug import *

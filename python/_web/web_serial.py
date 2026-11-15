@@ -1,9 +1,9 @@
-# Datei-Version: 1.06 (2026-11-13) - web_serial.py
+# Datei-Version: 1.10 (2026-11-14) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.06
-# Last Update:    2026-11-13
+# Version:        1.10
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,6 +14,10 @@
 #   1.04  2026-10-26  Zusammengesetzte Meldungen (Verkettungen und f-Strings) mit tr(...) uebersetzbar gemacht
 #   1.05  2026-11-09  Der Verbindungsstatus wird uebersetzt (Nicht Verbunden, Verbunden <Port> - DIRECT/EFFECT Mode)
 #   1.06  2026-11-13  Mit ARDUINO verbinden: DTR und RTS werden vor dem Oeffnen ausgeschaltet (der Nano wurde beim Verbinden zurueckgesetzt: das verzoegerte den Verbindungsaufbau und unterbrach die Anlagensteuerung); der Pico behaelt DTR und RTS an (Excel: 'pico serial USB port needs DTR to be on'); _open_serial, _board_needs_dtr
+#   1.07  2026-11-14  ESP32: Verbindung ueber WLAN mit Anmeldung per HMAC (Port 2323, connect_esp32); Schreibfehler schliesst nur die eigene Verbindung (Beitrag des Fork-Entwicklers)
+#   1.08  2026-11-14  TcpPort: ungueltiger Hostname (UnicodeError, "label too long") wird als OSError gemeldet statt abzustuerzen
+#   1.09  2026-11-14  Automatisches Verbinden (ohne Anschlussangabe): ist fuer das Blatt eine ESP32-WLAN-Verbindung eingetragen (wifi_target_provider), wird zuerst WLAN versucht, sonst USB; connect(wlan=False) erzwingt USB
+#   1.10  2026-11-14  connect_if_not_connected (Testtasten, DCC-Tastatur, Z21 ...) versucht auch mit Anschlussangabe zuerst die eingetragene ESP32-WLAN-Verbindung
 # ----------------------------------------------------------------------------------------------
 """Serielle Verbindung zum Arduino/Pico ohne Tk (Mixin fuer HeadlessAppController).
 
@@ -100,7 +104,10 @@ class TcpPort:
     """Minimaler Ersatz fuer telnetlib.Telnet / serial.Serial bei einer IP-Verbindung (WLAN-Pico)."""
 
     def __init__(self, host: str, port: int = 23, timeout: float = 5.0):
-        self.sock = socket.create_connection((host, port), timeout=timeout)
+        try:
+            self.sock = socket.create_connection((host, port), timeout=timeout)
+        except UnicodeError as error:  # v1.08: Adresse mit zu langem Namensteil ("label too long") wie ein Verbindungsfehler behandeln
+            raise OSError("Ungültiger Hostname.") from error
         self.sock.settimeout(2.0)
         self.is_open = True
         self.portstr = host
@@ -521,7 +528,7 @@ class SerialMixin:
     def connect_if_not_connected(self, port=None):
         if self.is_connection_open():
             return True
-        return self.connect(port=port)
+        return self.connect(port=port, wlan=True)  # v1.10: auch mit Anschlussangabe (Testtasten) zuerst die eingetragene WLAN-Verbindung
 
     def _set_connect_status(self, text, fg="black"):
         text = tr(text)  # v1.05: feste Texte wie 'Nicht Verbunden' in der eingestellten Sprache (zusammengesetzte Texte sind schon uebersetzt oder bleiben)
@@ -535,8 +542,24 @@ class SerialMixin:
         self._set_connect_status("Nicht Verbunden", "black")
         return False
 
-    def connect(self, port=None):
+    wifi_target_provider = None  # v1.09: Funktion ohne Argument, liefert (Adresse, Passwort) der eingetragenen ESP32-WLAN-Verbindung des aktiven Blatts oder None (setzt webmobaledlib.py)
+
+    def connect(self, port=None, wlan=None):
+        """wlan=None: ohne Anschlussangabe zuerst die eingetragene ESP32-WLAN-Verbindung versuchen, dann USB; wlan=False: nur USB."""  # v1.09
         with self._conn_lock:
+            if (port is None or wlan) and wlan is not False and self.wifi_target_provider is not None:  # v1.09/v1.10
+                try:
+                    target = self.wifi_target_provider()
+                except Exception:                                  # noqa: BLE001
+                    logger.debug("wifi_target_provider fehlgeschlagen", exc_info=True)
+                    target = None
+                if target:
+                    if self.arduino:
+                        self.disconnect()
+                    logger.info("connect: zuerst WLAN %s", target[0])
+                    if self.connectIP(target[0], esp32_password=target[1]) and self.is_connection_open():
+                        return True
+                    logger.info("connect: WLAN %s nicht erreichbar, weiter mit USB", target[0])
             return self._connect(port)
 
     def _connect(self, port=None):

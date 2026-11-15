@@ -1,9 +1,9 @@
-# Datei-Version: 1.23 (2026-11-13) - web_form_options.py
+# Datei-Version: 1.24 (2026-11-14) - web_form_options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_options.py
 # Path:           _web/web_form_options.py
-# Version:        1.23
-# Last Update:    2026-11-13
+# Version:        1.24
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,7 @@
 #   1.21  2026-11-12  Knopf im Dialog Firmware installieren: 'Firmware herunterladen' (vorher 'Firmware laden')
 #   1.22  2026-11-13  Schreibfehler im Titel: 'Optionen und spezielle Funktionen' (vorher 'Funktionien')
 #   1.23  2026-11-13  Wechsel des Arduino-Typs (Optionen): eine bestehende serielle Verbindung wird getrennt und der gewaehlte COM Port zurueckgesetzt (_web_board_changed), damit beim naechsten Mal die Port-Erkennung startet ohne die Meldung 'Es ist kein ... angeschlossen' (Rueckmeldung des Excel-Entwicklers)
+#   1.24  2026-11-14  Reiter OTA (nur bei Board ESP32): WLAN, OTA, Hostname, Adresse, Passwort (Beitrag des Fork-Entwicklers; web_esp32_ota.settings_panel)
 # ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 

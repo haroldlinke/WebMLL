@@ -1,9 +1,9 @@
-# Datei-Version: 1.22 (2026-11-04) - web_pattgen.py
+# Datei-Version: 1.23 (2026-11-14) - web_pattgen.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_pattgen.py
 # Path:           _web/web_pattgen.py
-# Version:        1.22
-# Last Update:    2026-11-04
+# Version:        1.23
+# Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -31,6 +31,7 @@
 #   1.20  2026-10-27  cellStyle setzt Hinter- und Schriftfarbe immer ausdruecklich (leer = zuruecksetzen): AG Grid entfernt einen frueher gesetzten Stil nicht, wenn die Funktion null liefert
 #   1.21  2026-11-01  Beschreibung des Blatts aus msoTextBox0, aenderbar (Textfeld), wird beim Speichern wieder als msoTextBox0 geschrieben
 #   1.22  2026-11-04  Knopf Test Pattern: das Muster der Seite auf dem Bildschirm abspielen (LED-Kreise, Zeiten, PingPong, Goto), wie im Excel-Programm (web_pattern_test, headless_pattern_test)
+#   1.23  2026-11-14  Patterngenerator: Haken RGB LED in der Tabellenkopfzeile, LED-Farbe waehlen (Rechtsklick), Rampen und Goto-Pfeile in den Zellen, Bilder als eigene Zeile, Analog_Trend (Beitrag des Fork-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 """Reiter "Patterngenerator" im Browser.
 

@@ -1,8 +1,8 @@
-# Datei-Version: 1.18 (2026-11-14) - M08_ARDUINO.py
+# Datei-Version: 1.19 (2026-11-14) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.18
+# Version:        1.19
 # Last Update:    2026-11-14
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -26,6 +26,7 @@
 #   1.16  2026-11-12  Excel-Programm 3.5.0L3: platformio.ini: die Bibliothek MobaLedLib wird mit symlink:// verknuepft statt kopiert (file://), wenn der Rechner symbolische Verknuepfungen erlaubt (Lib_Link_Scheme, sonst wie bisher file://); Write_PIO_Extension einmal im Abschnitt [env] statt in jedem Abschnitt (damit auch fuer den Pico); WriteGenButtonReleaseDefine: Text plus Zahl (TypeError bei GEN_BUTTON_RELEASE_COM 2 oder 3) behoben
 #   1.17  2026-11-12  Einstellung 'Test ARDUINO Programm Creation' (ARDUINOTest): Die Fragen nach jedem Schritt kommen jetzt als Web-Dialog (P01.MsgBox) statt tk.messagebox (ohne Tk lieferte askyesno immer Nein: 'Headerfileerstellung abgebrochen - Die Headerdatei wurde nicht geschrieben', Windows 11, Log des Testers)
 #   1.18  2026-11-14  Dialog 'Fehler bei der Ueberpruefung des angeschlossenen Arduino': Knoepfe Suchen / Weiter / Abbrechen (P01.MsgBoxLabelled), Text angepasst
+#   1.19  2026-11-14  Write_PIO_Project und PlatformIO-Projekt fuer OTA (Beitrag des Fork-Entwicklers)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #

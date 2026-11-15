@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 3.76 (2026-11-14), gilt für webMobaLedLib 3.30*
+*Datei-Version: 3.77 (2026-11-14), gilt für webMobaLedLib 3.38*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1104,6 +1104,12 @@ danach im Browser `http://localhost:8080`.
 | Fenster geht sofort wieder zu | `install\start_windows.bat` in einer Eingabeaufforderung starten und die Meldung lesen; außerdem `webmobaledlib.log` im Datenordner (2.6) |
 | Verknüpfung fehlt auf dem Desktop | Pfad des Projektordners ohne `'` und `&`? Sonst `install\start_windows.bat` per Rechtsklick → *Senden an → Desktop* |
 | IDE-Installation (`/ide`) bricht ab | Download von arduino.cc von Hand (2.2), danach `install_windows.bat /libs` |
+
+### 9.2a ESP32-Upload über WLAN scheitert („No response from device“)
+
+Der ESP32 meldet sich nach der Anmeldung mit einer eigenen Verbindung zurück zum PC. Eine Firewall blockiert diese eingehende Verbindung. Lösung: **eingehend TCP-Port 32323** zulassen.
+- **Windows-Firewall:** PowerShell als Administrator: `New-NetFirewallRule -DisplayName "MLL OTA" -Direction Inbound -Protocol TCP -LocalPort 32323 -Action Allow`
+- **Andere Firewalls (z. B. ESET):** Neue Regel anlegen: Richtung eingehend, Protokoll TCP, lokaler Port 32323, Aktion Zulassen. Die Menünamen hängen von der Version ab (bei ESET: Einstellungen → Netzwerkschutz → Firewall → Regeln).
 
 ### 9.3 macOS
 
