@@ -1061,7 +1061,7 @@ def cell_renderer_js(bridge_id: int) -> str:
             # "if (params.value) box.append(' '); } "  # v2.77 (entfallen)
             "} "  # v2.77
             "const v = (params.valueFormatted !== undefined && params.valueFormatted !== null) ? params.valueFormatted : params.value; "
-            "if (v !== undefined && v !== null) { box.style.whiteSpace = 'pre-line'; box.append(String(v)); } "
+            "if (v !== undefined && v !== null) { box.style.whiteSpace = params.node.rowPinned ? 'pre-line' : 'nowrap'; box.append(String(v)); } "
             "const tb = params.data && params.data._tb && params.data._tb[params.colDef.field]; "
             "if (tb) { box.style.display = 'flex'; box.style.alignItems = 'center'; "
             "const holder = document.createElement('span'); holder.style.marginLeft = tb[0].lead ? 'auto' : '0'; holder.style.whiteSpace = 'nowrap'; "
@@ -1701,20 +1701,20 @@ def font_css(ctrl) -> str:
             "--mll-small-scale:%.3f;--mll-grid-font:'%s';}" % (s["title"], s["label"], s["input"], s["grid"], s["small"], s["name"]))
 
 JS_ROW_HEIGHT = ("params => Math.round((params.node.rowPinned ? "
-                 "(params.data && params.data._r === 0 ? 18 : 46) : (22 * (params.data?._lines || 1))) * (window.mllGridScale || 1))")
+                 "(params.data && params.data._r === 0 ? 18 : 46) : 22) * (window.mllGridScale || 1))")
 
 JS_DBLCLICK = """
 <script>
 // Doppelklick auf Name und Beleuchtung (Spalten und erste Datenzeile setzt der Server in window.mllDbl): Makroauswahl statt Bearbeiten.
 // Schalter in den Programm Einstellungen (Standard aus). Die Capture-Phase faengt das Ereignis vor AG Grid ab, sonst startet das Bearbeiten.
-window.mllDbl = {on: false, cols: [], first: 0};
+window.mllDbl = {on: false, cols: [], typeCol: null, first: 0};
 document.addEventListener('dblclick', function (e) {
   const d = window.mllDbl;
-  if (!d || !d.on) return;
+  if (!d) return;
   const cell = e.target && e.target.closest ? e.target.closest('.ag-cell') : null;
   if (!cell || cell.classList.contains('ag-cell-inline-editing')) return;          // im Editor selbst nichts abfangen
   const col = cell.getAttribute('col-id');
-  if (!col || d.cols.indexOf(col) < 0) return;
+  if (!col || (col !== d.typeCol && (!d.on || !d.cols.includes(col)))) return;
   const row = cell.closest('.ag-row');
   const r = row ? parseInt(row.getAttribute('row-id'), 10) : NaN;
   if (isNaN(r) || r < d.first) return;
@@ -2859,19 +2859,20 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
     def update_dbl(ws, force=False):
         """Dem Browser sagen, ob und in welchen Spalten ein Doppelklick die Makroauswahl oeffnet (nur Datenblaetter, Schalter in den Einstellungen)."""
-        cols, first = [], 0
+        cols, type_col, first = [], None, 0
         try:
             if M28.Is_Data_Sheet(ws):
                 M25.Make_sure_that_Col_Variables_match(ws)
                 cols = [f"c{int(M25.LanName_Col) - 1}", f"c{int(M25.Config__Col) - 1}"]
+                type_col = f"c{int(M25.Inp_Typ_Col) - 1}"
                 first = int(M02.FirstDat_Row) - 1
         except Exception:                                    # noqa: BLE001
             logger.debug("Spalten fuer den Doppelklick nicht ermittelbar", exc_info=True)
         on = bool(cols) and web_layout.get_dblclick(ctrl)
-        key = (on, tuple(cols), first)
+        key = (on, tuple(cols), type_col, first)
         if key != dbl_sent["key"] or force:
             dbl_sent["key"] = key
-            ui.run_javascript("window.mllDbl = %s;" % json.dumps({"on": on, "cols": cols, "first": first}))
+            ui.run_javascript("window.mllDbl = %s;" % json.dumps({"on": on, "cols": cols, "typeCol": type_col, "first": first}))
 
     def is_libraries_sheet(ws) -> bool:
         return ws.Name == M02.LIBRARYS__SH
@@ -3334,8 +3335,6 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 if column.get("field") == config_field:
                     column.update(cellEditor="agLargeTextCellEditor", cellEditorPopup=True,
                                   cellEditorParams={"rows": 8, "cols": 65, "maxLength": 20000})
-            for row in rows:
-                row["_lines"] = len(str(row.get(config_field) or "").splitlines()) or 1
         t_build = time.perf_counter()  # v1.49
         if SHAPES_DEBUG:  # v1.51
             logger.info("SHAPES: show(%s): %s | Zeilen mit Testtasten %s | Zeilen mit Symbol %s", ws.Name, shapes_report(ws),  # v1.51
@@ -3396,8 +3395,6 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     grid.run_grid_method("setGridOption", "pinnedTopRowData", pinned)
                 if changed_rows:
                     grid.run_grid_method("applyTransaction", {"update": changed_rows})
-                    if any(r.get("_lines") != old_by_id[r["_r"]].get("_lines") for r in changed_rows):
-                        grid.run_grid_method("resetRowHeights")
                     refresh_cols = renderer_columns(changed_rows) | renderer_columns([old_by_id[r["_r"]] for r in changed_rows])  # v1.50
                     refresh_cols |= style_columns(old_rows, changed_rows)  # Farben, die sich geaendert haben (Zeilen faerben)  # v2.23
             else:                                          # Zeilen eingefuegt/geloescht/ausgeblendet: alle Zeilen austauschen
@@ -4185,15 +4182,28 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 menu_row("Farbe entfernen")
 
     async def on_dblmacro(e):
-        """Doppelklick auf Name oder Beleuchtung (nur mit dem Schalter in den Programm Einstellungen): wie in Excel die Makroauswahl"""
+        """Doppelklick auf Typ, Name oder Beleuchtung."""
         a = e.args or {}
-        if state["busy"] or not web_layout.get_dblclick(ctrl):
+        if state["busy"]:
             return
         try:
             r, c = int(a["r"]), int(str(a["col"])[1:])
         except (KeyError, TypeError, ValueError):
             return
         ws_ = state["ws"]
+        if not M28.Is_Data_Sheet(ws_) or r + 1 < M02.FirstDat_Row:
+            return
+        M25.Make_sure_that_Col_Variables_match(ws_)
+        if c + 1 == M25.Inp_Typ_Col:
+            def choose_type():
+                ws_.Activate()
+                M20.Select_Typ_by_Dialog(X02.Cells(r + 1, c + 1))
+
+            await run_in_worker(choose_type)
+            show(ws_)
+            return
+        if not web_layout.get_dblclick(ctrl) or c + 1 not in (M25.LanName_Col, M25.Config__Col):
+            return
         ws_.tksheet.set_selection(cells={(r, c)}, current=(r, c))
         await fire_selection_event(ws_)
         await open_macro_dialog(ws_)
