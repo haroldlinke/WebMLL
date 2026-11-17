@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 2.88 (2026-11-17), gilt für webMobaLedLib 3.85*
+*Datei-Version: 2.89 (2026-11-172026-11-17, gilt für webMobaLedLib 3.86*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -334,3 +334,7 @@ Rückmeldungen an den Entwickler (Kontakt siehe GitHub-Seite des Projekts: <http
 229. **Version der MobaLedLib (3.78):** Mit der ARDUINO IDE als Entwicklungsumgebung steht „Ver.x.y.z“ unter dem Knopf Beenden (in allen Reitern) und nicht mehr in der Knopfzeile. Entwicklungsumgebung auf PlatformIO umstellen: Die Version verschwindet (nach dem nächsten Befehl); zurückstellen: sie erscheint wieder. Im kompakten Layout wird sie nicht angezeigt.
 
 230. **Knopf „Board und USB Port erkennen“ (3.82, mit Hardware):** Optionen Werkzeuge, Reiter Lichtmaschine (früher „LED ARDUINO“, bei ESP32 auch Reiter „WLAN (OTA)“, früher „OTA“): Der Knopf „Board und USB Port erkennen“ steht über „USB Port erkennen“. Statt des Hakens „Automatisch erkennen“ gibt es den Knopf „Board und USB Port erkennen“; „Typ von Arduino IDE benutzen“ fehlt in der Auswahl. Es muss weder ein USB Port noch ein Board eingestellt sein. Knopf drücken: Das Fenster „USB Port erkennen“ erscheint mit dem gefundenen Board (a) Nano mit altem Bootloader: „Nano Normal (old Bootloader)“, (b) Nano mit neuem Bootloader: „Nano (neue Version)“, (c) ESP32, (d) Pico) und dem Anschluss; weitere angeschlossene Boards anderer Typen werden wie bisher mitangezeigt. Übernehmen oder anderen Typ wählen funktioniert. Ohne angeschlossenen Arduino: Hinweis zum Anschließen. Mit belegtem Anschluss (zum Beispiel serieller Monitor): Meldung im Formular. Das Gleiche im Reiter DCC Arduino (Nano). Zusätzlich: Eine ältere Datei mit gespeichertem „AutoDet“ stellt das Board beim Hochladen nicht mehr um.
+
+## ESP Einstellungen pro Blatt
+
+- [ ] Bei ESP32 und einem anderen Board die Sichtbarkeit prüfen. Zwei Blätter unterschiedlich einstellen, speichern, neu öffnen und die erzeugten Defines prüfen.

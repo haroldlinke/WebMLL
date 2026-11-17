@@ -1131,8 +1131,8 @@
 "size": 1106
 },
 "csv/Web_Languages.csv": {
-"sha256": "69adeb6d88d485484790ac52c7e66615cda94208c68811a22f0d11ba8f9f1ec4",
-"size": 539252
+"sha256": "429e91c5c98bda11734a2712aab39cda2eb0d18a59f0f9deab4bf246afca1537",
+"size": 554137
 },
 "csv/xLibraries.csv": {
 "sha256": "a737fc50e763b84683b77c46c5f9a4b338362e0587400daea97f0ed0e89e2b81",
@@ -7663,8 +7663,8 @@
 "size": 2829
 },
 "install/ANLEITUNG_Installation.md": {
-"sha256": "8ca6ba4938f4e9dbd64e08694f9e7aef13e64e6db948aba331040cff987b699b",
-"size": 198629
+"sha256": "83242938a0075b14a6183aefba680c8427b7d138761db756cc9d08f62dbbc770",
+"size": 205744
 },
 "install/ANLEITUNG_Linux_Desktop.pdf": {
 "sha256": "ed3bf81790dab00eb36917e8a5bbc212fbf1d70682682223210bec33bb12efec",
@@ -7679,8 +7679,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "a7732a458ec9ddcbebf059d277c08f1873f1279d6c51bdceed471674bf95a641",
-"size": 116820
+"sha256": "1418e60d8d200734aeb89eade3e93e21500f3fea3acfefa65981e2477ec33c87",
+"size": 128494
 },
 "install/UEBERSETZEN.md": {
 "sha256": "89d33068ec1ee883a4ebf692a6e407620aae00c538ee06b1a335bc2abbf6e1ba",

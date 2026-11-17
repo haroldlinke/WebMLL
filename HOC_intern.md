@@ -1,4 +1,4 @@
-Datei-Version: 1.01 (2026-10-18) - HOC_intern.md
+Datei-Version: 1.02 (2026-11-172026-10-18 - HOC_intern.md
 Stand: webMobaLedLib 3.86
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,12 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 3.86 (2026-11-17) – ESP Einstellungen pro Blatt
+
+Unter Optionen Werkzeuge erscheinen für die ESP32-LED-Zentrale die ESP Einstellungen. OLED-Modus, Fotowiderstand und Zustandsspeicherung werden pro Blatt gewählt. Die OLED-Vorschau zeigt Beispieldaten.
+
+Header-Erzeugung für Modi 1 bis 5 und Filter für Define-Zeilen geprüft. Vollständiger Browser- und Firmwaretest offen.
 
 ## 2.12 (2026-10-23) - Release-Stand
 

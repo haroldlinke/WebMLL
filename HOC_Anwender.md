@@ -1,9 +1,15 @@
-Datei-Version: 1.01 (2026-10-18) - HOC_Anwender.md
+Datei-Version: 1.02 (2026-11-172026-10-18 - HOC_Anwender.md
 Stand: webMobaLedLib 3.86
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 3.86 (2026-11-17) – ESP Einstellungen pro Blatt
+
+Neue Funktionen
+
+- Unter Optionen Werkzeuge erscheinen für die ESP32-LED-Zentrale die ESP Einstellungen. OLED-Modus, Fotowiderstand und Zustandsspeicherung werden pro Blatt gewählt. Die OLED-Vorschau zeigt Beispieldaten.
 
 ## Version 3.86 (2026-11-17)
 
