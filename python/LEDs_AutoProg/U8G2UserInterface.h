@@ -33,6 +33,7 @@ Revision History :
 10.11.20:  Version 1.0 (Jürgen)
 18.01.25:  Version 1.1 (Jürgen)
 30.03.25:  Version 1.2 (Peter)
+17.11.26:  Version 1.3 (Fork): OLED mode 5 with hostname
 	 
 */
 #ifdef ESP32

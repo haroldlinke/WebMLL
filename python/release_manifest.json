@@ -231,8 +231,8 @@
 "size": 447
 },
 "LEDs_AutoProg/U8G2UserInterface.h": {
-"sha256": "c95afb9cd450d929c6ef01667b9c4695a849eab9847bd342675c47ab6fb4c3af",
-"size": 9162
+"sha256": "c9fb44d8f2decdb65569adcfae781586f2c12192dde5d99d2d467bdeac01cd5b",
+"size": 9219
 },
 "LEDs_AutoProg/UserInterface.cpp": {
 "sha256": "605ba6d2a6bff75097471e92e1a7de94986191f67d76ca37815866125d7b9b1a",
