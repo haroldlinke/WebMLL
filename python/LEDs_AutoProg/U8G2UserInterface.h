@@ -169,15 +169,17 @@ public:
       dsp->drawStr(10, 40, timeStr);	// 30.03.25
       dsp->sendBuffer();	
     }
-#elif UI_MLLTime == 4
+#elif UI_MLLTime == 4 || UI_MLLTime == 5
     const uint32_t now = millis();
     if (update || lastUIUpdate == 0 || now - lastUIUpdate >= 500)
     {
       update = false;
       lastUIUpdate = now;
+      #if UI_MLLTime == 4
       const uint16_t offset = uint32_t(Darkness) * 720 / 255;
       const unsigned minutes = (DayState <= SunSet ? 720 + offset : 720 - offset) % 1440;
       char line[32];
+      #endif
       dsp->clearBuffer();
       dsp->setFont(u8g2_font_7x13_tf);
       dsp->setFontPosTop();
@@ -192,6 +194,7 @@ public:
       center(3, "WLAN deaktiviert");
       center(18, "IP: -");
 #endif
+#if UI_MLLTime == 4
 #ifdef READ_LDR
       snprintf(line, sizeof(line), "LDR: %d  D: %d", int(Get_Act_Darkness()), int(Darkness));
 #else
@@ -203,6 +206,31 @@ public:
       else
         snprintf(line, sizeof(line), "MLL-Zeit: %02u:%02u", minutes / 60, minutes % 60);
       center(48, line);
+#else
+      const char *hostname = "-";
+#ifdef USE_WIFI
+      extern String hostString;
+      if (hostString.length()) hostname = hostString.c_str();
+#endif
+      const size_t hostLength = strlen(hostname);
+      const size_t displayWidth = dsp->getDisplayWidth();
+      // These fonts are fixed width. Keep the larger font if two lines suffice.
+      const size_t largeLineLength = displayWidth / dsp->getMaxCharWidth();
+      if (hostLength > 2 * largeLineLength)
+        dsp->setFont(u8g2_font_4x6_tf);
+      const size_t lineLength = displayWidth / dsp->getMaxCharWidth();
+      char hostnameLine[64];
+      for (uint8_t row = 0; row < 2 && row * lineLength < hostLength; ++row)
+      {
+        const size_t start = row * lineLength;
+        const size_t remaining = hostLength - start;
+        const size_t count = remaining < lineLength ? remaining : lineLength;
+        const size_t copyLength = count < sizeof(hostnameLine) ? count : sizeof(hostnameLine) - 1;
+        memcpy(hostnameLine, hostname + start, copyLength);
+        hostnameLine[copyLength] = '\0';
+        center(33 + 15 * row, hostnameLine);
+      }
+#endif
       dsp->sendBuffer();
     }
 // Peter Ende
