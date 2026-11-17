@@ -1,4 +1,4 @@
-Datei-Version: 1.01 (2026-10-18) - HOC_intern.md
+Datei-Version: 1.02 (2026-11-172026-10-18 - HOC_intern.md
 Stand: webMobaLedLib 3.86
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,12 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 3.86 (2026-11-17) – OLED-Modus 5
+
+OLED-Modus 5 zeigt WLAN-Status, IP-Adresse und Hostname. Lange Hostnamen werden auf zwei Zeilen verteilt.
+
+Die Darstellung am OLED wurde vom Anwender bestätigt.
 
 ## 2.12 (2026-10-23) - Release-Stand
 

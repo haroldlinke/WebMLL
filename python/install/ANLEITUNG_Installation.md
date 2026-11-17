@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 3.92 (2026-11-17), gilt für webMobaLedLib 3.85*
+*Datei-Version: 3.93 (2026-11-172026-11-17, gilt für webMobaLedLib 3.86*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1277,3 +1277,7 @@ Ein Update kann abbrechen, wenn der Strom ausfällt, das Programm beendet wird o
 - **Mehrsprachigkeit:** Die Texte, die das Web-Programm selbst ergänzt (Menüs, Dialoge, Einstellungen, Meldungen), sind nur deutsch. Die Mehrsprachigkeit folgt später.
 
 Bei einer Fehlermeldung bitte den Text aus dem Installationsfenster und die Dateien `webmobaledlib.log` und `webmobaledlib-crash.log` aus dem Datenordner (2.6) schicken.
+
+## OLED-Modus 5
+
+OLED-Modus 5 zeigt WLAN-Status, IP-Adresse und Hostname. Lange Hostnamen werden auf zwei Zeilen verteilt.

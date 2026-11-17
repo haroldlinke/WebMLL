@@ -1,9 +1,15 @@
-Datei-Version: 1.01 (2026-10-18) - HOC_Anwender.md
+Datei-Version: 1.02 (2026-11-172026-10-18 - HOC_Anwender.md
 Stand: webMobaLedLib 3.86
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 3.86 (2026-11-17) – OLED-Modus 5
+
+Neue Funktionen
+
+- OLED-Modus 5 zeigt WLAN-Status, IP-Adresse und Hostname. Lange Hostnamen werden auf zwei Zeilen verteilt.
 
 ## Version 3.86 (2026-11-17)
 
