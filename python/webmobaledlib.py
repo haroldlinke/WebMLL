@@ -2856,6 +2856,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             dst.setData(_copy.deepcopy(src.getData()), copyshapes=True)  # v2.63
         if getattr(src, "esp32_wlan", None):  # v3.40: gleiche WLAN-Einstellungen wie das Original
             dst.esp32_wlan = dict(src.esp32_wlan)
+        if getattr(src, "esp32_options", None):
+            dst.esp32_options = dict(src.esp32_options)
         dst.set_tab_color(getattr(src, "tab_color", ""))  # wie in Excel: die Kopie hat dieselbe Reiterfarbe  # v2.63
         return dst  # v2.63
 
@@ -3365,6 +3367,34 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         apply_graph_view(ws)  # v2.29
         refresh_graph(ws, True)  # v2.29
 
+    def hide_managed_esp_rows(ws, rows, config_field):
+        """Hide only standalone defines supplied by the active ESP settings."""
+        options = getattr(ws, "esp32_options", None)
+        board = str(ws.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL).Value)
+        if not options or not re.search(r"\besp32:esp32:", board):
+            return rows
+
+        defines = []
+        if options.get("oled") in (1, 2, 3, 4, 5):
+            defines.extend((r"USE_ESP32_EXTENSIONS", r"USE_UI", r"UI_MLLTime\s+[0-5]"))
+        if options.get("ldr") is True:
+            defines.append(r"READ_LDR")
+        if options.get("store_status") is True:
+            defines.append(r"ENABLE_STORE_STATUS(?:\(\))?")
+        if not defines:
+            return rows
+
+        directive = r"#\s*define\s+(?:" + "|".join(defines) + r")"
+        define_block = re.compile(
+            rf"(?:#\s*ifdef\s+ESP32\s*(?:{directive}\s*)+#\s*endif|"
+            rf"(?:{directive}\s*)+)"
+        )
+        return [
+            row for row in rows
+            if row["_r"] < M02.FirstDat_Row - 1
+            or not define_block.fullmatch(str(row.get(config_field) or "").strip())
+        ]
+
     def show(ws):
         t_start = time.perf_counter()  # v1.49
         try:
@@ -3391,6 +3421,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if M28.Is_Data_Sheet(ws):
             M25.Make_sure_that_Col_Variables_match(ws)
             config_field = f"c{M25.Config__Col - 1}"
+            rows = hide_managed_esp_rows(ws, rows, config_field)
+            meta["shown_rows"] = len(rows) + len(pinned)
             for column in column_defs:
                 if column.get("field") == config_field:
                     column.update(cellEditor="agLargeTextCellEditor", cellEditorPopup=True,
@@ -4803,7 +4835,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     def workbook_signature():
         # return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or [])) for s in list(wb.sheets))  # v2.40 (entfallen)
         # return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0)) for s in list(wb.sheets))  # v2.63 (entfallen)
-        return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0), s.Name, getattr(s, "tab_color", "")) for s in list(wb.sheets))  # v2.63 Name und Reiterfarbe  # v2.63
+        return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0), s.Name, getattr(s, "tab_color", ""), tuple(sorted((getattr(s, "esp32_options", None) or {}).items()))) for s in list(wb.sheets))  # v2.63 Name und Reiterfarbe  # v2.63
 
     def save_now():
         sync_all_sheets()

@@ -856,6 +856,7 @@ class CWorkbook(object):
             saveData["Workbookdata"]= copy.deepcopy(workbookdata)
             saveData["SheetOrder"] = [s.Name for s in self.sheets]                 # Reihenfolge der Reiter (auch der Kopien)  # v1.14
             saveData["Esp32Wlan"] = {s.Name: dict(s.esp32_wlan) for s in self.sheets if getattr(s, "esp32_wlan", None)}   # WLAN-Einstellungen des ESP32 je Blatt (ohne Passwort)  # v1.18
+            saveData["Esp32Options"] = {s.Name: dict(s.esp32_options) for s in self.sheets if getattr(s, "esp32_options", None)}
             saveData["TabColors"] = {s.Name: s.tab_color for s in self.sheets if getattr(s, "tab_color", "")}      # Reiterfarben  # v1.14
             def _json_default(obj):  # v1.06
                 # Funktionen (Command der Steuerelemente) und andere Objekte kennt JSON nicht: nicht mitsichern statt die ganze Datei abzubrechen
@@ -885,6 +886,12 @@ class CWorkbook(object):
             for sheet in self.sheets:  # v1.18
                 if isinstance(wlan.get(sheet.Name), dict):  # v1.18
                     sheet.esp32_wlan = dict(wlan[sheet.Name])  # v1.18
+        esp32_options = savedData.get("Esp32Options")
+        if isinstance(esp32_options, dict):
+            for sheet in self.sheets:
+                options = esp32_options.get(sheet.Name)
+                if isinstance(options, dict):
+                    sheet.esp32_options = dict(options)
         order = savedData.get("SheetOrder")  # v1.14
         if isinstance(order, list) and order:  # v1.14
             self.reorder_sheets([str(n) for n in order])  # v1.14

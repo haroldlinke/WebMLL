@@ -1711,11 +1711,26 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     display_block = (r"(?m)^([ \t]*)#ifdef[ \t]+ESP32[ \t]+"
                      r"#define[ \t]+USE_ESP32_EXTENSIONS[ \t]+"
                      r"#define[ \t]+USE_UI[ \t]+"
-                     r"#define[ \t]+UI_MLLTime[ \t]+([0-4])[ \t]*#endif\b")
+                     r"#define[ \t]+UI_MLLTime[ \t]+([0-5])[ \t]*#endif\b")
     ConfigTxt = re.sub(display_block,
                        r"\1#ifdef ESP32\n\1#define USE_ESP32_EXTENSIONS\n\1#define USE_UI\n"
                        r"\1#define UI_MLLTime \2\n\1#endif", ConfigTxt)
     VBFiles.writeText(fp, ConfigTxt, '\n')
+    options = getattr(P01.ActiveSheet, "esp32_options", None)
+    if options:
+        VBFiles.writeText(fp, '#ifdef ESP32', '\n')
+        mode = options.get("oled", 0)
+        if type(mode) is int and 1 <= mode <= 5:
+            for symbol in ("USE_ESP32_EXTENSIONS", "USE_UI"):
+                VBFiles.writeText(fp, f'#ifndef {symbol}\n#define {symbol}\n#endif', '\n')
+            VBFiles.writeText(fp, f'#undef UI_MLLTime\n#define UI_MLLTime {mode}', '\n')
+        for key, symbol, define in (
+            ("ldr", "READ_LDR", "READ_LDR"),
+            ("store_status", "ENABLE_STORE_STATUS", "ENABLE_STORE_STATUS()"),
+        ):
+            if options.get(key) is True:
+                VBFiles.writeText(fp, f'#ifndef {symbol}\n#define {define}\n#endif', '\n')
+        VBFiles.writeText(fp, '#endif', '\n')
     VBFiles.writeText(fp, '  EndCfg // End of the configuration', '\n')
     VBFiles.writeText(fp, '  };', '\n')
     VBFiles.writeText(fp, '//*******************************************************************', '\n')
