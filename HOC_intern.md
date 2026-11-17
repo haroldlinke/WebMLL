@@ -1,4 +1,4 @@
-Datei-Version: 1.01 (2026-10-18) - HOC_intern.md
+Datei-Version: 1.02 (2026-11-172026-10-18 - HOC_intern.md
 Stand: webMobaLedLib 3.86
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,12 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 3.86 (2026-11-17) – ESP32-Upload über M08_ARDUINO
+
+Setup übertragen bietet weiterhin die Auswahl USB oder WLAN. Der zentrale Upload in M08_ARDUINO nutzt die gewählte Build-Umgebung und für OTA den festen Rückkanal-Port 32323.
+
+Der WLAN-Upload mit PlatformIO wurde vom Anwender am ESP32 bestätigt. USB und Arduino Builder wurden mit simulierten Aufrufen geprüft.
 
 ## 2.12 (2026-10-23) - Release-Stand
 

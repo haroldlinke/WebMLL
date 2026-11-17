@@ -1,9 +1,15 @@
-Datei-Version: 1.01 (2026-10-18) - HOC_Anwender.md
+Datei-Version: 1.02 (2026-11-172026-10-18 - HOC_Anwender.md
 Stand: webMobaLedLib 3.86
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 3.86 (2026-11-17) – ESP32-Upload über M08_ARDUINO
+
+Korrekturen
+
+- Setup übertragen bietet weiterhin die Auswahl USB oder WLAN. Der zentrale Upload in M08_ARDUINO nutzt die gewählte Build-Umgebung und für OTA den festen Rückkanal-Port 32323.
 
 ## Version 3.86 (2026-11-17)
 
