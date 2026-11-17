@@ -23,3 +23,5 @@ Reine Define-Zeilen zu aktivierten ESP-Einstellungen werden in der Tabelle ausge
 | Zustände werden gespeichert | Setzt `ENABLE_STORE_STATUS()`. |
 
 Speichere die Optionen in der Arbeitsmappe und übertrage das Setup für das gewählte Blatt erneut auf den ESP32, damit die Firmware die Auswahl übernimmt.
+
+**ESP32-Setup übertragen.** Der Programmgenerator übergibt die Auswahl USB oder WLAN an den Upload in M08_ARDUINO. Die gewählte Entwicklungsumgebung, das OTA-Passwort und der feste Rückkanal-Port bleiben Teil des Ablaufs.

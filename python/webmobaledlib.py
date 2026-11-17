@@ -5011,51 +5011,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         port = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL).Value)
 
         def transfer():
-            log = ctrl.weblog
-            log.set_title(tr("ESP32-Setup über WLAN übertragen") if host else tr("ESP32-Setup über USB übertragen"))
-            log.delete_text_from_textwindow()
-            log.show()
-            try:
-                if not ota_header.Create_HeaderFile(HeaderOnly=True):
-                    raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))
-                sketch = os.path.join(ota_arduino.GetWorkbookPath(), M02.Ino_Dir_LED)
-                log.add_text_to_textwindow(tr("ESP32-Firmware wird kompiliert …"))
-                pio = None
-                if ota_options.Is_PlatformIO():
-                    pio = ota_arduino.Find_PIO()
-                    log.add_text_to_textwindow(tr("Build-Umgebung: PlatformIO"))
-                    image, partitions = headless_esp32_ota.build_platformio_project(
-                        sketch, pio, password, log.add_text_to_textwindow,
-                        lambda path: ota_arduino.Write_PIO_Project("esp32", path),
-                        hostname=settings["hostname"], ota=settings["ota"],
-                    )
-                else:
-                    log.add_text_to_textwindow(tr("Build-Umgebung: Arduino Builder"))
-                    image, partitions = headless_esp32_ota.build_project(
-                        sketch, ota_arduino.Find_ArduinoExe(), ota_boards.Get_Sketchbook_Path(),
-                        board, password, log.add_text_to_textwindow,
-                        hostname=settings["hostname"], ota=settings["ota"],
-                    )
-                if ctrl.is_connection_open():
-                    ctrl.disconnect()
-                if not host:
-                    log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))
-                    headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)
-                    log.add_text_to_textwindow(tr("USB-Upload erfolgreich."), highlight="OK")
-                    return
-                log.add_text_to_textwindow(tr("Firmware wird per WLAN übertragen …"))
-                result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)
-                log.add_text_to_textwindow(output)
-                if result and headless_esp32_ota.NO_RESPONSE in output:  # v3.38
-                    log.add_text_to_textwindow(tr(web_esp32_ota.HINT_FIREWALL, port=headless_esp32_ota.HOST_PORT), highlight="Error")
-                log.add_text_to_textwindow(
-                    tr("OTA-Upload erfolgreich.") if result == 0 else tr("OTA-Upload fehlgeschlagen."),
-                    highlight="OK" if result == 0 else "Error",
-                )
-            except ValueError as error:
-                log.add_text_to_textwindow(tr(str(error)), highlight="Error")
-            except (OSError, subprocess.TimeoutExpired):
-                log.add_text_to_textwindow(tr("Build oder Upload konnte nicht abgeschlossen werden."), highlight="Error")
+            ota_arduino.Compile_and_Upload_ESP32_Setup(
+                ctrl, board, port, host=host, upload_password=upload_password,
+                password=password, hostname=settings["hostname"], ota=settings["ota"],
+                firewall_hint=web_esp32_ota.HINT_FIREWALL,
+            )
 
         await run_command(transfer, "ESP32-Setup übertragen")()
 
