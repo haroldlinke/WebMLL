@@ -1086,7 +1086,7 @@ def cell_renderer_js(bridge_id: int) -> str:
             "if (v !== undefined && v !== null) { box.style.whiteSpace = params.node.rowPinned ? 'pre-line' : 'nowrap'; box.append(String(v)); } "  # v3.71
             "const tb = params.data && params.data._tb && params.data._tb[params.colDef.field]; "
             "if (tb) { box.style.display = 'flex'; box.style.alignItems = 'center'; "
-            "const holder = document.createElement('span'); holder.style.marginLeft = tb[0].lead ? 'auto' : '0'; holder.style.whiteSpace = 'nowrap'; "
+            "const holder = document.createElement('span'); holder.style.marginLeft = '0'; holder.style.whiteSpace = 'nowrap'; "
             "holder.style.display = 'inline-flex'; holder.style.alignItems = 'center'; "  # v3.27
             "tb.forEach((b, k) => { const s = document.createElement('span'); s.className = 'mll-tb'; "
             "s.textContent = b.t; s.style.background = b.c; s.title = b.n; "
@@ -3378,12 +3378,19 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         ec = enable_column(ws)
         shown_rows = getattr(ws.tksheet, "displayed_rows", None)                  # Breite der Zeilennummer nach der groessten angezeigten Nummer (_r + 1)  # v1.96
         max_row_number = (max(shown_rows) + 1) if shown_rows else len(getattr(ws.tksheet, "data", None) or [])  # v1.96
+        buttons_by_cell = test_button_data(ws)
+        type_col = typ_column(ws)
+        if type_col is not None:
+            buttons_by_row = {}
+            for (row, _column), buttons in sorted(buttons_by_cell.items()):
+                buttons_by_row.setdefault(row, []).extend(buttons)
+            buttons_by_cell = {(row, type_col): buttons for row, buttons in buttons_by_row.items()}
         column_defs, rows, pinned, meta = build_grid(ws.tksheet, collect_icons(ws),
                                                      # no_edit_cols={ic} if ic is not None else None,  # v3.72 (entfallen)
                                                      no_edit_cols=(readonly_columns(ws) or ({ic} if ic is not None else None)),  # v3.72
                                                      check_cols={ec} if ec is not None else None,
                                                      max_col=last_column(ws), tooltip_cols=tooltip_columns(ws),
-                                                     test_buttons=test_button_data(ws),  # v1.96
+                                                     test_buttons=buttons_by_cell,
                                                      display_cols=({typ_column(ws): M09.Token_Display} if M09.CANONICAL_TOKENS and typ_column(ws) is not None else None),  # v2.14
                                                      display_cells=M09.Get_Display_Cells(ws),        # Spaltenkoepfe (mit Tooltip) und Namensspalte in der eingestellten Sprache  # v2.15
                                                      bold_colored=str(ctrl.getConfigData("ColoredRowsBold") or "").strip().lower() in ("1", "true", "ja", "yes", "an", "ein", "on"),  # v3.27: Schrift in eingefaerbten Zeilen fett (Option)
@@ -3397,6 +3404,18 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                                   cellEditorParams={"rows": 8, "cols": 65, "maxLength": 20000})
             # for row in rows:  # v3.71 (entfallen)
             #     row["_lines"] = len(str(row.get(config_field) or "").splitlines()) or 1  # v3.71 (entfallen)
+        if type_col is not None and buttons_by_cell:
+            scale = font_scales(ctrl)["grid"]
+            button_width = max(
+                sum(max(18, 6 * len(button["t"]) + 6) * scale + 3 for button in buttons)
+                for buttons in buttons_by_cell.values()
+            )
+            required_width = int(64 * scale + button_width + 17)
+            for column in column_defs:
+                if column.get("field") == f"c{type_col}":
+                    column["minWidth"] = max(column.get("minWidth", 0), required_width)
+                    column["width"] = max(column["width"], column["minWidth"])
+                    break
         t_build = time.perf_counter()  # v1.49
         if SHAPES_DEBUG:  # v1.51
             logger.info("SHAPES: show(%s): %s | Zeilen mit Testtasten %s | Zeilen mit Symbol %s", ws.Name, shapes_report(ws),  # v1.51
@@ -3407,7 +3426,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         # Neuaufbau des ganzen Grids (der die Bildlaufposition kostet) ist dafuer nicht noetig.
         layout = (ws.Name, (header_height, row_height if ROW_HEIGHT_FIXED else None),
                   tuple((c.get("colId") or c.get("field"), c.get("hide"), c.get("editable"),
-                         ":tooltipValueGetter" in c, c.get("cellClass"), c.get("headerName"), c.get("pinned")) for c in column_defs))  # v1.49
+                         ":tooltipValueGetter" in c, c.get("cellClass"), c.get("headerName"), c.get("pinned"), c.get("minWidth")) for c in column_defs))  # v1.49
         full_update = layout != shown.get("layout") or GRID_UPDATE == "full"
         widths = {(c.get("colId") or c.get("field")): c.get("width") for c in column_defs}      # Breiten, die der Browser kennt (Stand der letzten Anzeige)  # v1.49
         old_rows = grid.options.get("rowData") or []              # Stand, den der Browser gerade hat
