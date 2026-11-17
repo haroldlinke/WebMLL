@@ -8,4 +8,4 @@ Details findest Du im Wiki: https://wiki.mobaledlib.de/anleitungen/webmobaledlib
 
 ## Testtasten in WebMLL 3.86
 
-Die Testtasten stehen in der Spalte **Typ** direkt hinter dem Typtext. Die Spalte wird bei Bedarf breiter, damit alle Tasten in einer Zeile Platz haben.
+Die Testtasten stehen in der Spalte **Typ** linksbündig an derselben Position hinter dem Typtext. Die Spalte wird bei Bedarf breiter, damit alle Tasten in einer Zeile Platz haben.

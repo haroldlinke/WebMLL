@@ -1083,10 +1083,13 @@ def cell_renderer_js(bridge_id: int) -> str:
             "} "  # v2.77
             "const v = (params.valueFormatted !== undefined && params.valueFormatted !== null) ? params.valueFormatted : params.value; "
             # "if (v !== undefined && v !== null) { box.style.whiteSpace = 'pre-line'; box.append(String(v)); } "  # v3.71 (entfallen)
-            "if (v !== undefined && v !== null) { box.style.whiteSpace = params.node.rowPinned ? 'pre-line' : 'nowrap'; box.append(String(v)); } "  # v3.71
             "const tb = params.data && params.data._tb && params.data._tb[params.colDef.field]; "
+            "box.style.whiteSpace = params.node.rowPinned ? 'pre-line' : 'nowrap'; "
             "if (tb) { box.style.display = 'flex'; box.style.alignItems = 'center'; "
-            "const holder = document.createElement('span'); holder.style.marginLeft = '0'; holder.style.whiteSpace = 'nowrap'; "
+            "const label = document.createElement('span'); label.textContent = String(v ?? ''); "
+            "label.style.flex = '0 0 calc(64px * var(--mll-grid-scale, 1))'; "
+            "label.style.overflow = 'hidden'; label.style.textOverflow = 'ellipsis'; box.appendChild(label); "
+            "const holder = document.createElement('span'); holder.style.whiteSpace = 'nowrap'; "
             "holder.style.display = 'inline-flex'; holder.style.alignItems = 'center'; "  # v3.27
             "tb.forEach((b, k) => { const s = document.createElement('span'); s.className = 'mll-tb'; "
             "s.textContent = b.t; s.style.background = b.c; s.title = b.n; "
@@ -1098,7 +1101,7 @@ def cell_renderer_js(bridge_id: int) -> str:
             "s.addEventListener('pointerdown', ev => { ev.preventDefault(); ev.stopPropagation(); "
             "try { s.setPointerCapture(ev.pointerId); } catch (e) {} send('down'); }); "
             "s.addEventListener('pointerup', ev => { ev.stopPropagation(); send('up'); }); "
-            "holder.appendChild(s); }); box.appendChild(holder); } "
+            "holder.appendChild(s); }); box.appendChild(holder); } else if (v != null) { box.append(String(v)); } "
             "return box; }")
 
 
