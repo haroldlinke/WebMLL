@@ -15,6 +15,14 @@ Unter Optionen Werkzeuge erscheinen für die ESP32-LED-Zentrale die ESP Einstell
 
 Header-Erzeugung für Modi 1 bis 5 und Filter für Define-Zeilen geprüft. Vollständiger Browser- und Firmwaretest offen.
 
+
+| Datei | Version | Änderung |
+| --- | --- | --- |
+| `ExcelAPI/XLA_Application.py` | 1.21 | ESP-Einstellungen je Blatt sichern und laden |
+| `_web/web_form_options.py` | 1.29 | ESP Einstellungen je Blatt mit OLED-Vorschau |
+| `proggen/M06_Write_Header.py` | 1.09 | Firmware-Defines aus den ESP-Einstellungen erzeugen |
+| `webmobaledlib.py` | 3.87 | Programmgenerator und ESP32-Anbindung des Forks |
+
 ## 2.12 (2026-10-23) - Release-Stand
 
 Release-Stand 2.12 auf Wunsch des Entwicklers („Release bauen“). **Neu im Ablauf:** Es gibt kein von mir gebautes `webmobaledlib.zip` mehr (Ursache des Vorfalls 2 war ein ZIP mit altem Stand: ich kenne die Hilfsdateien, die Excel-Datei und die csv-Dateien des Entwicklers nicht). Das GitHub-Release baut nur `zip_erstellen.bat` (1.04) aus dem vollständigen Ordner `python`, mit Prüfliste und Prüfung. Das frühere `webmobaledlib.zip` (Stand 2.04, nur gelieferte Dateien) liegt als `archiv/webmobaledlib_Dateien_Stand_2.04.zip`.

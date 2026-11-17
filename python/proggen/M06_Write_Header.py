@@ -1,12 +1,13 @@
-# Datei-Version: 1.08 (2026-11-15) - M06_Write_Header.py
+# Datei-Version: 1.09 (2026-11-17) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.08
-# Last Update:    2026-11-15
+# Version:        1.09
+# Last Update:    2026-11-17
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.09  2026-11-17  Firmware-Defines aus den ESP-Einstellungen erzeugen (Beitrag des Fork-Entwicklers)
 #   1.01  2026-10-18  LED Kanal von Zeilen ohne Eintrag: Previous_LEDChannel als Modulvariable von M06 (global in Create_Header_Entry und ProcessSheet), Bedingung auf den Zellentext statt Trim(Val()) (nie leer); LED_to_Var in eingebundenen Blaettern bekam Kanal 0 und dessen Offset (LED2Var_Tab stimmte nicht mit Excel); davor Original-Port, nicht erfasst
 #   1.02  2026-10-18  Create_HeaderFile: vor dem Erzeugen alle Blaetter neu rechnen (Update_All_Start_LedNr), das aktive Blatt danach wieder auswaehlen
 #   1.03  2026-10-21  Version K des Excel-Programms: Makros Name_LED_Number und Name_LED_Offset (Proc_Special_Functions), Variable #ChannelOffset (Generate_Config_Line mit ChannelBaseOffset), Adresse 0 (Addr >= 1 in Create_Header_Entry, Addr >= 0 in ProcessLine), keine Pruefung des Boards bei nur Simulator, START_MSG ohne Test_Suffix, inch_t in HandleValue_t
@@ -1711,26 +1712,27 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     display_block = (r"(?m)^([ \t]*)#ifdef[ \t]+ESP32[ \t]+"
                      r"#define[ \t]+USE_ESP32_EXTENSIONS[ \t]+"
                      r"#define[ \t]+USE_UI[ \t]+"
-                     r"#define[ \t]+UI_MLLTime[ \t]+([0-5])[ \t]*#endif\b")
+                     # r"#define[ \t]+UI_MLLTime[ \t]+([0-4])[ \t]*#endif\b")  # v1.09 (entfallen)
+                     r"#define[ \t]+UI_MLLTime[ \t]+([0-5])[ \t]*#endif\b")  # v1.09
     ConfigTxt = re.sub(display_block,
                        r"\1#ifdef ESP32\n\1#define USE_ESP32_EXTENSIONS\n\1#define USE_UI\n"
                        r"\1#define UI_MLLTime \2\n\1#endif", ConfigTxt)
     VBFiles.writeText(fp, ConfigTxt, '\n')
-    options = getattr(P01.ActiveSheet, "esp32_options", None)
-    if options:
-        VBFiles.writeText(fp, '#ifdef ESP32', '\n')
-        mode = options.get("oled", 0)
-        if type(mode) is int and 1 <= mode <= 5:
-            for symbol in ("USE_ESP32_EXTENSIONS", "USE_UI"):
-                VBFiles.writeText(fp, f'#ifndef {symbol}\n#define {symbol}\n#endif', '\n')
-            VBFiles.writeText(fp, f'#undef UI_MLLTime\n#define UI_MLLTime {mode}', '\n')
-        for key, symbol, define in (
-            ("ldr", "READ_LDR", "READ_LDR"),
-            ("store_status", "ENABLE_STORE_STATUS", "ENABLE_STORE_STATUS()"),
-        ):
-            if options.get(key) is True:
-                VBFiles.writeText(fp, f'#ifndef {symbol}\n#define {define}\n#endif', '\n')
-        VBFiles.writeText(fp, '#endif', '\n')
+    options = getattr(P01.ActiveSheet, "esp32_options", None)  # v1.09
+    if options:  # v1.09
+        VBFiles.writeText(fp, '#ifdef ESP32', '\n')  # v1.09
+        mode = options.get("oled", 0)  # v1.09
+        if type(mode) is int and 1 <= mode <= 5:  # v1.09
+            for symbol in ("USE_ESP32_EXTENSIONS", "USE_UI"):  # v1.09
+                VBFiles.writeText(fp, f'#ifndef {symbol}\n#define {symbol}\n#endif', '\n')  # v1.09
+            VBFiles.writeText(fp, f'#undef UI_MLLTime\n#define UI_MLLTime {mode}', '\n')  # v1.09
+        for key, symbol, define in (  # v1.09
+            ("ldr", "READ_LDR", "READ_LDR"),  # v1.09
+            ("store_status", "ENABLE_STORE_STATUS", "ENABLE_STORE_STATUS()"),  # v1.09
+        ):  # v1.09
+            if options.get(key) is True:  # v1.09
+                VBFiles.writeText(fp, f'#ifndef {symbol}\n#define {define}\n#endif', '\n')  # v1.09
+        VBFiles.writeText(fp, '#endif', '\n')  # v1.09
     VBFiles.writeText(fp, '  EndCfg // End of the configuration', '\n')
     VBFiles.writeText(fp, '  };', '\n')
     VBFiles.writeText(fp, '//*******************************************************************', '\n')

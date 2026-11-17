@@ -1,12 +1,13 @@
-# Datei-Version: 1.28 (2026-11-17) - web_form_options.py
+# Datei-Version: 1.29 (2026-11-17) - web_form_options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_options.py
 # Path:           _web/web_form_options.py
-# Version:        1.28
+# Version:        1.29
 # Last Update:    2026-11-17
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.29  2026-11-17  ESP Einstellungen je Blatt mit OLED-Vorschau (Beitrag des Fork-Entwicklers)
 #   1.18  2026-11-12  Excel-Programm 3.5.0L3: Der Knopf Firmware installieren steht fuer ALLE Boards im Reiter LED ARDUINO (vorher nur beim Raspberry Pi Pico und nur mit Firmware-Dateien im Ordner); der Firmware-Ordner wird bei Bedarf angelegt (fruehere Versionen ohne Eintrag)
 #   1.19  2026-11-12  Excel-Programm 3.5.0L3: Firmware installieren oeffnet die Auswahl auch ohne Firmware-Dateien; der Knopf Firmware laden holt Firmware aus dem Internet (web_form_firmware_download, headless_firmware_dl) und waehlt sie danach vor
 #   1.20  2026-11-12  Reiter LED ARDUINO: der Kommentar zum Knopf Firmware installieren steht unter dem Knopf (schmal) statt daneben; die Auswahl des Boards behaelt ihre Breite (keine umbrochenen Beschriftungen) und rutscht auf schmalen Bildschirmen unter die Knoepfe
@@ -127,67 +128,67 @@ async def _options_async(spec: dict, st: dict):
             def action(handler):
                 return lambda: dlg.submit(("action", handler, collect()))
 
-            # The options are committed by the same OK/action flow as the board selection.
-            esp_settings = dict(vals.get("esp32_options") or {})
-            modes = {
-                0: tr("Aus"), 1: tr("MLL-Zeit"), 2: tr("LDR-Wert"),
-                3: tr("MLL-Zeit und LDR-Wert"), 4: tr("WLAN, IP, LDR und Zeit"),
-                5: tr("WLAN, IP und Hostname"),
-            }
+            # The options are committed by the same OK/action flow as the board selection.  # v1.29
+            esp_settings = dict(vals.get("esp32_options") or {})  # v1.29
+            modes = {  # v1.29
+                0: tr("Aus"), 1: tr("MLL-Zeit"), 2: tr("LDR-Wert"),  # v1.29
+                3: tr("MLL-Zeit und LDR-Wert"), 4: tr("WLAN, IP, LDR und Zeit"),  # v1.29
+                5: tr("WLAN, IP und Hostname"),  # v1.29
+            }  # v1.29
 
-            def esp_panel():
-                with ui.row().classes("items-start gap-6"):
-                    with ui.column():
-                        mode = ui.select(modes, value=esp_settings.get("oled", 0), label=tr("OLED-Anzeige")).classes("w-64")
-                        ldr = ui.checkbox(tr("Fotowiderstand aktivieren"), value=esp_settings.get("ldr", False))
-                        store = ui.checkbox(tr("Zustände werden gespeichert"), value=esp_settings.get("store_status", False))
-                    with ui.column().classes("items-center gap-1"):
-                        ui.label(tr("OLED-Vorschau")).classes("text-caption")
-                        display = ui.label().style(
-                            "width:256px; height:128px; max-width:100%; padding:8px; "
-                            "background:#0c151b; color:#8edaff; white-space:pre; overflow:hidden; "
-                            "text-align:center; font: 15px/27px monospace; border-radius:8px"
-                        )
+            def esp_panel():  # v1.29
+                with ui.row().classes("items-start gap-6"):  # v1.29
+                    with ui.column():  # v1.29
+                        mode = ui.select(modes, value=esp_settings.get("oled", 0), label=tr("OLED-Anzeige")).classes("w-64")  # v1.29
+                        ldr = ui.checkbox(tr("Fotowiderstand aktivieren"), value=esp_settings.get("ldr", False))  # v1.29
+                        store = ui.checkbox(tr("Zustände werden gespeichert"), value=esp_settings.get("store_status", False))  # v1.29
+                    with ui.column().classes("items-center gap-1"):  # v1.29
+                        ui.label(tr("OLED-Vorschau")).classes("text-caption")  # v1.29
+                        display = ui.label().style(  # v1.29
+                            "width:256px; height:128px; max-width:100%; padding:8px; "  # v1.29
+                            "background:#0c151b; color:#8edaff; white-space:pre; overflow:hidden; "  # v1.29
+                            "text-align:center; font: 15px/27px monospace; border-radius:8px"  # v1.29
+                        )  # v1.29
 
-                frame = 0
+                frame = 0  # v1.29
 
-                def preview():
-                    minutes = 18 * 60 + frame % 60
-                    clock = f"{minutes // 60:02d}:{minutes % 60:02d}"
-                    sensor = f"LDR: {110 + frame % 30}" if ldr.value else "LDR: aus"
-                    hostname = vals["esp32_hostname"]
-                    # The firmware uses a smaller font when a long hostname needs two lines.
-                    split = 18 if len(hostname) <= 36 else 32
-                    host_lines = [hostname[:split], hostname[split:]]
-                    connected = vals["esp32_wifi"] and frame % 12 >= 2
-                    status = "WLAN verbunden" if connected else (
-                        "WLAN getrennt" if vals["esp32_wifi"] else "WLAN deaktiviert"
-                    )
-                    address = "192.168.1.42" if connected else "IP: -"
-                    lines = {
-                        0: [], 1: ["MobaLedLib", "Zeit", clock],
-                        2: ["MobaLedLib", "LDR SunSet", sensor],
-                        3: ["MobaLedLib", f"PM {clock}", sensor],
-                        4: [status, address, sensor, f"MLL-Zeit: {clock}"],
-                        5: [status, address, *host_lines],
-                    }
-                    display.style("font-size: 11px" if mode.value == 5 and split == 32 else "font-size: 15px")
-                    display.set_text("\n".join(lines[mode.value]))
+                def preview():  # v1.29
+                    minutes = 18 * 60 + frame % 60  # v1.29
+                    clock = f"{minutes // 60:02d}:{minutes % 60:02d}"  # v1.29
+                    sensor = f"LDR: {110 + frame % 30}" if ldr.value else "LDR: aus"  # v1.29
+                    hostname = vals["esp32_hostname"]  # v1.29
+                    # The firmware uses a smaller font when a long hostname needs two lines.  # v1.29
+                    split = 18 if len(hostname) <= 36 else 32  # v1.29
+                    host_lines = [hostname[:split], hostname[split:]]  # v1.29
+                    connected = vals["esp32_wifi"] and frame % 12 >= 2  # v1.29
+                    status = "WLAN verbunden" if connected else (  # v1.29
+                        "WLAN getrennt" if vals["esp32_wifi"] else "WLAN deaktiviert"  # v1.29
+                    )  # v1.29
+                    address = "192.168.1.42" if connected else "IP: -"  # v1.29
+                    lines = {  # v1.29
+                        0: [], 1: ["MobaLedLib", "Zeit", clock],  # v1.29
+                        2: ["MobaLedLib", "LDR SunSet", sensor],  # v1.29
+                        3: ["MobaLedLib", f"PM {clock}", sensor],  # v1.29
+                        4: [status, address, sensor, f"MLL-Zeit: {clock}"],  # v1.29
+                        5: [status, address, *host_lines],  # v1.29
+                    }  # v1.29
+                    display.style("font-size: 11px" if mode.value == 5 and split == 32 else "font-size: 15px")  # v1.29
+                    display.set_text("\n".join(lines[mode.value]))  # v1.29
 
-                def tick():
-                    nonlocal frame
-                    if tabs.value == esp_tab.name:
-                        frame += 1
-                        preview()
+                def tick():  # v1.29
+                    nonlocal frame  # v1.29
+                    if tabs.value == esp_tab.name:  # v1.29
+                        frame += 1  # v1.29
+                        preview()  # v1.29
 
-                def update(_event):
-                    vals["esp32_options"] = {"oled": mode.value, "ldr": ldr.value, "store_status": store.value}
-                    preview()
+                def update(_event):  # v1.29
+                    vals["esp32_options"] = {"oled": mode.value, "ldr": ldr.value, "store_status": store.value}  # v1.29
+                    preview()  # v1.29
 
-                for control in (mode, ldr, store):
-                    control.on_value_change(update)
-                preview()
-                ui.timer(1, tick)
+                for control in (mode, ldr, store):  # v1.29
+                    control.on_value_change(update)  # v1.29
+                preview()  # v1.29
+                ui.timer(1, tick)  # v1.29
 
             pico_rows = []                                             # Knoepfe nur fuer den Pico (Firmware installieren)  # v1.09
             pico_values = list(spec["pages"]["left"].get("pico_values") or [])  # v1.09
@@ -280,7 +281,7 @@ async def _options_async(spec: dict, st: dict):
                         vals[k] = e.value
                         update_pico_buttons()
                         ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)  # v1.09
-                        esp_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)
+                        esp_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)  # v1.29
                         update_dcc_tab()  # v1.06
                         other = g["b"] if which == "a" else g["a"]
                         if other is not None:
@@ -307,13 +308,13 @@ async def _options_async(spec: dict, st: dict):
                     if t.get("nano_only"):  # v1.06
                         dcc["tab"], dcc["initial"] = tab_obj, bool(t.get("visible", True))  # v1.06
                         set_tab_visible(tab_obj, dcc["initial"])  # v1.06
-                esp_tab = ui.tab(tr("ESP Einstellungen"))
-                esp_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)
+                esp_tab = ui.tab(tr("ESP Einstellungen"))  # v1.29
+                esp_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)  # v1.29
                 ota_tab = ui.tab(tr("WLAN (OTA)"))
                 ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)
             with ui.tab_panels(tabs, value=tab_objs[0]).classes("w-full"):
-                with ui.tab_panel(esp_tab):
-                    esp_panel()
+                with ui.tab_panel(esp_tab):  # v1.29
+                    esp_panel()  # v1.29
                 with ui.tab_panel(ota_tab):
                     settings_panel()
                 for t, tab in zip(spec["tabs"], tab_objs):
@@ -399,11 +400,12 @@ def make_class(Base):
             setattr(self, PFX + "__Disable_Set_Arduino_Typ", False)
             self.control_to_radiobutton()
             import proggen.M28_Diverse as M28  # v1.04
-            from headless.headless_esp32_ota import load_settings
-            wlan = load_settings(P01.ActiveSheet)
-            return {"esp32_options": dict(getattr(P01.ActiveSheet, "esp32_options", None) or {}),
-                    "esp32_hostname": wlan["hostname"], "esp32_wifi": wlan["wifi"],
-                    "L": self.rb_res["_L"].get() or None, "R": self.rb_res["_R"].get() or None,
+            # return {"L": self.rb_res["_L"].get() or None, "R": self.rb_res["_R"].get() or None,  # v1.29 (entfallen)
+            from headless.headless_esp32_ota import load_settings  # v1.29
+            wlan = load_settings(P01.ActiveSheet)  # v1.29
+            return {"esp32_options": dict(getattr(P01.ActiveSheet, "esp32_options", None) or {}),  # v1.29
+                    "esp32_hostname": wlan["hostname"], "esp32_wifi": wlan["wifi"],  # v1.29
+                    "L": self.rb_res["_L"].get() or None, "R": self.rb_res["_R"].get() or None,  # v1.29
                     "auto_L": bool(self.Autodetect_Typ_L_CheckBox_var.get()),
                     # "auto_R": bool(self.Autodetect_Typ_R_CheckBox_var.get())}  # v1.04 (entfallen)
                     "auto_R": bool(self.Autodetect_Typ_R_CheckBox_var.get()),  # v1.04
@@ -525,8 +527,8 @@ def make_class(Base):
 
         def _web_apply(self, vals, initial):
             """Aenderungen von Autodetect und Board wie die Klick-Handler des Originals ausfuehren."""
-            if vals["esp32_options"] != initial["esp32_options"]:
-                P01.ActiveSheet.esp32_options = dict(vals["esp32_options"])
+            if vals["esp32_options"] != initial["esp32_options"]:  # v1.29
+                P01.ActiveSheet.esp32_options = dict(vals["esp32_options"])  # v1.29
             self.rb_res["_L"].set(vals["L"] or 0)
             self.rb_res["_R"].set(vals["R"] or 0)
             self.Autodetect_Typ_L_CheckBox_var.set(1 if vals["auto_L"] else 0)
