@@ -1,12 +1,13 @@
-# Datei-Version: 3.63 (2026-11-16) - webmobaledlib.py
+# Datei-Version: 3.87 (2026-11-17) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        3.43
-# Last Update:    2026-11-15
+# Version:        3.87
+# Last Update:    2026-11-17
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   3.87  2026-11-17  Programmgenerator und ESP32-Anbindung des Forks (Beitrag des Fork-Entwicklers)
 #   1.39  2026-10-17  Reiter Patterngenerator (Runde 1): Anzeige der Tabelle, Aufbau erst beim ersten Oeffnen (build_patt, _PATT); Kopf eingefuegt; davor bis 1.38 nicht erfasst
 #   1.40  2026-10-17  Patterngenerator Runde 2: Bearbeiten, Werkzeugleiste, Beschreibung, Balken (Module web_pattgen, headless_pattgen)
 #   1.41  2026-10-17  Patterngenerator: lesbare Spalten, Textueberlauf, Balken bei jedem Start (web_pattgen 1.02, headless_pattgen 1.02)
@@ -2856,8 +2857,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             dst.setData(_copy.deepcopy(src.getData()), copyshapes=True)  # v2.63
         if getattr(src, "esp32_wlan", None):  # v3.40: gleiche WLAN-Einstellungen wie das Original
             dst.esp32_wlan = dict(src.esp32_wlan)
-        if getattr(src, "esp32_options", None):
-            dst.esp32_options = dict(src.esp32_options)
+        if getattr(src, "esp32_options", None):  # v3.87
+            dst.esp32_options = dict(src.esp32_options)  # v3.87
         dst.set_tab_color(getattr(src, "tab_color", ""))  # wie in Excel: die Kopie hat dieselbe Reiterfarbe  # v2.63
         return dst  # v2.63
 
@@ -3367,33 +3368,33 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         apply_graph_view(ws)  # v2.29
         refresh_graph(ws, True)  # v2.29
 
-    def hide_managed_esp_rows(ws, rows, config_field):
-        """Hide only standalone defines supplied by the active ESP settings."""
-        options = getattr(ws, "esp32_options", None)
-        board = str(ws.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL).Value)
-        if not options or not re.search(r"\besp32:esp32:", board):
-            return rows
+    def hide_managed_esp_rows(ws, rows, config_field):  # v3.87
+        """Hide only standalone defines supplied by the active ESP settings."""  # v3.87
+        options = getattr(ws, "esp32_options", None)  # v3.87
+        board = str(ws.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL).Value)  # v3.87
+        if not options or not re.search(r"\besp32:esp32:", board):  # v3.87
+            return rows  # v3.87
 
-        defines = []
-        if options.get("oled") in (1, 2, 3, 4, 5):
-            defines.extend((r"USE_ESP32_EXTENSIONS", r"USE_UI", r"UI_MLLTime\s+[0-5]"))
-        if options.get("ldr") is True:
-            defines.append(r"READ_LDR")
-        if options.get("store_status") is True:
-            defines.append(r"ENABLE_STORE_STATUS(?:\(\))?")
-        if not defines:
-            return rows
+        defines = []  # v3.87
+        if options.get("oled") in (1, 2, 3, 4, 5):  # v3.87
+            defines.extend((r"USE_ESP32_EXTENSIONS", r"USE_UI", r"UI_MLLTime\s+[0-5]"))  # v3.87
+        if options.get("ldr") is True:  # v3.87
+            defines.append(r"READ_LDR")  # v3.87
+        if options.get("store_status") is True:  # v3.87
+            defines.append(r"ENABLE_STORE_STATUS(?:\(\))?")  # v3.87
+        if not defines:  # v3.87
+            return rows  # v3.87
 
-        directive = r"#\s*define\s+(?:" + "|".join(defines) + r")"
-        define_block = re.compile(
-            rf"(?:#\s*ifdef\s+ESP32\s*(?:{directive}\s*)+#\s*endif|"
-            rf"(?:{directive}\s*)+)"
-        )
-        return [
-            row for row in rows
-            if row["_r"] < M02.FirstDat_Row - 1
-            or not define_block.fullmatch(str(row.get(config_field) or "").strip())
-        ]
+        directive = r"#\s*define\s+(?:" + "|".join(defines) + r")"  # v3.87
+        define_block = re.compile(  # v3.87
+            rf"(?:#\s*ifdef\s+ESP32\s*(?:{directive}\s*)+#\s*endif|"  # v3.87
+            rf"(?:{directive}\s*)+)"  # v3.87
+        )  # v3.87
+        return [  # v3.87
+            row for row in rows  # v3.87
+            if row["_r"] < M02.FirstDat_Row - 1  # v3.87
+            or not define_block.fullmatch(str(row.get(config_field) or "").strip())  # v3.87
+        ]  # v3.87
 
     def show(ws):
         t_start = time.perf_counter()  # v1.49
@@ -3421,8 +3422,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if M28.Is_Data_Sheet(ws):
             M25.Make_sure_that_Col_Variables_match(ws)
             config_field = f"c{M25.Config__Col - 1}"
-            rows = hide_managed_esp_rows(ws, rows, config_field)
-            meta["shown_rows"] = len(rows) + len(pinned)
+            rows = hide_managed_esp_rows(ws, rows, config_field)  # v3.87
+            meta["shown_rows"] = len(rows) + len(pinned)  # v3.87
             for column in column_defs:
                 if column.get("field") == config_field:
                     column.update(cellEditor="agLargeTextCellEditor", cellEditorPopup=True,
@@ -4835,7 +4836,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     def workbook_signature():
         # return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or [])) for s in list(wb.sheets))  # v2.40 (entfallen)
         # return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0)) for s in list(wb.sheets))  # v2.63 (entfallen)
-        return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0), s.Name, getattr(s, "tab_color", ""), tuple(sorted((getattr(s, "esp32_options", None) or {}).items()))) for s in list(wb.sheets))  # v2.63 Name und Reiterfarbe  # v2.63
+        # return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0), s.Name, getattr(s, "tab_color", "")) for s in list(wb.sheets))  # v2.63 Name und Reiterfarbe  # v2.63  # v3.87 (entfallen)
+        return tuple((id(s), s.tksheet.version, len(getattr(s, "shapelist", []) or []), getattr(s, "view_layout_ver", 0), s.Name, getattr(s, "tab_color", ""), tuple(sorted((getattr(s, "esp32_options", None) or {}).items()))) for s in list(wb.sheets))  # v2.63 Name und Reiterfarbe  # v2.63  # v3.87
 
     def save_now():
         sync_all_sheets()
@@ -5011,11 +5013,56 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         port = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL).Value)
 
         def transfer():
-            ota_arduino.Compile_and_Upload_ESP32_Setup(
-                ctrl, board, port, host=host, upload_password=upload_password,
-                password=password, hostname=settings["hostname"], ota=settings["ota"],
-                firewall_hint=web_esp32_ota.HINT_FIREWALL,
-            )
+            # log = ctrl.weblog  # v3.87 (entfallen)
+            # log.set_title(tr("ESP32-Setup über WLAN übertragen") if host else tr("ESP32-Setup über USB übertragen"))  # v3.87 (entfallen)
+            # log.delete_text_from_textwindow()  # v3.87 (entfallen)
+            # log.show()  # v3.87 (entfallen)
+            # try:  # v3.87 (entfallen)
+                # if not ota_header.Create_HeaderFile(HeaderOnly=True):  # v3.87 (entfallen)
+                    # raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))  # v3.87 (entfallen)
+                # sketch = os.path.join(ota_arduino.GetWorkbookPath(), M02.Ino_Dir_LED)  # v3.87 (entfallen)
+                # log.add_text_to_textwindow(tr("ESP32-Firmware wird kompiliert …"))  # v3.87 (entfallen)
+                # pio = None  # v3.87 (entfallen)
+                # if ota_options.Is_PlatformIO():  # v3.87 (entfallen)
+                    # pio = ota_arduino.Find_PIO()  # v3.87 (entfallen)
+                    # log.add_text_to_textwindow(tr("Build-Umgebung: PlatformIO"))  # v3.87 (entfallen)
+                    # image, partitions = headless_esp32_ota.build_platformio_project(  # v3.87 (entfallen)
+                        # sketch, pio, password, log.add_text_to_textwindow,  # v3.87 (entfallen)
+                        # lambda path: ota_arduino.Write_PIO_Project("esp32", path),  # v3.87 (entfallen)
+                        # hostname=settings["hostname"], ota=settings["ota"],  # v3.87 (entfallen)
+                    # )  # v3.87 (entfallen)
+                # else:  # v3.87 (entfallen)
+                    # log.add_text_to_textwindow(tr("Build-Umgebung: Arduino Builder"))  # v3.87 (entfallen)
+                    # image, partitions = headless_esp32_ota.build_project(  # v3.87 (entfallen)
+                        # sketch, ota_arduino.Find_ArduinoExe(), ota_boards.Get_Sketchbook_Path(),  # v3.87 (entfallen)
+                        # board, password, log.add_text_to_textwindow,  # v3.87 (entfallen)
+                        # hostname=settings["hostname"], ota=settings["ota"],  # v3.87 (entfallen)
+                    # )  # v3.87 (entfallen)
+                # if ctrl.is_connection_open():  # v3.87 (entfallen)
+                    # ctrl.disconnect()  # v3.87 (entfallen)
+                # if not host:  # v3.87 (entfallen)
+                    # log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))  # v3.87 (entfallen)
+                    # headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)  # v3.87 (entfallen)
+                    # log.add_text_to_textwindow(tr("USB-Upload erfolgreich."), highlight="OK")  # v3.87 (entfallen)
+                    # return  # v3.87 (entfallen)
+                # log.add_text_to_textwindow(tr("Firmware wird per WLAN übertragen …"))  # v3.87 (entfallen)
+                # result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)  # v3.87 (entfallen)
+                # log.add_text_to_textwindow(output)  # v3.87 (entfallen)
+                # if result and headless_esp32_ota.NO_RESPONSE in output:  # v3.38  # v3.87 (entfallen)
+                    # log.add_text_to_textwindow(tr(web_esp32_ota.HINT_FIREWALL, port=headless_esp32_ota.HOST_PORT), highlight="Error")  # v3.87 (entfallen)
+                # log.add_text_to_textwindow(  # v3.87 (entfallen)
+                    # tr("OTA-Upload erfolgreich.") if result == 0 else tr("OTA-Upload fehlgeschlagen."),  # v3.87 (entfallen)
+                    # highlight="OK" if result == 0 else "Error",  # v3.87 (entfallen)
+                # )  # v3.87 (entfallen)
+            # except ValueError as error:  # v3.87 (entfallen)
+                # log.add_text_to_textwindow(tr(str(error)), highlight="Error")  # v3.87 (entfallen)
+            # except (OSError, subprocess.TimeoutExpired):  # v3.87 (entfallen)
+                # log.add_text_to_textwindow(tr("Build oder Upload konnte nicht abgeschlossen werden."), highlight="Error")  # v3.87 (entfallen)
+            ota_arduino.Compile_and_Upload_ESP32_Setup(  # v3.87
+                ctrl, board, port, host=host, upload_password=upload_password,  # v3.87
+                password=password, hostname=settings["hostname"], ota=settings["ota"],  # v3.87
+                firewall_hint=web_esp32_ota.HINT_FIREWALL,  # v3.87
+            )  # v3.87
 
         await run_command(transfer, "ESP32-Setup übertragen")()
 
