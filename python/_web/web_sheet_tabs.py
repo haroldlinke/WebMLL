@@ -1,12 +1,14 @@
-# Datei-Version: 1.03 (2026-11-17) - web_sheet_tabs.py
+# Datei-Version: 1.05 (2026-11-18) - web_sheet_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_sheet_tabs.py
 # Path:           _web/web_sheet_tabs.py
-# Version:        1.03
-# Last Update:    2026-11-17
+# Version:        1.05
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.05  2026-11-18  Zweistufige Auswahl der Spalten und Zielseiten
+#   1.04  2026-11-18  Spaltenbreiten ueber Kontextmenue auf ausgewaehlte Datenblaetter uebertragen
 #   1.00  2026-11-01  Neu: Reiterfarben (Kontrastfarbe der Schrift, hellerer Verlauf des gewaehlten Reiters), Kontextmenue der Blattreiter (Umbenennen, Duplizieren,
 #                     Nach links und rechts verschieben, Reiterfarbe), Regeln fuer Namen und Verschieben als reine Funktionen
 #   1.01  2026-11-01  Schriftfarbe nach WCAG-Kontrast (weiss ab 3:1, sonst schwarz); plan_move aendert nichts, wenn die Reihenfolge der sichtbaren Reiter gleich bleibt
@@ -251,6 +253,10 @@ def build_tab(ui, name, color, can_rename_tab, can_duplicate, can_left, can_righ
             if not can_duplicate:
                 item.disable()
                 item.tooltip(tr("Nur Datenblätter lassen sich duplizieren."))
+            if "copy_widths" in callbacks:  # v1.04
+                item = ui.menu_item(tr("Spaltenbreiten übertragen …"), on_click=lambda: callbacks["copy_widths"](name))  # v1.04
+                if not can_duplicate:  # v1.04
+                    item.disable()  # v1.04
             ui.separator()
             item = ui.menu_item(tr("Nach links verschieben"), on_click=lambda: callbacks["step"](name, -1))
             if not can_left:
@@ -300,3 +306,89 @@ def show_hidden_dialog(ui, names, on_show):  # v1.03
             ui.button(tr("Abbrechen"), on_click=dlg.close).props("flat no-caps")  # v1.03
             ui.button(tr("Einblenden"), on_click=lambda: apply([n for n, b in boxes.items() if b.value])).props("color=primary no-caps")  # v1.03
     dlg.open()  # v1.03
+
+
+def copy_column_widths(source, targets, columns=None):  # v1.05
+    widths = list(source.tksheet.get_column_widths())  # v1.04
+    selected_columns = set(range(len(widths))) if columns is None else set(columns)  # v1.05
+    for target in targets:  # v1.04
+        if target is source:  # v1.04
+            continue  # v1.04
+        for col, width in enumerate(widths[:target.tksheet.get_total_columns()]):  # v1.04
+            if col not in selected_columns:  # v1.05
+                continue  # v1.05
+            delta = width - target.tksheet.column_width(col)  # v1.04
+            if delta:  # v1.04
+                target.tksheet.column_width(col, width)  # v1.04
+                target.moveShapesHorizontal(top_left_cell_column=col + 1, deltaX=delta)  # v1.04
+        target.tksheet.version += 1  # v1.04
+        target.sheet_was_modified(None)  # v1.04
+
+
+# def show_copy_widths_dialog(ui, source, names, on_apply):  # v1.04  # v1.05 (entfallen)
+#     with ui.dialog() as dlg, ui.card().classes("w-[440px] max-w-full"):  # v1.04  # v1.05 (entfallen)
+#         ui.label(tr("Spaltenbreiten übertragen …")).classes("text-h6")  # v1.04  # v1.05 (entfallen)
+#         ui.label(tr("Quelle: {name}", name=source)).classes("text-subtitle2")  # v1.04  # v1.05 (entfallen)
+#         with ui.column().classes("w-full max-h-[50vh] overflow-auto"):  # v1.04  # v1.05 (entfallen)
+#             boxes = {name: ui.checkbox(name, value=False) for name in names}  # v1.04  # v1.05 (entfallen)
+#         def apply():  # v1.04  # v1.05 (entfallen)
+#             selected = [name for name, box in boxes.items() if box.value]  # v1.04  # v1.05 (entfallen)
+#             if selected:  # v1.04  # v1.05 (entfallen)
+#                 on_apply(selected)  # v1.04  # v1.05 (entfallen)
+#                 dlg.close()  # v1.04  # v1.05 (entfallen)
+#         with ui.row().classes("w-full justify-end"):  # v1.04  # v1.05 (entfallen)
+#             ui.button(tr("Übertragen"), on_click=apply)  # v1.04  # v1.05 (entfallen)
+#             ui.button(tr("Abbrechen"), on_click=dlg.close).props("flat").classes("mll-cancel")  # v1.04  # v1.05 (entfallen)
+#     dlg.open()  # v1.04  # v1.05 (entfallen)
+
+def show_copy_widths_dialog(ui, source, names, on_apply, column_count):  # v1.05
+    from headless.headless_gridmodel import col_letter  # v1.05
+    with ui.dialog() as column_dialog, ui.card().classes("w-[440px] max-w-full"):  # v1.05
+        ui.label(tr("Spalten auswählen")).classes("text-h6")  # v1.05
+        ui.label(tr("Quelle: {name}", name=source)).classes("text-subtitle2")  # v1.05
+        all_columns = ui.checkbox(tr("Alle Spalten"), value=True)  # v1.05
+        with ui.row().classes("w-full max-h-[50vh] overflow-auto gap-2"):  # v1.05
+            column_boxes = {col: ui.checkbox(col_letter(col), value=True) for col in range(column_count)}  # v1.05
+        syncing = {"active": False}  # v1.05
+        def select_all(e):  # v1.05
+            if syncing["active"]:  # v1.05
+                return  # v1.05
+            syncing["active"] = True  # v1.05
+            for box in column_boxes.values():  # v1.05
+                box.set_value(bool(e.value))  # v1.05
+            syncing["active"] = False  # v1.05
+        all_columns.on_value_change(select_all)  # v1.05
+        def sync_all():  # v1.05
+            if syncing["active"]:  # v1.05
+                return  # v1.05
+            syncing["active"] = True  # v1.05
+            all_columns.value = all(box.value for box in column_boxes.values())  # v1.05
+            syncing["active"] = False  # v1.05
+        for box in column_boxes.values():  # v1.05
+            box.on_value_change(lambda: sync_all())  # v1.05
+        def next_step():  # v1.05
+            if any(box.value for box in column_boxes.values()):  # v1.05
+                column_dialog.close()  # v1.05
+                page_dialog.open()  # v1.05
+        with ui.row().classes("w-full justify-end"):  # v1.05
+            ui.button(tr("Weiter"), on_click=next_step)  # v1.05
+            ui.button(tr("Abbrechen"), on_click=column_dialog.close).props("flat").classes("mll-cancel")  # v1.05
+    with ui.dialog() as page_dialog, ui.card().classes("w-[440px] max-w-full"):  # v1.05
+        ui.label(tr("Zielseiten auswählen")).classes("text-h6")  # v1.05
+        ui.label(tr("Quelle: {name}", name=source)).classes("text-subtitle2")  # v1.05
+        with ui.column().classes("w-full max-h-[50vh] overflow-auto"):  # v1.05
+            boxes = {name: ui.checkbox(name, value=False) for name in names}  # v1.05
+        def apply():  # v1.05
+            selected = [name for name, box in boxes.items() if box.value]  # v1.05
+            columns = [col for col, box in column_boxes.items() if box.value]  # v1.05
+            if selected and columns:  # v1.05
+                on_apply(selected, columns)  # v1.05
+                page_dialog.close()  # v1.05
+        def back():  # v1.05
+            page_dialog.close()  # v1.05
+            column_dialog.open()  # v1.05
+        with ui.row().classes("w-full justify-end"):  # v1.05
+            ui.button(tr("Zurück"), on_click=back).props("flat")  # v1.05
+            ui.button(tr("Übertragen"), on_click=apply)  # v1.05
+            ui.button(tr("Abbrechen"), on_click=page_dialog.close).props("flat").classes("mll-cancel")  # v1.05
+    column_dialog.open()  # v1.05

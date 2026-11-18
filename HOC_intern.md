@@ -1,4 +1,4 @@
-Datei-Version: 1.02 (2026-11-18) - HOC_intern.md
+Datei-Version: 1.03 (2026-11-18) - HOC_intern.md
 Stand: webMobaLedLib 3.93
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,23 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 3.93 (2026-11-18) – Spaltenbreiten und Zellinnenabstand
+
+Die Breiten der Quellseite werden über das Kontextmenü der Seitenreiter auf ausgewählte sichtbare Datenseiten übertragen. Der erste Dialog wählt einzelne Spalten A, B, C usw. oder alle Spalten aus. Der zweite Dialog wählt die Zielseiten. „Zurück“ erhält die Auswahl. Zellinhalte bleiben erhalten und Symbole werden entsprechend den Breitenänderungen verschoben.
+
+Die Darstellungseinstellung WebOuterMargin steuert ausschließlich den horizontalen Zellinnenabstand der Programmgenerator-Tabelle. 0 entfernt den Abstand zwischen Zellrand und Text. Der Wert wirkt sofort und wird mit den Programmeinstellungen gespeichert.
+
+Dateien und Versionen
+
+- webmobaledlib.py 3.95
+- _web/web_sheet_tabs.py 1.05
+- _web/web_layout.py 1.20
+- csv/Web_Languages.csv, Installationsanleitung und Betatest-Checkliste
+
+Prüfungen
+
+Python-Syntax, Breitenübernahme mit echten HeadlessSheet-Objekten, Symbolverschiebung, unveränderte Zellinhalte und andere Blätter, Dialogschritte mit aufzeichnender Oberfläche sowie alle sieben Sprachen geprüft. Dialog und Zellinnenabstand vom Anwender im Browser bestätigt. Speichern und erneutes Laden der Breiten sowie Neustart mit gespeichertem Zellinnenabstand noch nicht separat geprüft.
 
 ## 3.93 (2026-11-18) - Fotowiderstand
 

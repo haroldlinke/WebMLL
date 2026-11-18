@@ -1,12 +1,15 @@
-# Datei-Version: 1.17 (2026-11-17) - web_layout.py
+# Datei-Version: 1.20 (2026-11-18) - web_layout.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_layout.py
 # Path:           _web/web_layout.py
-# Version:        1.17
-# Last Update:    2026-11-17
+# Version:        1.20
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.20  2026-11-18  Einstellung steuert Zellinnenabstaende statt Tabellenrahmen
+#   1.19  2026-11-18  Einstellbarer Aussenabstand gilt ausschliesslich fuer die Programmgenerator-Tabelle
+#   1.18  2026-11-18  Aussenabstand in Pixeln einstellbar und speicherbar
 #   1.09  2026-11-12  Knoepfe Tabelle, Grafik, Beides (web_viewswitch): der Knopf der gewaehlten Ansicht ist gelb hinterlegt (mll-view-on) (fruehere Versionen ohne Eintrag)
 #   1.10  2026-11-14  Einheitliche Knopfreihenfolge in allen Dialogen: der Abbrechen-Knopf (mll-cancel) steht immer ganz rechts
 #   1.11  2026-11-14  Kompaktes Layout: Suchleiste so hoch (22 px) und so gross beschriftet (12 px) wie die Werkzeugleistenknoepfe
@@ -35,6 +38,7 @@ import json
 import os
 
 LAYOUT_KEY = "WebLayout"
+MARGIN_KEY = "WebOuterMargin"  # v1.18
 DBLCLICK_KEY = "WebDblClickMacro"                  # Doppelklick auf Name und Beleuchtung oeffnet die Makroauswahl (Standard: aus)
 MODES = {"normal": "Aus (normales Layout)", "compact": "Ein (kompakt)",
          "auto": "Automatisch (kompakt, wenn das Browserfenster niedriger als 800 Pixel ist)"}
@@ -125,6 +129,18 @@ CSS = """
 """
 
 
+def get_margin(ctrl):  # v1.18
+    value = ctrl.getConfigData(MARGIN_KEY)  # v1.18
+    try:  # v1.18
+        return max(0, min(200, int(value))) if value is not None else None  # v1.18
+    except (TypeError, ValueError):  # v1.18
+        return None  # v1.18
+
+
+def margin_js(value):  # v1.18
+    return "document.documentElement.style.setProperty('--mll-outer-margin', '%dpx');" % max(0, min(200, int(value)))  # v1.18
+
+
 def get_mode(ctrl) -> str:
     """Gespeicherte Stufe; ohne gueltigen Eintrag MLL_LAYOUT, sonst DEFAULT_MODE"""
     value = str(ctrl.getConfigData(LAYOUT_KEY) or "").strip().lower()
@@ -158,9 +174,13 @@ def apply_js(mode: str) -> str:
             "apply();})();") % (json.dumps(mode), AUTO_HEIGHT)
 
 
-def head_html(mode: str) -> str:
+def head_html(mode: str, margin=None) -> str:  # v1.18
     """Stilregeln und Startskript fuer den Kopf der Seite"""
-    return '<style id="mll-layout-css">' + CSS + "</style><script>" + apply_js(mode) + "</script>"
+    # return '<style id="mll-layout-css">' + CSS + "</style><script>" + apply_js(mode) + "</script>"  # v1.18 (entfallen)
+    # spacing = ".nicegui-content {padding-left:var(--mll-outer-margin,16px) !important;padding-right:var(--mll-outer-margin,16px) !important;} .mll-compact .nicegui-content {padding-left:var(--mll-outer-margin,6px) !important;padding-right:var(--mll-outer-margin,6px) !important;}"  # v1.18  # v1.19 (entfallen)
+    # spacing = ".mll-grid-wrap {box-sizing:border-box;padding-left:var(--mll-outer-margin,0px);padding-right:var(--mll-outer-margin,0px);}"  # v1.19  # v1.20 (entfallen)
+    spacing = ".mll-grid-wrap .ag-cell:not([col-id='_rn']), .mll-grid-wrap .ag-header-cell {padding-left:var(--mll-outer-margin,16px) !important;padding-right:var(--mll-outer-margin,16px) !important;}"  # v1.20
+    return '<style id="mll-layout-css">' + CSS + spacing + "</style><script>" + apply_js(mode) + (margin_js(margin) if margin is not None else "") + "</script>"  # v1.18
 
 
 class TableSetting:
@@ -189,9 +209,11 @@ class LayoutSetting:
     def __init__(self, ctrl):
         self.ctrl = ctrl
         self.select = None
+        self.margin = None  # v1.18
 
     def collect(self) -> dict:
-        return {LAYOUT_KEY: self.select.value if self.select is not None else get_mode(self.ctrl)}
+        # return {LAYOUT_KEY: self.select.value if self.select is not None else get_mode(self.ctrl)}  # v1.18 (entfallen)
+        return {LAYOUT_KEY: self.select.value if self.select is not None else get_mode(self.ctrl), MARGIN_KEY: int(self.margin.value or 0) if self.margin is not None else get_margin(self.ctrl)}  # v1.18
 
     def build(self):
         from nicegui import ui
@@ -202,3 +224,6 @@ class LayoutSetting:
                      "Zusätzlich schaffen Vollbild (F11) und der Browser-Zoom (Strg und Minus) Platz.").classes("text-caption text-grey-8")
             self.select = ui.select(MODES, value=get_mode(self.ctrl), label="Kompaktes Layout").props("dense outlined").classes("w-full max-w-xl")
             self.select.on_value_change(lambda e: ui.run_javascript(apply_js(e.value)))
+
+            self.margin = ui.number("Zellinnenabstand links/rechts (px)", value=get_margin(self.ctrl) if get_margin(self.ctrl) is not None else 16, min=0, max=200, step=1).props("dense outlined").classes("w-64")  # v1.18
+            self.margin.on_value_change(lambda e: ui.run_javascript(margin_js(e.value)) if e.value is not None else None)  # v1.18

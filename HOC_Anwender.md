@@ -1,9 +1,20 @@
-Datei-Version: 1.02 (2026-11-18) - HOC_Anwender.md
+Datei-Version: 1.03 (2026-11-18) - HOC_Anwender.md
 Stand: webMobaLedLib 3.93
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 3.93 (2026-11-18) – Spaltenbreiten und Zellinnenabstand
+
+Neue Funktionen
+
+- Rechtsklick auf einen Seitenreiter bietet „Spaltenbreiten übertragen …“. Zuerst einzelne Spalten A, B, C usw. oder alle Spalten auswählen, danach die Zielseiten anhaken. „Zurück“ erhält die Auswahl.
+- Unter Programm Einstellungen → Darstellung lässt sich der Zellinnenabstand links/rechts in Pixeln einstellen und speichern.
+
+Prüfung
+
+Übernahme, Auswahl einzelner Spalten, Symbolverschiebung und Übersetzungen automatisiert geprüft. Dialog und Zellinnenabstand vom Anwender im Browser bestätigt.
 
 ## 3.93 (2026-11-18) - Fotowiderstand
 

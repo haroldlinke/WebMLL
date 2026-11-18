@@ -2230,3 +2230,12 @@ WLAN, IP, LDR und Zeit;Wi-Fi, IP, LDR and time;Wifi, IP, LDR en tijd;Wi-Fi, IP, 
 WLAN, IP und Hostname;Wi-Fi, IP and hostname;Wifi, IP en hostnaam;Wi-Fi, IP et nom d’hôte;Wi-Fi, IP e nome host;Wi-Fi, IP y nombre de host;Wi-fi, IP og værtsnavn
 MLL-Zeit;MLL time;MLL-tijd;Heure MLL;Ora MLL;Hora MLL;MLL-tid
 LDR-Wert;LDR value;LDR-waarde;Valeur LDR;Valore LDR;Valor LDR;LDR-værdi
+Spaltenbreiten übertragen …;Transfer column widths …;Kolombreedtes overnemen …;Transférer les largeurs de colonnes …;Trasferisci larghezze colonne …;Transferir anchos de columna …;Overfør kolonnebredder …
+Quelle: {name};Source: {name};Bron: {name};Source : {name};Origine: {name};Origen: {name};Kilde: {name}
+Übertragen;Transfer;Overnemen;Transférer;Trasferisci;Transferir;Overfør
+Außenabstand links/rechts (px);Left/right outer spacing (px);Buitenmarge links/rechts (px);Marge extérieure gauche/droite (px);Margine esterno sinistro/destro (px);Margen exterior izquierdo/derecho (px);Ydre afstand venstre/højre (px)
+Zellinnenabstand links/rechts (px);Cell padding left/right (px);Celopvulling links/rechts (px);Marge intérieure des cellules gauche/droite (px);Spazio interno celle sinistra/destra (px);Espacio interior de celda izquierdo/derecho (px);Celleafstand venstre/højre (px)
+Spalten auswählen;Select columns;Kolommen selecteren;Sélectionner les colonnes;Seleziona colonne;Seleccionar columnas;Vælg kolonner
+Alle Spalten;All columns;Alle kolommen;Toutes les colonnes;Tutte le colonne;Todas las columnas;Alle kolonner
+Zielseiten auswählen;Select destination sheets;Doelbladen selecteren;Sélectionner les feuilles de destination;Seleziona fogli di destinazione;Seleccionar hojas de destino;Vælg destinationsark
+Zurück;Back;Terug;Retour;Indietro;Atrás;Tilbage

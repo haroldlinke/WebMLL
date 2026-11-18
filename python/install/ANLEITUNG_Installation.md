@@ -1,5 +1,13 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 3.93 (2026-11-18), gilt für webMobaLedLib 3.93*
+*Datei-Version: 3.94 (2026-11-18), gilt für webMobaLedLib 3.93*
+
+Wähle nach **Spaltenbreiten übertragen …** zuerst einzelne Spalten A, B, C usw. oder **Alle Spalten**. Mit **Weiter** öffnest du die Auswahl der Zielseiten. **Zurück** erhält deine Spaltenauswahl.
+
+## Spaltenbreiten und Zellinnenabstand
+
+Unter **Programm Einstellungen → Darstellung** stellst du den Zellinnenabstand links/rechts für die Programmgenerator-Tabelle in Pixeln ein. Die Änderung wirkt sofort und wird mit **Speichern** gesichert.
+
+Mit einem Rechtsklick auf einen Seitenreiter und **Spaltenbreiten übertragen …** übernimmst du dessen Breiten auf die angehakten sichtbaren Datenseiten. Bestätige mit **Übertragen** und speichere anschließend die Arbeitsmappe.
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 

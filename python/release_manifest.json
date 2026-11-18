@@ -967,8 +967,8 @@
 "size": 1643
 },
 "_web/web_layout.py": {
-"sha256": "9da658122a88a8e36502f7c34f27199cafbd65da07830f6427fe7c2cdc52e3e7",
-"size": 15657
+"sha256": "c5accec4672f3a3a351c0be6b3339e68d4a6e0ee48241e09550562c78f87e540",
+"size": 17929
 },
 "_web/web_log.py": {
 "sha256": "644a5b7e0c4a88ff4539d8630d06cb3bbf4b93d3e9ac7dfa8f386a620b042788",
@@ -1023,8 +1023,8 @@
 "size": 26503
 },
 "_web/web_sheet_tabs.py": {
-"sha256": "dfdf203decfa6e23bceb1ebae2054c0844748bc51dd81e94132d5176f499d587",
-"size": 17860
+"sha256": "5c177a46eb7273344e37367b602bec596dca6cbaaa8acdb6df28022c4a4d3f2b",
+"size": 23716
 },
 "_web/web_simulator.py": {
 "sha256": "0872f9afc564af91207c1e863165ff6ba57235fbad2bb6b1ffaaabaef745d691",
@@ -1163,8 +1163,8 @@
 "size": 1106
 },
 "csv/Web_Languages.csv": {
-"sha256": "827647248bd3d8302c699fc62ddad538c24087b346fc068df67f18f479d685de",
-"size": 575134
+"sha256": "50204c9c63229fb9673076f537e0185d7e1da748e4ac9a1c086b679fdbbf5685",
+"size": 576540
 },
 "csv/xLibraries.csv": {
 "sha256": "a737fc50e763b84683b77c46c5f9a4b338362e0587400daea97f0ed0e89e2b81",
@@ -7583,8 +7583,8 @@
 "size": 2829
 },
 "install/ANLEITUNG_Installation.md": {
-"sha256": "cfbcc850e7d96ed004be46f3a27af8bc90963bc9b98044e813b57d6e413bdd68",
-"size": 209736
+"sha256": "23d3a3a1b1605482cf18e2bfa65b0796da2ad0d4d3895b1d91bc9441a7621096",
+"size": 210434
 },
 "install/ANLEITUNG_Linux_Desktop.pdf": {
 "sha256": "ed3bf81790dab00eb36917e8a5bbc212fbf1d70682682223210bec33bb12efec",
@@ -7599,8 +7599,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "d778c156685b14bd492d9950cf743efbd0e09126c76f7f46d65f1cb7bd6398c4",
-"size": 131121
+"sha256": "e31efc4d77bc8bb113d1fafe9535606d3132971d4b04842a0e40a2d6451d7f71",
+"size": 131889
 },
 "install/UEBERSETZEN.md": {
 "sha256": "2a5b4bf59358e3c0e82fabb6e88b0f4605de0bfa334c777f0822b1765b4c4107",
@@ -8719,8 +8719,8 @@
 "size": 9940
 },
 "proggen/M06_Write_Header_SW.py": {
-"sha256": "084f2a7ca59dcbcec47cd39a58dd7bf0db7a7ffde974017038d52abecb5c2b10",
-"size": 106533
+"sha256": "24d91299d37edb95c5571f0e22948c05e81089641d0e64293376673367cde853",
+"size": 106837
 },
 "proggen/M06_Write_Header_Sound.py": {
 "sha256": "89bd5046d9725d3b9cf36226fcad44fd211e3bf12a370b04e582482a551c5ce5",
@@ -9367,8 +9367,8 @@
 "size": 34
 },
 "webmobaledlib.py": {
-"sha256": "ca4e944b4e327af175320e0db320d9b04efd003572466f32da21a339629d3845",
-"size": 559841
+"sha256": "13c4b058bdb2f4f41e07e2062a68ae88439a2fc9bb81555f4862a24f0a158475",
+"size": 561022
 }
 },
 "format": 1,

@@ -1,12 +1,14 @@
-# Datei-Version: 3.93 (2026-11-18) - webmobaledlib.py
+# Datei-Version: 3.95 (2026-11-18) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        3.93
+# Version:        3.95
 # Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   3.95  2026-11-18  Spaltenauswahl vor Auswahl der Zielseiten
+#   3.94  2026-11-18  Spaltenbreiten auf gewaehlte Seiten uebertragen, einstellbare Aussenabstaende
 #   3.87  2026-11-17  Programmgenerator und ESP32-Anbindung des Forks (Beitrag des Fork-Entwicklers)
 #   1.39  2026-10-17  Reiter Patterngenerator (Runde 1): Anzeige der Tabelle, Aufbau erst beim ersten Oeffnen (build_patt, _PATT); Kopf eingefuegt; davor bis 1.38 nicht erfasst
 #   1.40  2026-10-17  Patterngenerator Runde 2: Bearbeiten, Werkzeugleiste, Beschreibung, Balken (Module web_pattgen, headless_pattgen)
@@ -1861,7 +1863,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     ui.add_head_html("<script>" + JS_FIND + "</script>")  # v3.28
     ui.add_css(CSS_GRID)
     from _web import web_layout                        # kompaktes Layout fuer kleine Bildschirme (Programm Einstellungen)
-    ui.add_head_html(web_layout.head_html(web_layout.get_mode(ctrl)))
+    # ui.add_head_html(web_layout.head_html(web_layout.get_mode(ctrl)))  # v3.94 (entfallen)
+    ui.add_head_html(web_layout.head_html(web_layout.get_mode(ctrl), web_layout.get_margin(ctrl)))  # v3.94
     from _web import web_fullscreen  # v1.80
     ui.add_head_html(web_fullscreen.head_html())       # Vollbild ein und aus (der Knopf steht in der Kopfzeile)  # v1.81
     if fullscreen:                                      # Adresse mit ?vollbild=1: ohne Titel, Menue und Reiter oeffnen, der erste Tipp schaltet auch den Browser um  # v1.82
@@ -2943,9 +2946,23 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             rebuild_sheet_tabs()  # v3.90
         WT.show_hidden_dialog(ui, names, do_show)  # v3.90
 
+    def tab_copy_widths(name):  # v3.94
+        source = state["sheets"].get(name)  # v3.94
+        if source is None or not is_data_sheet(source):  # v3.94
+            return  # v3.94
+        names = [n for n in visible_sheet_names() if n != name and is_data_sheet(state["sheets"][n])]  # v3.94
+        # def apply(selected):  # v3.95 (entfallen)
+        def apply(selected, columns):  # v3.95
+            # WT.copy_column_widths(source, [state["sheets"][n] for n in selected])  # v3.95 (entfallen)
+            WT.copy_column_widths(source, [state["sheets"][n] for n in selected], columns)  # v3.95
+            show(state["ws"])  # v3.94
+        # WT.show_copy_widths_dialog(ui, name, names, apply)  # v3.95 (entfallen)
+        WT.show_copy_widths_dialog(ui, name, names, apply, source.tksheet.get_total_columns())  # v3.95
+
     # tab_callbacks = {"rename": tab_rename, "duplicate": tab_duplicate, "step": tab_step, "color": tab_set_color, "color_custom": tab_custom_color}  # v2.63  # v3.90 (entfallen)
     tab_callbacks = {"rename": tab_rename, "duplicate": tab_duplicate, "step": tab_step, "color": tab_set_color, "color_custom": tab_custom_color,  # v2.63
                      "hide": tab_hide, "show_hidden": tab_show_hidden, "hidden_count": lambda: len(hidden_sheet_names()), "can_hide": tab_can_hide}  # v3.90
+    tab_callbacks["copy_widths"] = tab_copy_widths  # v3.94
     ui.add_body_html("<script>" + WT.load_js() + "</script>")        # Ziehen der Reiter mit Alt + Maustaste  # v2.63
     ui.on("mll_tab_move", on_tab_move)  # v2.63
 

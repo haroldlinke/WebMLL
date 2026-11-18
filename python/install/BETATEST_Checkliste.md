@@ -1,5 +1,15 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 2.89 (2026-11-18), gilt für webMobaLedLib 3.93*
+*Datei-Version: 2.90 (2026-11-18), gilt für webMobaLedLib 3.93*
+
+- [ ] Nur A und C wählen, Weiter, zwei Zielseiten anhaken und übertragen. Bleibt B unverändert?
+- [ ] Alle Spalten aus- und einschalten. Zurück und Abbrechen prüfen.
+
+## Spaltenbreiten und Zellinnenabstand
+
+- [ ] Spaltenbreiten von einer Seite auf zwei angehakte Seiten übertragen. Bleiben andere Seiten und Zellinhalte erhalten? Folgen Symbole der neuen Breite?
+- [ ] Bleiben die Breiten nach Speichern und erneutem Laden erhalten?
+- [ ] Zellinnenabstand 0, 8 und 24 Pixel im normalen und kompakten Layout prüfen. Verringert sich der Leerraum zwischen Zellrand und Text, während Menü und Einstellungsseiten ihre Abstände behalten? Bleibt der gespeicherte Wert nach Neustart erhalten?
+- [ ] Abbrechen des Übernahmedialogs verändert keine Seite.
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
