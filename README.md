@@ -14,7 +14,7 @@ Details findest Du im Wiki: https://wiki.mobaledlib.de/anleitungen/webmobaledlib
 
 Wähle unter **Optionen Werkzeuge** einen ESP32 als LED-Zentrale. Der Reiter **ESP Einstellungen** bietet die OLED-Modi 1 bis 5, eine animierte Vorschau mit Beispieldaten und die Optionen **Fotowiderstand aktivieren** und **Zustände werden gespeichert**. Beim Übertragen erzeugt WebMLL die entsprechenden Defines aus den Einstellungen des aktiven Blatts. Bereits in der Tabelle eingetragene Defines bleiben wirksam. Ein ausgewählter OLED-Modus hat Vorrang vor der Modusnummer aus der Tabelle.
 
-Reine Define-Zeilen zu aktivierten ESP-Einstellungen werden in der Tabelle ausgeblendet. Sie bleiben im Blatt gespeichert und erscheinen wieder, wenn die zugehörige Option deaktiviert wird.
+Vorhandene Define-Zeilen bleiben auch bei aktivierten ESP-Einstellungen in der Tabelle sichtbar.
 
 | Einstellung | Wirkung beim Übertragen |
 | --- | --- |
