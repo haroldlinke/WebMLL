@@ -3430,34 +3430,6 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         apply_graph_view(ws)  # v2.29
         refresh_graph(ws, True)  # v2.29
 
-    def hide_managed_esp_rows(ws, rows, config_field):  # v3.87
-        """Hide only standalone defines supplied by the active ESP settings."""  # v3.87
-        options = getattr(ws, "esp32_options", None)  # v3.87
-        board = str(ws.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL).Value)  # v3.87
-        if not options or not re.search(r"\besp32:esp32:", board):  # v3.87
-            return rows  # v3.87
-
-        defines = []  # v3.87
-        if options.get("oled") in (1, 2, 3, 4, 5):  # v3.87
-            defines.extend((r"USE_ESP32_EXTENSIONS", r"USE_UI", r"UI_MLLTime\s+[0-5]"))  # v3.87
-        if options.get("ldr") is True:  # v3.87
-            defines.append(r"READ_LDR")  # v3.87
-        if options.get("store_status") is True:  # v3.87
-            defines.append(r"ENABLE_STORE_STATUS(?:\(\))?")  # v3.87
-        if not defines:  # v3.87
-            return rows  # v3.87
-
-        directive = r"#\s*define\s+(?:" + "|".join(defines) + r")"  # v3.87
-        define_block = re.compile(  # v3.87
-            rf"(?:#\s*ifdef\s+ESP32\s*(?:{directive}\s*)+#\s*endif|"  # v3.87
-            rf"(?:{directive}\s*)+)"  # v3.87
-        )  # v3.87
-        return [  # v3.87
-            row for row in rows  # v3.87
-            if row["_r"] < M02.FirstDat_Row - 1  # v3.87
-            or not define_block.fullmatch(str(row.get(config_field) or "").strip())  # v3.87
-        ]  # v3.87
-
     def show(ws):
         t_start = time.perf_counter()  # v1.49
         try:
@@ -3492,8 +3464,6 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if M28.Is_Data_Sheet(ws):
             M25.Make_sure_that_Col_Variables_match(ws)
             config_field = f"c{M25.Config__Col - 1}"
-            rows = hide_managed_esp_rows(ws, rows, config_field)  # v3.87
-            meta["shown_rows"] = len(rows) + len(pinned)  # v3.87
             for column in column_defs:
                 if column.get("field") == config_field:
                     column.update(cellEditor="agLargeTextCellEditor", cellEditorPopup=True,
