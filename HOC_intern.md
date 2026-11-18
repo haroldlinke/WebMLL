@@ -9,6 +9,11 @@ Pfade beziehen sich auf den Ordner `python`.
 
 ---
 
+## 3.93 (2026-11-18) – WLAN ohne OTA
+
+Bei WLAN aktiv und OTA deaktiviert fehlten die Includes für Arduino.h und WiFi.h im erzeugten Sketch. ESP32WifiUsb.h konnte dadurch WiFi und WL_CONNECTED nicht auflösen. headless/headless_esp32_ota.py 1.09 fügt beide Includes unabhängig vom OTA-Schalter ein. Die zusätzlichen OTA-Deklarationen bleiben an OTA gebunden. Sketch-Erzeugung für WLAN mit und ohne OTA sowie Python-Syntax geprüft. Ein isolierter ESP32-Sketch mit der originalen ESP32WifiUsb.h und deaktiviertem OTA wurde mit PlatformIO espressif32 6.9.0 erfolgreich kompiliert (27,66 Sekunden). Vollständiger Anwender-Sketch und Hardwaretest offen.
+
+
 ## 2.12 (2026-10-23) - Release-Stand
 
 Release-Stand 2.12 auf Wunsch des Entwicklers („Release bauen“). **Neu im Ablauf:** Es gibt kein von mir gebautes `webmobaledlib.zip` mehr (Ursache des Vorfalls 2 war ein ZIP mit altem Stand: ich kenne die Hilfsdateien, die Excel-Datei und die csv-Dateien des Entwicklers nicht). Das GitHub-Release baut nur `zip_erstellen.bat` (1.04) aus dem vollständigen Ordner `python`, mit Prüfliste und Prüfung. Das frühere `webmobaledlib.zip` (Stand 2.04, nur gelieferte Dateien) liegt als `archiv/webmobaledlib_Dateien_Stand_2.04.zip`.

@@ -1,12 +1,13 @@
-# Datei-Version: 1.08 (2026-11-14) - headless_esp32_ota.py
+# Datei-Version: 1.09 (2026-11-18) - headless_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_esp32_ota.py
 # Path:           headless/headless_esp32_ota.py
-# Version:        1.08
-# Last Update:    2026-11-14
+# Version:        1.09
+# Last Update:    2026-11-18
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.09  2026-11-18  WLAN ohne OTA: Arduino.h und WiFi.h fuer USB-WLAN-Einrichtung immer einbinden
 #   1.00  2026-11-14  Neu: ESP32-WLAN und OTA ohne Oberflaeche (OTA-Upload mit espota, Build mit PlatformIO oder Arduino Builder, USB-Upload, WLAN-Einrichtung ueber USB, Einstellungen esp32-ota.json)
 #   1.01  2026-11-14  wifi_usb: nach dem Oeffnen des Anschlusses 2,5 s warten (ESP32 startet neu) und den Scan-Befehl bis zur ersten Antwort alle 6 s wiederholen
 #   1.02  2026-11-14  wifi_usb: alles Empfangene wird ins Protokoll geschrieben und in der Fehlermeldung angezeigt (Diagnose: Neustart, Absturz, stille Firmware)
@@ -127,12 +128,13 @@ def prepare_ota_sketch(sketch, password, hostname="", ota=True):
         raise ValueError("Das OTA-Passwort muss 1 bis 64 druckbare ASCII-Zeichen haben.")
     source = sketch / "LEDs_AutoProg.ino"
     secret = password.replace("\\", "\\\\").replace('"', '\\"')
-    prefix = "#define USE_WIFI\n#define MLL_OTA_SAVED_WIFI\n"
+    # prefix = "#define USE_WIFI\n#define MLL_OTA_SAVED_WIFI\n"  # v1.09 (entfallen)
+    prefix = "#define USE_WIFI\n#define MLL_OTA_SAVED_WIFI\n#include <Arduino.h>\n#include <WiFi.h>\n"  # v1.09
     if hostname:
         prefix += f'#define MLL_WIFI_HOSTNAME "{hostname}"\n'
     if ota:
         prefix += (f'#define USE_OTA\n#define MLL_OTA_PASSWORD "{secret}"\n'
-                   '#include <Arduino.h>\n#include <WiFi.h>\n'
+                   # '#include <Arduino.h>\n#include <WiFi.h>\n'  # v1.09 (entfallen)
                    'extern WiFiClient mllDeviceClient;\n'
                    'extern bool mllDeviceAuthenticated;\n'
                    'extern bool mllDeviceNewSession;\n')

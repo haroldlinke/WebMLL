@@ -1,5 +1,7 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 2.89 (2026-11-18), gilt für webMobaLedLib 3.93*
+*Datei-Version: 2.90 (2026-11-18), gilt für webMobaLedLib 3.93*
+
+- [ ] WLAN aktivieren, OTA-Updates ausschalten und ESP32-Setup per USB übertragen. Kompiliert es erfolgreich und funktioniert danach WLAN-Suche über USB?
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.

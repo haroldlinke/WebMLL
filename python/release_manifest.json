@@ -1167,8 +1167,8 @@
 "size": 4689
 },
 "headless/headless_esp32_ota.py": {
-"sha256": "e856718c2d6497f7f9f9697ce936a31841d76551ccf15d989419ff05f93ed4b9",
-"size": 29256
+"sha256": "18e7fd4a2e5b9942e1da98fd01a2ea3a7c11c1929174266aba3c7f159eb3a625",
+"size": 29978
 },
 "headless/headless_firmware_dl.py": {
 "sha256": "661ef67e4713e8fab515e64d723a4b9bb4c4ad0bc7b45005692511624e05b41c",
@@ -7679,8 +7679,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "a7732a458ec9ddcbebf059d277c08f1873f1279d6c51bdceed471674bf95a641",
-"size": 116820
+"sha256": "aa330e555835b0332bab6b5d178b7d0466c34f26ef38570d12840ff61998bc57",
+"size": 131077
 },
 "install/UEBERSETZEN.md": {
 "sha256": "89d33068ec1ee883a4ebf692a6e407620aae00c538ee06b1a335bc2abbf6e1ba",

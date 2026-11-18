@@ -5,6 +5,11 @@ Stand: webMobaLedLib 3.93
 
 Gilt ab Version 1.39. Neueste Version oben.
 
+## 3.93 (2026-11-18) – WLAN ohne OTA
+
+Die ESP32-Firmware lässt sich mit aktiviertem WLAN und ausgeschalteten OTA-Updates wieder kompilieren.
+
+
 ## Version 3.93 (2026-11-18)
 
 Neue Funktionen:
