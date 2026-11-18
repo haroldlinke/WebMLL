@@ -178,7 +178,7 @@ async def _options_async(spec: dict, st: dict):
 
                 def tick():  # v1.29
                     nonlocal frame  # v1.29
-                    if tabs.value == esp_tab.name:  # v1.29
+                    if tabs.value == esp_tab.props["name"]:  # v1.29
                         frame += 1  # v1.29
                         preview()  # v1.29
 
