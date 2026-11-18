@@ -1,9 +1,9 @@
-# Datei-Version: 1.05 (2026-11-16) - UserForm_Options.py
+# Datei-Version: 1.06 (2026-11-18) - UserForm_Options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           UserForm_Options.py
 # Path:           proggen/UserForm_Options.py
-# Version:        1.05
-# Last Update:    2026-11-16
+# Version:        1.06
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,7 @@
 #   1.03  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26)
 #   1.04  2026-11-13  Schreibfehler im Titel: 'Optionen und spezielle Funktionen' (vorher 'Funktionien')
 #   1.05  2026-11-16  ESP32 eingetragen, aber ESP32-Paket der ARDUINO IDE fehlt: eigene Meldung (statt 'Unbekannte Board Option') mit Hilfe: PlatformIO waehlen oder Paket installieren
+#   1.06  2026-11-18  Knopf Kopiere von Seite zu Seite entfernt (ersetzt durch Seite duplizieren); Knopf Importieren v. altem Prog. zeigt im Web eine Anleitung
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -709,7 +710,7 @@ class CUserForm_Options:
             self.Button_Setup(File_frame,M09.Get_Language_Str("Importieren v. altem Prog."),self.__Import_Button_Click,"I",Row=0,state=tk.DISABLED)
             self.Button_Setup(File_frame,M09.Get_Language_Str("Speichern in Datei"),self.__Save_Button_Click,"S",Row=1)
             self.Button_Setup(File_frame,M09.Get_Language_Str("Laden aus Datei"),self.__Load_Button_Click,"L",Row=2)
-            self.Button_Setup(File_frame,M09.Get_Language_Str("Kopiere von Seite zu Seite"),self.__Copy_Page_Button_Click,"K",Row=3,state=tk.DISABLED)
+            # self.Button_Setup(File_frame,M09.Get_Language_Str("Kopiere von Seite zu Seite"),self.__Copy_Page_Button_Click,"K",Row=3,state=tk.DISABLED)  # v1.06 (entfallen: ersetzt durch Seite duplizieren)
             
             self.label5 = ttk.Label(File_frame, text=M09.Get_Language_Str("Speichern und Laden einzelner oder mehrerer Seiten"),wraplength=window_width/2-20,font=self.default_font)
             self.label6 = ttk.Label(File_frame, text=M09.Get_Language_Str("Mit den Knöpfen links können die Daten der aktuellen Seite gespeichert und wieder geladen werden."),wraplength=window_width/2-20,font=self.default_fontsmall)

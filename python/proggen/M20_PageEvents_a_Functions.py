@@ -1,9 +1,9 @@
-# Datei-Version: 1.11 (2026-11-17) - M20_PageEvents_a_Functions.py
+# Datei-Version: 1.12 (2026-11-18) - M20_PageEvents_a_Functions.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M20_PageEvents_a_Functions.py
 # Path:           proggen/M20_PageEvents_a_Functions.py
-# Version:        1.11
-# Last Update:    2026-11-17
+# Version:        1.12
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -18,6 +18,7 @@
 #   1.10  2026-11-16  Update_TestButtons: die Spalte der Tasten wird automatisch so breit, dass alle Tasten hineinpassen (wie im Excel-Programm); Shapes rechts davon wandern mit. Vorher wurden Tasten ausserhalb der Spalte gezeichnet und waren nicht bedienbar
 #   1.09  2026-11-14  DCC-Adressspannen: Ergebnis in Target.Value schreiben (Beitrag des Fork-Entwicklers)
 #   1.11  2026-11-17  Select_Typ_by_Dialog: Adressspannen ("5 - 8") werden geprueft, nach der Auswahl werden Adresse (InCnt), Testtasten und Startwert der Zeile aktualisiert, EnableEvents wird immer zurueckgesetzt (Pull Request 5 von moosbewohner)
+#   1.12  2026-11-18  HELP_WIKI_URL: Seite einfuehrung des webMobaLedLib-Wikis statt der Excel-Seite des Programm Generators
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -725,7 +726,8 @@ def ClearSheet():
 def __set_column_width(sheet):
     M01.set_columnwidth(sheet)
 
-HELP_WIKI_URL = "https://wiki.mobaledlib.de/anleitungen/spezial/programmgenerator"        # Online Wiki: die Hilfe zum Programm Generator  # v1.07
+# HELP_WIKI_URL = "https://wiki.mobaledlib.de/anleitungen/spezial/programmgenerator"  # v1.07 (entfallen v1.12)
+HELP_WIKI_URL = "https://wiki.mobaledlib.de/anleitungen/webmobaledlib/einfuehrung"  # v1.12: das Wiki nennt die Seite einfuehrung        # Online Wiki: die Hilfe zum Programm Generator  # v1.07
 
 
 def Show_Help():

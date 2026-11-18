@@ -1,9 +1,9 @@
-# Datei-Version: 1.06 (2026-11-15) - headless_graph.py
+# Datei-Version: 1.07 (2026-11-18) - headless_graph.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_graph.py
 # Path:           headless/headless_graph.py
-# Version:        1.06
-# Last Update:    2026-11-15
+# Version:        1.07
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -14,6 +14,7 @@
 #   1.04  2026-11-12  build_model(..., all_rows): alle aktiven Zeilen in die Ketten, auch die ohne LEDs (in die Kette der nachfolgenden LED-Zeile, am Ende in die der letzten); Knoten haben noled
 #   1.05  2026-11-13  Inaktive Zeilen (Spalte Aktiv leer) und mit dem Filter ausgeblendete Zeilen erscheinen in der Grafik nie, auch ohne 'Alle Zeilen' (Rueckmeldung des Excel-Entwicklers)
 #   1.06  2026-11-15  Verteiler und Stecker (Spalten Verteiler-Nr. und Stecker-Nr.): Knoten tragen vt und plug, Luecken ohne Nummer innerhalb eines Verteilers erben den Stecker, model["vtinfo"] (Typ und Sicherung aus den ID-Zeilen darueber)
+#   1.07  2026-11-18  Verteilernummer: eine reine Zahl (z.B. 1) gilt wie V1 (Rueckmeldung eines Anwenders)
 # ----------------------------------------------------------------------------------------------
 
 """Grafische Ansicht des Programm Generators, Stufe 1: das Modell der Ketten.
@@ -72,7 +73,13 @@ def parse_led_nr(value) -> tuple:  # v1.01
 
 def is_vt_number(text: str) -> bool:  # v1.06
     """Verteilernummer wie V01 (andere Texte in der Spalte sind Typangaben der ID-Zeilen)"""  # v1.06
-    return len(text) > 1 and text[0] in "Vv" and text[1:].isdigit()  # v1.06
+    # return len(text) > 1 and text[0] in "Vv" and text[1:].isdigit()  # v1.06 (entfallen v1.07)
+    return text.isdigit() or (len(text) > 1 and text[0] in "Vv" and text[1:].isdigit())  # v1.07: auch eine reine Zahl
+
+
+def vt_key(text: str) -> str:  # v1.07
+    """Einheitliche Schreibweise der Verteilernummer: V1 (aus v1 oder 1)"""  # v1.07
+    return ("V" + text) if text.isdigit() else text.upper()  # v1.07
 
 
 def fill_vt_gaps(nodes: list) -> None:  # v1.06
@@ -155,8 +162,8 @@ def build_model(ws, icons=None, display=None, icon_large=None, tests=None, all_r
         plug_raw = str(sh.get_cell_data(r, c_plug) or "").strip()  # v1.06
         if vt_raw and not is_vt_number(vt_raw):  # v1.06: ID-Zeile (z.B. IRM-60.1 / F1 (F1,25)): gehoert zum Verteiler, der darunter folgt (auch wenn die Zeile inaktiv ist)
             id_row = " · ".join(x for x in (str(sh.get_cell_data(r, c_desc) or "").strip(), vt_raw, plug_raw) if x)  # v1.06
-        elif is_vt_number(vt_raw) and vt_raw.upper() not in vtinfo:  # v1.06
-            vtinfo[vt_raw.upper()] = id_row  # v1.06
+        elif is_vt_number(vt_raw) and vt_key(vt_raw) not in vtinfo:  # v1.06
+            vtinfo[vt_key(vt_raw)] = id_row  # v1.06 (v1.07: vt_key)
         if config == "":
             continue
         # if all_rows and not _row_active(ws, sh, r, c_enable):  # v1.04 (entfallen v1.05: gilt in beiden Ansichten)
@@ -184,7 +191,7 @@ def build_model(ws, icons=None, display=None, icon_large=None, tests=None, all_r
                 "tests": [dict(item) for item in ((tests or {}).get(r) or [])],                # Testtasten der Zeile (wie in der Tabelle): [{n: Name, c: Farbe, t: Text}]     # Gegenstueck mit hoher Aufloesung (icons_gross), sonst ""  # v1.03
                 "led_from": led_from if in_chain else None,  # v1.01
                 "led_to": (led_from + leds - 1) if (leds > 0 and led_from is not None) else None, "channel": channel}
-        node["vt"] = vt_raw.upper() if is_vt_number(vt_raw) else ""  # v1.06
+        node["vt"] = vt_key(vt_raw) if is_vt_number(vt_raw) else ""  # v1.06 (v1.07: vt_key)
         node["plug"] = plug_raw if node["vt"] else ""  # v1.06
         node["noled"] = not in_chain  # v1.04: Zeile ohne LEDs (die Grafik zeichnet sie anders)
         # if leds > 0:  # v1.01 (entfallen)

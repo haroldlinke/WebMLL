@@ -1,15 +1,16 @@
-# Datei-Version: 1.02 (2026-11-12) - M28_Diverse.py
+# Datei-Version: 1.03 (2026-11-17) - M28_Diverse.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M28_Diverse.py
 # Path:           proggen/M28_Diverse.py
-# Version:        1.02
-# Last Update:    2026-11-12
+# Version:        1.03
+# Last Update:    2026-11-17
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-27  Is_PlatformIO: ist PlatformIO als Entwicklungsumgebung eingestellt?
 #   1.02  2026-11-12  Excel-Programm 3.5.0L3: Support fuer den Arduino Nano Every (ATmega4809) entfernt (Jürgen, 09.11.26)
+#   1.03  2026-11-17  Migrate_Config_to_Settings (einmalige Uebernahme der Werte der Seite Config); Neun Werte der Config-Seite (MinTime_House, MaxTime_House, DCC_Offset, Sim*) stehen in den Programm Einstellungen (SETTINGS_VARS); Get_*/Set_*_Config_Var lesen und schreiben sie dort
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -189,6 +190,56 @@ def Is_PlatformIO():  # v1.01
         return False  # v1.01
 
 
+# Werte der Config-Seite, die in den Programm Einstellungen stehen (je Installation); alle anderen Namen kommen aus dem Blatt Config  # v1.03
+SETTINGS_VARS = ("MinTime_House", "MaxTime_House", "DCC_Offset", "SimLedsX", "SimLedsY", "SimLedSize", "SimPosX", "SimPosY", "SimOffset")  # v1.03
+
+
+def _settings_controller():  # v1.03
+    try:  # v1.03
+        return PG.ThisWorkbook.controller  # v1.03
+    except Exception:                                      # noqa: BLE001  # v1.03
+        return None  # v1.03
+
+
+def _settings_value(Name):  # v1.03
+    """(True, Wert) wenn der Name in den Programm Einstellungen steht (leer = ''), sonst (False, None)"""  # v1.03
+    if Name not in SETTINGS_VARS:  # v1.03
+        return False, None  # v1.03
+    ctrl = _settings_controller()  # v1.03
+    if ctrl is None:  # v1.03
+        return False, None  # v1.03
+    try:  # v1.03
+        value = ctrl.getConfigData(Name)  # v1.03
+    except Exception:                                      # noqa: BLE001  # v1.03
+        return False, None  # v1.03
+    return True, ("" if value is None else value)  # v1.03
+
+
+SETTINGS_DEFAULTS = {"MinTime_House": "", "MaxTime_House": "", "DCC_Offset": "", "SimLedsX": 8, "SimLedsY": 8, "SimLedSize": 24, "SimPosX": 800, "SimPosY": 200, "SimOffset": 0}  # v1.03: Vorgaben wie auf der Seite Config
+
+
+def Migrate_Config_to_Settings(ctrl, workbook):  # v1.03
+    """Einmalig beim ersten Start: Werte, die jemand auf der Seite Config geaendert hat, in die Programm Einstellungen uebernehmen (Flag ConfigMigrated)."""  # v1.03
+    if str(ctrl.ConfigData.data.get("ConfigMigrated", "")) == "1":  # v1.03
+        return []  # v1.03
+    taken = []  # v1.03
+    for name in SETTINGS_VARS:  # v1.03
+        try:  # v1.03
+            raw = workbook.Sheets(M02.ConfigSheet).Range(name)  # v1.03
+        except Exception:                                  # noqa: BLE001  # v1.03
+            continue  # v1.03
+        text = "" if raw is None else str(raw).strip()  # v1.03
+        default = SETTINGS_DEFAULTS.get(name, "")  # v1.03
+        if text == "" or text == str(default):  # v1.03
+            continue  # v1.03
+        number = P01.val(text)  # v1.03
+        ctrl.setConfigData(name, int(number) if float(number) == int(number) else number)  # v1.03
+        taken.append(name)  # v1.03
+    ctrl.setConfigData("ConfigMigrated", "1")  # v1.03
+    ctrl.SaveConfigData()  # v1.03
+    return taken  # v1.03
+
+
 def Get_Bool_Config_Var(Name):
     _fn_return_value = False
     #-------------------------------------------------------------
@@ -243,7 +294,13 @@ def Get_Num_Config_Var_Range(Name, Min, Max, Default=0):
     # VB2PY (UntranslatedCode) On Error GoTo NotFound
     try:
         
-        value = PG.ThisWorkbook.Sheets(M02.ConfigSheet).Range(Name)
+        # value = PG.ThisWorkbook.Sheets(M02.ConfigSheet).Range(Name)  # v1.03 (entfallen)
+        found, value = _settings_value(Name)  # v1.03: Wert aus den Programm Einstellungen (leer = Vorgabe)
+        if found:  # v1.03
+            if str(value).strip() == "":  # v1.03
+                return max(Min, min(Max, Default))  # v1.03
+        else:  # v1.03
+            value = PG.ThisWorkbook.Sheets(M02.ConfigSheet).Range(Name)  # v1.03
         if value != None:
             fn_return_value = P01.val(value)
         else:
@@ -293,6 +350,9 @@ def Get_String_Config_Var(Name):
     Debug.Print("Get_String_Config_Var: %s",Name)
     #--------------------------------------------------------------
     # VB2PY (UntranslatedCode) On Error GoTo NotFound
+    found, value = _settings_value(Name)  # v1.03
+    if found:  # v1.03
+        return str(value)  # v1.03
     _ret = PG.ThisWorkbook.Sheets(M02.ConfigSheet).Range(Name)
     if _ret!=None:
         return str(_ret)
@@ -308,6 +368,15 @@ def Get_String_Config_Var(Name):
 def Set_String_Config_Var(Name, val):
     #--------------------------------------------------------------
     # VB2PY (UntranslatedCode) On Error GoTo NotFound
+    if Name in SETTINGS_VARS and _settings_controller() is not None:  # v1.03: in die Programm Einstellungen schreiben (zum Beispiel die Fensterposition des Simulators)
+        ctrl = _settings_controller()  # v1.03
+        try:  # v1.03
+            number = P01.val(val) if str(val).strip() != "" else ""  # v1.03
+            ctrl.setConfigData(Name, int(number) if number != "" and float(number) == int(number) else number)  # v1.03
+            ctrl.SaveConfigData()  # v1.03
+        except Exception:                                  # noqa: BLE001  # v1.03
+            Debug.Print("Set_String_Config_Var: Einstellung %s nicht gesichert" % Name)  # v1.03
+        return  # v1.03
     try:
         PG.ThisWorkbook.Sheets(M02.ConfigSheet).Range(Name).Value=val
     #confsheet = PG.ThisWorkbook.Sheets(M02.ConfigSheet)

@@ -1,0 +1,96 @@
+====== Fehler melden und Wünsche eintragen ======
+//Seitenstand 1.00 (2026-11-17), gilt für webMobaLedLib 3.87//
+
+Etwas funktioniert nicht, oder dir fehlt eine Funktion? Dann schreib es bitte auf! Nur so erfährt der Entwickler davon, und andere Anwender profitieren mit. Der beste Ort dafür ist der **Issue Tracker** (die Fehlerliste) auf GitHub. Eine Meldung dort heißt **Issue**.
+
+Du brauchst dafür **keine Programmierkenntnisse**. Du brauchst nur ein kostenloses **GitHub-Konto**. Wenn du keins haben möchtest, schreibst du ins [[https://forum.mobaledlib.de/viewforum.php?f=14|Forum der MobaLedLib]]. Die Hinweise unten gelten dort genauso.
+
+===== Zuerst: Ist es wirklich ein Fehler? =====
+
+  - Schau auf der Seite [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]] nach, ob dein Problem dort schon beschrieben ist.
+  - Prüfe, ob du die **neueste Version** hast (Menü **Hilfe → Update webMobaLedLib ...**). Viele Fehler sind in einer neueren Version schon behoben.
+  - Suche im [[https://github.com/haroldlinke/WebMLL/issues|Issue Tracker]], ob jemand dasselbe schon gemeldet hat. Wenn ja, schreib dort einen **Kommentar** mit deinen Angaben (siehe unten), statt einen neuen Issue anzulegen. Du kannst auch auf **Subscribe** klicken, dann bekommst du eine E-Mail, wenn sich etwas tut.
+
+===== So legst du einen Issue an =====
+
+  - Melde dich bei [[https://github.com|github.com]] an (oder lege mit **Sign up** ein kostenloses Konto an).
+  - Öffne [[https://github.com/haroldlinke/WebMLL/issues|github.com/haroldlinke/WebMLL/issues]].
+  - Klicke auf den grünen Knopf **New issue**.
+  - Schreibe oben einen **kurzen Titel**, der das Problem in einem Satz sagt. Gut: „Beim Setup übertragen mit Nano alt kommt ‚Keine Antwort‘“. Schlecht: „Geht nicht“.
+  - Beschreibe das Problem im großen Textfeld. Was hineingehört, steht im nächsten Abschnitt.
+  - Ziehe **Dateien und Bilder** mit der Maus in das Textfeld, um sie anzuhängen (siehe unten).
+  - Klicke auf **Submit new issue**.
+
+Danach kannst du den Issue jederzeit ergänzen: Unter dem Issue ist ein Feld **Comment**. Der Entwickler oder andere Anwender fragen dort vielleicht nach. Du bekommst jede Antwort per E-Mail.
+
+===== Was in die Meldung gehört =====
+
+Je genauer die Meldung, desto schneller kann jemand helfen. Kopiere diese Vorlage in das Textfeld und fülle sie aus:
+
+<code>
+**Was wollte ich tun?**
+(zum Beispiel: Ein Programm auf die Lichtmaschine übertragen)
+
+**Was ist passiert?**
+(genaue Meldung, wenn es eine gab; bitte abschreiben oder Bildschirmfoto)
+
+**Was hätte passieren sollen?**
+
+**So kann man es nachstellen:**
+1. ...
+2. ...
+3. ...
+
+**Wie oft?**  immer / manchmal / einmal
+
+**Meine Umgebung:**
+- webMobaLedLib-Version: (Menü Hilfe → Über ...)
+- Betriebssystem: Windows 11 / macOS 14 / Linux ... / Raspberry Pi 5
+- Browser: Chrome / Edge / Firefox / Safari (Version)
+- Lichtmaschine: Classic (Nano) / Pro (ESP32) / Pico Zero / Molli
+- Entwicklungsumgebung: PlatformIO / ARDUINO IDE
+</code>
+
+Wichtig sind vor allem die **Version** und die **Schritte zum Nachstellen**. Ohne sie lässt sich ein Fehler oft nicht finden.
+
+===== Anhänge: Protokoll, Bild, Tabelle =====
+
+  * **Protokoll (am wichtigsten):** Öffne **Hilfe → Logfile anzeigen** und klicke auf **Ganze Datei herunterladen**. Das ist die Datei **webmobaledlib.log**. Hänge sie an den Issue an (ziehen und loslassen). GitHub nimmt **.log**-Dateien an. Gibt es eine Datei **webmobaledlib.log.1**, hänge sie auch an. Wo diese Dateien liegen, steht auf der Seite [[anleitungen:webmobaledlib:aktualisieren#wo_liegt_der_datenordner|Aktualisieren]].
+  * **Bildschirmfoto:** Bei einer Fehlermeldung oder einer falschen Anzeige hilft ein Bild sehr. Du kannst es mit **Strg+V** direkt in das Textfeld einfügen.
+  * **Deine Tabelle:** Betrifft der Fehler eine bestimmte Tabelle, hänge sie an. GitHub kennt die Endung **.MLL_pgf** nicht. Packe die Datei vorher in ein **ZIP** (Rechtsklick → „Senden an“ → „ZIP-komprimierter Ordner“ unter Windows, „Komprimieren“ auf dem Mac).
+  * **Lange Meldungen im Text:** Setze sie zwischen zwei Zeilen mit je **drei Backticks** (das Zeichen ''`'', auf der deutschen Tastatur Umschalt+Akzenttaste, danach Leertaste), damit sie lesbar bleiben:
+
+<code>
+```
+Hier steht der kopierte Text aus dem Protokoll
+```
+</code>
+
+===== Bitte nicht veröffentlichen =====
+
+Ein Issue ist **öffentlich**: Jeder im Internet kann ihn lesen. Bevor du etwas anhängst, prüfe deshalb:
+
+  * **Passwörter:** WLAN-Name und -Passwort, OTA-Passwort und Anmeldedaten für den Raspberry Pi gehören **nicht** in eine Meldung. Suche im Protokoll nach diesen Wörtern und ersetze sie durch „xxx“, bevor du es hochlädst.
+  * **Persönliches:** Auch Benutzername und Ordnernamen (zum Beispiel ''C:\Users\Dein Name'') stehen manchmal im Protokoll. Ersetze sie, wenn du sie nicht veröffentlichen willst.
+  * **Anlagendaten:** Deine Tabelle zeigt, welche Adressen und Effekte du benutzt. Das ist meist harmlos; denke aber daran, bevor du sie anhängst.
+
+===== Wünsche und Ideen =====
+
+Auch Vorschläge sind willkommen, zum Beispiel „Mir fehlt der Multiplexer im Timeline Editor“. Lege dafür ebenfalls einen Issue an. Beschreibe, **was du erreichen willst** (nicht nur, wie es gehen soll), und wenn möglich, wie du es heute in der Excel-Version machst. Ein Beispiel ist der Issue [[https://github.com/haroldlinke/WebMLL/issues/6|MobaLedLib Extensions (MLX)]].
+
+Mehrere Wünsche gehören in **mehrere Issues**, nicht in einen. So kann jeder Wunsch einzeln besprochen und erledigt werden.
+
+===== Was danach passiert =====
+
+  * Der Entwickler liest die Meldung und fragt bei Bedarf nach. Bitte antworte, wenn Fragen kommen. Ohne Antwort kann ein Fehler oft nicht gelöst werden.
+  * Ein Fehler wird nachgestellt und behoben. Die Korrektur steht dann in einer **neuen Version**. Im Issue steht, in welcher. Du erhältst sie über **Hilfe → Update webMobaLedLib ...**. Eine Vorabversion zum Testen gibt es unter **Hilfe → Update Testversion ...**.
+  * Wünsche werden gesammelt und nach Aufwand und Nutzen eingeplant. Nicht jeder Wunsch wird umgesetzt, und manche dauern. Der Entwickler schreibt dir den Stand in den Issue.
+  * Ist alles erledigt, wird der Issue **geschlossen** (**Closed**). Funktioniert es bei dir weiterhin nicht, schreib einen Kommentar. Der Issue kann dann wieder geöffnet werden.
+
+Du möchtest nicht nur melden, sondern selbst mithelfen? Dann lies die Seite [[anleitungen:webmobaledlib:mitentwickeln|Mitentwickeln]].
+
+===== Siehe auch =====
+
+  * [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]]: Häufige Probleme und ihre Lösung.
+  * [[anleitungen:webmobaledlib:mitentwickeln|Mitentwickeln]]: Selbst am Programm mitarbeiten.
+  * [[anleitungen:webmobaledlib:aktualisieren|Das Programm aktualisieren]]

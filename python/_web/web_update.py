@@ -1,9 +1,9 @@
-# Datei-Version: 1.14 (2026-11-17) - web_update.py
+# Datei-Version: 1.15 (2026-11-17) - web_update.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_update.py
 # Path:           _web/web_update.py
-# Version:        1.14
-# Last Update:    2026-11-17
+# Version:        1.15
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #   1.12  2026-11-09  Testversion: Die Liste der Releases von GitHub (release_entries, available_releases, release_choices) fuer die Auswahl der Version im Dialog; newest_release liest die Antwort ueber _fetch_releases_json
 #   1.13  2026-11-12  Update Testversion: Releases, deren Tag oder Name mit 'test' beginnt (zum Beispiel test1: Tests des Entwicklers), stehen am Ende der Liste (hoechstens 5), werden nie vorgewaehlt und tragen den Zusatz 'Entwicklertest'; pick_release nimmt sie nur, wenn es nichts anderes gibt
 #   1.14  2026-11-17  version_key: Bei Tags wie 'V3.5.0L3-3.85' (Version der MobaLedLib vor der webMobaLedLib-Version) wird die webMobaLedLib-Version genommen; vorher stand bei neueren Releases faelschlich 'aeltere Version'
+#   1.15  2026-11-18  Ein ZIP darf neben dem Ordner python die Datei START_HIER.txt enthalten (wird ignoriert); vorher: 'Das ZIP enthaelt nicht den Ordner python mit webmobaledlib.py'
 # ----------------------------------------------------------------------------------------------
 """Update der Web-Oberflaeche aus dem neuesten Release auf GitHub (Menue Hilfe -> Update webmobaledlib).
 
@@ -61,6 +62,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_URL = "https://github.com/haroldlinke/WebMLL/releases/latest/download/webmobaledlib.zip"
 API_URL = "https://api.github.com/repos/haroldlinke/WebMLL/releases"        # Liste aller Releases, auch der Pre-Releases (releases/latest liefert nur das letzte normale)  # v1.09
 ASSET_NAME = "webmobaledlib.zip"  # v1.09
+ROOT_FILES = ("START_HIER.txt",)  # v1.15: Dateien im obersten Ordner des ZIP, die das Update ignoriert
 MAX_ZIP_BYTES = 80 * 1024 * 1024               # Grenzen gegen kaputte oder boesartige ZIP-Dateien
 MAX_UNPACKED_BYTES = 300 * 1024 * 1024
 MAX_FILE_BYTES = 60 * 1024 * 1024
@@ -403,7 +405,10 @@ def open_release(zip_path: str) -> Release:
                 # raise UpdateError(f"Eine Datei im ZIP ist zu gross: {info.filename}")  # v1.08 (entfallen)
                 raise UpdateError(tr('Eine Datei im ZIP ist zu gross: {datei}', datei=info.filename))  # v1.08
             names[_clean_name(info.filename)] = info.filename
-        prefix = "python/" if all(n.startswith("python/") for n in names) else ""
+        for root_file in ROOT_FILES:  # v1.15: START_HIER.txt liegt im obersten Ordner des ZIP (neben python) und gehoert nicht zur Installation
+            names.pop(root_file, None)  # v1.15
+        # prefix = "python/" if all(n.startswith("python/") for n in names) else ""  # v1.15 (entfallen)
+        prefix = "python/" if all(n.startswith("python/") for n in names) else ""  # v1.15
         for clean, original in names.items():
             relpath = clean[len(prefix):]
             if not relpath:

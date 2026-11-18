@@ -1,15 +1,17 @@
-# Datei-Version: 1.08 (2026-11-14) - web_params.py
+# Datei-Version: 1.10 (2026-11-17) - web_params.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_params.py
 # Path:           _web/web_params.py
-# Version:        1.08
-# Last Update:    2026-11-14
+# Version:        1.10
+# Last Update:    2026-11-17
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.06  2026-11-05  Einstellungsseite Programm Einstellungen in Gruppen mit Ueberschrift (SETTINGS_GROUPS, Plaetze @layout, @table, @network fuer die Zusatzkarten); Beschreibungstext wird uebersetzt (description_text) (fruehere Versionen ohne Eintrag)
 #   1.07  2026-11-05  Anfaenger Modus: der Haken steht als erste Einstellung in den Allgemeinen Einstellungen
 #   1.08  2026-11-14  Option ColoredRowsBold in der Gruppe Programm Generator
+#   1.09  2026-11-17  build_settings_page: save_buttons (mehrere Speichern-Knoepfe mit eigener Nacharbeit, zum Beispiel aktuelle Seite / alle Seiten faerben)
+#   1.10  2026-11-17  Programm Generator: House-Zeiten und DCC-Offset; neue Gruppe Simulatoreinstellungen (nur im Experten Modus, EXPERT_GROUPS, apply_beginner)
 # ----------------------------------------------------------------------------------------------
 """Web-Version von create_macroparam_frame/create_macroparam_content (pyMobaLedLib.py) fuer die Einstellungsseiten.
 
@@ -51,11 +53,15 @@ SETTINGS_GROUPS = {  # v1.06
         # ("Allgemeine Einstellungen", ["Language", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.06 (entfallen)
         ("Allgemeine Einstellungen", ["BeginnerMode", "Language", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.07
         # ("Programm Generator", ["GraphDefaultView", "ShowHiddentables", "@table"]),  # v1.06 (entfallen v1.08)
-        ("Programm Generator", ["GraphDefaultView", "ColoredRowsBold", "ShowHiddentables", "@table"]),  # v1.08
+        # ("Programm Generator", ["GraphDefaultView", "ColoredRowsBold", "ShowHiddentables", "@table"]),  # v1.08  # v1.10 (entfallen)
+        ("Programm Generator", ["GraphDefaultView", "ColoredRowsBold", "ShowHiddentables", "MinTime_House", "MaxTime_House", "DCC_Offset", "@table"]),  # v1.10
         ("Farb Test Einstellungen", ["Farbauswahl", "LEDColourCorrection"]),  # v1.06
+        ("Simulatoreinstellungen", ["ShowSimulator", "SimLedsX", "SimLedsY", "SimLedSize", "SimPosX", "SimPosY", "SimOffset"]),  # v1.10
         ("Zugriff aus dem Netz", ["@network"]),  # v1.06
         ("Spezialeinstellungen", None)],  # v1.06
 }  # v1.06
+
+EXPERT_GROUPS = ("Simulatoreinstellungen",)             # Gruppen, die im Anfaenger Modus fehlen  # v1.10
 
 LABEL_W = 260                                   # Breite der Beschriftungsspalte in Pixeln (CONFIGPage)
 
@@ -80,6 +86,17 @@ class ParamPanel:
         self.items: list[ParamItem] = []
         self.macrodata = ctrl.MacroDef.data.get(macro, {}) if getattr(ctrl, "MacroDef", None) else {}
         self.old_values: dict = {}
+        self.expert_blocks: list = []             # Gruppen, die nur im Experten Modus sichtbar sind  # v1.10
+
+    def apply_beginner(self):  # v1.10
+        """Gruppen in EXPERT_GROUPS im Anfaenger Modus ausblenden, sonst einblenden"""  # v1.10
+        try:  # v1.10
+            from _web import web_tabs  # v1.10
+            beginner = web_tabs.is_beginner_mode(self.ctrl)  # v1.10
+        except Exception:                                  # noqa: BLE001  # v1.10
+            beginner = False  # v1.10
+        for block in self.expert_blocks:  # v1.10
+            block.set_visibility(not beginner)  # v1.10
 
     def pdef(self, key) -> dict:
         return self.ctrl.MacroParamDef.data.get(key, {}) if getattr(self.ctrl, "MacroParamDef", None) else {}
@@ -109,13 +126,19 @@ class ParamPanel:
             parts = [m for m in wanted if (m in slots if m.startswith("@") else m in keys)]  # v1.06
             if not parts:  # v1.06
                 continue  # v1.06
-            ui.label(heading).classes("text-h6").style("width: 100%; margin-top: 14px; padding-bottom: 2px; color: #1565c0; border-bottom: 2px solid #1976d2")  # v1.06
-            with ui.column().classes("gap-1 w-full"):  # v1.06
-                for m in parts:  # v1.06
-                    if m.startswith("@"):  # v1.06
-                        slots[m]()  # v1.06
-                    else:  # v1.06
-                        self._build_param(m, (), hidecondition)  # v1.06
+            # ui.label(heading).classes("text-h6").style("width: 100%; margin-top: 14px; padding-bottom: 2px; color: #1565c0; border-bottom: 2px solid #1976d2")  # v1.06  # v1.10 (entfallen)
+            block = ui.column().classes("gap-0 w-full")  # v1.10: Umschlag, damit sich eine ganze Gruppe ausblenden laesst
+            if heading in EXPERT_GROUPS:  # v1.10
+                self.expert_blocks.append(block)  # v1.10
+            with block:  # v1.10
+                ui.label(heading).classes("text-h6").style("width: 100%; margin-top: 14px; padding-bottom: 2px; color: #1565c0; border-bottom: 2px solid #1976d2")  # v1.10
+                with ui.column().classes("gap-1 w-full"):  # v1.06
+                    for m in parts:  # v1.06
+                        if m.startswith("@"):  # v1.06
+                            slots[m]()  # v1.06
+                        else:  # v1.06
+                            self._build_param(m, (), hidecondition)  # v1.06
+        self.apply_beginner()  # v1.10
 
     @staticmethod
     def _hidden(d, ptype, hidecondition):
@@ -355,7 +378,8 @@ class ParamPanel:
 
 
 # --------------------------------------------------------------------------- Seiten
-def build_settings_page(ctrl, macro: str, on_save=None, buttons=None, extra=None, after_save=None):
+# def build_settings_page(ctrl, macro: str, on_save=None, buttons=None, extra=None, after_save=None):  # v1.09 (entfallen)
+def build_settings_page(ctrl, macro: str, on_save=None, buttons=None, extra=None, after_save=None, save_buttons=None):  # v1.09
     """Baut eine komplette Einstellungsseite (Titel, Speichern-Knopf, Parameter) und gibt ein Objekt mit
     panel, save(), changed(), mark_saved() zurueck.
 
@@ -375,15 +399,18 @@ def build_settings_page(ctrl, macro: str, on_save=None, buttons=None, extra=None
             values.update(extra.collect())
         return values
 
-    def save():
+    def save(after=None):  # v1.09: after ersetzt after_save (Knopf mit eigener Nacharbeit)
         values = all_values()
         if on_save:
             on_save(values)
         ctrl.setConfigDataDict(values)
         ctrl.SaveConfigData()
         mark_saved()
-        if after_save:
-            after_save(values)
+        # if after_save:  # v1.09 (entfallen)
+            # after_save(values)  # v1.09 (entfallen)
+        follow_up = after or after_save  # v1.09
+        if follow_up:  # v1.09
+            follow_up(values)  # v1.09
         ui.notify("Einstellungen gespeichert.", type="positive")
         return values
 
@@ -397,7 +424,13 @@ def build_settings_page(ctrl, macro: str, on_save=None, buttons=None, extra=None
     with ui.column().classes("items-center w-full gap-2"):
         ui.label(title.replace("\n", " ")).classes("text-h5 q-pa-sm").style("border: 1px solid #999")
         with ui.card().classes("w-[1000px] max-w-full gap-2"):
-            ui.button(save_text, on_click=save).props("color=primary no-caps").style("align-self: flex-end")
+            # ui.button(save_text, on_click=save).props("color=primary no-caps").style("align-self: flex-end")  # v1.09 (entfallen)
+            if save_buttons:  # v1.09: mehrere Knoepfe (Text, Nacharbeit), nebeneinander rechts
+                with ui.row().classes("gap-2").style("align-self: flex-end"):  # v1.09
+                    for btn_text, btn_after in save_buttons:  # v1.09
+                        ui.button(btn_text, on_click=lambda a=btn_after: save(a)).props("color=primary no-caps")  # v1.09
+            else:  # v1.09
+                ui.button(save_text, on_click=save).props("color=primary no-caps").style("align-self: flex-end")  # v1.09
             # panel.build()  # v1.06 (entfallen)
             # if extra is not None:  # v1.06 (entfallen)
                 # extra.build()  # v1.06 (entfallen)

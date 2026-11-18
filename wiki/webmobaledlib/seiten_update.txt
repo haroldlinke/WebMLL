@@ -1,36 +1,39 @@
 ====== Seiten Update ======
-//Seitenstand 1.04 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.06 (2026-11-18), gilt für webMobaLedLib 3.93//
 
 **Arbeitsseite für den Wiki-Pflegenden, keine Anleitung für Anwender.** Sie listet alle Seiten und Bilder des Kapitels //webMobaLedLib// mit **Links**: Ein Klick auf einen **Seitennamen** öffnet die Seite, ein Klick auf einen **Bildnamen** öffnet das Bild. So lässt sich beim Aktualisieren Zeile für Zeile durchgehen. Diese Seite **nicht** in die Seitenleiste und nicht auf die Startseite aufnehmen.
 
-**Stand des Pakets:** webMobaLedLib 3.85. Die Spalte //Seit Paket 2.96// zeigt, ob die Seite gegenüber dem Gesamtpaket 2.96 **neu** oder **geändert** ist (**unverändert**: dort muss nichts getan werden, wenn du damals das Paket 2.96 eingespielt hast). Vergleiche sonst den **Seitenstand** mit dem Seitenstand der Wiki-Seite (unter der Überschrift).
+**Stand des Pakets:** webMobaLedLib 3.93. Die Spalte //Seit Paket 2.96// zeigt, ob die Seite gegenüber dem Gesamtpaket 2.96 **neu** oder **geändert** ist (**unverändert**: dort muss nichts getan werden, wenn du damals das Paket 2.96 eingespielt hast). Vergleiche sonst den **Seitenstand** mit dem Seitenstand der Wiki-Seite (unter der Überschrift).
 
-===== Seiten (35, davon 34 neu oder geändert) =====
+===== Seiten (38, davon 37 neu oder geändert) =====
 
 ^ Seite ^ Titel ^ Seitenstand ^ Seit Paket 2.96 ^ Bearbeiten ^
 | [[anleitungen:webmobaledlib:aktualisieren|aktualisieren]] | webMobaLedLib – Das Programm aktualisieren | 1.01 | **neu** | [[anleitungen:webmobaledlib:aktualisieren?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:arduino_ide|arduino_ide]] | webMobaLedLib – Zusätzlich: Arduino IDE | 1.02 | **geändert** | [[anleitungen:webmobaledlib:arduino_ide?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:begriffe|begriffe]] | webMobaLedLib – Begriffe | 1.06 | **geändert** | [[anleitungen:webmobaledlib:begriffe?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:erstes_programm|erstes_programm]] | webMobaLedLib – Dein erstes Programm | 1.11 | **geändert** | [[anleitungen:webmobaledlib:erstes_programm?do=edit|bearbeiten]] |
+| [[anleitungen:webmobaledlib:faq|faq]] | webMobaLedLib – Häufige Fragen | 1.00 | **neu** | [[anleitungen:webmobaledlib:faq?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:fehlersuche|fehlersuche]] | webMobaLedLib – Fehlersuche | 1.10 | **neu** | [[anleitungen:webmobaledlib:fehlersuche?do=edit|bearbeiten]] |
+| [[anleitungen:webmobaledlib:fehler_melden|fehler_melden]] | Fehler melden und Wünsche eintragen | 1.00 | **neu** | [[anleitungen:webmobaledlib:fehler_melden?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:installation|installation]] | webMobaLedLib – Installation | 1.02 | **geändert** | [[anleitungen:webmobaledlib:installation?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:led_farbanimation|led_farbanimation]] | webMobaLedLib – LED Farb-Animation | 1.02 | **geändert** | [[anleitungen:webmobaledlib:led_farbanimation?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:linux|linux]] | webMobaLedLib – Installation unter Linux | 1.03 | **geändert** | [[anleitungen:webmobaledlib:linux?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:macos|macos]] | webMobaLedLib – Installation auf dem Mac | 1.02 | **geändert** | [[anleitungen:webmobaledlib:macos?do=edit|bearbeiten]] |
+| [[anleitungen:webmobaledlib:mitentwickeln|mitentwickeln]] | Mitentwickeln | 1.00 | **neu** | [[anleitungen:webmobaledlib:mitentwickeln?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:modus|modus]] | webMobaLedLib – Anfänger Modus und Experten Modus | 1.02 | **geändert** | [[anleitungen:webmobaledlib:modus?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:ota|ota]] | webMobaLedLib – ESP32 per WLAN und OTA | 1.03 | **neu** | [[anleitungen:webmobaledlib:ota?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:patterngenerator|patterngenerator]] | webMobaLedLib – Der Timeline Editor | 1.01 | **neu** | [[anleitungen:webmobaledlib:patterngenerator?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:pg_arduino|pg_arduino]] | webMobaLedLib – Verbinden und Übertragen | 1.13 | **geändert** | [[anleitungen:webmobaledlib:pg_arduino?do=edit|bearbeiten]] |
-| [[anleitungen:webmobaledlib:pg_grafisch|pg_grafisch]] | webMobaLedLib – Die grafische Ansicht | 1.03 | **geändert** | [[anleitungen:webmobaledlib:pg_grafisch?do=edit|bearbeiten]] |
+| [[anleitungen:webmobaledlib:pg_grafisch|pg_grafisch]] | webMobaLedLib – Die grafische Ansicht | 1.04 | **geändert** | [[anleitungen:webmobaledlib:pg_grafisch?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:pg_speichern|pg_speichern]] | webMobaLedLib – Speichern und Laden | 1.01 | unverändert | [[anleitungen:webmobaledlib:pg_speichern?do=edit|bearbeiten]] |
-| [[anleitungen:webmobaledlib:pg_tabelle|pg_tabelle]] | webMobaLedLib – Die Tabelle bedienen | 1.05 | **geändert** | [[anleitungen:webmobaledlib:pg_tabelle?do=edit|bearbeiten]] |
+| [[anleitungen:webmobaledlib:pg_tabelle|pg_tabelle]] | webMobaLedLib – Die Tabelle bedienen | 1.06 | **geändert** | [[anleitungen:webmobaledlib:pg_tabelle?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:pg_werkzeugleiste|pg_werkzeugleiste]] | webMobaLedLib – Die Werkzeugleiste | 1.10 | **geändert** | [[anleitungen:webmobaledlib:pg_werkzeugleiste?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:programmgenerator|programmgenerator]] | webMobaLedLib – Der Programmgenerator | 1.08 | **geändert** | [[anleitungen:webmobaledlib:programmgenerator?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:raspberrypi|raspberrypi]] | webMobaLedLib – Installation auf dem Raspberry Pi | 1.03 | **geändert** | [[anleitungen:webmobaledlib:raspberrypi?do=edit|bearbeiten]] |
-| [[anleitungen:webmobaledlib:seiten_update|seiten_update]] | Seiten Update | 1.04 | **neu** | [[anleitungen:webmobaledlib:seiten_update?do=edit|bearbeiten]] |
+| [[anleitungen:webmobaledlib:seiten_update|seiten_update]] | Seiten Update | 1.06 | **neu** | [[anleitungen:webmobaledlib:seiten_update?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:servo_animation|servo_animation]] | webMobaLedLib – Servo Animation | 1.05 | **geändert** | [[anleitungen:webmobaledlib:servo_animation?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:simulator|simulator]] | webMobaLedLib – LED Simulator | 1.01 | **neu** | [[anleitungen:webmobaledlib:simulator?do=edit|bearbeiten]] |
-| [[anleitungen:webmobaledlib:start|start]] | webMobaLedLib – Einführung | 1.06 | **geändert** | [[anleitungen:webmobaledlib:start?do=edit|bearbeiten]] |
+| [[anleitungen:webmobaledlib:einfuehrung|einfuehrung]] | webMobaLedLib – Einführung | 1.08 | **geändert** | [[anleitungen:webmobaledlib:einfuehrung?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:werkzeuge|werkzeuge]] | webMobaLedLib – Die Werkzeug-Reiter | 1.09 | **geändert** | [[anleitungen:webmobaledlib:werkzeuge?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:windows|windows]] | webMobaLedLib – Installation unter Windows | 1.02 | **geändert** | [[anleitungen:webmobaledlib:windows?do=edit|bearbeiten]] |
 | [[anleitungen:webmobaledlib:wz_arduino_einstellungen|wz_arduino_einstellungen]] | webMobaLedLib – ARDUINO Einstellungen | 1.05 | **geändert** | [[anleitungen:webmobaledlib:wz_arduino_einstellungen?do=edit|bearbeiten]] |
@@ -80,7 +83,7 @@ Die Bilder liegen im Namensraum ''bilder:anleitungen:webmobaledlib''. Der Link a
 | {{:bilder:anleitungen:webmobaledlib:pi_02_programm.png?linkonly|pi_02_programm.png}} | [[anleitungen:webmobaledlib:raspberrypi|raspberrypi]] | Die webMobaLedLib auf dem Raspberry Pi | – |
 | {{:bilder:anleitungen:webmobaledlib:servo_01_dialog.png?linkonly|servo_01_dialog.png}} | [[anleitungen:webmobaledlib:servo_animation|servo_animation]] | Der Dialog Servo Animation mit den Einstellungen links und der Kurve rechts | – |
 | {{:bilder:anleitungen:webmobaledlib:servo_02_kurve_individuell.png?linkonly|servo_02_kurve_individuell.png}} | [[anleitungen:webmobaledlib:servo_animation|servo_animation]] | Eine individuelle Kurve mit ziehbaren Punkten | – |
-| {{:bilder:anleitungen:webmobaledlib:start_01_oberflaeche.png?linkonly|start_01_oberflaeche.png}} | [[anleitungen:webmobaledlib:start|start]] | Die webMobaLedLib im Browser | – |
+| {{:bilder:anleitungen:webmobaledlib:start_01_oberflaeche.png?linkonly|start_01_oberflaeche.png}} | [[anleitungen:webmobaledlib:einfuehrung|einfuehrung]] | Die webMobaLedLib im Browser | – |
 | {{:bilder:anleitungen:webmobaledlib:win_01_download.png?linkonly|win_01_download.png}} | [[anleitungen:webmobaledlib:windows|windows]] | Die heruntergeladene Datei im Ordner Downloads | – |
 | {{:bilder:anleitungen:webmobaledlib:win_02_extrahieren.png?linkonly|win_02_extrahieren.png}} | [[anleitungen:webmobaledlib:windows|windows]] | Das Fenster Alle extrahieren mit dem richtigen Zielpfad | – |
 | {{:bilder:anleitungen:webmobaledlib:win_03_installation.png?linkonly|win_03_installation.png}} | [[anleitungen:webmobaledlib:windows|windows]] | Das Installationsfenster während der Installation | – |

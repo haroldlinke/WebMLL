@@ -1,0 +1,56 @@
+====== webMobaLedLib – Einführung ======
+//Seitenstand 1.08 (2026-11-18), gilt für webMobaLedLib 3.93//
+
+===== Was ist die webMobaLedLib? =====
+
+Mit der MobaLedLib bringst du Leben auf deine Modellbahn: ein belebtes Haus, Straßenlaternen, Signale, Blaulicht, bewegte Servos und Sound. Die Steuerung übernimmt die **Lichtmaschine**, ein kleiner Computer auf einer Platine. Sie braucht dafür ein Programm.
+
+Die **webMobaLedLib** ist das Programm für deinen Computer, mit dem du dieses Programm **ohne Programmierkenntnisse** erstellst. Du klickst aus einer Liste aus, was passieren soll. Die webMobaLedLib macht daraus das Programm für die Lichtmaschine und schickt es per USB-Kabel zur Lichtmaschine.
+
+{{:bilder:anleitungen:webmobaledlib:start_01_oberflaeche.png?600|Die webMobaLedLib im Browser}}
+
+===== So funktioniert es: drei Schritte =====
+
+  - **Auswählen:** In einer Tabelle wählst du die Effekte aus, zum Beispiel „Belebtes Haus“ oder ein Signal.
+  - **Übertragen:** Du klickst auf **Setup übertragen**. Das Programm wird erzeugt und auf die Lichtmaschine geladen.
+  - **Fertig:** Die Lichtmaschine steuert deine Beleuchtung von jetzt an allein. Der Computer wird dafür nicht mehr gebraucht.
+
+===== Was bedeutet „web“? =====
+
+Du bedienst das Programm in einem **Internet-Browser** (Chrome, Edge, Firefox oder Safari). Es ist aber **keine Internetseite**: Das Programm läuft auf deinem eigenen Computer, und deine Daten bleiben dort. Internet brauchst du nur zum Installieren, für Updates und beim ersten Übertragen (dann lädt das Programm noch einige Hilfsdateien nach).
+
+Die webMobaLedLib läuft auf **Windows, macOS, Linux und dem Raspberry Pi**.
+
+===== Wie hängt das mit den anderen Programmen zusammen? =====
+
+Früher gab es den //ProgrammGenerator// als Excel-Datei (nur für Windows) und später den [[anleitungen:spezial:pyprogramgenerator|pyProgramGenerator]]. Die webMobaLedLib ersetzt beide. Sie sieht ähnlich aus, braucht aber **kein Excel** und läuft auf allen genannten Systemen. Was in den Anleitungen zum [[anleitungen:programmgenerator|Programmgenerator]] steht, gilt deshalb weitgehend auch hier.
+
+===== Was brauchst du? =====
+
+  * **Einen Computer** mit Windows 10 oder 11, macOS (ab 10.13), Linux oder einen Raspberry Pi 4 oder 5.
+  * **Internet** für die Installation.
+  * **Eine Lichtmaschine.** Es gibt vier: die **Lichtmaschine Classic** (mit ARDUINO Nano), die **Lichtmaschine Pro** (mit ESP32), die **Lichtmaschine Pico Zero** (mit Raspberry Pico) und die **Lichtmaschine Molli** (mit Raspberry Pico). Dazu ein **USB-Kabel**, das Daten übertragen kann. Reine Ladekabel funktionieren nicht.
+  * **LEDs**, die an der Platine angeschlossen sind. Wie das geht, steht unter [[anleitungen:quickstart|Schnellstart & Installation]] und im [[anleitungen:ueberblick_platinen|Platinen-Überblick]].
+
+Du kannst das Programm aber auch **ohne Lichtmaschine** ausprobieren und die Tabelle ausfüllen.
+
+Vorkenntnisse brauchst du keine. Auf den folgenden Seiten steht jeder Schritt einzeln, und unbekannte Wörter erklärt die Seite [[anleitungen:webmobaledlib:begriffe|Begriffe]].
+
+===== Wie geht es weiter? =====
+
+  - [[anleitungen:webmobaledlib:installation|Installation]]: Such dir die Seite für dein System aus.
+  - [[anleitungen:webmobaledlib:erstes_programm|Dein erstes Programm]]: Eine LED zum Leuchten bringen.
+  - [[anleitungen:webmobaledlib:programmgenerator|Der Programmgenerator]]: So bedienst du die Tabelle.
+  - [[anleitungen:webmobaledlib:modus|Anfänger Modus und Experten Modus]]: Warum fehlen manche Reiter und Makros?
+  - [[anleitungen:webmobaledlib:patterngenerator|Der Timeline Editor]]: Eigene Lichtmuster entwerfen und mit **Test Pattern** ansehen.
+  - [[anleitungen:webmobaledlib:simulator|LED Simulator]]: Die LEDs ansehen, ohne Lichtmaschine.
+  - [[anleitungen:webmobaledlib:aktualisieren|Das Programm aktualisieren]]: Neue Version einspielen.
+  - [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]]: Wenn etwas nicht klappt.
+  - [[anleitungen:webmobaledlib:faq|Häufige Fragen]]: Zellen nach unten kopieren, Spalte Verteiler, Daten aus dem alten Excel-Programm übernehmen.
+  - [[anleitungen:webmobaledlib:fehler_melden|Fehler melden und Wünsche eintragen]]: So schreibst du einen Fehler oder eine Idee in den Issue Tracker auf GitHub.
+  - [[anleitungen:webmobaledlib:mitentwickeln|Mitentwickeln]]: Selbst helfen, mit Pull Request, KI-Prompt und Hinweisen, wie deine Änderung ins Programm kommt.
+  - [[anleitungen:webmobaledlib:begriffe|Begriffe]]: Was bedeutet Lichtmaschine, Makro, Upload?
+
+===== Was gibt es noch nicht? =====
+
+Die webMobaLedLib wird weiterentwickelt. Einige Funktionen der Excel-Version fehlen noch, zum Beispiel der Multiplexer im Timeline Editor und das Senden eines Musters an ein ATtiny-Modul. Fehler und Wünsche trägst du bitte in den [[https://github.com/haroldlinke/WebMLL/issues|Issue Tracker auf GitHub]] ein (so geht es: [[anleitungen:webmobaledlib:fehler_melden|Fehler melden]]) oder schreibst sie ins [[https://forum.mobaledlib.de/viewforum.php?f=14|Forum der MobaLedLib]]. Wenn du selbst mitentwickeln möchtest, hilft dir die Seite [[anleitungen:webmobaledlib:mitentwickeln|Mitentwickeln]]. Hilfreich ist dabei die Protokolldatei **webmobaledlib.log** (siehe [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]]).

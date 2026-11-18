@@ -1,0 +1,39 @@
+====== webMobaLedLib – Häufige Fragen ======
+//Seitenstand 1.00 (2026-11-18), gilt für webMobaLedLib 3.93//
+
+Diese Seite beantwortet Fragen, die Einsteiger oft stellen. Fehlt deine Frage, schau in die [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]] oder frag im [[https://forum.mobaledlib.de/viewforum.php?f=14|Forum der MobaLedLib]].
+
+===== Wie kopiere ich Zellen nach unten? =====
+
+Wie in Excel gibt es **Nach unten ausfüllen**:
+
+  * **Mehrere Zeilen markieren** (Klick auf die Zeilennummern, mit der Umschalttaste einen Bereich): Die **oberste** Zeile ist die Quelle. Klick mit der rechten Maustaste auf die Zelle und wähle **Nach unten ausfüllen**, oder drücke **Strg + D**. Der Inhalt der obersten Zelle (bei einem Klick auf die Zeilennummer: der ganzen Zeile) steht danach in allen markierten Zeilen.
+  * **Nur eine Zelle**: **Strg + D** kopiert den Inhalt der Zelle **darüber** in die angeklickte Zelle.
+  * **Reihe fortsetzen** (rechte Maustaste): Wie oben, aber die Zahl am Ende wird jeweils um 1 größer. Aus ''1'' wird 1, 2, 3 …, aus ''V1'' wird V1, V2, V3 …, aus ''V01'' wird V01, V02, V03 …. Text ohne Zahl am Ende wird einfach kopiert.
+
+Das Ziehen am Ausfüllkästchen (das kleine Quadrat unten rechts an der Zelle) gibt es **nicht**; die Tabellenkomponente bietet es nur in der kostenpflichtigen Fassung an.
+
+===== Was bedeutet „V“ in der Spalte Verteiler? =====
+
+Die Spalte **Verteiler-Nr.** sagt, an welchem **Verteiler** (Kabelverteiler auf der Anlage) die Zeile angeschlossen ist. Die Grafik zeichnet um alle Zeilen mit derselben Nummer ein Rechteck. Das **V** steht für „Verteiler“: ''V1'' ist der erste Verteiler, ''V2'' der zweite. Seit 3.93 genügt auch die **reine Zahl** (''1'' gilt wie ''V1''). In der Spalte können auch andere Texte stehen (zum Beispiel der Typ der Verteiler-Zeile); deshalb gilt ein Eintrag nur dann als Verteilernummer, wenn er ''V'' und eine Zahl oder nur eine Zahl enthält. Mehr dazu auf der Seite [[anleitungen:webmobaledlib:pg_grafisch|Die grafische Ansicht]].
+
+===== Die Lichtmaschine wird nicht als COM-Port erkannt =====
+
+//Antwort steht noch aus.// Der Fall (Lichtmaschine Pro mit ESP32, Port wird nicht angezeigt) ist im Forum gemeldet. Sobald es eine bestätigte Lösung gibt, steht sie hier. Bis dahin hilft die [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]], Abschnitt //Lichtmaschine verbinden und übertragen// (anderes USB-Kabel, das Daten überträgt; anderer USB-Anschluss; Treiber für den USB-Chip).
+
+===== Wie übernehme ich Daten aus dem alten Excel-Programm? =====
+
+Der Knopf **Importieren v. altem Prog.** im Fenster //Optionen und spezielle Funktionen// (Reiter Dateien) zeigt seit 3.93 diese Anleitung an; einen direkten Import aus der Excel-Datei gibt es **nicht**. So geht es:
+
+  - Öffne in der **Excel-Version** des ProgrammGenerators //Optionen und spezielle Funktionen//, Reiter //Dateien//, klicke auf **Speichern in Datei** und speichere die Daten als Datei (Endung ''.MLL_pgf'').
+  - Öffne in der webMobaLedLib das Menü **Datei** und lade diese Datei (siehe [[anleitungen:webmobaledlib:pg_speichern|Speichern und Laden]]).
+
+Anwender haben so das Hauptblatt mit 186 Zeilen in kurzer Zeit übernommen. Prüfe danach die Spalten Verteiler und Aktiv.
+
+===== Wo werden meine Daten gespeichert? =====
+
+Im **Datenordner** auf dem Rechner, auf dem die webMobaLedLib läuft (Windows: ''%APPDATA%\webMobaLedLib''). Dort liegen Einstellungen, die Sicherung der Tabellen und die Protokolle. Alle Pfade stehen auf der Seite [[anleitungen:webmobaledlib:aktualisieren|Das Programm aktualisieren]]. Eine Datei zum Aufbewahren oder Weitergeben erzeugst du mit dem Menü **Datei**.
+
+===== Der Knopf „Online Wiki“ führt zur falschen Seite =====
+
+Bis 3.92 öffnete der Knopf die Beschreibung der Excel-Version. Seit 3.93 öffnet er die Seite //Einführung// dieser Anleitung.

@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 3.93 (2026-11-172026-11-17, gilt für webMobaLedLib 3.86*
+*Datei-Version: 3.93 (2026-11-18), gilt für webMobaLedLib 3.93*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -392,6 +392,18 @@ Das Makro **LEDColorAnim** (Gruppe PatternConfig, Dialog **LED Farb-Animation**)
 
 **Abweichungen vom Excel-/Tk-Programm:** Bei geänderter Dauer werden die Zeiten der Kurve Individuell für **alle drei Kurven** gleich gestreckt (das Tk-Programm streckte nur die erste; die Ausgabe benutzte nur deren Zeiten); beim Senden an die LED gilt der Wert 0 für Grün und Blau (das Tk-Programm ersetzte 0 durch den Startwert); Einfügen und Löschen der Punkte mit Knöpfen.
 
+### 2.9h Neu seit 3.85: Tabelle, Blätter und Einstellungen (3.88 bis 3.93)
+
+- **Nach unten ausfüllen (3.93):** Mehrere Zeilen markieren (Klick auf die Zeilennummern, mit der Umschalttaste ein Bereich), rechte Maustaste auf eine Zelle, **Nach unten ausfüllen** (oder **Strg+D**): Die **oberste** markierte Zeile ist die Quelle, ihr Inhalt steht danach in allen markierten Zeilen. Bei einem Klick auf die Zeilennummer gilt das für die ganze Zeile. Ist nur eine Zelle gewählt, kopiert **Strg+D** die Zelle darüber. **Reihe fortsetzen** (rechte Maustaste) zählt die Zahl am Ende weiter: aus `1` wird 1, 2, 3 …, aus `V1` wird V1, V2, V3 …, aus `V01` wird V01, V02 …; Text ohne Zahl am Ende wird kopiert. Das Ziehen am Ausfüllkästchen gibt es nicht (nur in der kostenpflichtigen Fassung der Tabellenkomponente).
+- **Spalte Verteiler (3.93):** Neben `V1` genügt die Zahl `1`; beides ist derselbe Verteiler (Grafische Ansicht, Abschnitt 2.17).
+- **Blätter verstecken (3.90):** Rechte Maustaste auf einen Blattreiter: **Tabelle verstecken** (nicht das letzte sichtbare Blatt) und **Versteckte Tabellen anzeigen**. Die Auswahl wird mit den Daten gespeichert.
+- **Die Seite Config entfällt (3.91):** Ihre Werte stehen in den **Programm Einstellungen**: Gruppe **Programm Generator** (House-Zeiten, DCC-Offset) und die neue Gruppe **Simulatoreinstellungen** (nur im Experten Modus; **Simulator anzeigen** steht am Anfang der Gruppe). Beim ersten Start nach dem Update werden die Werte der alten Seite übernommen. Die Seite ist versteckt und nur mit der Option **Versteckte Tabellen anzeigen** zu sehen.
+- **Tabelle Färben (3.88, 3.92):** Der Reiter heißt **Tabelle Färben** (früher ProgGenerator Einstellungen). Die Haken **Automatisch einfärben** (nach jeder Änderung wird nach den Bedingungen gefärbt) und **Zeilen Färben Button verstecken** stehen vor den Bedingungen. Es gibt zwei Speichern-Knöpfe: **Speichern und aktuelle Seite färben** und **Speichern und ALLE Seiten färben**.
+- **Protokolle herunterladen (3.89):** Hilfe → Logdatei anzeigen hat den Knopf **Die letzten 3 log-Dateien herunterladen** (eine ZIP-Datei mit `webmobaledlib.log`, `.log.1` und `.log.2`), nützlich bei großen Projekten.
+- **Testtasten (3.89):** Die Tasten stehen in der Spalte Typ rechts neben dem vollständigen Typnamen.
+- **Optionen, Reiter Dateien (3.93):** **Importieren v. altem Prog.** erklärt, wie die Daten des alten Excel-Programms über eine MLL_pgf-Datei übernommen werden; **Kopiere von Seite zu Seite** entfällt (dafür gibt es **Seite duplizieren** im Blattreiter).
+- **Online Wiki (3.93):** Der Knopf öffnet die Einführung der webMobaLedLib-Anleitung.
+
 ### 2.10 Der Timeline Editor
 
 Der Reiter **Timeline Editor** erstellt aus einer Tabelle ein Muster für die LEDs (Wechselblinker, Lauflicht usw.). Das Ergebnis ist ein Makro, das im Programmgenerator eingetragen wird.
@@ -464,7 +476,7 @@ Der Reiter **Timeline Editor** erstellt aus einer Tabelle ein Muster für die LE
 |---|---|
 | `/ProgGenerator` | Programm Generator |
 | `/TimelineEditor` | Timeline Editor (die alte Adresse `/Patterngenerator` gilt weiter) |
-| `/ProgGeneratorEinstellungen` | ProgGenerator Einstellungen |
+| `/ProgGeneratorEinstellungen` | Tabelle Färben (früher ProgGenerator Einstellungen) |
 | `/Farbtest` | Farb Test |
 | `/ServoTest1` | Servo Einstellungen |
 | `/ServoTest2` | DM Servo Einstellungen (nur mit eingeschalteter Option, siehe 2.13) |

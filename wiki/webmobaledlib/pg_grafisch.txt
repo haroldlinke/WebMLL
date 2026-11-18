@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Die grafische Ansicht ======
-//Seitenstand 1.03 (2026-11-15), gilt für webMobaLedLib 3.46//
+//Seitenstand 1.04 (2026-11-18), gilt für webMobaLedLib 3.93//
 
 Neben der Tabelle zeigt die webMobaLedLib deine Zeilen auch **als Bild**. Du siehst auf einen Blick, welches Gerät an welcher LED-Kette hängt, und kannst Effekte **mit der Maus** anlegen und verschieben. Das gab es in der Excel-Version nicht.
 
@@ -40,6 +40,8 @@ Normalerweise stehen Zeilen **ohne LEDs** (Sound, Logik, Eingänge) in einer eig
 Mit einem **Verteiler** teilst du eine LED-Kette auf mehrere **Stecker** auf. Die Kette bleibt dabei vollständig erhalten: Nur das Signal der letzten LED an einem Stecker wird zum Verteiler zurückgeführt und dort an den nächsten Stecker weitergegeben. Ein Verteiler gehört zu **einem Kanal**; die erste LED am ersten Stecker legt den Kanal fest. Die Nummern der LEDs ändern sich durch den Verteiler nicht.
 
 Die Angaben stehen in der Tabelle in den Spalten **Verteiler-Nr.** und **Stecker-Nr.** (Dialog Wizard oder Doppelklick auf die Spalte). Sie sind **reiner Kommentar**: Das Programm prüft sie nicht und erzeugt daraus keinen Code. Die Grafik zeigt sie nur an. In der Ansicht **Ketten** gilt (seit 3.45):
+
+In der Spalte **Verteiler-Nr.** genügt seit 3.93 die **Zahl** (''1'' gilt wie ''V1'').
 
   * Um die Kästchen eines Verteilers liegt ein **Rechteck** mit der Überschrift **Verteiler V01**. Darin hat jeder **Stecker** ein eigenes Feld mit der Überschrift **Stecker 1**.
   * Die Stecker stehen in der **Reihenfolge der Tabelle**, nicht nach der Steckernummer. Stehen die Zeilen mit den Steckern 1, 3 und 2 untereinander, zeichnet die Grafik die Felder in dieser Reihenfolge. Zwischen zwei Steckern steht der Hinweis **Signal zurück zum Verteiler** (bei nebeneinander stehenden Steckern ein Pfeil).
