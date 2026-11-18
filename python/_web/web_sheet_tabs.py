@@ -1,9 +1,9 @@
-# Datei-Version: 1.02 (2026-11-01) - web_sheet_tabs.py
+# Datei-Version: 1.03 (2026-11-17) - web_sheet_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_sheet_tabs.py
 # Path:           _web/web_sheet_tabs.py
-# Version:        1.02
-# Last Update:    2026-11-01
+# Version:        1.03
+# Last Update:    2026-11-17
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -11,6 +11,7 @@
 #                     Nach links und rechts verschieben, Reiterfarbe), Regeln fuer Namen und Verschieben als reine Funktionen
 #   1.01  2026-11-01  Schriftfarbe nach WCAG-Kontrast (weiss ab 3:1, sonst schwarz); plan_move aendert nichts, wenn die Reihenfolge der sichtbaren Reiter gleich bleibt
 #   1.02  2026-11-01  Reiterfarbe: gemeinsame Farbwahl (web_dialogs.color_input)
+#   1.03  2026-11-17  Kontextmenue: Tabelle verstecken, Versteckte Tabellen ... (Callbacks hide, show_hidden, hidden_count, can_hide); show_hidden_dialog
 # ----------------------------------------------------------------------------------------------
 """Blattreiter des Programm Generators (Reiter am unteren Rand der Tabelle).
 
@@ -258,6 +259,17 @@ def build_tab(ui, name, color, can_rename_tab, can_duplicate, can_left, can_righ
             if not can_right:
                 item.disable()
             ui.separator()
+            can_hide = callbacks.get("can_hide", lambda: False)()  # v1.03
+            item = ui.menu_item(tr("Tabelle verstecken"), on_click=lambda: callbacks["hide"](name))  # v1.03
+            if not can_hide:  # v1.03
+                item.disable()  # v1.03
+                item.tooltip(tr("Mindestens eine Tabelle muss sichtbar bleiben."))  # v1.03
+            n_hidden = callbacks.get("hidden_count", lambda: 0)()  # v1.03
+            item = ui.menu_item(tr("Versteckte Tabellen …") + (" (%d)" % n_hidden if n_hidden else ""), on_click=lambda: callbacks["show_hidden"]())  # v1.03
+            if not n_hidden:  # v1.03
+                item.disable()  # v1.03
+                item.tooltip(tr("Es gibt keine versteckten Tabellen."))  # v1.03
+            ui.separator()
             with ui.menu_item(tr("Reiterfarbe"), auto_close=False):
                 with ui.item_section().props("side"):
                     ui.icon("keyboard_arrow_right")
@@ -272,3 +284,19 @@ def build_tab(ui, name, color, can_rename_tab, can_duplicate, can_left, can_righ
                     ui.menu_item(tr("Keine Farbe"), on_click=lambda: callbacks["color"](name, ""))
                     ui.menu_item(tr("Weitere Farben …"), on_click=lambda: callbacks["color_custom"](name))
     return tab
+
+
+def show_hidden_dialog(ui, names, on_show):  # v1.03
+    """Dialog "Versteckte Tabellen": Haken je Tabelle, Einblenden der angehakten oder aller. names: Namen der versteckten Tabellen; on_show(liste) blendet sie ein."""  # v1.03
+    with ui.dialog() as dlg, ui.card().classes("w-[420px] max-w-full"):  # v1.03
+        ui.label(tr("Versteckte Tabellen")).classes("text-h6")  # v1.03
+        ui.label(tr("Angehakte Tabellen werden wieder eingeblendet.")).classes("text-caption text-grey-8")  # v1.03
+        boxes = {n: ui.checkbox(n, value=True) for n in names}  # v1.03
+
+        def apply(selected):  # v1.03
+            dlg.close()  # v1.03
+            on_show(selected)  # v1.03
+        with ui.row().classes("justify-end w-full gap-2"):  # v1.03
+            ui.button(tr("Abbrechen"), on_click=dlg.close).props("flat no-caps")  # v1.03
+            ui.button(tr("Einblenden"), on_click=lambda: apply([n for n, b in boxes.items() if b.value])).props("color=primary no-caps")  # v1.03
+    dlg.open()  # v1.03

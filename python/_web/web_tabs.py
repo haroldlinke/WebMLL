@@ -1,9 +1,9 @@
-# Datei-Version: 1.21 (2026-11-17) - web_tabs.py
+# Datei-Version: 1.23 (2026-11-18) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.21
-# Last Update:    2026-11-17
+# Version:        1.23
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -29,6 +29,8 @@
 #   1.19  2026-11-16  Hinweis der Option Simulator anzeigen: Knopf Setup simulieren statt der Auswahl
 #   1.20  2026-11-17  Hinweis der Option Bootloader des Nano beim Pruefen erkennen: Knopf Erkennen statt Haken Automatisch erkennen
 #   1.21  2026-11-17  Hinweis der Option NanoBootloaderDetection: Knopf 'Board und USB Port erkennen'
+#   1.22  2026-11-17  Neue Optionen aus der Seite Config: MinTime_House, MaxTime_House, DCC_Offset (Programm Generator) und SimLedsX, SimLedsY, SimLedSize, SimPosX, SimPosY, SimOffset (Simulatoreinstellungen)
+#   1.23  2026-11-18  Reiter ProgGenerator Einstellungen heisst Tabelle Faerben; neue Optionen AutoColorRows und HideColorButton (Seite Tabelle Faerben, vor den Bedingungen)
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -60,7 +62,8 @@ TAB_URLS = {                                  # Adresse -> Schluessel des Reiter
 }
 # TAB_TITLES = {"pg": "Programm Generator", "patt": "Patterngenerator", "progcfg": "ProgGenerator Einstellungen", "farb": "Farb Test", "servo1": "Servo Einstellungen", "servo2": "DM Servo Einstellungen", "sound": "Sound Test", "dcc": "DCC Keyboard", "mon": "Serial Monitor",  # v1.05 (entfallen)
 # TAB_TITLES = {"pg": "Programm Generator", "patt": "Patterngenerator", "progcfg": "ProgGenerator Einstellungen", "farb": "Farb Test", "servo1": "Servo Einstellungen", "servo2": "DM Servo Einstellungen", "sound": "Sound Test", "dcc": "DCC Keyboard", "z21": "Z21 Simulator", "mon": "Serial Monitor",  # v1.05  # v3.43 (entfallen)
-TAB_TITLES = {"pg": "Programm Generator", "patt": "Timeline Editor", "progcfg": "ProgGenerator Einstellungen", "farb": "Farb Test", "servo1": "Servo Einstellungen", "servo2": "DM Servo Einstellungen", "sound": "Sound Test", "dcc": "DCC Keyboard", "z21": "Z21 Simulator", "mon": "Serial Monitor",  # v1.05  # v1.16
+# TAB_TITLES = {"pg": "Programm Generator", "patt": "Timeline Editor", "progcfg": "ProgGenerator Einstellungen", "farb": "Farb Test", "servo1": "Servo Einstellungen", "servo2": "DM Servo Einstellungen", "sound": "Sound Test", "dcc": "DCC Keyboard", "z21": "Z21 Simulator", "mon": "Serial Monitor",  # v1.05  # v1.16  # v1.23 (entfallen)
+TAB_TITLES = {"pg": "Programm Generator", "patt": "Timeline Editor", "progcfg": "Tabelle Färben", "farb": "Farb Test", "servo1": "Servo Einstellungen", "servo2": "DM Servo Einstellungen", "sound": "Sound Test", "dcc": "DCC Keyboard", "z21": "Z21 Simulator", "mon": "Serial Monitor",  # v1.05  # v1.16  # v1.23
               "arduinocfg": "ARDUINO Einstellungen", "config": "Programm Einstellungen"}
 _LOWER = {name.lower(): name for name in TAB_URLS}
 
@@ -97,6 +100,50 @@ PARAM_ADDITIONS = {"ColoredRowsBold": ({"ParName": "ColoredRowsBold", "Cnt": "1"
                                        "Input Text": "Bootloader des Nano beim Prüfen erkennen",  # v1.13
                                        "Hint": "Mit Haken (Vorgabe) spricht das Programm beim Prüfen des angeschlossenen Nano (Optionen Werkzeuge: Knopf „Board und USB Port erkennen“) den Bootloader an und stellt „Nano Normal (old Bootloader)“ oder „Nano (neue Version)“ passend ein. Ohne Haken prüft das Programm nur, ob sich der Anschluss öffnen lässt, und lässt Ihre Einstellung unverändert."},  # v1.14
                                       "IPUploadTimeout"),  # v1.13
+                 "AutoColorRows": ({"ParName": "AutoColorRows", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "AutoColorRows", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.23
+                         "Input Text": "Automatisch einfärben",  # v1.23
+                         "Hint": "Mit Haken werden die Zeilen nach jeder Änderung einer Zelle automatisch nach den Bedingungen unten eingefärbt. Ohne Haken färbt der Knopf Zeilen Färben (oder Speichern und aktuelle Seite färben)."},  # v1.23
+                        "RowFormatInput"),  # v1.23
+                 "HideColorButton": ({"ParName": "HideColorButton", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "HideColorButton", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.23
+                         "Input Text": "Zeilen Färben Button verstecken",  # v1.23
+                         "Hint": "Mit Haken fehlt der Knopf Zeilen Färben in der Werkzeugleiste (sinnvoll mit „Automatisch einfärben“)."},  # v1.23
+                        "RowFormatInput"),  # v1.23
+                 "MinTime_House": ({"ParName": "MinTime_House", "Cnt": "1", "Type": "", "ConfigName": "MinTime_House", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.22
+                         "Input Text": "Minimale Zeit bis zur nächsten Änderung [s]",  # v1.22
+                         "Hint": "Standardzeit der House()-Funktion: Wie lange es mindestens dauert, bis sich die aktiven Räume eines Hauses ändern (0 bis 255 Sekunden). Leer: 50 Sekunden. Zum Testen kann man diesen und den nächsten Wert verkleinern, um die House()-Beleuchtung im Zeitraffer zu sehen."},  # v1.22
+                        "ShowSimulator"),  # v1.22
+                 "MaxTime_House": ({"ParName": "MaxTime_House", "Cnt": "1", "Type": "", "ConfigName": "MaxTime_House", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.22
+                         "Input Text": "Maximale Zeit bis zur nächsten Änderung [s]",  # v1.22
+                         "Hint": "Standardzeit der House()-Funktion: Wie lange es höchstens dauert, bis sich die aktiven Räume eines Hauses ändern (1 bis 255 Sekunden). Leer: 150 Sekunden. Sind Minimum und Maximum gleich, kommt die Änderung genau nach dieser Zeit. Das Maximum darf nicht kleiner als das Minimum sein."},  # v1.22
+                        "ShowSimulator"),  # v1.22
+                 "DCC_Offset": ({"ParName": "DCC_Offset", "Cnt": "1", "Type": "", "ConfigName": "DCC_Offset", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.22
+                         "Input Text": "Offset für DCC-Adresse",  # v1.22
+                         "Hint": "Wird zur DCC-Adresse addiert. Ein Offset von 4 ist zum Beispiel bei Roco-Zentralen sinnvoll: Roco nummeriert die Weichen ab Modul 0, andere Hersteller ab Modul 1. Leer: 0. Der Offset kann auch im ROCO Maintenance Tool eingestellt werden."},  # v1.22
+                        "ShowSimulator"),  # v1.22
+                 "SimLedsX": ({"ParName": "SimLedsX", "Cnt": "1", "Type": "", "ConfigName": "SimLedsX", "ParamLabelWidth": "25", "Min": "1", "Max": "128", "Default": "8",  # v1.22
+                         "Input Text": "Anzahl LEDs horizontal",  # v1.22
+                         "Hint": "Simulator: Anzahl der LEDs in einer Zeile (1 bis 128)."},  # v1.22
+                        "ShowSimulator"),  # v1.22
+                 "SimLedsY": ({"ParName": "SimLedsY", "Cnt": "1", "Type": "", "ConfigName": "SimLedsY", "ParamLabelWidth": "25", "Min": "4", "Max": "64", "Default": "8",  # v1.22
+                         "Input Text": "Anzahl LEDs vertikal",  # v1.22
+                         "Hint": "Simulator: Anzahl der Zeilen (4 bis 64)."},  # v1.22
+                        "ShowSimulator"),  # v1.22
+                 "SimLedSize": ({"ParName": "SimLedSize", "Cnt": "1", "Type": "", "ConfigName": "SimLedSize", "ParamLabelWidth": "25", "Min": "4", "Max": "64", "Default": "24",  # v1.22
+                         "Input Text": "LED-Größe in Pixel",  # v1.22
+                         "Hint": "Simulator: Durchmesser einer LED in Pixeln (4 bis 64)."},  # v1.22
+                        "ShowSimulator"),  # v1.22
+                 "SimPosX": ({"ParName": "SimPosX", "Cnt": "1", "Type": "", "ConfigName": "SimPosX", "ParamLabelWidth": "25", "Min": "-16383", "Max": "16383", "Default": "800",  # v1.22
+                         "Input Text": "Fensterposition horizontal",  # v1.22
+                         "Hint": "Simulator: Position des Fensters auf dem Bildschirm (Windows). Das Programm merkt sich die Position beim Öffnen des Simulators selbst."},  # v1.22
+                        "ShowSimulator"),  # v1.22
+                 "SimPosY": ({"ParName": "SimPosY", "Cnt": "1", "Type": "", "ConfigName": "SimPosY", "ParamLabelWidth": "25", "Min": "-16383", "Max": "16383", "Default": "200",  # v1.22
+                         "Input Text": "Fensterposition vertikal",  # v1.22
+                         "Hint": "Simulator: Position des Fensters auf dem Bildschirm (Windows). Das Programm merkt sich die Position beim Öffnen des Simulators selbst."},  # v1.22
+                        "ShowSimulator"),  # v1.22
+                 "SimOffset": ({"ParName": "SimOffset", "Cnt": "1", "Type": "", "ConfigName": "SimOffset", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "0",  # v1.22
+                         "Input Text": "Start-LED",  # v1.22
+                         "Hint": "Simulator: Der Simulator zeigt die LEDs ab dieser Nummer an (0 bis 255)."},  # v1.22
+                        "ShowSimulator"),  # v1.22
                  "ShowSimulator": ({"ParName": "ShowSimulator", "Cnt": "1", "Type": "Checkbutton", "ConfigName": "ShowSimulator", "ParamLabelWidth": "25", "Min": "0", "Max": "255", "Default": "",  # v1.18
                                     "Input Text": "Simulator anzeigen",  # v1.18
                                     # "Hint": "Mit Haken erscheint über der Tabelle die Auswahl Kein Simulator, Nur Simulator, Mit Simulator. Sie gilt statt der Option Simulator der Konfigurationsseite (die dann nicht mehr beachtet wird)."},  # v1.18  # v1.19 (entfallen)
@@ -163,6 +210,11 @@ def apply_param_overrides(ctrl) -> None:  # v1.04
     for key, (definition, after) in PARAM_ADDITIONS.items():                            # neue Optionen anlegen und in die Seite Programm Einstellungen eintragen  # v1.06
         data.setdefault(key, dict(definition))  # v1.06
         try:  # v1.06
+            if after == "RowFormatInput":                      # v1.23: Optionen der Seite Tabelle Faerben: vor den Bedingungen
+                params = ctrl.MacroDef.data["ProgGenConfigPage"]["Params"]  # v1.23
+                if key not in params:  # v1.23
+                    params.insert(params.index(after) if after in params else len(params), key)  # v1.23
+                continue  # v1.23
             params = ctrl.MacroDef.data["ConfigurationPage"]["Params"]  # v1.06
             if key not in params:  # v1.06
                 params.insert(params.index(after) + 1 if after in params else len(params), key)  # v1.06

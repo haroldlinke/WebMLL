@@ -1,5 +1,5 @@
-Datei-Version: 1.02 (2026-11-172026-10-18 - HOC_intern.md
-Stand: webMobaLedLib 3.86
+Datei-Version: 1.01 (2026-10-18) - HOC_intern.md
+Stand: webMobaLedLib 3.93
 
 # webMobaLedLib: History of Change (intern, ausführlich)
 
@@ -9,7 +9,7 @@ Pfade beziehen sich auf den Ordner `python`.
 
 ---
 
-## 3.86 (2026-11-17) – ESP32-Upload über M08_ARDUINO
+## 3.93 (2026-11-18) – ESP32-Upload über M08_ARDUINO
 
 Setup übertragen bietet weiterhin die Auswahl USB oder WLAN. Der zentrale Upload in M08_ARDUINO nutzt die gewählte Build-Umgebung und für OTA den festen Rückkanal-Port 32323.
 
@@ -39,6 +39,103 @@ Release-Stand 2.12 auf Wunsch des Entwicklers („Release bauen“). **Neu im Ab
 | `archiv/` | frühere Release-Hinweise, Versionslisten und ZIP (nichts gelöscht) |
 
 **Geprüft:** Dateipaket: `testzip` in Ordnung, alle 113 Dateien gleich dem Ordner `headless`, keine `__pycache__`, alle `.py` kompilieren, Versionsprüfung „alles passt“ (50 Einträge), 11 Dateien ausführbar (`.sh`, `.command`). **Nachbau des Entwickler-Ablaufs mit seinem echten Paket (1678 Dateien, Stand 2.05):** meine 113 Dateien darübergelegt, Prüfliste, ZIP gepackt, `release_tools check --previous <sein ZIP>`: **in Ordnung** (Version 2.12, 1678 Dateien, 6 neue, 0 fehlende, ZIP 16,6 MB). Alle 15 Prüfreihen laufen (17, 26, 15, 70, 28, 19, 43, 26, 16, 27, 8, 8, 8, 5, 9 Prüfungen). **Nicht geprüft:** `zip_erstellen.bat` und die Reparaturskripte unter Windows, ein abgebrochenes Update unter Windows, das Verhalten mit Acronis, der Download von GitHub.
+
+## 3.93 (2026-11-18)
+
+Rückmeldung eines Einsteigers im Forum:
+- Online-Wiki-Knopf öffnet `https://wiki.mobaledlib.de/anleitungen/webmobaledlib/einfuehrung` (im Wiki heißt die Startseite so) (`HELP_WIKI_URL`, M20 1.12; die Werkzeugleiste nutzt dieselbe Konstante).
+- „Nach unten ausfüllen“ (Strg+D und Kontextmenü) und „Reihe fortsetzen“ (Kontextmenü): `op_fill`, `series_value`, Ereignis `filldown` in `JS_CELL_KEYDOWN`/`on_cell_op`. Mehrere Zeilen markiert: oberste Zeile ist die Quelle; sonst die Zeile darüber. Schreiben über `write_cells` (nur nicht gesperrte Spalten). Das Ziehen am Ausfüllkästchen gibt es in AG Grid nur in der Enterprise-Fassung.
+- Verteilernummer: reine Zahl gilt wie V+Zahl (`is_vt_number`, neu `vt_key` in headless_graph 1.07; V1 und 1 sind derselbe Verteiler).
+- Optionen/Dateien: „Importieren v. altem Prog.“ ist aktiv und zeigt eine Anleitung (`_web_import_info`, MLL_pgf-Weg); „Kopiere von Seite zu Seite“ entfällt (Web-Liste und `UserForm_Options`, ersetzt durch Seite duplizieren). Direkter Excel-Import (Variante b) nur bei Bedarf später.
+- Wiki: neue Seite `faq`; `start.txt` heißt im Paket `einfuehrung.txt`, Änderungen an `start`, `pg_tabelle`, `pg_grafisch`, `seiten_update`; neue Datei `START_HIER.txt` für die Wurzel des Release-Pakets.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `proggen/M20_PageEvents_a_Functions.py` | 1.12 | `HELP_WIKI_URL` |
+| `headless/headless_graph.py` | 1.07 | `vt_key`, reine Zahl als Verteiler |
+| `webmobaledlib.py` | 3.93 | `op_fill`, Strg+D, Kontextmenü, `REQUIRED_FILES` |
+| `release_tools.py` | 1.09 | `zip` nimmt weitere Dateien für die ZIP-Wurzel (START_HIER.txt), `check` erlaubt sie |
+| `zip_erstellen.bat` | 1.08 | übergibt START_HIER.txt (neben dem Ordner python) an `release_tools.py zip` |
+| `_web/web_form_options.py` | 1.29 | Importieren-Knopf aktiv mit Anleitung, Kopieren-Knopf entfernt |
+| `proggen/UserForm_Options.py` | 1.06 | Kopieren-Knopf auskommentiert |
+| `csv/Web_Languages.csv` | – | 8 neue Zeilen (Übersetzungen ungeprüft) |
+
+## 3.92 (2026-11-18)
+
+Der Reiter „ProgGenerator Einstellungen“ heißt jetzt „Tabelle Färben“ (Adresse `/ProgGeneratorEinstellungen` bleibt). Zwei neue Haken auf der Seite, vor den Bedingungen:
+- „Automatisch einfärben“ (`AutoColorRows`): Nach jeder Zelländerung (Eingabe im Grid und Einfügen/Löschen über das Kontextmenü, `write_cells`) wird das Blatt mit `page.RowFormat_Button_click()` komplett nach den Bedingungen gefärbt (`auto_color_rows`, nur Datenblätter, Blatt wird vorher aktiviert). Ohne Haken wie bisher: Knopf oder „Speichern und … färben“. Aufwand wächst mit der Blattgröße, weil das ganze Blatt neu gefärbt wird.
+- „Zeilen Färben Button verstecken“ (`HideColorButton`): blendet den Knopf in der Werkzeugleiste aus (`apply_beginner_buttons`, wirkt nach dem Speichern der Seite sofort); im Anfänger Modus fehlt der Knopf weiterhin.
+Beide Optionen sind Web-Optionen (`PARAM_ADDITIONS`, Seite `ProgGenConfigPage`).
+Nicht geändert: Wiki, Installationsanleitung und Checkliste nennen noch den alten Reiternamen (beim Release-Stand anpassen).
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_tabs.py` | 1.23 | Reitername, Optionen `AutoColorRows`, `HideColorButton` in `ProgGenConfigPage` |
+| `webmobaledlib.py` | 3.92 | `auto_color_rows`, Knopf ausblenden, Reiterbeschriftung, `REQUIRED_FILES` |
+| `csv/Web_Languages.csv` | – | 5 neue Zeilen (Übersetzungen ungeprüft) |
+
+## 3.91 (2026-11-17)
+
+Die Seite Config wird durch Einstellungen in den Programm Einstellungen ersetzt (Konzept mit Harold Linke abgestimmt). Neun Werte: `MinTime_House`, `MaxTime_House`, `DCC_Offset` (Gruppe „Programm Generator“) und `SimLedsX`, `SimLedsY`, `SimLedSize`, `SimPosX`, `SimPosY`, `SimOffset` (neue Gruppe „Simulatoreinstellungen“, nur im Experten Modus; die Option „Simulator anzeigen“ steht jetzt am Anfang dieser Gruppe). Alle anderen Zeilen der Seite Config bleiben auf dem Standardwert im Blatt.
+
+- Ablage: je Installation (ConfigData), nicht mehr je Arbeitsmappe. `M28.Get_String_Config_Var`, `Get_Num_Config_Var_Range` und `Set_String_Config_Var` lesen und schreiben diese neun Namen in den Programm Einstellungen (`SETTINGS_VARS`); alle anderen kommen weiter aus dem Blatt. Leer heißt Vorgabe (House 50/150 s, DCC-Offset 0, Simulator 8/8/24/800/200/0). Die Fensterposition, die das Programm selbst zurückschreibt, landet ebenfalls dort.
+- Übernahme: `M28.Migrate_Config_to_Settings` kopiert beim ersten Start einmalig Werte, die auf der Seite Config von der Vorgabe abweichen (Flag `ConfigMigrated`).
+- Das Blatt Config ist versteckt und nur mit „versteckte Tabellen anzeigen“ sichtbar (`visible_sheet_names`).
+- Der Simulator im Browser (Linux) liest dieselben Werte (x, y, Größe, Start-LED über `M39.sim_params`); die Fensterposition gilt nur für das Fenster unter Windows.
+- Fehlermeldung bei Min > Max der House-Zeiten verweist auf die Programm Einstellungen (`M06`); der Text hat keine Übersetzung im Blatt Languages mehr (fällt auf Deutsch zurück).
+- Nicht geprüft: Anzeige der neuen Gruppe im Browser, Übernahme der alten Werte mit einem echten Projekt.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `proggen/M28_Diverse.py` | 1.03 | `SETTINGS_VARS`, Zugriff auf die Programm Einstellungen, `Migrate_Config_to_Settings` |
+| `proggen/M06_Write_Header.py` | 1.09 | Fehlermeldung House-Zeiten ohne Wechsel auf die Seite Config |
+| `_web/web_tabs.py` | 1.22 | neun neue Optionen |
+| `_web/web_params.py` | 1.10 | Gruppe Simulatoreinstellungen, `EXPERT_GROUPS`, `apply_beginner` |
+| `webmobaledlib.py` | 3.91 | Config versteckt, Übernahme beim Start, Anfänger Modus nach dem Speichern, `REQUIRED_FILES` |
+| `csv/Web_Languages.csv` | – | 20 neue Zeilen (Übersetzungen ungeprüft) |
+
+## 3.90 (2026-11-17)
+
+Anwenderwunsch: Tabellen (DCC, Selectrix, Config …) ausblenden. Umsetzung als Variante 2 (je Tabelle): Kontextmenü am Reiter „Tabelle verstecken“ und „Versteckte Tabellen …“ (Dialog mit Haken, Einblenden). Der Zustand `user_hidden` ist unabhängig von `Visible` (das Programm blendet damit seine eigenen Blätter aus) und von „versteckte Tabellen anzeigen“; er wird mit der Arbeitsmappe gesichert (`HiddenSheets`, je Projekt) und beim Laden angewandt. Mindestens eine Tabelle bleibt sichtbar; wird die aktive versteckt, wird die nächste sichtbare gewählt. Das aktive Blatt ist immer sichtbar (auch wenn es beim Start als letztes Blatt gemerkt war).
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `ExcelAPI/XLA_Application.py` | 1.22 | `HiddenSheets` sichern und laden (`user_hidden`) |
+| `_web/web_sheet_tabs.py` | 1.03 | Kontextmenü „Tabelle verstecken“, „Versteckte Tabellen …“, `show_hidden_dialog` |
+| `webmobaledlib.py` | 3.90 | `visible_sheet_names`, `tab_hide`, `tab_show_hidden`, Callbacks, REQUIRED_FILES |
+| `csv/Web_Languages.csv` | – | 7 neue Zeilen |
+
+## 3.89 (2026-11-17)
+
+Pull Request #7 (moosbewohner, „Schalter Anordnung nur in Spalte E“) übernommen und angepasst: Die Testtasten einer Zeile stehen alle in der Spalte Typ, hinter dem Typtext, an derselben Stelle (vorher je Taste in der zugehörigen Spalte, rechtsbündig). Abweichung vom PR (Entscheidung Harold Linke): Der Typtext wird nicht auf 64 Pixel gekürzt; die Textbreite richtet sich nach dem längsten Typtext der Zeilen mit Tasten (`cellRendererParams.labelWidth`), die Spalte Typ wird so breit, dass Text und Tasten Platz haben. Nicht übernommen: README-Absatz und `release_manifest.json` (wird beim Release erzeugt). Der PR baute auf 3.86 auf, die Änderung wurde von Hand in den Stand 3.88 eingebaut.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `webmobaledlib.py` | 3.89 | Zellendarstellung (`cell_renderer_js`), Testtasten in Spalte Typ und Spaltenbreite in `show()`, Version |
+
+## 3.88 (2026-11-17)
+
+Fehlermeldung vom Tester (3.86): Beim Beenden mit „Ja, speichern“ erschien „Fehler beim Speichern: 'CApplication' object has no attribute 'OnKey'“, und die Farbeinstellungen (ProgGenerator Einstellungen) wirkten nicht auf die Tabellen.
+
+1. Ursache Beenden: `Evt_Workbook_BeforeClose` ruft seit 1.20 das Ereignis tatsächlich auf; `pattgen/DieseArbeitsmappe.Workbook_BeforeClose` ruft `Application.OnKey('{Return}', '')` auf, und `CApplication` hatte keine Methode `OnKey`. Das Arbeitsmappen-Sichern lief vorher durch, der Abbruch kam danach. Neu: `CApplication.OnKey` (ohne Wirkung, wie Excel-Tastenbelegung im Web nicht nötig).
+2. Ursache Farben: Die Zeilenfarben (`RowFormatInput`) wurden nur beim Ändern einer Zelle oder mit dem Knopf „Zeilen Färben“ angewandt. Nach „Geänderte Einstellungen übernehmen“ geschah nichts. Neu: `after_progcfg_save` ruft `page.RowFormat_Button_click()` (= `apply_formatting` des aktiven Blattes) und baut die Tabelle neu auf. Das Blatt wird vorher aktiviert (wie bei `run_command`), Fehler erscheinen als Meldung und im Log, im Log steht „Zeilenfarben angewandt: Blatt …, n Bedingungen“. Andere Blätter werden beim Ändern wie bisher gefärbt, oder mit „Zeilen Färben“.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `ExcelAPI/XLA_Application.py` | 1.21 | `CApplication.OnKey` |
+| `webmobaledlib.py` | 3.88 | Version, `color_sheets`, zwei Speichern-Knöpfe in ProgGenerator Einstellungen, REQUIRED_FILES |
+| `webmobaledlib.py` | 3.88 | Logfile anzeigen: Knopf „Die letzten 3 Logdateien herunterladen“ (ZIP aus .log, .log.1, .log.2 in einem Temp-Ordner, `offer_download`) |
+| `_web/web_params.py` | 1.09 | `build_settings_page(save_buttons=…)`: mehrere Speichern-Knöpfe mit eigener Nacharbeit |
+| `csv/Web_Languages.csv` | – | Zeilen „Speichern und aktuelle Seite färben“, „Speichern und ALLE Seiten färben“ |
+
+## 3.87 (2026-11-17)
+
+Bild der Pico-Zentrale ersetzt: animiertes GIF (2 Bilder à 600 ms, 300 × 291) in ein animiertes PNG (APNG) mit dem alten Namen `images/PICO_image.png` umgewandelt (wie bei `ESP32_image.png`). `PICOWL_image.png` bleibt unverändert.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `images/PICO_image.png` | – | neues Bild (APNG) |
+| `webmobaledlib.py` | 3.87 | Version |
 
 ## 3.86 (2026-11-17)
 
