@@ -23,3 +23,4 @@ Vorhandene Define-Zeilen bleiben auch bei aktivierten ESP-Einstellungen in der T
 | Zustände werden gespeichert | Setzt `ENABLE_STORE_STATUS()`. |
 
 Speichere die Optionen in der Arbeitsmappe und übertrage das Setup für das gewählte Blatt erneut auf den ESP32, damit die Firmware die Auswahl übernimmt.
+Wenn du OLED, Fotowiderstand und Zustandsspeicherung im ESP-Reiter für das Blatt eingerichtet hast, kannst du die entsprechenden manuellen Define-Zeilen löschen. Beim nächsten **Setup übertragen** erzeugt WebMLL die Defines aus den gespeicherten Einstellungen.
