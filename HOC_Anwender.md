@@ -1,11 +1,60 @@
-Datei-Version: 1.02 (2026-11-172026-10-18 - HOC_Anwender.md
-Stand: webMobaLedLib 3.86
+Datei-Version: 1.01 (2026-10-18) - HOC_Anwender.md
+Stand: webMobaLedLib 3.93
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
 
-## 3.86 (2026-11-17) – OLED-Modus 5
+## Version 3.93 (2026-11-18)
+
+Neue Funktionen:
+- Neu in der Tabelle: „Nach unten ausfüllen“ (Strg+D oder rechte Maustaste) und „Reihe fortsetzen“ (zählt 1, 2, 3 oder V1, V2, V3 weiter).
+- In der Spalte Verteiler genügt jetzt die Zahl (1 gilt wie V1).
+- Der Knopf „Online Wiki“ öffnet die Seite „Einführung“ der webMobaLedLib-Anleitung.
+- Neue Wiki-Seite „Häufige Fragen“.
+- Das Release-Paket enthält die Datei START_HIER.txt mit den ersten Schritten.
+- Optionen, Reiter Dateien: „Importieren v. altem Prog.“ erklärt, wie Daten des Excel-Programms übernommen werden. Der Knopf „Kopiere von Seite zu Seite“ entfällt (dafür gibt es „Seite duplizieren“).
+
+## Version 3.92 (2026-11-18)
+
+Neue Funktionen:
+- Der Reiter „ProgGenerator Einstellungen“ heißt jetzt „Tabelle Färben“.
+- Neuer Haken „Automatisch einfärben“: Die Zeilen werden nach jeder Änderung automatisch nach den Bedingungen gefärbt.
+- Neuer Haken „Zeilen Färben Button verstecken“: blendet den Knopf in der Werkzeugleiste aus.
+
+## Version 3.91 (2026-11-17)
+
+Neue Funktionen:
+- Die Seite „Config“ entfällt: Die House-Zeiten und der DCC-Offset stehen jetzt in den Programm Einstellungen unter „Programm Generator“.
+- Neue Gruppe „Simulatoreinstellungen“ (nur im Experten Modus) mit „Simulator anzeigen“, Anzahl LEDs, LED-Größe, Fensterposition und Start-LED.
+- Bisherige Werte der Seite Config werden beim ersten Start übernommen. Die Seite ist versteckt und nur mit „versteckte Tabellen anzeigen“ zu sehen.
+
+## Version 3.90 (2026-11-17)
+
+Neue Funktionen:
+- Tabellen verstecken: Rechtsklick auf den Tabellenreiter → „Tabelle verstecken“. Wieder einblenden mit Rechtsklick → „Versteckte Tabellen …“. Das Verstecken wird mit dem Projekt gespeichert.
+
+## Version 3.89 (2026-11-17)
+
+Neue Funktionen:
+- Die Testtasten einer Zeile stehen alle in der Spalte Typ, hinter dem Typtext und an derselben Stelle (Vorschlag von moosbewohner, Pull Request #7). Der Typtext bleibt vollständig lesbar.
+
+## Version 3.88 (2026-11-17)
+
+Neue Funktionen:
+- Hilfe → Logfile anzeigen: Knopf „Die letzten 3 Logdateien herunterladen“ (eine ZIP mit den drei neuesten Protokolldateien).
+- ProgGenerator Einstellungen: zwei Knöpfe „Speichern und aktuelle Seite färben“ und „Speichern und ALLE Seiten färben“.
+
+Korrekturen:
+- Beim Beenden mit Speichern erscheint nicht mehr die Fehlermeldung „'CApplication' object has no attribute 'OnKey'“.
+- ProgGenerator Einstellungen: Nach „Geänderte Einstellungen übernehmen“ werden die Zeilenfarben sofort auf die Tabelle angewandt (vorher nur mit dem Knopf „Zeilen Färben“).
+
+## Version 3.87 (2026-11-17)
+
+Neue Funktionen:
+- Neues, animiertes Bild der Pico-Zentrale.
+
+## 3.93 (2026-11-18) – OLED-Modus 5
 
 Neue Funktionen
 

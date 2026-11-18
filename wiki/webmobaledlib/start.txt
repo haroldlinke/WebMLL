@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Einführung ======
-//Seitenstand 1.06 (2026-11-15), gilt für webMobaLedLib 3.56//
+//Seitenstand 1.07 (2026-11-17), gilt für webMobaLedLib 3.87//
 
 ===== Was ist die webMobaLedLib? =====
 
@@ -46,8 +46,10 @@ Vorkenntnisse brauchst du keine. Auf den folgenden Seiten steht jeder Schritt ei
   - [[anleitungen:webmobaledlib:simulator|LED Simulator]]: Die LEDs ansehen, ohne Lichtmaschine.
   - [[anleitungen:webmobaledlib:aktualisieren|Das Programm aktualisieren]]: Neue Version einspielen.
   - [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]]: Wenn etwas nicht klappt.
+  - [[anleitungen:webmobaledlib:fehler_melden|Fehler melden und Wünsche eintragen]]: So schreibst du einen Fehler oder eine Idee in den Issue Tracker auf GitHub.
+  - [[anleitungen:webmobaledlib:mitentwickeln|Mitentwickeln]]: Selbst helfen, mit Pull Request, KI-Prompt und Hinweisen, wie deine Änderung ins Programm kommt.
   - [[anleitungen:webmobaledlib:begriffe|Begriffe]]: Was bedeutet Lichtmaschine, Makro, Upload?
 
 ===== Was gibt es noch nicht? =====
 
-Die webMobaLedLib wird weiterentwickelt. Einige Funktionen der Excel-Version fehlen noch, zum Beispiel der Multiplexer im Timeline Editor und das Senden eines Musters an ein ATtiny-Modul. Fehler und Wünsche schreibst du bitte ins [[https://forum.mobaledlib.de/viewforum.php?f=14|Forum der MobaLedLib]]. Hilfreich ist dabei die Protokolldatei **webmobaledlib.log** (siehe [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]]).
+Die webMobaLedLib wird weiterentwickelt. Einige Funktionen der Excel-Version fehlen noch, zum Beispiel der Multiplexer im Timeline Editor und das Senden eines Musters an ein ATtiny-Modul. Fehler und Wünsche trägst du bitte in den [[https://github.com/haroldlinke/WebMLL/issues|Issue Tracker auf GitHub]] ein (so geht es: [[anleitungen:webmobaledlib:fehler_melden|Fehler melden]]) oder schreibst sie ins [[https://forum.mobaledlib.de/viewforum.php?f=14|Forum der MobaLedLib]]. Wenn du selbst mitentwickeln möchtest, hilft dir die Seite [[anleitungen:webmobaledlib:mitentwickeln|Mitentwickeln]]. Hilfreich ist dabei die Protokolldatei **webmobaledlib.log** (siehe [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]]).

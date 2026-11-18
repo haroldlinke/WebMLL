@@ -1,0 +1,37 @@
+webMobaLedLib - START HIER (Windows)
+====================================
+
+In fuenf Schritten zum ersten Programm:
+
+1. ENTPACKEN
+   Entpacke die ZIP-Datei in einen eigenen Ordner, zum Beispiel
+   C:\mobaledlib. Der Pfad darf kein Hochkomma (') und kein &-Zeichen
+   enthalten. Nicht direkt aus der ZIP-Datei starten.
+
+2. INSTALLIEREN
+   Oeffne den Ordner python\install und starte per Doppelklick
+   install_windows.bat.
+   - Meldet Windows "Der Computer wurde durch Windows geschuetzt":
+     "Weitere Informationen" und dann "Trotzdem ausfuehren" klicken.
+   - Das schwarze Fenster bleibt 5 bis 15 Minuten offen, es braucht
+     Internet. Warten, bis "Fertig" erscheint, dann eine Taste druecken.
+
+3. PROGRAMM STARTEN
+   Auf dem Desktop liegt jetzt das Symbol "webMobaLedLib". Doppelklick.
+   Der Browser (Chrome, Edge, Firefox oder Safari) oeffnet sich mit der
+   webMobaLedLib. Das schwarze Fenster muss offen bleiben, solange du
+   arbeitest.
+
+4. ERSTES PROGRAMM
+   Anleitung "Dein erstes Programm" im Wiki:
+   https://wiki.mobaledlib.de/anleitungen/webmobaledlib/erstes_programm
+
+5. BEI PROBLEMEN
+   Anleitung (Einfuehrung): https://wiki.mobaledlib.de/anleitungen/webmobaledlib/einfuehrung
+   Haeufige Fragen:        https://wiki.mobaledlib.de/anleitungen/webmobaledlib/faq
+   Fehlersuche:            https://wiki.mobaledlib.de/anleitungen/webmobaledlib/fehlersuche
+   Forum:                  https://forum.mobaledlib.de/viewforum.php?f=14
+   Im Programm oeffnet der Knopf "Online Wiki" die Einfuehrung der Anleitung.
+
+macOS, Linux, Raspberry Pi: siehe die Wiki-Seiten "macos", "linux" und
+"raspberrypi".

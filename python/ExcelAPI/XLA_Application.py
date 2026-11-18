@@ -1,9 +1,9 @@
-# Datei-Version: 1.20 (2026-11-15) - XLA_Application.py
+# Datei-Version: 1.22 (2026-11-17) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.20
-# Last Update:    2026-11-15
+# Version:        1.22
+# Last Update:    2026-11-17
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -27,6 +27,8 @@
 #   1.18  2026-11-14  Esp32Wlan: WLAN-Einstellungen (esp32_wlan) je Blatt in der Arbeitsmappe sichern und laden
 #   1.19  2026-11-15  GetAsyncKeyState: Umschalttaste vom Mausklick (shift_key) gilt auch ohne keyboard-Modul
 #   1.20  2026-11-15  Evt_Workbook_BeforeClose ruft das Ereignis tatsaechlich auf
+#   1.21  2026-11-17  Application.OnKey (Tastenbelegung, ohne Wirkung im Web): Beenden mit Speichern scheiterte mit AttributeError 'OnKey' (Workbook_BeforeClose)
+#   1.22  2026-11-17  Vom Anwender versteckte Blaetter (user_hidden): mit der Arbeitsmappe sichern (HiddenSheets) und laden
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -857,6 +859,7 @@ class CWorkbook(object):
             saveData["SheetOrder"] = [s.Name for s in self.sheets]                 # Reihenfolge der Reiter (auch der Kopien)  # v1.14
             saveData["Esp32Wlan"] = {s.Name: dict(s.esp32_wlan) for s in self.sheets if getattr(s, "esp32_wlan", None)}   # WLAN-Einstellungen des ESP32 je Blatt (ohne Passwort)  # v1.18
             saveData["TabColors"] = {s.Name: s.tab_color for s in self.sheets if getattr(s, "tab_color", "")}      # Reiterfarben  # v1.14
+            saveData["HiddenSheets"] = [s.Name for s in self.sheets if getattr(s, "user_hidden", False)]          # vom Anwender versteckte Blaetter (Kontextmenue Tabelle verstecken)  # v1.22
             def _json_default(obj):  # v1.06
                 # Funktionen (Command der Steuerelemente) und andere Objekte kennt JSON nicht: nicht mitsichern statt die ganze Datei abzubrechen
                 logger.debug("Workbook sichern: Wert vom Typ %s wird nicht gesichert", type(obj).__name__)  # v1.06
@@ -880,6 +883,10 @@ class CWorkbook(object):
             for sheet in self.sheets:  # v1.14
                 if sheet.Name in colors:  # v1.14
                     sheet.set_tab_color(colors[sheet.Name])  # v1.14
+        hidden = savedData.get("HiddenSheets") or []  # v1.22
+        if isinstance(hidden, list):  # v1.22
+            for sheet in self.sheets:  # v1.22
+                sheet.user_hidden = sheet.Name in hidden  # v1.22
         wlan = savedData.get("Esp32Wlan") or {}  # v1.18
         if isinstance(wlan, dict):  # v1.18
             for sheet in self.sheets:  # v1.18
@@ -5076,6 +5083,10 @@ class CApplication(object):
         else:
             return None    
         
+    def OnKey(self, Key=None, Procedure=None):  # v1.21
+        # Excel: Taste mit einem Makro belegen (hier ohne Wirkung; im Web gibt es keine Tastenbelegung der Anwendung)  # v1.21
+        return  # v1.21
+
     def OnTime(self,time,cmd):
         #print("Application OnTime:",time,cmd)
         global_controller.after(time,cmd)

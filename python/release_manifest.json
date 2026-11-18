@@ -1,22 +1,46 @@
 {
-"created": "2026-11-15 08:39:46",
-"file_count": 2363,
+"created": "2026-11-18 11:03:03",
+"file_count": 2342,
 "files": {
 "Boards/Heartbeat.uf2": {
 "sha256": "e984b97a7858984be7a8fc6e8cf0bf594128d32c4c517c3f3b696e5ef4dfdb50",
 "size": 202240
 },
 "Boards/nanoatmega328full.json": {
-"sha256": "0e9c40c1bfa94e3dee563fee4a40543b5e573433de1bcf63e829c8a2073920ed",
-"size": 783
+"sha256": "9ae8d861014fb8e575ced849d834deec0ae1175cb0ed576425144c60ab546b15",
+"size": 819
+},
+"Configuration/AddressConfig.bin": {
+"sha256": "74c2312170d4f3b467d9f642669f438a10bf4d73a88fbb60b24e9980b94fcb6a",
+"size": 6
 },
 "Configuration/Configuration.cpp": {
-"sha256": "89e98c3ef7efe2b9ddf88dc48e2608c053a77df5b730fd75c50693fdb72b4377",
-"size": 1545
+"sha256": "f93c6f4c54ba16282efe36f235df5808ac6f50804cc0928c5d48f31b8575c9c9",
+"size": 1601
+},
+"Configuration/Configuration.cpp.d": {
+"sha256": "1a40f9ae08d7fc5dc7fd805dd02da21d3716dd54c158447ac91d60e5f9ce3d36",
+"size": 1845
+},
+"Configuration/Configuration.cpp.o": {
+"sha256": "80be677f5b588789c3213b41c6968e5e1bf06cbb5eaf5b0715aebe916268e6e5",
+"size": 14484
+},
+"Configuration/Configuration.elf": {
+"sha256": "9678604ffa9a6b5c4e6f2336b0b86ef7500676ec343a32b8847e296be188a150",
+"size": 8908
+},
+"Configuration/L2VConfig.bin": {
+"sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+"size": 0
+},
+"Configuration/LEDConfig.bin": {
+"sha256": "aa15220a19d1293acc23adecbb9f7f4e591ad255edf74e3f3a056883fb3e3a49",
+"size": 549
 },
 "Configuration/build.cmd": {
-"sha256": "00c5296febcf47ec6683f1f644aa3828c6b4d7dfdfa7e7ec946d732d9f559771",
-"size": 1941
+"sha256": "6f4c81c39abda6b9324f97c91901f5c28a6894d7f20e8cfd10ddb3eaf07f2f9d",
+"size": 1917
 },
 "Configuration/x64/Finished.txt": {
 "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -43,8 +67,8 @@
 "size": 15480
 },
 "ExcelAPI/XLA_Application.py": {
-"sha256": "bfba370e9889a1aac16951eaf521dbc1d2ba2539bc7a962c1d9d4e26565ba0a5",
-"size": 241311
+"sha256": "40329923431aa6503622755b1fca1dcbff9d299ecf5f2ab532167f85f5b00be2",
+"size": 242721
 },
 "ExcelAPI/XLC_Excel_Consts.py": {
 "sha256": "498406148d6914e275be5cefdebc36ad665bde5b12791112dbfd038e5839f11f",
@@ -67,12 +91,12 @@
 "size": 4
 },
 "ExcelAPI/headless_sheet.py": {
-"sha256": "2be32fba5ef3789a588af21090167321927783a5ee5e799c6fd81731b0243b71",
-"size": 32009
+"sha256": "e5ea9a5443b3558dfd4686dc0224ddaca515c82d6e6cbfd56a3b075ecbc0381a",
+"size": 32763
 },
 "KI_prompt/KI_ENTWICKLUNG_Prompt.md": {
-"sha256": "2d77e530e8693a1526b0755902ae0a55a5172b2e5ef1cb555de52c5c6ce031d7",
-"size": 17696
+"sha256": "96dedc034122bb507cf789f4d628643caa880250836a6248751abb8b0e1f3c03",
+"size": 17810
 },
 "LEDs_AutoConfig/LEDs_AutoConfig.dl.pgf": {
 "sha256": "b741f2fa3b28a6703e268a0a5564bc730a4ea4c3ea327c0acf5b7c922cf99199",
@@ -107,112 +131,112 @@
 "size": 4586
 },
 "LEDs_AutoConfig/include_dir/Arduino.h": {
-"sha256": "6b3e01082c5ed10266a75288422e615a993bad638e8d5f9a95eaf0f16991830c",
-"size": 1020
+"sha256": "32c5a27eb5aa19a18f3e815dbfe9c955071936698da16078656108f7e4a7b0f2",
+"size": 1044
 },
 "LEDs_AutoConfig/include_dir/Dprintf.h": {
-"sha256": "6b3e01082c5ed10266a75288422e615a993bad638e8d5f9a95eaf0f16991830c",
-"size": 1020
+"sha256": "32c5a27eb5aa19a18f3e815dbfe9c955071936698da16078656108f7e4a7b0f2",
+"size": 1044
 },
 "LEDs_AutoConfig/include_dir/FastLED.h": {
-"sha256": "6b3e01082c5ed10266a75288422e615a993bad638e8d5f9a95eaf0f16991830c",
-"size": 1020
+"sha256": "32c5a27eb5aa19a18f3e815dbfe9c955071936698da16078656108f7e4a7b0f2",
+"size": 1044
 },
 "LEDs_AutoConfig/include_dir/IntDefs.h": {
-"sha256": "6b3e01082c5ed10266a75288422e615a993bad638e8d5f9a95eaf0f16991830c",
-"size": 1020
+"sha256": "32c5a27eb5aa19a18f3e815dbfe9c955071936698da16078656108f7e4a7b0f2",
+"size": 1044
 },
 "LEDs_AutoConfig/include_dir/LED_HeartBeat.h": {
-"sha256": "6b3e01082c5ed10266a75288422e615a993bad638e8d5f9a95eaf0f16991830c",
-"size": 1020
+"sha256": "32c5a27eb5aa19a18f3e815dbfe9c955071936698da16078656108f7e4a7b0f2",
+"size": 1044
 },
 "LEDs_AutoConfig/include_dir/Lib_Config.h": {
-"sha256": "959ee3c795052a344544ed67b688e237aa278c9c54847f2ac0de9cd8ef84a1e5",
-"size": 6145
+"sha256": "64439280358f318c32d2ba35c97f5f0d9af30ad5a55490e1735e671ba590dfe5",
+"size": 6270
 },
 "LEDs_AutoConfig/include_dir/Lib_Config_2.h": {
-"sha256": "b7821faca5d00d1cd96a06b300dcd133b51e0a3f61fc390b05c3bffd30be45ff",
-"size": 6147
+"sha256": "19363661eeac04ac960ac4b2ddc641328e6339fe7fdd01f68c701bf86ddfa084",
+"size": 6272
 },
 "LEDs_AutoConfig/include_dir/Lib_Config_3.h": {
-"sha256": "cf0734089dd5b8847c9a222fb8a2f9db23b99028c67c9038422287f1b4f8cf40",
-"size": 4708
+"sha256": "03c25ad7b6f9eae97833c22fb376c91e77ce222454866d34e502ab035408eb83",
+"size": 4788
 },
 "LEDs_AutoConfig/include_dir/Macros.h": {
-"sha256": "cfb1d5e13506fdf51b86a06e0783d60eae9a352fd59c8d9d3c93c51b6a7ef9fd",
-"size": 363017
+"sha256": "20c05b1e6b74613f5a203e5c6db6a9d4da40c18f1614c43078ed3b0f6e6f6973",
+"size": 364239
 },
 "LEDs_AutoConfig/include_dir/Macros_2.h": {
-"sha256": "ffe45cdba067d914f1e96bf305c0001573effbcbba677a7cad83283fc36f3660",
-"size": 71301
+"sha256": "958b519299673236f6641cca7d6918d0cdb2a7cb7b17fb6a332c865f52da0725",
+"size": 72068
 },
 "LEDs_AutoConfig/include_dir/MobaLedLib.h": {
-"sha256": "11b5ef678b47bacc8fbc73ef17109c79547c36286dddb6909a1535cbfc7e4536",
-"size": 131875
+"sha256": "695b168650039e08b048eb01a39acfea054a3bf168aade8528a6f72fb57da363",
+"size": 133368
 },
 "LEDs_AutoConfig/include_dir/example_preprocessed.c": {
 "sha256": "72effb3ae38762a407b971c51fa0d128c7e0449a38ed3b8f60bcf9f64e6d19be",
 "size": 156319
 },
 "LEDs_AutoProg/ESP32DeviceConnection.h": {
-"sha256": "5d96f32fe94616683e7aa8cddd043d844bd62e4fc6acac790a85abc2dc020b3e",
-"size": 2714
+"sha256": "7d70c769a5339f31ba38f5590b88c069b98d6b7d887d9c253b10e9683788481b",
+"size": 2800
 },
 "LEDs_AutoProg/ESP32Extensions.h": {
-"sha256": "c7892657252ddf45e711cd8e24e6898ce3c4e4ca48c4007c524b4e7c08b7e328",
-"size": 7316
+"sha256": "6f829a2de852071e3e4e4ea0fbe3df390bf5f4fbe0dbc4438bdbc9f2d17754a1",
+"size": 7601
 },
 "LEDs_AutoProg/ESP32WifiUsb.h": {
-"sha256": "2ad8bd81f9871099d5ef58b5cfe5e8124e8f057352525cfa66489dca5b5c8148",
-"size": 3165
+"sha256": "ac1c58dc2d1e30b3fc23e4ce885ce875c2221c7e0ff0907890cfa8610398cbec",
+"size": 3261
 },
 "LEDs_AutoProg/JQ6500SoundPlayer.h": {
-"sha256": "7bd0caa2f1ebf50551418fb61821f44080eaf718ac21b1f83ce4696cb1c2f49c",
-"size": 4820
+"sha256": "8234ef11ff6a7d9464837ae30a01dee69a5da5c62fbeeb1057923ae96c70fceb",
+"size": 4947
 },
 "LEDs_AutoProg/LEDs_AutoProg.h": {
-"sha256": "dd8aaab03206ff98d2a7cf843bd569ff12c8239db944870860559531da5d1d71",
-"size": 7059
+"sha256": "dec26c4ecb500058c4f4f0574e1288fc45dfb12434f0b7ad5d55427f9a443eeb",
+"size": 9512
 },
 "LEDs_AutoProg/LEDs_AutoProg.ino": {
-"sha256": "6e50693a72e7658e16bcdc2af13b0608e6c1ead1e28ed64b740982291f400754",
-"size": 110738
+"sha256": "37b8a22ec219d798c86b309006b36721a56988eb3d86f6f950cbf188d936e207",
+"size": 113235
 },
 "LEDs_AutoProg/MP3.h": {
-"sha256": "5c2436f9df261f7d261261c877651228d36e23c1ad3caad48379c7d3089a3665",
-"size": 4011
+"sha256": "4a0aeaa1e2c299029626ed83c14bdb6b1791ee6c28f733ee5effb9cea587a9a3",
+"size": 4098
 },
 "LEDs_AutoProg/MP3TF16PSoundPlayer.h": {
-"sha256": "c3ccc62e4bbda22d4c97bf19a8735158d1b3a789fb05c21e90ccd597c466fc10",
-"size": 8611
+"sha256": "a4ab01d1b82c1ae68074c219e12a30ee0b968a859e3ca0f32c159fae7ccd393c",
+"size": 8835
 },
 "LEDs_AutoProg/SoftwareSerialTX.cpp": {
-"sha256": "3ca8cfdd4274bd7e5e5ea441a3e5af93d8b379ca8a4f52a7120b5599aeb694d9",
-"size": 4480
+"sha256": "7fd3d3abe0a35bd8260c3eb0a38f6717be2fdbdc8f3bb2b23248425f904ed330",
+"size": 4648
 },
 "LEDs_AutoProg/SoftwareSerialTX.h": {
-"sha256": "c14e6d7a8c2ba08fa9b37a8395bf4146cd92651a82bcd98fc772356ce1a717fe",
-"size": 1731
+"sha256": "bc4c7a2662e99d729faa2ff6df42148fb7c5aabe31cac86925634d1432ee7ba7",
+"size": 1791
 },
 "LEDs_AutoProg/SoundChannelMacros.h": {
-"sha256": "428099f9e1e15f8193ce97483b632535358919b64ae56b3bfc5cca38cad12182",
-"size": 4509
+"sha256": "871e429192a0e185e3355a353c5010bd81d61b9ef1bde4a791a3e12dfdca545e",
+"size": 4605
 },
 "LEDs_AutoProg/SoundPlayer.h": {
-"sha256": "a1e15c8e02e5bac40c83ed879ebc1cfaa9ba1e31f08e439d7656c74fe7c9fb86",
-"size": 902
+"sha256": "f83b399631c5400e0e1e079ec90e0aa5fd458116cc35285556262f5d0ad675ba",
+"size": 946
 },
 "LEDs_AutoProg/SoundPlayerProTiny.h": {
-"sha256": "25908490461eff767707720423ccbf37d468257eb40cb060a2e064f7b19b8856",
-"size": 5272
+"sha256": "4608270cbea32fb64545c48769edac7a22b690393f107a98a22b8fe012eefb25",
+"size": 5436
 },
 "LEDs_AutoProg/SoundProcessor.h": {
-"sha256": "0d31797ead0f9cdeebf8f87a6f853aca5f517b01039f5b0ef1d16ae9825eb421",
-"size": 8583
+"sha256": "3e8637aa2762af7caef1bfaf7372dd15cd91d0ba307b23e1c57584c6a10fa2f0",
+"size": 8843
 },
 "LEDs_AutoProg/SoundProcessorPro.h": {
-"sha256": "83f8729560b7faba23f6e24c1c5ebd8fd098d3199c2f2c3b49c2959569bbcdb3",
-"size": 5458
+"sha256": "68d4ad7c0d24228d474c5177ed5ad36a44a420848e4f91ad6adb9284e5d29c09",
+"size": 5633
 },
 "LEDs_AutoProg/Start_AM328_Sub.cmd": {
 "sha256": "6560ed37d55c41160d3fc86a6b66b76b307203bc8a3452468afdcba545b722ac",
@@ -231,20 +255,20 @@
 "size": 447
 },
 "LEDs_AutoProg/U8G2UserInterface.h": {
-"sha256": "c9fb44d8f2decdb65569adcfae781586f2c12192dde5d99d2d467bdeac01cd5b",
-"size": 9219
+"sha256": "fb029e264948dca42148e117d5a2bb52a6aaab12ac5507f5792a56311503e1f3",
+"size": 9499
 },
 "LEDs_AutoProg/UserInterface.cpp": {
-"sha256": "605ba6d2a6bff75097471e92e1a7de94986191f67d76ca37815866125d7b9b1a",
-"size": 1741
+"sha256": "a76de21823befb96f09f67c2cc18021342aed9ae41e618abd74c872984fc7632",
+"size": 1806
 },
 "LEDs_AutoProg/UserInterface.h": {
-"sha256": "23744aab2e0aa030f2edc072f7ca258c0b1766d9056b74a396e5adf77193237f",
-"size": 1865
+"sha256": "d3782281e1db1233b67c2a81f8512c3fd416eb4106d2ac80f319ebbf1cf1d057",
+"size": 1924
 },
 "LEDs_AutoProg/boards.local.txt": {
-"sha256": "0b1f4f230a12b4991d2b9f4f2bf488b5f38bafd51806c954b5509db9a25a8195",
-"size": 687
+"sha256": "65df09a42cd696a06aefed4879ecb8c894fb948a8b1da8a40b845991a850781a",
+"size": 704
 },
 "LEDs_AutoProg/fastBuild.cmd": {
 "sha256": "2b899743f56b93549ab2a2976d541120ae0d9a786963716f6253410a2c2b5787",
@@ -255,8 +279,8 @@
 "size": 17438
 },
 "LEDs_AutoProg/persistence.h": {
-"sha256": "172051e21dda35dc5ad6b9f10b0669efa4dee1b2c53a911b1f963f4899e84691",
-"size": 1314
+"sha256": "ea00f5b837b3b6e69ef60fc0b9f93bc6e7d062d543a4b876e7c3f43112b5beb3",
+"size": 1358
 },
 "LICENSE": {
 "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
@@ -834,197 +858,205 @@
 "sha256": "adcd3aef9289b590f83709a0850e024596e95296c0bb4b0e1d6105b2ac7cb12e",
 "size": 1454
 },
+"START_HIER.txt": {
+"sha256": "b1aef907bbf4825942b791877b75ad14146407fe9fa61fdf944500bdc2c2b242",
+"size": 1647
+},
 "Update_Libraries.cmd": {
 "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
 "size": 0
 },
 "_web/__init__.py": {
-"sha256": "204afc4f321cac318632dd7d4aefe1b27dff65f76042b37075c7ab079ce2e9c8",
-"size": 167
+"sha256": "ef36ed9d3994fb642f4890c34de9be55fea7e5cb5407b11e533c546e3d0363d8",
+"size": 169
 },
 "_web/mll_graph.js": {
-"sha256": "93eaffa63f5aefb580123f8a5c389dd36931b1adedf0305e82fc535b47db8b62",
-"size": 64363
+"sha256": "6394690e0dc9c078ed05c057c23909b82b8bb292a66fb913e529d6dd249333cb",
+"size": 68814
 },
 "_web/mll_servocurve.js": {
-"sha256": "7add5eab14996a4ff6c58bbf1366513a57eee6971a9e59dd10d0bc83f6997b15",
-"size": 12991
+"sha256": "d175ec903e706f0408ea692fa793305a28d1316c19b30f85afcc326eadde9892",
+"size": 13201
 },
 "_web/mll_tabs.js": {
-"sha256": "e336207b3d037af42cc76af3b5ddc38e765aba48aea8b0992bf1ef2275c22e88",
-"size": 5223
+"sha256": "68353d16b6ec7f5a327f863454f6494cd7b59a32e64528f7d804cf7daec245bf",
+"size": 5332
 },
 "_web/web_access.py": {
-"sha256": "3ded0c9a5f0bd03d66f2bc5c8411b529833c6a5341fa2a69a62c2ce0c865e9a2",
-"size": 32159
+"sha256": "77b4c274a662144af96854974baf09106f6335886047661dcbbd5ac05d7c85f6",
+"size": 32625
 },
 "_web/web_auth.py": {
-"sha256": "73d3eaa849976a439dc48f724e04f7e6639c3d6f49e934018ee814ae7b525097",
-"size": 8072
+"sha256": "b9fda13e6c15dfda4dfcc59d646ae1debab3c2449dc4e6a13986a48e036e91a9",
+"size": 8208
 },
 "_web/web_colorcheck.py": {
-"sha256": "f5be2149744ed6e8f10d0444af07a686c29c450c937b0a717a406ed0a6b3c03f",
-"size": 37831
+"sha256": "0937c40548b83d73c60801718f9824ac443777eb7468243a629e9dca3865f86a",
+"size": 39122
 },
 "_web/web_dcckeyboard.py": {
-"sha256": "f959ca1906e37b3c992babd822d0a22d6ba563b190dc1d5aef329441e77ed2a8",
-"size": 10015
+"sha256": "875e397089755bad41792d6bf9ac51ac6eceb1c7220bf1db89b71d1c0246483e",
+"size": 10440
 },
 "_web/web_dialogs.py": {
-"sha256": "f7b3f70f2409a8a4d30a73f03c6cf3979e4209e4140661336a0a2e788fa915db",
-"size": 35843
+"sha256": "5eabb9345818aed2dfd6bfd06e9bad48f0cb28304bdf3e3cbbcded2d24a628d3",
+"size": 36604
 },
 "_web/web_esp32_ota.py": {
-"sha256": "8988871bc0707bf5326da6d39fac2ecf3be4a58008bfaae056a5cc1416cef792",
-"size": 12698
+"sha256": "1f3f1427f4d262b3d3e59037808f4e1a0984913e30c4010e54499876bfba58a3",
+"size": 13387
 },
 "_web/web_firewall.py": {
-"sha256": "f091f2f66c7424433f84f99b6e675ea290fe407d313f7e4b1f512977f6862672",
-"size": 13252
+"sha256": "e518e852a976e518bc120a22548868cd79d328db236ccfa23f00235850a2862c",
+"size": 13906
 },
 "_web/web_form_comport.py": {
-"sha256": "c2bd716825c538776bea985342c494e1c32cfcaed34eafce459e05ac77025f73",
-"size": 22028
+"sha256": "221ed3de2a9e25d4a8b6e92f3062171da9404bc237de56dee9b022d377806c0d",
+"size": 22413
 },
 "_web/web_form_exchange.py": {
-"sha256": "ccf758c83af00e81b40cbe61b56fe9104a6463873a358763fead64f63688d410",
-"size": 9941
+"sha256": "a3c917a21dd159a7ed1f7f168cde1e98759ef8722c41d850d37bae48bad18bd0",
+"size": 10265
 },
 "_web/web_form_firmware.py": {
 "sha256": "527fc9f6e1977476b41b3ad050c6fce03667f1a199930ff37f752a04e6ba811a",
 "size": 14209
 },
 "_web/web_form_firmware_download.py": {
-"sha256": "ac188c19bba206ddaeeaba6fea8bc68bc1717b9ac6a3e95eced4fbab49670299",
-"size": 13195
+"sha256": "8ebea3bcea1a49bf984aed7568cd9525c69a2f0952f5706e9afefa67419658ef",
+"size": 13446
 },
 "_web/web_form_house.py": {
-"sha256": "df007d0d99a3725b1148346b21b28af6acea8b36503c52ad58e9745e53e4e42d",
-"size": 24422
+"sha256": "8dc0083fc6053d0659c15cef6445694f2024acaa439a37bc323b0cc47e5d8d42",
+"size": 24908
 },
 "_web/web_form_ledcoloranim.py": {
-"sha256": "db460bfee73fca926039ac4327a4db9accdb120a1d11fb75c31c4d4714b4d514",
-"size": 21653
+"sha256": "5dd86227bd9536cdb59e5e410088ad0a3daa144789d19bba3e870c4056b1d564",
+"size": 22043
 },
 "_web/web_form_options.py": {
-"sha256": "28ac0ed908d1a8892c105ac1ddb693cdbdf04f9597434c6a08507572dbab9b91",
-"size": 49840
+"sha256": "b3426c2c3f66e78d7420c62d530ad48a74ff87ec63e27f8e47b06abaa307f040",
+"size": 59172
 },
 "_web/web_form_other.py": {
-"sha256": "dfd7131972b6137b12c413788ded8d1285cbad7c966f1db5b87017468bfd114b",
-"size": 17757
+"sha256": "98c964e7c692552411710269b7604cb4a4b3c9591c66f9256da44108e1f6acd3",
+"size": 18077
 },
 "_web/web_form_select.py": {
-"sha256": "03a201caf2ff799ae54d9f2d906ee9fe175e228cb782543d48ca117fa82e86f4",
-"size": 9511
+"sha256": "8b6f78ddd1a00868c9ee3668b9c9a46627665abf58a86975f04137cc90a57600",
+"size": 9679
 },
 "_web/web_form_servoanim.py": {
-"sha256": "bf7da689bbd000cdafa1aa31922dc7d750c420d759e03a6f7be4367888abef4b",
-"size": 27552
+"sha256": "ba9c802ef04ade79049928df9ae24e68767848ef80890fb104cf7b7214ac69ad",
+"size": 28027
 },
 "_web/web_fullscreen.py": {
-"sha256": "cb74f6cd9644b4cd2b60ea210ca75e070398d5bf051ca4b6b1e13d7c18c5c9f4",
-"size": 6065
+"sha256": "e5d232d4618839147eb677e00f91ece2a56d02ed1c0f99b33c63ff0cf0eb04d1",
+"size": 6161
 },
 "_web/web_graph.py": {
-"sha256": "d60bb4667ae05102f8623933ef285db0131222fe3fc0ea7d700e0c111eb2a3bf",
-"size": 35338
+"sha256": "5c7b3d28c16cef064b973263f60c9f2fcd4fcc53f2e70640254942db3c2d6b8b",
+"size": 36888
 },
 "_web/web_i18n.py": {
-"sha256": "edeb4eb912dbbbea17631fdbd04f450fef16478bb94e9124cae210dc7411d5e3",
-"size": 28332
+"sha256": "b9335121e520d59a3479c77a161aa1fe9dad2a0c5a09cbbd7e62d19a1b509893",
+"size": 28801
 },
 "_web/web_instance.py": {
-"sha256": "e2a651a9dc146cb6f97076f08db070efb227e048cc218e1cee0271354c05221f",
-"size": 1599
+"sha256": "49bfa73d90951e69ff73eee535742e9e2c948a6916e245ba4eecd921da731525",
+"size": 1643
 },
 "_web/web_layout.py": {
-"sha256": "261d68de70e60914207b80984415da62986c8cdb6ce920de738ae69f1add49d4",
-"size": 13057
+"sha256": "9da658122a88a8e36502f7c34f27199cafbd65da07830f6427fe7c2cdc52e3e7",
+"size": 15657
 },
 "_web/web_log.py": {
-"sha256": "5f6448150b3889918b961e143703bacfd1f29c13cabc5286a43a2de1f3e7e2c9",
-"size": 9312
+"sha256": "644a5b7e0c4a88ff4539d8630d06cb3bbf4b93d3e9ac7dfa8f386a620b042788",
+"size": 9907
 },
 "_web/web_logging.py": {
-"sha256": "31dca253db0b56c193e9bd90898405a76c2aef137bf585eb394fd3f4f8be064f",
-"size": 12437
+"sha256": "a869832e043a5392d1ef6516b4d7951ccd940b6945687151d786ef61cd6bbc60",
+"size": 12670
 },
 "_web/web_macro_tree.py": {
-"sha256": "e13ad3ef8e946177c0fb6debe5c97eb0177a4c378a83b9a2a80c64da80834863",
-"size": 25976
+"sha256": "93972c0f1bbc05ec7e711efdc30967f65931554b3965b1ed94c816edd03817b0",
+"size": 26457
 },
 "_web/web_network.py": {
-"sha256": "772a9bf6a95061f111088f5664b8d0133e61643162c9c4d5c7ea795b5a9a1581",
-"size": 4609
+"sha256": "0b95c42d29d16b47558307f497a40eac95a6a0c8d22167b9c17dd9305384d466",
+"size": 4701
 },
 "_web/web_params.py": {
-"sha256": "439f45247def07ea81db2fb0d8d1fe09428acad6b68b8f009fdb9855a19cdd1d",
-"size": 27362
+"sha256": "f17953949e5defe23382a164d5b085362ee1389f7bcd6a83ee423d6564c2100b",
+"size": 30717
 },
 "_web/web_password.py": {
-"sha256": "2d51394d14dfd53b643154cd24bd2c8245d2fb4bb50a02b7355ac2ac731559b0",
-"size": 5004
+"sha256": "3797465c01dbc06f2f04b4a7f74ba465080817bba0becb4013aac4fde74b23db",
+"size": 5140
 },
 "_web/web_pattern_test.py": {
-"sha256": "ca17a1093c4b847599f19e3cce91e26b115f522f51603d3945896acf6a837225",
-"size": 6462
+"sha256": "7eaf6f9a0f62c19c4a6cf38700b7a32fef86fb5c350ec057a7479b7ea71c900b",
+"size": 6590
 },
 "_web/web_pattgen.py": {
-"sha256": "60100a99aab75bb2550288ca114f04d6e2ec2ba3cc360e45c4af4c73cda971e9",
-"size": 82729
+"sha256": "b84261a002147e7a0c1f764074d6c0a4e70c4db411cc2da0dd624122cc549ca1",
+"size": 84002
 },
 "_web/web_pi_status.py": {
 "sha256": "8c2f25285d5ed0bd76fa25336aa88aeae18701463d9228cb0522bc5c75663bc8",
 "size": 8739
 },
 "_web/web_serial.py": {
-"sha256": "54b76ee2a64b899d30bd5d2f2be80c746caaae4dd5cb7bb680e6cb53a4a28f9b",
-"size": 37458
+"sha256": "b8738d78a94b253645e7f645b94eb85eb4984b19107e36d696c5a6caedcc6ca5",
+"size": 38778
 },
 "_web/web_serial_page.py": {
-"sha256": "6bd0d33d5f4f0c169144b12630718998b2087bc45cd8d7ccbee4ecdd3eeadc46",
-"size": 3559
+"sha256": "c3e4115dc28200808c39c686e029fd7a1aaefdb45e21076db5cad56f94f3d122",
+"size": 3641
 },
 "_web/web_servotest.py": {
-"sha256": "27d5368d3a9276181e93e30a79c844106af5a075c03b0cca4d620452b7c22f70",
-"size": 44643
+"sha256": "1053362ded5dcc53d06935293b22272e6d2593cf8ff399b15bb5130d516157cb",
+"size": 45470
 },
 "_web/web_servotest2.py": {
-"sha256": "c614a7fa5709c30b761784fd0f6bef2672f81941d8544d6446cce139a6848382",
-"size": 26008
+"sha256": "bd8419156e0efbd65664292d0202805ddb04ceae5912b6a19856861fd5bcde57",
+"size": 26503
 },
 "_web/web_sheet_tabs.py": {
-"sha256": "bf7873a651b837d1c9f3ae5b8de56e0eab1de6067bc6f08e8996b57244e16b38",
-"size": 15618
+"sha256": "dfdf203decfa6e23bceb1ebae2054c0844748bc51dd81e94132d5176f499d587",
+"size": 17860
+},
+"_web/web_simulator.py": {
+"sha256": "0872f9afc564af91207c1e863165ff6ba57235fbad2bb6b1ffaaabaef745d691",
+"size": 4341
 },
 "_web/web_soundtest.py": {
-"sha256": "9704f3a5b101b3b5031845e35fc4df19401ff998b02b1dabf85e9f82e1295c7e",
-"size": 17613
+"sha256": "45ebb3a5528274ffa94d85fd867fcdaa3a1d479b4765c8e186030f57b10bd5e0",
+"size": 17962
 },
 "_web/web_tabs.py": {
-"sha256": "8e9f1d3d2c68be4ef803d3a56ccfb056041d4cff20a3e73b27c8614eb41925a5",
-"size": 16859
+"sha256": "fe3b7f96fce6c741e8c7d768943c673f0f3d2960f31aab262d04424c2e35b2a5",
+"size": 26210
 },
 "_web/web_toolbar.py": {
-"sha256": "f22b0041299211aae9642dc7469e3c21e09bad40c1f60e71220dee12f41fa457",
-"size": 6565
+"sha256": "e1ce93ed10c9d702d89a49a1acca6b51b44045cb69babb8d9451f414ed74d20d",
+"size": 6677
 },
 "_web/web_update.py": {
-"sha256": "a7efc8027fc3105a1c53af91538c82f000c46874a6d92daeb1fb3e11bd1f2c1d",
-"size": 52228
+"sha256": "8a797a8f40ac3c01b5e0ca7ab9256d5ded78055ba71912cfbf0961d906d91c86",
+"size": 54376
 },
 "_web/web_viewswitch.py": {
-"sha256": "a680ca0b53fef373171beaeed2ab4ffb47fa4c18c5690fca3852a4ca19d63b42",
-"size": 3929
+"sha256": "79ac1380283877d8cb667c3fb1bdf1d42532710e2e0c574c14ca7d4c9c26b7d4",
+"size": 4003
 },
 "_web/web_z21.py": {
-"sha256": "a2546e83776a626c807fb4dac75158bd15af5592d8d22a381263bd892ea3c217",
-"size": 35175
+"sha256": "5cc62761ee74ebaf5d9582e7f7db83bbca96ffb5bf5c8a85fbe3dffdcd3f74fa",
+"size": 36186
 },
 "arduino_prefs.py": {
-"sha256": "b8f31d0994a657fc816f0e9806c6f95e9f47a57d54a0ef4ff68648608b983134",
-"size": 7910
+"sha256": "0ef369e4b749c3b7cf42b95e87798dd851cf6204ad8cddc9dc49fe3bb1ec6a11",
+"size": 8072
 },
 "canvas_image_zoom.py": {
 "sha256": "89fb2805255996ce9908d93f34374e6a05c67ed6a877001ac10d68a54b4876ca",
@@ -1035,12 +1067,12 @@
 "size": 1693
 },
 "check_project_writes.py": {
-"sha256": "58c9fd997d099df47000264c312cf58202247edc0d97745dbf7ed2170462a888",
-"size": 4881
+"sha256": "ad0334fedb2f114791ca47288a9cc908eb92f32ed5b5c030bd2f5061efca8a72",
+"size": 4987
 },
 "csv/Beginner_Hidden_Macros.csv": {
-"sha256": "fb8b529c9cda6a5682a796022a97ab1e18ec2b107e44cc7041bf18ac98998945",
-"size": 930
+"sha256": "a3ad9b541a1256b0d07a4ba1b88875b62aebd23d3f4b3efd2f95b510e2aa048d",
+"size": 938
 },
 "csv/CAN.csv": {
 "sha256": "8195eb656e707f860fa9a88f70da2c4ccda929f125d64e5c297103ddfc9ef632",
@@ -1063,8 +1095,8 @@
 "size": 583172
 },
 "csv/Lib_Macros.csv": {
-"sha256": "2e4abc086755dca4f504895a9d8a274e6257f21c298ed005a089dcf1662b3bc1",
-"size": 888794
+"sha256": "72a7c5d99c0b36246e5f8963dec5ace12e7a4233218c2955f30fe5dbe039a1ab",
+"size": 890728
 },
 "csv/Lib_Macros_ext.csv": {
 "sha256": "8f87f0dc84beb465b391537da9635d675bb0c72c942cb9a965158219db878c8c",
@@ -1115,12 +1147,12 @@
 "size": 1069
 },
 "csv/Par_Description.csv": {
-"sha256": "6ce7df2b416fdd12fee90a5b3f7197250f027a9d858a4b9687f7689ad2c4bd88",
-"size": 114883
+"sha256": "c12278d0de60c787847c8efe358c4d038372a8385476808f26e36a8eb7c121e3",
+"size": 114926
 },
 "csv/Platform_Parameters.csv": {
-"sha256": "63bce7dda37ce0fffe0791df7206ef4e2ce656cb4d16fda5a78cb406cea7534a",
-"size": 11908
+"sha256": "8df3d158401e7039aa5d95d0fe54766f89278b43ba4513823a0d55e97b36afbd",
+"size": 11915
 },
 "csv/Prog_Generator_MobaLedLib.xlsm": {
 "sha256": "ac36af03afb7dcdb1cbaa4184af6ecb9ffd2e0b295a93b401c4093ccf24ca548",
@@ -1131,8 +1163,8 @@
 "size": 1106
 },
 "csv/Web_Languages.csv": {
-"sha256": "69adeb6d88d485484790ac52c7e66615cda94208c68811a22f0d11ba8f9f1ec4",
-"size": 539252
+"sha256": "9e9210d0b4d7bc75b3fc3b028e4ef547080d792435c286779006dc828f900547",
+"size": 573891
 },
 "csv/xLibraries.csv": {
 "sha256": "a737fc50e763b84683b77c46c5f9a4b338362e0587400daea97f0ed0e89e2b81",
@@ -1151,112 +1183,112 @@
 "size": 3308
 },
 "fast_paths.py": {
-"sha256": "a807ccd6331a935e19f97f92d8aa04c740a788c82789856388ced7feb74bf81a",
-"size": 2692
+"sha256": "10b82018ee50125718e56980f55c99ef9f27455cf9f6e72ab5bad45a2b965b33",
+"size": 3273
 },
 "headless/__init__.py": {
-"sha256": "2a965aa0b9ec4eface04a957c43778d975ba06c265a56c14dcaddf6253834b85",
-"size": 181
+"sha256": "1aeaee54467547461a38b2869913bbbd52f63ab2ea65a67643d758276d64800c",
+"size": 183
 },
 "headless/headless_app_controller.py": {
-"sha256": "58078c795944da4e7a59149bbee34b3a82b5f84e78a90ca92d52b3d1ba400788",
-"size": 22265
+"sha256": "5228e22e0c11f66d976e8851080e29db47c6902da0dd8935568977694196ad2c",
+"size": 22652
 },
 "headless/headless_controller.py": {
-"sha256": "a0c0f85b8c50f3b588d51790072dd5ff56c6031a443cfea03db12b14146a9ec0",
-"size": 4689
+"sha256": "08a8653966a2287febdedae609ebc5310c90c8c292514d70680455f1358ada3e",
+"size": 4799
 },
 "headless/headless_esp32_ota.py": {
-"sha256": "e856718c2d6497f7f9f9697ce936a31841d76551ccf15d989419ff05f93ed4b9",
-"size": 29256
+"sha256": "de0aa433e1b4ba4a41d66bc24af228add0569c4f6db008a66c5abe4c479a3a8b",
+"size": 29718
 },
 "headless/headless_firmware_dl.py": {
-"sha256": "661ef67e4713e8fab515e64d723a4b9bb4c4ad0bc7b45005692511624e05b41c",
-"size": 14713
+"sha256": "87975ee02d50f5727dd6c4363a1a8c92104856595f1e943d576f890bac9d55b7",
+"size": 14991
 },
 "headless/headless_git.py": {
-"sha256": "65ecb71bb70d9f036c01628f4c0867d71a2bda34f093e2aab8d1f78a654d38b2",
-"size": 18648
+"sha256": "9ff3a48ad02f19798986f746c1d52948c9ee11d0b23b8d66fae00b895b765af2",
+"size": 18995
 },
 "headless/headless_graph.py": {
-"sha256": "84fe0a79c47ca92f6ac85d399e6512ee5b4d34c972e8202356b761bf301b4da0",
-"size": 12243
+"sha256": "b00cdd2a8f96c27c6e0acfcc5ddd2fa8c84c3fd030701ca767fb8b9f89be4ea4",
+"size": 15153
 },
 "headless/headless_graph_layout.py": {
-"sha256": "f1e7906c0a93d4670e80916f2813b36ed169aa47247b408949f5a2755ded1d86",
-"size": 20493
+"sha256": "12921ac39ee93dcaba9b5f33db457d2c394a4b90ee15b292def23163c5433336",
+"size": 20867
 },
 "headless/headless_graph_ops.py": {
 "sha256": "b84f35f30bbb0e260101414fbb2f5d908c42e53bc899ac3d34434e8157ac3436",
 "size": 21230
 },
 "headless/headless_gridmodel.py": {
-"sha256": "0c809bec97e50b50050613e84356c1828681fdcccd98774897dc8ab8d071d6ec",
-"size": 11714
+"sha256": "f29677c2dd363bb356ce5083fffc2167f68e7fab04201d52d771da1b7a5c27f9",
+"size": 12289
 },
 "headless/headless_hex_upload.py": {
-"sha256": "7307fb137a4247c036c86b405dc194e6b89ae300801e1bf13ff10fbf521797c3",
-"size": 9871
+"sha256": "670a7b5452356c9bc2d49e47b97f5f213fa7ffeafa5dbb73b1aaad65d1d16537",
+"size": 10039
 },
 "headless/headless_isp.py": {
-"sha256": "a9e0b6a89970c425315e9c8bfee18de834ae1ccd63e63518c9aecb2372ff4ff9",
-"size": 6789
+"sha256": "21737944d45ac2aabc0d85923b823be5582ec312121ba2a43690e203381a9e06",
+"size": 6926
 },
 "headless/headless_ledcoloranim.py": {
-"sha256": "6fdb66d312f0ecceef58eaa2e2cf2f19d03c3dce4823851826031f3e9f3d9499",
-"size": 12355
+"sha256": "86c3d4233e54051052a15d7ada17e301f816536e71d3e636ee3ecc46694b990d",
+"size": 12589
 },
 "headless/headless_pattern_test.py": {
-"sha256": "746829bd9f84e6a47ab70404aebb14599e77cf6d55ecafd5dbb8a0eb51b32e4f",
-"size": 8653
+"sha256": "08dd1b4cb4625e6e1c3b4cfa7496a7fdd6cf371ae230c7c765afbdb8ef5cbdb2",
+"size": 8831
 },
 "headless/headless_pattgen.py": {
-"sha256": "34f65ce778f6ad392dfa605bee217d89358a0140924dc2a98b209c6bbddedd55",
-"size": 70799
+"sha256": "3ff874116157914a903a32508bd9e03db8a3378005c82ac6b0fce1fdb2a12a0b",
+"size": 72064
 },
 "headless/headless_pico.py": {
 "sha256": "7732830ba6f7a289e066242cd51c840f9317e1d98d23d4990227113fca000b63",
 "size": 21508
 },
 "headless/headless_pio_cache.py": {
-"sha256": "fab825388b288fd9c64831cb69f5be666725e6cc180278fff9b53fb2439b528e",
-"size": 7088
+"sha256": "6c853377dd30484e17c7ff81127af36ba90cff626b46489f982e8105f36d5f01",
+"size": 7249
 },
 "headless/headless_proggen.py": {
-"sha256": "5567aaeb94ea29269c86bd42103c3ce2660116ac2e697b65b16f27808deb6db8",
-"size": 13249
+"sha256": "fa7dae13bae9d176aec1a7ba7d0774668a7635b8c487b2740598ef80695f7480",
+"size": 13492
 },
 "headless/headless_search.py": {
-"sha256": "71caabe76eb9c2c12862ee5eb9a771243b01b43e3ec5a6046738ae0abc6d183e",
-"size": 5350
+"sha256": "f0f5843e490c5e28aa7588eca80da953c3dc27993a4477015be8c8108bdf6924",
+"size": 5460
 },
 "headless/headless_servoanim.py": {
-"sha256": "c60a10523b996c8db7c55c4874e059054b96f45c3048bccec10674720d20c968",
-"size": 21361
+"sha256": "f8ab7c25f4271bf56b9d551d6e7e2dcdc1bbf93e76979ed86569afbc2baaf3db",
+"size": 21769
 },
 "headless/headless_shutdown.py": {
-"sha256": "55be31b26245599be38b6e4f266926b9321c8198ae36fd19ef4a779a04fd30fb",
-"size": 3055
+"sha256": "1433c5665d0883030a359b0c96a96618aaad4ba53e36b26d076f71bad7c3cad5",
+"size": 3113
 },
 "headless/headless_smoke.py": {
-"sha256": "8d17e7259b4f432c2d0c6e1955f0da435b4219e1082313aa4c9b0b5261f72031",
-"size": 2242
+"sha256": "129a3bcede35aa29187e4311a226343b74c4bb1fe86c1aff752717b67235799c",
+"size": 2293
 },
 "headless/headless_ssl.py": {
-"sha256": "43c66e05363d4ee6288103f75d889465f34a548d293058ac29b8e7b66db0c534",
-"size": 4000
+"sha256": "fcdafc717a62b3494fcd25d48afbc17c4c4af9f69fe2b90c00650afbd61a14b8",
+"size": 4078
 },
 "headless/headless_start.py": {
-"sha256": "482b14d24a931f885066dbcb25f2c0b39d4b761c98b0b5eee557b43ae4f985c7",
-"size": 2541
+"sha256": "4e231ef67454939d2e414a01d001139d3ee4de4624e80f585006bcb977feffbe",
+"size": 2590
 },
 "headless/headless_startup.py": {
-"sha256": "1c3b1c0a19185249fef4b98ab4f840cd19ab46c63f004622eec0ccb7fc10ee9f",
-"size": 4378
+"sha256": "68aeb2df758e76d56df543d229c43216f8ed327775a56456797e71420541cd50",
+"size": 4473
 },
 "hex-files/400_bootloader.hex": {
-"sha256": "7d5fe46e0d2d1a6c5f43daf72bc6c4fcbe99b7fe7022f53a14820beaf8fcaeb0",
-"size": 42168
+"sha256": "30ced5d5dd07cf93371e24132294e9a11bc19e4d2f7c22d6fc40d5aee4460146",
+"size": 43129
 },
 "hex-files/400_standard.hex": {
 "sha256": "2ebacb7f7b991c6e072658118c5586d6462b01b4ba6d12b274242ab2ce1d6cf3",
@@ -1283,8 +1315,8 @@
 "size": 6727
 },
 "hex-files/DM-TinyServo.blthex": {
-"sha256": "8baf06bee8744f5e00dca83c9c1d8f64f52226f79bd6ba90ff620c2d88063775",
-"size": 15172
+"sha256": "944f7227182c186b0f6cec2404087e8b5f06e7cdea56602ce1f6218e0dae6f87",
+"size": 15522
 },
 "hex-files/DM-TinyServo.hex": {
 "sha256": "693bd1265f77a2fe79dffcdc7bb5e7bc6806305a11bce7ddcf708bb12a061860",
@@ -1335,8 +1367,8 @@
 "size": 15755
 },
 "hex-files/Read_me.txt": {
-"sha256": "0093e3d9c383059252f33235618253af22e02e4f29b2235c006c2e996e241514",
-"size": 1590
+"sha256": "d22dff218d7ea0378681f6573b96a163c5d98521d85b3cf65420265ad925a1b4",
+"size": 1619
 },
 "hex-files/Set_Fuses.cmd": {
 "sha256": "25a2ce18e8f04f4b8be4cf7529a2295af4b49b8e839bdc67dd5a70d8b1db6b1b",
@@ -5446,10 +5478,6 @@
 "sha256": "af1ee37b38bc6a8b336fa912ca9dc4a9946cf2f8311078476859ef50115e2d2f",
 "size": 4279
 },
-"icons_gross/Ampel.png": {
-"sha256": "505f8bf3497719a0022160e58b52ab99d3705f20b6eccc1457ae60ebbbe81ffe",
-"size": 14249
-},
 "icons_gross/Andreaskreuz.png": {
 "sha256": "61a1471a66a6bf483d3af5352181e574a696841be87621eba5c37d31fa8d5b73",
 "size": 15848
@@ -5478,14 +5506,6 @@
 "sha256": "c00499224c27181f788d831357a0b8abd3592ae63dde1786e40f26bdfd8b985b",
 "size": 26047
 },
-"icons_gross/BlueLight.png": {
-"sha256": "2d4cb51b3a6bf95aab817e65b95b6c9b2bcef5e3f27c3908e3cdb73f50624780",
-"size": 12531
-},
-"icons_gross/BlueLight2.png": {
-"sha256": "7c3c68ab6ba35f9eb9e00edddeb8730f2bd67e7cb39cccb9fee7bc7980cb6c6e",
-"size": 11350
-},
 "icons_gross/Bluelight.png": {
 "sha256": "2d4cb51b3a6bf95aab817e65b95b6c9b2bcef5e3f27c3908e3cdb73f50624780",
 "size": 12531
@@ -5497,10 +5517,6 @@
 "icons_gross/CIElab.png": {
 "sha256": "cd7363191eb99c7c57fcd87db9b0c40cd268762d3dc332b3def79c9220428946",
 "size": 39195
-},
-"icons_gross/Candle.png": {
-"sha256": "5c47e8ba5a1b8d15779c658f6c1ca47dd619c78bc16e1a3697264e6e164e29c4",
-"size": 13011
 },
 "icons_gross/CharlieK.png": {
 "sha256": "cd6de6d6736a91c6d6884cae84f715b0cce06fcb3845e3a3df7ac226a9a2a3bf",
@@ -5834,10 +5850,6 @@
 "sha256": "6dcec0c27bfc41d140ab9f9f088f12b76eb4e9b3e6ec9232d26d54ce6db88b7e",
 "size": 13271
 },
-"icons_gross/Manipulation.png": {
-"sha256": "d0b108ec42b8d65946aa13fb37dc5e8df2cc1f8f1b52ee3982b4425a82ca2360",
-"size": 15478
-},
 "icons_gross/MonoB.png": {
 "sha256": "8c2cc9d1a706ab5c9bdb374b5c5136bc07fdbe19b90dd72ff7da5becc1c35aef",
 "size": 16756
@@ -5901,10 +5913,6 @@
 "icons_gross/Multiplex.png": {
 "sha256": "d8a88fe16cdec9bc3393b28eaedc5891d9885aa0c72a52780201c7b1ccd165ef",
 "size": 6048
-},
-"icons_gross/Neon.png": {
-"sha256": "791763f1132c40112bfc182a8100617e09b13dc0df44f8e5a165e143e3cd0f2d",
-"size": 10013
 },
 "icons_gross/NextLED.png": {
 "sha256": "6a9dae940b92957f687301844a68a2d105962b0db5b48c96b0300abbff9fde22",
@@ -6029,10 +6037,6 @@
 "icons_gross/PBY.png": {
 "sha256": "2b4441d19415b9ab8cdce08eddcf30da3b6870996a8a9b52d8dbcaeae7575a85",
 "size": 6585
-},
-"icons_gross/Pattern.png": {
-"sha256": "10ce0b7879cbb2ceb8deed79a058a7235d132b19b92b2ed555a3da28b144b06a",
-"size": 15002
 },
 "icons_gross/PinB.png": {
 "sha256": "2bc0a6498dbb0fce2a37b299f32494ab3ea8238934e6d710c90236d020013d2d",
@@ -7234,13 +7238,13 @@
 "sha256": "7fd6473e5163ef682a72416f86d063703e393020c9d262cf42062609282ec3c7",
 "size": 13876
 },
+"icons_gross/TRIX.png": {
+"sha256": "12442bfe04a799c8f304feb2a38e24b7ad843d9627c06c73f85fd4c89bbaa5ea",
+"size": 11229
+},
 "icons_gross/TVbw.png": {
 "sha256": "0f852c20d6e483543bb477f82d10bd5eb8242bb36689fa959e30861b2fa4f867",
 "size": 11668
-},
-"icons_gross/TVcolor.png": {
-"sha256": "5c5e4dcc66173dc64e0f22778332346d1c1a801722e9665d8b439ccd84390b5e",
-"size": 16689
 },
 "icons_gross/Timer.png": {
 "sha256": "bb8e53b7f514d5ca27d2200bda1ac2740d47c8871acd656272d5bbb233a90c92",
@@ -7258,9 +7262,9 @@
 "sha256": "505f8bf3497719a0022160e58b52ab99d3705f20b6eccc1457ae60ebbbe81ffe",
 "size": 14249
 },
-"icons_gross/Trix.png": {
-"sha256": "12442bfe04a799c8f304feb2a38e24b7ad843d9627c06c73f85fd4c89bbaa5ea",
-"size": 11229
+"icons_gross/Tvcolor.png": {
+"sha256": "5c5e4dcc66173dc64e0f22778332346d1c1a801722e9665d8b439ccd84390b5e",
+"size": 16689
 },
 "icons_gross/Variable.png": {
 "sha256": "bedc7087c0e55cade390fe388ae222979dccfec8f8adf812af51202f30b04a65",
@@ -7326,30 +7330,6 @@
 "sha256": "442e52bfe154aa2abde0a9f479069d1b44866cf7363278fddb8fba5c1ae45e66",
 "size": 9441
 },
-"icons_gross/infoB.png": {
-"sha256": "08d63bbc8d0341e49e4fc3ee18391b1f6cf9a4af55a269e5bb948a26eb2f8b9d",
-"size": 17556
-},
-"icons_gross/infoC.png": {
-"sha256": "2098498d26e2a3b4f60bd1eb071a3d1b0dc78e7ac6e602fae9d090a315dc323d",
-"size": 19336
-},
-"icons_gross/infoG.png": {
-"sha256": "dbe2fa8ed6e8088ff2f3691e0cdc4442f679ac5f64ca7d7350c93c4309a8e750",
-"size": 18111
-},
-"icons_gross/infoK.png": {
-"sha256": "e6d939db72c9c8bb6f2e30be7f353045cc0d70400f6945b8e1075a9be04f86a3",
-"size": 13590
-},
-"icons_gross/infoR.png": {
-"sha256": "ba7337afe7a48396e04cadfc73767adde8859f019b497e9c633b71d5219f0258",
-"size": 13978
-},
-"icons_gross/infoY.png": {
-"sha256": "b4808b8aa5c985847a1f877031572d3f4f8f2606af9a62d9007d3ca1eb47accf",
-"size": 17500
-},
 "icons_gross/keepTime.png": {
 "sha256": "da01fa67caff3749643f260c99abae9a4eae9d846f27d68f3840f8cd9e8286e6",
 "size": 15741
@@ -7357,34 +7337,6 @@
 "icons_gross/manipulation.png": {
 "sha256": "d0b108ec42b8d65946aa13fb37dc5e8df2cc1f8f1b52ee3982b4425a82ca2360",
 "size": 15478
-},
-"icons_gross/monoB.png": {
-"sha256": "8c2cc9d1a706ab5c9bdb374b5c5136bc07fdbe19b90dd72ff7da5becc1c35aef",
-"size": 16756
-},
-"icons_gross/monoC.png": {
-"sha256": "7dedf3ae042bb5a794628232ee3d6163866f561cc0aa35a8feb4eb684b0856b7",
-"size": 17312
-},
-"icons_gross/monoG.png": {
-"sha256": "00d3bf319d738d1ad1c4bc399a3fc2c6d23fcb37978a86d87acf4967f24619fa",
-"size": 17058
-},
-"icons_gross/monoK.png": {
-"sha256": "85f082706565a6b3b8dd28b52356016c5ea825783609801d033e10e57860066b",
-"size": 15710
-},
-"icons_gross/monoM.png": {
-"sha256": "d2b4a6611b02785054a3692c8d6c971961aa9cb7e11c8cb5ee0bad87acab9894",
-"size": 16634
-},
-"icons_gross/monoR.png": {
-"sha256": "e9b627a2ab804c98352568c4608571c1157d51feccecd0e1e785fbf7b1c9575f",
-"size": 15342
-},
-"icons_gross/monoY.png": {
-"sha256": "f0bbbf499a016c424abe02468ada3b709a4bf1263307530d99caab920a4b029d",
-"size": 16287
 },
 "icons_gross/neon.png": {
 "sha256": "791763f1132c40112bfc182a8100617e09b13dc0df44f8e5a165e143e3cd0f2d",
@@ -7394,38 +7346,6 @@
 "sha256": "10ce0b7879cbb2ceb8deed79a058a7235d132b19b92b2ed555a3da28b144b06a",
 "size": 15002
 },
-"icons_gross/pinB.png": {
-"sha256": "2bc0a6498dbb0fce2a37b299f32494ab3ea8238934e6d710c90236d020013d2d",
-"size": 8754
-},
-"icons_gross/pinC.png": {
-"sha256": "f6ceb4665ca9ae350bb4cca9b9abfe38fbe17de71987eeada1cff4dfd74ba89e",
-"size": 9245
-},
-"icons_gross/pinG.png": {
-"sha256": "70928143fa680150a82892a4a42dd3687a93cdd8bf9c869631d75f8cd5f54490",
-"size": 8695
-},
-"icons_gross/pinGrey.png": {
-"sha256": "b4b14dcfe16cccc909bbe31595fb7c6c6f2f893c118dc46cec668a313cbc5a11",
-"size": 8866
-},
-"icons_gross/pinK.png": {
-"sha256": "5aace48bab86aac8b99c52c2ad9c8be0caa10919dffbe50c9db33828312a9637",
-"size": 6056
-},
-"icons_gross/pinM.png": {
-"sha256": "6a0966f888e576cd0b8e8e38706e4bea8141389a4513b496825349f34d04b04d",
-"size": 9552
-},
-"icons_gross/pinR.png": {
-"sha256": "2abb46a11eb78c28e4a1aac8b8ece25178b72d71fc983db105d702755fc2d249",
-"size": 9027
-},
-"icons_gross/pinY.png": {
-"sha256": "b6dc5e2b7f28898f8093b5fd62c1fe8f18fbfd1d64ff4cf129c6e5e85e0e1ca8",
-"size": 9264
-},
 "images/06_Michael_MLL.ico": {
 "sha256": "5278f81c0b455f2fbcfb18cc5d5c14e691d9e528dd4313edb295819338b3fe8f",
 "size": 198287
@@ -7433,10 +7353,6 @@
 "images/06_Michael_MLL.png": {
 "sha256": "19be03016f0db090f1690465c6f3a1786401ab4962620d6bd6a0db83c6deb68a",
 "size": 24278
-},
-"images/BW_Gleisplan - Kopie.jpg": {
-"sha256": "ba29ab0ce91c641cac6349ef2183cf64ead4cdc29a5895b3746aac9e75ee4bab",
-"size": 415243
 },
 "images/BW_Gleisplan.jpg": {
 "sha256": "ba29ab0ce91c641cac6349ef2183cf64ead4cdc29a5895b3746aac9e75ee4bab",
@@ -7555,8 +7471,8 @@
 "size": 80971
 },
 "images/ESP32_image.png": {
-"sha256": "0952d46a942d128faccd4e5cb898abcd2145b14bcd85c635a8067e0aca6a90cf",
-"size": 52638
+"sha256": "5e9985e04e8cafd135de2b141dd0beb855c63bd0a46c79953c5f958d0da7bf88",
+"size": 784410
 },
 "images/LED_Image.jpg": {
 "sha256": "86120a104b1109a5dad305a8ea7a0c4fee58b1d0ac3e373fc7b53c6d85b9cff0",
@@ -7587,8 +7503,8 @@
 "size": 127957
 },
 "images/PICO_image.png": {
-"sha256": "c1b0b482f89a4c519042107063c2de695f33c3c45136af5b4d26160db78302d3",
-"size": 90978
+"sha256": "0ed6104bfc194b01c6cd78c398eb0ef646aa11e0d6d7278bc8372246a393c090",
+"size": 133522
 },
 "images/Tiny_Image.jpg": {
 "sha256": "36e202c6bb8672979db577e10f1f3426a755cae5964a74b0fb642ebf84c476ae",
@@ -7599,56 +7515,60 @@
 "size": 56140
 },
 "images_btn/Btn_Color_Row.png": {
-"sha256": "7d09243062420442203585effcee894c84286b220123e1a1f7e2650a6e64eb82",
-"size": 4783
+"sha256": "45a39e240eabafad9dbb3d0bfdf82cc72688b2bc7264bfb07e53af500be3142b",
+"size": 10553
 },
 "images_btn/Btn_Copy_Row.png": {
-"sha256": "212e853cdb1ba7f36d36dd666765abf3e7cf847a5417df909872c15b5b38052c",
-"size": 4484
+"sha256": "e0cf6041ee579e46a8858c95c052fecd311d3e2e45f86527319c30e44768d029",
+"size": 10059
 },
 "images_btn/Btn_Delete_Row.png": {
 "sha256": "ae10e85949052bd15196dafc37707453fba877e3781a72292c7a311402c3bb30",
 "size": 5440
 },
 "images_btn/Btn_Delete_Table.png": {
-"sha256": "75db696b94b2a90b942efbcad10742b8625960799130fbf63a5f20493bfd2344",
-"size": 4729
+"sha256": "ece9c2b5549d0bd22137a029fdae022fb50fe79385e8c3f7b2362a5ed86860b3",
+"size": 10499
 },
 "images_btn/Btn_Dialog.png": {
-"sha256": "3a3380ffc39321ba68f446ecd9ad0db9215e898ee923f0e4a6d3fac9147a47b9",
-"size": 7896
+"sha256": "c257901d0e3a253633fc35335772541e7897b1f64070924a4c16b18e6733a47b",
+"size": 13666
 },
 "images_btn/Btn_Help.png": {
-"sha256": "d5bd3bdf8657dbbb3a392e9c1363bfd3560abd0b1df2d4a0b510fb8e36aae30d",
-"size": 17167
+"sha256": "6b10862866aa785fff151b4d8c08e8b89c5e457b87fe1436cc7c93d64713b11b",
+"size": 22962
 },
 "images_btn/Btn_Hide_Unhide.png": {
-"sha256": "1b0ec23356ca5b8105239d7c80aa42cf3a323609ecef7c82c46ead9df0c6c4c9",
-"size": 5065
+"sha256": "9bedc826b761e2c60733fe2e6c266398b4d8239828bc60326e4b33c16f27be7f",
+"size": 10835
 },
 "images_btn/Btn_Insert_Row.png": {
-"sha256": "0ed104035ee6d7c287c52aa3d2f530a164a1ebc94f0b651e6ca0339e2ac6c37e",
-"size": 4611
+"sha256": "51244723bc1f713e875d1d49a36b1b177b51a68554dd20c8497f04b65881de60",
+"size": 10392
 },
 "images_btn/Btn_Move_Row.png": {
-"sha256": "212e853cdb1ba7f36d36dd666765abf3e7cf847a5417df909872c15b5b38052c",
-"size": 4484
+"sha256": "88e1ae9a0400d15915fa75ae8e99cfe716f6ff10902dbd4b9afa76c739d9491f",
+"size": 10257
 },
 "images_btn/Btn_New_Table.png": {
-"sha256": "b51711e3f43651f1ab84288385839e6ad204588eab6850d0f907f9c0bc5a7a26",
-"size": 4604
+"sha256": "ca13fa5e90197585fe1ac64cda3e705968e0a2de29da1eb94df7209ad2a20d1b",
+"size": 10294
 },
 "images_btn/Btn_Options.png": {
-"sha256": "c9ef77ccd513b8e4ca17471be369a9b2156eac48ad5879dcde99dfa58b5a83df",
-"size": 12737
+"sha256": "76c463453b67584643d8ba5864755ffd5a0531c77504e289284b7160c5499810",
+"size": 18994
 },
 "images_btn/Btn_Send_to_ARDUINO.png": {
-"sha256": "bf6bb702dbc36b537a4be269ba7c0fecb2eca8f624089be5c22262d0e0ab7608",
-"size": 7807
+"sha256": "c16448d4ae14be82fe8d649da71de6829a20ab17809ba7c06bb3db664bec3764",
+"size": 14756
+},
+"images_btn/Btn_Simulate.png": {
+"sha256": "eeef0162564c92fb7a6e14dfeed1419965673f2a9c468cc3ce48c5fb7a7cd009",
+"size": 12875
 },
 "images_btn/Btn_Unhide_all.png": {
-"sha256": "7bf51f420d63b35dd0d6f43cd138060f410a04f0bf2a0353b7a9ae9dd0cae1a3",
-"size": 4767
+"sha256": "9166414c90039299b361d98b51819bb2456a8724aac6cfbd20893b7812b20f51",
+"size": 10537
 },
 "images_btn/View_both.png": {
 "sha256": "426dd2521e68c493075bf38adca5ba70768fe4c029d05a832ee72e05ee92faaa",
@@ -7663,68 +7583,68 @@
 "size": 2829
 },
 "install/ANLEITUNG_Installation.md": {
-"sha256": "1a50379f3404982787349f2e8a50ab14d8e00327f6f48ea6194bec14216510f0",
-"size": 205631
+"sha256": "194aa54183f54b66ea0dac7851ab881aecba692b9a6ab2f33da7f2f08c1cd81d",
+"size": 209623
 },
 "install/ANLEITUNG_Linux_Desktop.pdf": {
 "sha256": "ed3bf81790dab00eb36917e8a5bbc212fbf1d70682682223210bec33bb12efec",
 "size": 73910
 },
 "install/ANLEITUNG_Windows_Mac.md": {
-"sha256": "3b1453759f8ea469394724820f9fd554cbaf8363fb58f43b4d5d7cf976867cdb",
-"size": 11298
+"sha256": "ee3f25c17952da0c95dd509b7dcc78494faed4ba40b853b1bb05655d1c3499f2",
+"size": 11444
 },
 "install/ANLEITUNG_Windows_Mac.pdf": {
 "sha256": "93e2bc65b9f46470a69afc09faefb45f7af9b005fc584f56024ccd601929829d",
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "7c0a0c799f23e013464552bb753d6ca2ae3dbf54a5e75237731ee16bf9710363",
-"size": 128391
+"sha256": "98444917f5e4345bffc3ab0c51699dd95518d92aa440847b239053537dfea82c",
+"size": 131018
 },
 "install/UEBERSETZEN.md": {
-"sha256": "89d33068ec1ee883a4ebf692a6e407620aae00c538ee06b1a335bc2abbf6e1ba",
-"size": 4637
+"sha256": "2a5b4bf59358e3c0e82fabb6e88b0f4605de0bfa334c777f0822b1765b4c4107",
+"size": 4714
 },
 "install/align_icon_names.py": {
-"sha256": "1ced0621a022bc9ace81e50a716cc9fff10c5f632de93e719bed21db3b508a95",
-"size": 10291
+"sha256": "96d36ac42fc2432b6a3253465061e8fbc2e1379f858ebfa50c11728bff2c468c",
+"size": 10476
 },
 "install/arduino_prefs.py": {
-"sha256": "9b23bd92b2a5083e571a8c76cd4cf02151a09977e2c4d149a98f8d53525631b4",
-"size": 4698
+"sha256": "e15b3b2e5360f7c78788f9286f0e0d35befd5e92bca7016fce54c75f4f64fcfb",
+"size": 4805
 },
 "install/check_project_writes.py": {
-"sha256": "58c9fd997d099df47000264c312cf58202247edc0d97745dbf7ed2170462a888",
-"size": 4881
+"sha256": "ad0334fedb2f114791ca47288a9cc908eb92f32ed5b5c030bd2f5061efca8a72",
+"size": 4987
 },
 "install/favicon.png": {
 "sha256": "abc671dde2aeb82cb58e4ab60659e899227696a74b1c966016511cce79d210b8",
 "size": 13848
 },
 "install/find_mobaledlib.py": {
-"sha256": "1f5dbdadcc5bfa417d1d47bc8abc17360b5db8315d0c4d382e39694ba2fee5e9",
-"size": 4809
+"sha256": "68c219d4b337e10a871fb90be79ba1b03cc77cfa5980661cf1a6305172d6e536",
+"size": 4921
 },
 "install/install_git.sh": {
-"sha256": "7ded5de078c7ef4e3d0938fa78fe03ed60f4a63c69811b7a836104719f04bf7f",
-"size": 2054
+"sha256": "488d0dda021e9ba7e8fde01e49a1b5cf66c74147bbd78b8469881f573862e729",
+"size": 2094
 },
 "install/install_linux.sh": {
-"sha256": "9e7a65a73dd101fee23f943dbd1fdec916ac7ecfdfadbe34998326624da3de3b",
-"size": 10970
+"sha256": "e2f1bb0a62855482b294ee0f50e9dacc226e7a3b5d9e38d92b8174613da3ce78",
+"size": 17446
 },
 "install/install_mac.command": {
-"sha256": "7cf6a52172eff73c491211ebda083afc20e31286765bfccbf036d8d66e0e4445",
-"size": 11630
+"sha256": "9a38061d939cc03b446f7d550e932d5214b30f48dbe43344bb73dd0c9b8e73bf",
+"size": 11866
 },
 "install/install_pico_udev.sh": {
-"sha256": "ad5ffb425658af19e8820398f07c795cef42d81ae23ad1d72164b8811101da03",
-"size": 2252
+"sha256": "b922cde75a6c6b9f5cb337de4bf95fa1af2ba21c375e173ee570b93460d410a3",
+"size": 2295
 },
 "install/install_platformio.sh": {
-"sha256": "6dcffb7b4fb87bfb5eacbb21ad145a1d4d6d011d5c339ee976704fc718ec083f",
-"size": 4109
+"sha256": "1dfe298d64fff4363889ad2a11cb250e8ac6a5de555d0fdc4562f58cbbb2f5ae",
+"size": 4189
 },
 "install/install_windows.bat": {
 "sha256": "4350b2e69663f061296c255ca0a1d27e59e161cea588e601f4d66fa247035295",
@@ -7735,20 +7655,20 @@
 "size": 3343
 },
 "install/make_icons.py": {
-"sha256": "9e7bb54d4c8bffda9b03ddf2f996dcdb53e87e065073dc601419f36520e5f855",
-"size": 5760
+"sha256": "2c27186ae2618da7c7360edf24f51a17e6fb7ddf7255e7d7ab30bef7340ec7d0",
+"size": 5869
 },
 "install/make_legacy_names.py": {
-"sha256": "8aa9974669f52598634e72ef9b231ffa13f72a9bec38705c7e0e8d48dafeefb7",
-"size": 6430
+"sha256": "a767e8d07f104812e124c6a624e17a89846a44e89f9ae9aaf3a1449a67b6a726",
+"size": 6556
 },
 "install/make_web_icons.py": {
 "sha256": "dc20aac1af3151b68e33df1440725067c375c2afb8fdd36762d311250f54b446",
 "size": 4031
 },
 "install/mobaledlib.desktop.in": {
-"sha256": "f03d9ca061233b32119f1c79f7909f62567d842fffe53faee0f96b17fdd130b0",
-"size": 378
+"sha256": "0a7f8a14e28fc3b2f18989237049871ac43a93263b3147f4f13744ca22df210f",
+"size": 389
 },
 "install/mobaledlib.icns": {
 "sha256": "3a0923694a0dcd74b89043173167b22b19db43a93c1f91c98775b761503fddd4",
@@ -7767,272 +7687,260 @@
 "size": 141635
 },
 "install/mobaledlib_source.png": {
-"sha256": "94b7aaf19475c11247deba06b7d22d3147b5cb04e7da1ffcea89ac5a245c9515",
-"size": 12210
+"sha256": "444c5ebe0a2494fa7bff372b589628f2f83b0bdf61bfec3afd39a56a89955975",
+"size": 17980
 },
 "install/repair_linux.sh": {
-"sha256": "8b15d2e6d93a4a3e0402140fb95667a03b799cb26107a3d6886459bf7f3662ee",
-"size": 1832
+"sha256": "d59cb175abe67bed07cfb63c6cf7d37a713c9191cdbb5e4f0a914f3a992863f1",
+"size": 1865
 },
 "install/repair_mac.command": {
-"sha256": "39012564284518cba02b7424d0bc6b7be51fe7ea9b718b7e3e7eeae827b4c697",
-"size": 1755
+"sha256": "21b5c0d2703dd62b73938130a2fe2e77bd28bcc9667e41dad085f8bb0291fbed",
+"size": 1785
 },
 "install/repair_windows.bat": {
 "sha256": "75df280b53f8a62ed3df3bebe93ed39c0b118d74f1899f8396fef918dde37583",
 "size": 2224
 },
 "install/requirements-web.txt": {
-"sha256": "14651cd8717ed6d4e952d619267d62342f65bd0cad762cd5d218833bef71d983",
-"size": 436
+"sha256": "200f088a59a72eca7f7aee384cb9415af6ddade1dc43ef3fb1f0dbf0e680d846",
+"size": 443
 },
 "install/start_linux.sh": {
-"sha256": "66b3e2d9ada4354c2efdf398e8187f0e06f7866a75cb48a6fc7bbbbd60f48032",
-"size": 1084
+"sha256": "05c7f16b8612d9e14433a009d6afdb3be0c8c8b7247866141dd504d86d04416c",
+"size": 1099
 },
 "install/start_mac.command": {
-"sha256": "90852d10694b8e6fe715dcab7584f88bc13ae6d63c408dd3708b8834468d889c",
-"size": 538
+"sha256": "ba04d15a993dda2d2dade332f01d4831a5a6d2be43233364c925c6b611c99a64",
+"size": 548
 },
 "install/start_windows.bat": {
 "sha256": "ae35bc37777847d15c64793ce3cb737657c6752781a8e02805169b420a207e79",
 "size": 1149
 },
 "install/uninstall_linux.sh": {
-"sha256": "cc913e3137f0835893b8ca7db1361cc94886102dac40363281521378cc191eda",
-"size": 975
+"sha256": "7c6209541eab8582f0fb979c51df12aa2c7c2b0d2cc84341ddb65682b75c8a6e",
+"size": 988
 },
 "install_manual/ANLEITUNG_Installation.pdf": {
-"sha256": "f93cdd4e93069d58b6f6cccf6c8ff930aed862487ca3b1933c8022851ebbd212",
-"size": 6475946
+"sha256": "07ba54421e37ee37103a58094fd26b296f8df95bc47dc7ae50e5bf76e0742799",
+"size": 498992
 },
 "install_manual/BETATEST_Checkliste.pdf": {
-"sha256": "bf8b477fa1fbc797d836ca32b5aadcde1fddd1f4868d58e3c011915502a5bf7e",
-"size": 3479285
-},
-"lib/05_Gerald_Prog.ico": {
-"sha256": "2d0526f0eb4a092187d0f1dab938251a4ed9ec6887409bab85d13b7ceb683d48",
-"size": 98154
-},
-"lib/desktop.template": {
-"sha256": "546a32b0dfa7a1804b85fbeeb6b4321df2cbb202862e3dfff87ae7113bc06326",
-"size": 348
-},
-"lib/pyproggen.png": {
-"sha256": "9f07eea40cb88edab2d8f99adddbcab87c7980a559517f111222e47f3be49278",
-"size": 36365
+"sha256": "82499fc44a448171790eeecb5f92fa635f3cbc746319a0eb799838eebf49909e",
+"size": 291173
 },
 "libraries/MobaLedLib/LICENSE": {
-"sha256": "08196b4491f88e5c72b25ac813596caeb380733ddcb3573c6d0f57f0eebdee55",
-"size": 26572
+"sha256": "e3576e4a982a192a524ef6365944514f99f2af503b57dc9069ad0e35baef2cf4",
+"size": 27079
 },
 "libraries/MobaLedLib/README.md": {
-"sha256": "59ff2bd24ddb9cd652842b03d456a3572060a2694e41152522409808c2804cf3",
-"size": 21094
+"sha256": "24633c75c9004bb438f79c6c2a4a4317db6b9d17388f771d11cbcb86076abd9d",
+"size": 21508
 },
 "libraries/MobaLedLib/examples/23_A.DCC_Interface/23_A.DCC_Interface.h": {
 "sha256": "c66d2ea106526838f8564c471deaeeec0135c8176d75b8c4b61045c5c40d4003",
 "size": 189
 },
 "libraries/MobaLedLib/examples/23_A.DCC_Interface/23_A.DCC_Interface.ino": {
-"sha256": "dd4b10b3f70041c92733668789e318ee96803dcc7d41655cd734f3e6131ca03e",
-"size": 36225
+"sha256": "a4ed4b6436696559e051e9b68406c9cfddc957676c9ab22401e1122fb8f36cc4",
+"size": 37037
 },
 "libraries/MobaLedLib/examples/platformio.ini": {
 "sha256": "649775950f2aadd5e71db8dac29daaf4beeb183ef8579e582d11f38a9fdb3fbc",
 "size": 2353
 },
 "libraries/MobaLedLib/extras/ArduinoISP/optiboot_atmega328_Ver108.1.hex": {
-"sha256": "166c6256a202fdf4e6cca351fe8987ed5380beb9f7f8fe7e63d549256a56b458",
-"size": 1436
+"sha256": "e70baf5607403d7e0f93baf55efb61f8aef3fd02b4a872462d82d0b85eeb0d22",
+"size": 1471
 },
 "libraries/MobaLedLib/firmware/03.ArduinoISP.hex": {
 "sha256": "ad3497c1f065a6d2d45b0ea0f27be2e3d3d2dc6a86920fc3fa10f0d70dc91d3a",
 "size": 12331
 },
 "libraries/MobaLedLib/firmware/03.ArduinoISP.ino.with_bootloader.hex": {
-"sha256": "ae152b9c5c89b544042b799282f9cee0b9f033b1f68e60a42960cae0037a96e2",
-"size": 17436
+"sha256": "da274cedcbb97ed00053a1c7a1c4b79ebd95d566fff6e82cc85e805fc48bc381",
+"size": 17834
 },
 "libraries/MobaLedLib/firmware/23_A.DCC_Interface.hex": {
 "sha256": "84fef5a6a3ef7920ced0ad894e1240d784493e38c03dd1a27838cce489960eb4",
 "size": 27840
 },
 "libraries/MobaLedLib/firmware/23_A.DCC_Interface.ino.with_bootloader.hex": {
-"sha256": "c70a2b0739db835d2a1ba4d9b092cf6fb3eeded94009c6c67678f86fa0514559",
-"size": 32600
+"sha256": "bc28f3a551b1551f6e7552ffab5fbfe57423d57935ac75b4d1395da929d43795",
+"size": 33343
 },
 "libraries/MobaLedLib/firmware/23_A.LNet_Interface.hex": {
 "sha256": "29a30edc2ca68f77b08efdb434183ff4e71326497010ecb9a9f35de3e4ce3f8b",
 "size": 20165
 },
 "libraries/MobaLedLib/firmware/23_A.LNet_Interface.ino.with_bootloader.hex": {
-"sha256": "58cd63121ad1695bcbef66b1ea71054869635f75bc0afd64a9700cfe71f6b9f2",
-"size": 25096
+"sha256": "9bb9da5d15c85f8e3471e197349c153cd7127abf0097b440af90fe091124ea98",
+"size": 25668
 },
 "libraries/MobaLedLib/firmware/23_A.Selectrix_Interface.hex": {
 "sha256": "2907a24d0b60a7cf413aa2b4df2b890ad22051466b1c0e3a6e33fb3dcd44ffc8",
 "size": 18104
 },
 "libraries/MobaLedLib/firmware/23_A.Selectrix_Interface.ino.with_bootloader.hex": {
-"sha256": "44f3d7f05b89a54d98813e1eb781aac81905d06aa5dc93185bcf28b8f41a448a",
-"size": 23068
+"sha256": "eb927b526648a3d341ed3204d8f7583da249158e103b0cdc5666e6d2d5de83d7",
+"size": 23594
 },
 "libraries/MobaLedLib/keywords.txt": {
-"sha256": "ba907502366cb8e88731eab607a4de8c9bf15f10ce55e0f00f179330aad1cee0",
-"size": 8021
+"sha256": "a0b838468c8498faa0a7c9e7a5978d2229cc4bb47c7ae01330d34084efc33cc6",
+"size": 8412
 },
 "libraries/MobaLedLib/library.properties": {
-"sha256": "16140f70c81cacf94386e5d650073417d969ff5e54e937330a5f8fdaf47c7f12",
-"size": 2265
+"sha256": "aa3c930562c78794ec5a399e4ada553863a95d363bd54ac4bb99caa1a9c37ab4",
+"size": 2276
 },
 "libraries/MobaLedLib/src/Add_Message_to_Filter.h": {
-"sha256": "1d1641f43e79942a0618f37870b5eeeab3ccad5707dff32502af8974a21b7b38",
-"size": 4709
+"sha256": "fbe7c991a68de4d89cf804a948555fc95e56aa713f7fcd59528d446bf5856727",
+"size": 4806
 },
 "libraries/MobaLedLib/src/Add_Message_to_Filter_nd.h": {
-"sha256": "a09b0501a678d3ff39c23995b852cb47572e80dcfdd1b119d0201d5caeb09b95",
-"size": 4393
+"sha256": "7d32f4e23c1004d50ceb1a4081f56eea2a6f2712275ad6f0289df388393ad70f",
+"size": 4486
 },
 "libraries/MobaLedLib/src/AnalogPattern.cpp": {
-"sha256": "94bed8250c299f98c22cf3049fdcffede202519408bf8672cd23058faeeee475",
-"size": 39008
+"sha256": "92acd43e6ac888ce99e080a073184cd20670303a5fa9328cde42622a5a3b99af",
+"size": 39737
 },
 "libraries/MobaLedLib/src/AnalogScannerESP32.cpp": {
-"sha256": "932ee7f9992674d62c9974adac8de3e022c747515f4ff8124dbe2bf14b079787",
-"size": 7927
+"sha256": "68103c530f3c90ad78607715949c59d1fd4b2b29fd0c75dd2ec8005c11b5d5f4",
+"size": 8154
 },
 "libraries/MobaLedLib/src/AnalogScannerESP32.h": {
-"sha256": "54767ec3bb4942bf4bdb5d40ee9acdada8010fe5af6114706064e987c71a4cf7",
-"size": 3174
+"sha256": "92d876a706303c47a619b07c106bff552c3ddffc7795149790b3987c9c8f22a0",
+"size": 3266
 },
 "libraries/MobaLedLib/src/AnalogScannerPico.cpp": {
-"sha256": "425d1caf416b5800cebaf5fd8ed1d1ac929306095303c30c0f64e507139d3433",
-"size": 5392
+"sha256": "2a472cf7b9e36a1acbd3fec1d49a6eb02d45b066cd2abd723175925ac35f57e2",
+"size": 5560
 },
 "libraries/MobaLedLib/src/AnalogScannerPico.h": {
-"sha256": "d0cb5e6c8be01e28456e852ba022162b221ea8039d2f3d00d555aaf3a41a8a9b",
-"size": 2780
+"sha256": "8cd3236dfef30dbfa62bc6c8a00cb5d5ce66082def0ff37a439264cf1ab005b8",
+"size": 2860
 },
 "libraries/MobaLedLib/src/Analog_Buttons10.h": {
-"sha256": "7253664c51b50f7f91f123f7fc1f104c1c85f54232c0c9ed8f4df0335f630b35",
-"size": 6130
+"sha256": "6c79088b63ec4e00de3f1546564bc071efa0cc5b5cb4787bfd93a966a8ed54ab",
+"size": 6308
 },
 "libraries/MobaLedLib/src/Check_UpdateTime.h": {
-"sha256": "42a455961a2498adaf845f1a06f12bd7502f617ca20a096dca9aee6c82eb00bd",
-"size": 1901
+"sha256": "d71e7c56e94a02b5ff77544b00324c40a20a34e11b7ad356b7716c8a66788cec",
+"size": 1955
 },
 "libraries/MobaLedLib/src/CommInterface.cpp": {
-"sha256": "9d99f9a0e5296371e4ff27bed5afcd27479663b56686aae05e426bec6dfd4888",
-"size": 5444
+"sha256": "0bd5650e03d5acf673988c934e1810f52fadb028c0dfbbde9408743d2dcf4e5c",
+"size": 5615
 },
 "libraries/MobaLedLib/src/CommInterface.h": {
-"sha256": "c396ca281c484c09d2406a7710c0f9e3486a3115f48a51cc93788217df0f4389",
-"size": 2616
+"sha256": "8cc3bd14f8d02ea450eaf68d9e77409a48cd8e6a76915a5980c803e6b7f56628",
+"size": 2685
 },
 "libraries/MobaLedLib/src/Counter.cpp": {
-"sha256": "fa28eb771fbd193ecd3d6b0df229bc71740e50e57936a51b3bde571206b27936",
-"size": 10776
+"sha256": "b176b8934c239a751b0e13bb5058c8647d95455a60dba69c65045c33ff84add5",
+"size": 11000
 },
 "libraries/MobaLedLib/src/DCCInterface.cpp": {
-"sha256": "1ad201571dfffa60a8389034cf94da76d91cceb5ce37f8a5062345193b8f31fb",
-"size": 12586
+"sha256": "2576b4a01b7934b4f0837b3a06b4e52478d6b8491d2cf4f8161678f7a26ff25d",
+"size": 12892
 },
 "libraries/MobaLedLib/src/DCCInterface.h": {
-"sha256": "91e31643bcd070be23eb711ea375f08ec1fe7993bf0a4dd0cefee5a27e76804c",
-"size": 1721
+"sha256": "1ab4921c874f8431b14fdc18cb0613d5bb04bbda96de00d843d0b79064e21d01",
+"size": 1763
 },
 "libraries/MobaLedLib/src/DMXInterface.cpp": {
-"sha256": "edc2fc05799d131bb776e55fb82c73c738b7fb571d1eb0f47ac860781a3b0fff",
-"size": 6470
+"sha256": "2ff3706a1a514b5535dd36cbefec388bff6062aead14a69eecf39b8e5a1a3e64",
+"size": 6667
 },
 "libraries/MobaLedLib/src/DMXInterface.h": {
-"sha256": "097d0413cc5f9d95bbf8d741dec14658e29a1ddbc87f9e30d32c86e50a4a43c4",
-"size": 1799
+"sha256": "bd57a1122bfe7dcb3d1cdf7cdb88cf493cbc8684c8f13264f2d8578e70adec75",
+"size": 1858
 },
 "libraries/MobaLedLib/src/Debug_Functions.cpp": {
-"sha256": "cb8afeabfcb0b983aac7cf4aeca912dbccf9800668135d2118a15499e88c366d",
-"size": 4964
+"sha256": "26ed6a38bea4505ccc3700f4e5b448c99d054dd9b92594e247dd9e3956188ab2",
+"size": 5091
 },
 "libraries/MobaLedLib/src/Dprintf.cpp": {
-"sha256": "cc4457c5cc627879312e63bda399cb8b27813216d770a194d92c0024185a34cb",
-"size": 1855
+"sha256": "f5d64cb32edc7add5ee4249cbca0f3fec877b1357d135421b679f312dea2d691",
+"size": 1910
 },
 "libraries/MobaLedLib/src/Dprintf.h": {
-"sha256": "3a1e4f82e896b38b695089a810a5525fa45981709869a12ab8879d14b36287a4",
-"size": 1900
+"sha256": "4c8fd7b6af6bb2be52e736140b39158ba84ea40bea3805e225b4d0ca6956824d",
+"size": 1960
 },
 "libraries/MobaLedLib/src/Helpers.cpp": {
-"sha256": "8a659d9e412dde0ec9dfdf21d52dc613ff319fe3ab9afa1c2bafe290684f3d9c",
-"size": 526
+"sha256": "98a6a8032f77476e0d192e1ab1ad578198b3698bc3d66c882f5c4f260fc0f8d6",
+"size": 543
 },
 "libraries/MobaLedLib/src/Helpers.h": {
-"sha256": "db92c8c19115e83647878c9801bd38b4a80dbfe9052ba7f500038cd1a0ccb5ad",
-"size": 710
+"sha256": "f1fecbb667f0ab6ee112b56fd173f009b6fac5d34470b24970f0f516e3e9c989",
+"size": 736
 },
 "libraries/MobaLedLib/src/House.cpp": {
-"sha256": "f75c7afc56e2f67491f39fda66ea016695c0244767a10e8fe0314b7e8a55330a",
-"size": 37643
+"sha256": "a1715798411663f199b6d5d7502a603f2517ceda678ca1fc9e1558802b598db0",
+"size": 38397
 },
 "libraries/MobaLedLib/src/InMemoryStream.cpp": {
-"sha256": "391f90024b450e1de33fd5a8c6445d49909ac6cb952c5deab16eb2a6d531cc69",
-"size": 3541
+"sha256": "c7563d1d4c9b156747d9140eba8ce695922654b1d7399d514adc3b3abd4d3008",
+"size": 3661
 },
 "libraries/MobaLedLib/src/InMemoryStream.h": {
-"sha256": "cf53f79b6260e3f26f0e18e9e14d678a6ffb939a1e710848c81f54da33d2403b",
-"size": 415
+"sha256": "8687042eeabbf112564a104195712ff41c08b0f5bdd8d7db44544862b3bb3a1a",
+"size": 436
 },
 "libraries/MobaLedLib/src/IntDefs.h": {
-"sha256": "c7c15eb1d42bb535f2ede3c591a001d92b7a2f350df237554ea08d3ad90726dc",
-"size": 13185
+"sha256": "6cfaa58844dffd4038443b01cc849dc6a3d8a1209027c5fe4b9a692e15b39941",
+"size": 13530
 },
 "libraries/MobaLedLib/src/Keys_4017.h": {
-"sha256": "814e96431c6739093246a637a081d3ff544d43561abc42a7cd6ff071664212a3",
-"size": 10121
+"sha256": "c8ed3c9db453237a063a21d2a7223137fe91d4e88fc375483a20898431896aa2",
+"size": 10387
 },
 "libraries/MobaLedLib/src/LED_HeartBeat.h": {
-"sha256": "0628e7391811e481d7a12b4d998503f57a3cd438406b25618319591abfffac2d",
-"size": 2552
+"sha256": "b4c9f4511cbfdd99243c3eeec1d6fbb209d202dfc80eb2323a14267aebe80b64",
+"size": 2630
 },
 "libraries/MobaLedLib/src/LNetInterface.cpp": {
-"sha256": "dac6ce929888ca1302f11eb3ee11c38d246893118d28bdb2ce088d1b5abd837b",
-"size": 3741
+"sha256": "09131d222919feaf8e915b2cb334310c82deb3fc9e7492f1b2130d3e8d5800ff",
+"size": 3851
 },
 "libraries/MobaLedLib/src/LNetInterface.h": {
-"sha256": "33983bfd404bfba6202add14b5a56e8bf69685fde45c617a62090f780cee5700",
-"size": 590
+"sha256": "fd5f5129eabf0accb57205e7128f72904676492cedb28afececc96ec8a282c71",
+"size": 610
 },
 "libraries/MobaLedLib/src/Lib_Config.h": {
-"sha256": "6a921e80fa1a481eda0395bb856f055080a3d78964c174317cbe80b5a7bec38c",
-"size": 6131
+"sha256": "9a052aeb7cf5b324d623edcc5a225913e39973436be8b1e0675beafae7069dd4",
+"size": 6256
 },
 "libraries/MobaLedLib/src/Logic.cpp": {
-"sha256": "55aaf733ec752eba5878552ef4b77ec2e1469a0cc5a92a380514bd1ead30445f",
-"size": 6079
+"sha256": "fe99a494c907c61d0f0d664f5be0b8530c6de9bcc81ae3d20d2bf307f89a25fc",
+"size": 6228
 },
 "libraries/MobaLedLib/src/MLLExtension.h": {
-"sha256": "162e58f9a52792ca6c29a386b552c90a20fc21f5e25ab33a1d210324c7721fbf",
-"size": 6500
+"sha256": "0ae872d22a20ed950e491e7c11dd4e69f52adbef2b2f26820d479b87ac0587b7",
+"size": 6677
 },
 "libraries/MobaLedLib/src/MLL_CAN/CAN.h": {
-"sha256": "d81aa173f52c493e9ce3c59dc5f9b1fb4754edd623bc7cf938ce688c3ea49cb8",
-"size": 253
+"sha256": "9450619f38d50f649965ff8969da08041325886bc5520b474e5c20d460538b17",
+"size": 264
 },
 "libraries/MobaLedLib/src/MLL_CAN/CANController.cpp": {
-"sha256": "bbb9c5e55940eaf71a3b9eb3ee9d6aa4697f0386a3b920d90c8aff590da36827",
-"size": 3116
+"sha256": "f013004831a2219e330e57109ad21f7f6b9bc979a7613a4927ae939c5c4540d1",
+"size": 3333
 },
 "libraries/MobaLedLib/src/MLL_CAN/CANController.h": {
-"sha256": "cbfc69cc1514c30b5783cb06b98df01f99227ea98388b936dbf83a1372768532",
-"size": 1577
+"sha256": "a54308f90f715fd0e7fbe958a567c12f9dd30f743d68d7a0e7ca912f92e98350",
+"size": 1648
 },
 "libraries/MobaLedLib/src/MLL_CAN/ESP32SJA1000.cpp": {
-"sha256": "e78657cd294ac6bc3df05bb258bc166debfe8831217164ae8729e09a2230d475",
-"size": 10943
+"sha256": "931164d64f081c833f0edf2593b12314fa8740bef6b170102338e07116ec966c",
+"size": 11395
 },
 "libraries/MobaLedLib/src/MLL_CAN/ESP32SJA1000.h": {
-"sha256": "2f01d851104bd940c04fcf7185bc78b6a653ee73d7a25fb94aa6f1249836b92b",
-"size": 1367
+"sha256": "9cd05a95d53822272299823e9db3885a72fa6a0eb9dcda2522cce73820231d62",
+"size": 1432
 },
 "libraries/MobaLedLib/src/MLL_CAN/MCP2515.cpp": {
 "sha256": "06c904285e56f8c662c06cda357d50d22b58c0dc7a499a2184c2a3bb42917603",
@@ -8043,104 +7951,104 @@
 "size": 16
 },
 "libraries/MobaLedLib/src/Macros.h": {
-"sha256": "b2ab5ed83413addce6d26319b8da4fa57d5cad56153a872112619e9452a5fe52",
-"size": 366636
+"sha256": "9a35945d944440a563e2de7a61d4e5d3a31d2fe78b912bd17a682edf96284c92",
+"size": 367871
 },
 "libraries/MobaLedLib/src/MobaLedLib.cpp": {
-"sha256": "252d74759172f35f5af5d4c27fdcedcc2d21d0ac39add429e63568afbb07f1e3",
-"size": 96785
+"sha256": "572b03ba073804bc811174288b169d2686ec4e97d3e6c037469c1bcb732f212e",
+"size": 98498
 },
 "libraries/MobaLedLib/src/MobaLedLib.h": {
-"sha256": "063da955caac1e2a94815e5b6506796ea5721ea35312f3c2ea986183449975c1",
-"size": 133570
+"sha256": "57ae11f5ffc5e6053c00b36166b0d85ead430f5f086c2632f341e24eca1f0d9e",
+"size": 135080
 },
 "libraries/MobaLedLib/src/PicoFastLED.cpp": {
-"sha256": "9193f670d16f271a1e98ff5ae737e71e3601894e69f97fe586a0ca0192d06a04",
-"size": 14159
+"sha256": "b727a3581f8d57153fb31724b590ee01a86f2df57530e537fb50fa47f2437299",
+"size": 14649
 },
 "libraries/MobaLedLib/src/PicoFastLED.h": {
-"sha256": "95f8c18631e735e27143029064b6cb8c768d8a43e8efeed5158d721b4e02601a",
-"size": 10941
+"sha256": "1db71b8e03c178133eb5ab652a1bcde55e1eb22319aa59b07e0c3e16fd23fa18",
+"size": 11294
 },
 "libraries/MobaLedLib/src/PicoFastpin.h": {
-"sha256": "8d3cc34fc1c6c71e1613babf9f5dffd1ea9fb4b0c1b97e2bba730f0b138b4a58",
-"size": 13680
+"sha256": "4f95d3bf185c6010527b14c428f8ca3a1e41c0c6bbc6b54eb960f1fafa86a392",
+"size": 14074
 },
 "libraries/MobaLedLib/src/Printf.h": {
-"sha256": "2f4b5d8523b1247aa958e8d9e67c39f7ccd4cef343ce417ee22f0453019062ba",
-"size": 1820
+"sha256": "6aad2e5a63019a966c01a7b6b98aa55834649b1070626607e8873be6bf07b0d7",
+"size": 1878
 },
 "libraries/MobaLedLib/src/RandFunc.cpp": {
-"sha256": "55edcae794b5a3f545e34aa84ce0b8adc844d6a4ced30223f1031d2faa63a4df",
-"size": 8961
+"sha256": "497f35203ec6f27fec05311655e7bbfe189c6f72a3579cd38705858fe49e4019",
+"size": 9188
 },
 "libraries/MobaLedLib/src/Read_Buttons.h": {
-"sha256": "de23410f5fef7613354baf0e119670f741f5b49f317692e69a2f920084fbe874",
-"size": 5296
+"sha256": "61643fffaf28716c33eb0b620a72edb146c7bd613c7136fa5185e06ba3263a4c",
+"size": 5429
 },
 "libraries/MobaLedLib/src/Read_LDR.h": {
-"sha256": "c1aeca2e2d1efd8097caa38a5f0b40b8c4eef73ba930e62ee831e58f399ddce8",
-"size": 6252
+"sha256": "493e90599bb4ac20e0f3e4102040c869323eb6982cc2851ece69ba1a4dede976",
+"size": 6419
 },
 "libraries/MobaLedLib/src/SX20.cpp": {
-"sha256": "d2cd3d441c505c80427280c17e115fb03b2344f3576a7e9a2633552cc3cdc384",
-"size": 5657
+"sha256": "b112d3606cb19e0a027df617b860cfbf7251e2cb77c30ac024c58ec6b4fa484c",
+"size": 5894
 },
 "libraries/MobaLedLib/src/SX20.h": {
-"sha256": "ad99e919e9d9857b5d434112a9da671c8d41ee6688fbf5372dd8da88038f9ba7",
-"size": 2819
+"sha256": "72db05308322070f23508377fb168e52d0c12a1b9adf0216b8ed0794eb65b33d",
+"size": 2916
 },
 "libraries/MobaLedLib/src/SXInterface.cpp": {
-"sha256": "0a01d0de7c1298bcece9e9e22285364eef31a80bbfb02cc5de0485d4de0b58da",
-"size": 5052
+"sha256": "5cf5ae00918806fd33e7ca2a5a9381e236adfb51e151998f8ddc17c14eff84e3",
+"size": 5213
 },
 "libraries/MobaLedLib/src/SXInterface.h": {
-"sha256": "5a1633323cd2707431ca1f7992e922adeda9f8ae1d343c169614dbc810028e45",
-"size": 961
+"sha256": "d1a5bf418ee7be0e6e1a8421d3ffbdf3d68ce07c0d1b04960c0112736d682e0a",
+"size": 993
 },
 "libraries/MobaLedLib/src/Schedule.cpp": {
-"sha256": "3717aed642c92a3bfe30ceb9f604244f71d036e92bc7aa4ed6bbbe6d92d00e3e",
-"size": 6028
+"sha256": "135e2721f578c5d86e4a19611b734650b9fcbc825e2e1e1163af0d79f11d91c4",
+"size": 6176
 },
 "libraries/MobaLedLib/src/Serial_Inputs.h": {
-"sha256": "5fd9bfa0d71f98c12f766e30b973bec485a69906c9a60d91f78d2cc4d36dddae",
-"size": 10300
+"sha256": "912e0598af40f99f896fb9a6fdcda4712edd116c1213ba7041395f61aa59f1b7",
+"size": 10609
 },
 "libraries/MobaLedLib/src/Test_Buttons.cpp": {
-"sha256": "d349aaa72f4292be4be631b6dddefb57ea7e7ef84c4ed7858b0c70733cc19bc2",
-"size": 13564
+"sha256": "4555b3f04304d5c1c04b77727430df80584c4579f349d06d110025ea2922ccdb",
+"size": 13887
 },
 "libraries/MobaLedLib/src/W2BHelper.h": {
-"sha256": "9f20aea2ebd278821dd35604278cae886d383945aaa204d5283339b12b0bc801",
-"size": 290089
+"sha256": "1d42ea06ff518e214c4b7f5804723d9178ab0fbb7461ee41f27cd49f85688f36",
+"size": 290354
 },
 "libraries/MobaLedLib/src/WeldingLight.cpp": {
-"sha256": "97b695d1e5dd749ace75bd2634bed973d6b6851a9105a3e9dc8bc89186f0c864",
-"size": 3932
+"sha256": "87460fc82241302819c131b373a896733a911205110ce42d8067e4ffe3927a45",
+"size": 4035
 },
 "libraries/MobaLedLib/src/esp_version.h": {
-"sha256": "db2dd83f381e5cb16536ee73123a21b80b7d3cab78f2b93eaee3d4324e6c922c",
-"size": 726
+"sha256": "b494424f8ad44c367fbf268512936854b5700704a1864e0181ed815e42300556",
+"size": 752
 },
 "libraries/MobaLedLib/src/mcp_can_dfs_nd.h": {
-"sha256": "9217ce238e1dc4e5d9e97a85dc593d692765dc5b62f82d08fb3d9ca072cc9d42",
-"size": 15406
+"sha256": "8932d474e96f8be9fe76af659de84d0a760708cfc92f5ae0f237dc99da86db12",
+"size": 15882
 },
 "libraries/MobaLedLib/src/mcp_can_nd.cpp": {
-"sha256": "ae992c55ce6fdab2bba1e27a5000d8b4cfa6455e5bb0fd369d1d7f574b41ba0f",
-"size": 44659
+"sha256": "17bc97614de6a7ea051406eefefa299df3a8621be1e8c0a68ad1e7368bdf6210",
+"size": 45952
 },
 "libraries/MobaLedLib/src/mcp_can_nd.h": {
-"sha256": "860ba78d0f29f16e4995c9e4d02e5509733d439cd76f71e302368ddacaa5878f",
-"size": 7405
+"sha256": "3ea9fd8e8dac6dba49b34c2cc71faad98fc0762e7fa4484d9ca384a971f32ba8",
+"size": 7538
 },
 "libraries/MobaLedLib/src/ws2812.pio.h": {
-"sha256": "1c520c70a4d89f2ed80dd4fe38129527cc0b037d36e107d4f0f19ad32be39244",
-"size": 3704
+"sha256": "77873abcee68b89cc262fc4617adef789b7cbf9d9386bdfa8a6b1bcb63258f7c",
+"size": 3816
 },
 "libraries/P_ScheduleDuoMLX/LICENSE": {
-"sha256": "20c17d8b8c48a600800dfd14f95d5cb9ff47066a9641ddeab48dc54aec96e331",
-"size": 26526
+"sha256": "7ffe1954587c77dfba1cf8eb9b2ea743671fa6e63f9e7a2f258119d42e14eefe",
+"size": 27030
 },
 "libraries/P_ScheduleDuoMLX/MobaLedLib.properties": {
 "sha256": "f7f3d6a713ffd405e04e3ec6864905579614eb1a4e4878b4156e60c3232d1bc4",
@@ -8151,8 +8059,8 @@
 "size": 313574
 },
 "libraries/P_ScheduleDuoMLX/README.md": {
-"sha256": "4be5637ddf00d2f9e8c3341c75c8d24392b8bf9f0d695acfd76276e656297ac7",
-"size": 541
+"sha256": "58831ef3ff27e6c87a189b013878919f321a0715b1860025e393bd27605b9406",
+"size": 557
 },
 "libraries/P_ScheduleDuoMLX/library.properties": {
 "sha256": "490f102d365c4870a744e1b2104cd671088f97514f916c4c0fa425498290ac3a",
@@ -8163,20 +8071,20 @@
 "size": 25106
 },
 "libraries/P_ScheduleMLX/LICENSE": {
-"sha256": "20c17d8b8c48a600800dfd14f95d5cb9ff47066a9641ddeab48dc54aec96e331",
-"size": 26526
+"sha256": "7ffe1954587c77dfba1cf8eb9b2ea743671fa6e63f9e7a2f258119d42e14eefe",
+"size": 27030
 },
 "libraries/P_ScheduleMLX/MobaLedLib.properties": {
-"sha256": "3501a8b98a85f66c9610d382103103a068d8e11062acae78429c5756c345fea6",
-"size": 2942
+"sha256": "0c9b6ab26ced57487d40b7a1c2ced354291babbca243c2733c63b952ea1a1ef6",
+"size": 3032
 },
 "libraries/P_ScheduleMLX/P_Schedule.pdf": {
 "sha256": "0886797287fb5e28920449b4fac45feece3754cdf7354e6f91efc3ef4c3f54a1",
 "size": 320384
 },
 "libraries/P_ScheduleMLX/README.md": {
-"sha256": "327aa17a85c97f6ef9e170c6ab674bc27f169d54639a50cf0e867237a9624a13",
-"size": 1731
+"sha256": "f54ed1393f8aa6529c5107cf9e320ba82420624315e96b9df5cb20714f600cc1",
+"size": 1762
 },
 "libraries/P_ScheduleMLX/library.properties": {
 "sha256": "932733d6a4d0ef45028f37db47f6eef9e7b87e5c8b237331967e434edafea9d3",
@@ -8235,8 +8143,8 @@
 "size": 11115
 },
 "mlpyproggen/Prog_Generator.py": {
-"sha256": "a8d260d92f18424efa295d632d31a7266804f49ed1a76bfb594a7627a595408b",
-"size": 95155
+"sha256": "e2fa5e72bf9d09a6f5e70a22899ecd6a41798153655c58dafe1ea9a6529b0ed4",
+"size": 95648
 },
 "mlpyproggen/SerialMonitorPage.py": {
 "sha256": "4ecef7e40cfd025318571d005ad328bdd988d8ff979725689b759d660a0b6995",
@@ -8311,16 +8219,16 @@
 "size": 9626
 },
 "mobaledlib-web.env.example": {
-"sha256": "38f8815ea27089e7425f878ea98045df36b13810d6897b8d7190fe81b3d19697",
-"size": 364
+"sha256": "8f4a28b86aa6abee426a39d1064caa3f5928733ff2f631c5a33a848f65110241",
+"size": 371
 },
 "mobaledlib-web.service": {
-"sha256": "0b26178d476ccb59d08587860cbe9503451a180df23370d85bb694019a950053",
-"size": 1065
+"sha256": "6a226298b32529772f24cc59cc0810587e6999dfe8a2aa34df1c8421287b2ff9",
+"size": 1092
 },
 "no_tk.py": {
-"sha256": "387f8e5cb08db530d5d14e27e9f48528467ff40fc5788a1be9fe8bc9399825b1",
-"size": 11124
+"sha256": "8a833e1ddcb5cb6d58989128b200f8876485f1899f53d40ccfa34aedfbc06e1c",
+"size": 11396
 },
 "pattgen/Copy_Select_GotoAct_Form.py": {
 "sha256": "4ac52cddd39da98165449a39a380c9b708f1ff7d6d477e3be4d279cadb5041d5",
@@ -8499,8 +8407,8 @@
 "size": 1133
 },
 "pattgen/MainMenu_Form.py": {
-"sha256": "cac6f107d7edfe98f4f032a5432e70e71d43773fe7e836da1cf964001474615f",
-"size": 36522
+"sha256": "e9e03913a4b54d566039269d586150fd9a70f0184ff42bf2f0a51287a20e8e5a",
+"size": 36879
 },
 "pattgen/MainMenu_Form2.py": {
 "sha256": "de8ec80dbb20f8a5e710d1b3257999b7dd55d907f161181950070b82885c38c1",
@@ -8511,8 +8419,8 @@
 "size": 690
 },
 "pattgen/Read_me.txt": {
-"sha256": "0093e3d9c383059252f33235618253af22e02e4f29b2235c006c2e996e241514",
-"size": 1590
+"sha256": "d22dff218d7ea0378681f6573b96a163c5d98521d85b3cf65420265ad925a1b4",
+"size": 1619
 },
 "pattgen/Select_COM_Port_UserForm.py": {
 "sha256": "1a5d3b2d81c74fe2ef8ec2de868793e9400b8a9d72dbd6b0dcd74a0509908c83",
@@ -8599,16 +8507,16 @@
 "size": 6
 },
 "pattgen/at85neu.py": {
-"sha256": "806c7b46d523dbba2e3d08c2cd6f0808a31abe10c3d854e5c1aebd5e6b259b41",
-"size": 13376
+"sha256": "aaa7a1baa3f67d88215ce7dfec3dee19ca7ff274c91096d885406be325815286",
+"size": 13648
 },
 "pattgen/flashuno.py": {
-"sha256": "aaaff8fe9c3138e1d6e2c250a931983a99af6fb7b71aee098a10f66d1a077e2f",
-"size": 5358
+"sha256": "919ff642052b6227f4d91bbfed7579f8841892b5b769d71a94dc92b9a3f0639b",
+"size": 5490
 },
 "pattgen/hex-files/400_bootloader.hex": {
-"sha256": "7d5fe46e0d2d1a6c5f43daf72bc6c4fcbe99b7fe7022f53a14820beaf8fcaeb0",
-"size": 42168
+"sha256": "30ced5d5dd07cf93371e24132294e9a11bc19e4d2f7c22d6fc40d5aee4460146",
+"size": 43129
 },
 "pattgen/hex-files/400_standard.hex": {
 "sha256": "2ebacb7f7b991c6e072658118c5586d6462b01b4ba6d12b274242ab2ce1d6cf3",
@@ -8631,8 +8539,8 @@
 "size": 14393
 },
 "pattgen/hex-files/Read_me.txt": {
-"sha256": "0093e3d9c383059252f33235618253af22e02e4f29b2235c006c2e996e241514",
-"size": 1590
+"sha256": "d22dff218d7ea0378681f6573b96a163c5d98521d85b3cf65420265ad925a1b4",
+"size": 1619
 },
 "pgcommon/CanvasFrame.py": {
 "sha256": "1fe9a07fba0d7dd07f16803465f45a5308278ccb55665be086a82f1b8a4b7ff5",
@@ -8643,52 +8551,52 @@
 "size": 5011
 },
 "pi/esp32_index_check.py": {
-"sha256": "5d7ccca62ff2ca856d6ea80ecddb76bc7ca9d1250fbd162e7705d01f095eefe4",
-"size": 3932
+"sha256": "9b794987f0ea860334b3a710937f902cf036e0abc7f3f9e4a6eab8a1ec11eedf",
+"size": 4022
 },
 "pi/install_arduino_libs.sh": {
-"sha256": "86c746bdb6c2a3fc36981e83875e7c6809d54b43a849185b260afaf57573db2f",
-"size": 6116
+"sha256": "6d66dca5c2a0427f9198598a8cc14fdda26b4afd022261f04d7551e85d08d323",
+"size": 6231
 },
 "pi/install_pi.sh": {
-"sha256": "e39368f485fc736629256818498bcd592ea935529b8cec50841c1e5d04a5dd47",
-"size": 13739
+"sha256": "a8f700e99d8b10cd01c4819ce17812800361127e7bf1303a0f2b387c621d82d1",
+"size": 13976
 },
 "pi/mobaledlib-set-hostname": {
-"sha256": "e64c61e8bba1611640e2faa2152d3a1af0e408c7be95fda41137ec4e62714b65",
-"size": 1124
+"sha256": "ebff92ae1ce010ecac4a21748e8bc88d9f1916e6c2ea251b8fea1c5de9851a0a",
+"size": 1145
 },
 "pi/mobaledlib-web.env.example": {
-"sha256": "fc078aa7105184c52e162d3473fdc87efbe0c4044ae01c1454c96aa1f5179e25",
-"size": 1161
+"sha256": "13e4fe4c79eb22cbd33247ab22a7c2c9e1449ca2edfab1fbad380ab0dec402bd",
+"size": 1179
 },
 "pi/mobaledlib-web.service": {
-"sha256": "5a27987d7aa3be125d44979ef2baa7ef8c71bd613d2318028556d3eba118a077",
-"size": 1127
+"sha256": "f0b073e9d23a3cc2cbae7c1948e3d8f42308d6a7a9c2c86d3a9e8de6ac12b7b4",
+"size": 1155
 },
 "pi/mobaledlib.desktop.in": {
-"sha256": "a18a21b87d3abceb0ea5c9d9ce73c0a523eb129cdda6452bd899b941eda6b850",
-"size": 380
+"sha256": "368f5c53c5cfc057b101f3f8bdddf7baf91a704126d8671a5c8db0e3adeedf9e",
+"size": 391
 },
 "pi/mobaledlib.svg": {
-"sha256": "c1403eaeb79b5dcad8ca7c52c187a7539f1a81725616a610f2e74048a0dc4cc7",
-"size": 9364
+"sha256": "f06a2767703bc4a0234f4337fa98495d7d9e05ff11711fe794750f15ce5e7ae1",
+"size": 9381
 },
 "pi/requirements-pi.txt": {
-"sha256": "d9af24ba34f5124d78d64c5c4af8428d2fabc337298adfb67e142ecdf5532487",
-"size": 455
+"sha256": "a7d749e1411021ba21c01d0a42a98fa2385db6761f1155472de91e0ce6290dc2",
+"size": 463
 },
 "pi/start_mobaledlib.sh": {
-"sha256": "8395856c43b767d958e100cd8ff7f2e75f064bb21bb0dcdee47f8bec898d2a8f",
-"size": 1644
+"sha256": "f2026cf456fb08d73b56657d8c641e992ab6a3ef76e924aaf4b3c73c5f2ca222",
+"size": 1683
 },
 "pi/uninstall_pi.sh": {
-"sha256": "4c74b2d527ba117a3ea099ac349c91a93254c7d8aa0c5fe46034d623241aa8d6",
-"size": 1018
+"sha256": "01d60a0e18173b1474d834dd458e889a9d0be71346367fc766b276f6b3a1acbb",
+"size": 1033
 },
 "pi_check.py": {
-"sha256": "1d7b4676daa189fe3a9baee32eb23af2001165cd415a2df950ed8125c5b22b53",
-"size": 7474
+"sha256": "0d693be09168767f65ae0d8c8347bd35d4c79b26a1a4d081882ccdc64d4fa744",
+"size": 7614
 },
 "platformio.ini": {
 "sha256": "869da5131784f20116299f3a2c0b6b4d04596c99a6d02e056cd74eed8a71de10",
@@ -8755,16 +8663,16 @@
 "size": 2619
 },
 "proggen/DieseArbeitsmappe.py": {
-"sha256": "f21fe3439f84435b7c03dbdc066be88dabb198c5e797aae2d131f6b5314fd622",
-"size": 8152
+"sha256": "f819983daf2d23c675932923e3db037e0968eda9af1422fd4e104940703a0bad",
+"size": 8566
 },
 "proggen/DieseArbeitsmappe1.py": {
 "sha256": "ba8224a1c3320d4c3c52f2bf61d7a0a4526377c57fe08e151579e43fb7db57ce",
 "size": 2083
 },
 "proggen/F00_mainbuttons.py": {
-"sha256": "82ec7652ec7c1c0134ec88fe6a7b15468cd1d2e4d92513222a3f6e02e308c4c0",
-"size": 17011
+"sha256": "2c5e55fcb84d501ed88aac0ced10acd8db52ab6e03065fc12690018d9e22cf54",
+"size": 17140
 },
 "proggen/Import_Hide_Unhide.py": {
 "sha256": "c5ca44b8f5e0727aae777e12b9d258e1f107a87b3ce5cb51f4dbdc6fc0e11979",
@@ -8799,20 +8707,20 @@
 "size": 10890
 },
 "proggen/M03_Dialog.py": {
-"sha256": "bd969aee98bd038df18ce027744c8e4ecae67ca1e5d856d4b5bc4f4bd899601d",
-"size": 16291
+"sha256": "9227ed295b2c1100dc16053748f086173dc1a097c8e35d90dc0493c2201ec2e3",
+"size": 17254
 },
 "proggen/M06_Write_Header.py": {
-"sha256": "6a87be91241c49766c7979966c6ee0960872cd8ef2f9ee132265795ffd40c679",
-"size": 96813
+"sha256": "0ceaf8a3cbbdf4cfdd7d5c0c65ef0c1724ab7670d5b7773189306b6e58628fb7",
+"size": 98236
 },
 "proggen/M06_Write_Header_LED2Var.py": {
 "sha256": "3bd60c21b7ec3ef8ccef62fdc1bbac9a14604d514561df15e08f85e32e17f62f",
 "size": 9940
 },
 "proggen/M06_Write_Header_SW.py": {
-"sha256": "f4cbe74cc893b60179a3c61b3274a956a0a4a7285519065f920b5d7dda683d67",
-"size": 102991
+"sha256": "084f2a7ca59dcbcec47cd39a58dd7bf0db7a7ffde974017038d52abecb5c2b10",
+"size": 106533
 },
 "proggen/M06_Write_Header_Sound.py": {
 "sha256": "89bd5046d9725d3b9cf36226fcad44fd211e3bf12a370b04e582482a551c5ce5",
@@ -8827,16 +8735,16 @@
 "size": 67860
 },
 "proggen/M07_COM_Port.py": {
-"sha256": "9f29201b23456433968f4f72fbaadf9de47b1fad4057ccdb0062e5bb33752520",
-"size": 79489
+"sha256": "b0e8157452822f4d14454a444d50bd1b55059111d68c4a52fb10fe78a84f7351",
+"size": 79528
 },
 "proggen/M07_COM_Port_New.py": {
 "sha256": "6063a6b33c7a3425582a6cf6c01f890a6d247fa8670ea92f91c166b9652bc430",
 "size": 25772
 },
 "proggen/M08_ARDUINO.py": {
-"sha256": "2b8724df8f43db56905bd5dd658d85a9d80086796f2ca1cecd576dbde0fb129a",
-"size": 188914
+"sha256": "fbe84dc7e08a02706ab6b5405b595d12023077595b5169f5e7d16d53f55cb4fc",
+"size": 189638
 },
 "proggen/M08_Fast_ARDUINO.py": {
 "sha256": "e2feb5fda33f949f406f1a6b6cebb389b67ea61ccbfb54114e05b365333fa4e3",
@@ -8879,16 +8787,16 @@
 "size": 12589
 },
 "proggen/M18_Save_Load.py": {
-"sha256": "30a909c73fed3a6dadd8f1bdea2f51ddb56dd9c158c9cf15ad70df8f2c9e165b",
-"size": 37121
+"sha256": "e7573252e4f21d7e8c3483b06b1fe6a55cf383ccf9bc6ceee4aff8113def821b",
+"size": 37408
 },
 "proggen/M18a_Load_PicoConfig.py": {
 "sha256": "d5b22e91bc1dd33eeceec06a072ef6acadaf7870718cab58ce42550646302c40",
 "size": 26276
 },
 "proggen/M20_PageEvents_a_Functions.py": {
-"sha256": "c7cc8cef52b982cfef65f5694206ef445673ac7670c65f46275a958cab088aa3",
-"size": 70706
+"sha256": "cb4ace788a7c1c044c951b32cdf2e135f069770eec61e70ce3e18e704fa87547",
+"size": 72409
 },
 "proggen/M22_Hide_UnHide.py": {
 "sha256": "ed00d957f7ad995a43d46a61840a29287ef65f774c0e7be7f095955c349fa1fb",
@@ -8911,8 +8819,8 @@
 "size": 12434
 },
 "proggen/M28_Diverse.py": {
-"sha256": "4ce9b01ca62c44c4528091ff0fcb4973aa5a1d9a2821022e64ecab6029b6eebe",
-"size": 15337
+"sha256": "b2723d263851b3e7df1603706e7b17c32f5fe69b423685edc8980b10c6a6dbee",
+"size": 19271
 },
 "proggen/M30_Tools.py": {
 "sha256": "2c635a85cf92ce4ebdc9c4b0b5dd4a1d84602a379d7a81a7e70ea29aa8d15c9d",
@@ -8923,8 +8831,8 @@
 "size": 6673
 },
 "proggen/M32_DCC.py": {
-"sha256": "89061cf5eced17b4f70ee152712654cc3c270c02f396d1b6fe3bf2181ee0cf8d",
-"size": 10046
+"sha256": "3347d05437fdb81b2a1e2c3f46530f74702e0325c68e2f700d35391e9193d4c0",
+"size": 11692
 },
 "proggen/M33_WebApi.py": {
 "sha256": "6efaedfbb00c7e9c8ffd6e0167f58d69ea45d7c65e020d8ba4c1d8756f396cb3",
@@ -8939,8 +8847,8 @@
 "size": 30045
 },
 "proggen/M39_Simulator.py": {
-"sha256": "4e0c978149c474a9373ab7ad4d3431616a0c6032e1cf794693a5ba3b6df72a49",
-"size": 27175
+"sha256": "ebc8356f4d088eaa2ed3f4574e61ae775905ff994f46cf3cf77ff16b42198eb8",
+"size": 44817
 },
 "proggen/M40_ShellandWait.py": {
 "sha256": "f1d2786718d1efccecec1e1b22388aaf7cab7b1a9782c5bf57583adde08dea2c",
@@ -9067,8 +8975,8 @@
 "size": 2705
 },
 "proggen/UserForm_Options.py": {
-"sha256": "8e94d33e1dc5d4297278ae2c0eaa5f4e8b0a5f850e7873fca6ab73af643d542c",
-"size": 39874
+"sha256": "4df0c6dbb2b39606492c34d844862ac4f4d73a0e76e11142bed40a253a715b70",
+"size": 41192
 },
 "proggen/Userform_Animation.py": {
 "sha256": "e334c4c6cb8a193be73a3081e09be5be78e4f66c23dce6b7c937c7b8dd14596a",
@@ -9111,8 +9019,8 @@
 "size": 38111
 },
 "proggen/Userform_Other.py": {
-"sha256": "da965421394e7717f95459f9d13ae2b321c8d5f4b99dc65f6b90b846ea3d4294",
-"size": 68272
+"sha256": "57107e8d8cecbf31ccc3435e44a720d1dd47e8d8ba87eaa87d75cd45ed7cce1b",
+"size": 69157
 },
 "proggen/Userform_RowFormat.py": {
 "sha256": "da59f6242a5b603d506e3c20b7132ce210f7119ff70bacaa38e5b27e87614cb5",
@@ -9183,16 +9091,16 @@
 "size": 83
 },
 "recover.py": {
-"sha256": "f942964588966f8a5581aa5759531ca28d5454ee48ee832ddf6d68d6218de86c",
-"size": 8181
+"sha256": "967c55677ec6f4ae3a3681a43343e3e6e7c60b1b9ccbdf7a5fcfff0cc4a3f82e",
+"size": 8384
 },
 "release_tools.py": {
-"sha256": "9dcd95cba38117084f03a5553fefafa4be3cccfe5c6d8ddbbaff496ebcecae02",
-"size": 30395
+"sha256": "c4d0ea527ff6c4367e26a2506c2920d62bc94ca8b9db7157412f44fb399c045f",
+"size": 31882
 },
 "repair.py": {
-"sha256": "7e28b9b0be0c248f15f97bbf53c0e1f8ad234ee21f1a8658b3dde3b105742d23",
-"size": 22569
+"sha256": "ac776528f6f02885db08d5a398987504f86a502dda89fdf85078c175e6efe208",
+"size": 23273
 },
 "scrolledFrame/HorizontalScrolledFrame.py": {
 "sha256": "1425333671c7ae4dc1b8d362c6ddbdbc61665d348ff7856369f266942f269e7b",
@@ -9202,25 +9110,53 @@
 "sha256": "4b8df0e6532baf74624e0c6be4dc7d713391ddcc8286b2b1a5b00856f1585f0e",
 "size": 12995
 },
-"scrolledFrame/ScrolledFrame.pyo": {
-"sha256": "8c6ffeeb37a2bdad97fcb1fc2260019ccc02cda09d41c9bb1162718e83154898",
-"size": 7974
-},
 "scrolledFrame/VerticalScrolledFrame.py": {
 "sha256": "8c89f4de96b7b2d8333cb1876c8a8c43ba40579fe8fefc58b572797e0de2a325",
 "size": 6965
 },
+"simulator_linux/Arduino-stub/Arduino.cpp": {
+"sha256": "c1b185ed8db09cb27352bd3be064e0c7f55a6fffe73b6ab31a8489a518dfc64a",
+"size": 749
+},
+"simulator_linux/Arduino-stub/Arduino.h": {
+"sha256": "f604eae9b5f81475473237e510362f37014dcb3bb7f9a0df6ec02eea26c63369",
+"size": 945
+},
+"simulator_linux/Arduino-stub/FASTLed.h": {
+"sha256": "cdd9449486d6d158bc479e5adea109e2938b71a0b9caab127f783de2471225c1",
+"size": 26
+},
+"simulator_linux/Arduino-stub/FastLEDStub.cpp": {
+"sha256": "1a4408ffb13864255b7b80da9970a765efbf899812701d29543b66fd582395f2",
+"size": 14720
+},
+"simulator_linux/Arduino-stub/FastLEDStub.h": {
+"sha256": "d16a945763c4f3c4fb20adc72c8a0171c888bc990216a8f21235ee48a32ef721",
+"size": 7963
+},
+"simulator_linux/Arduino-stub/WString.h": {
+"sha256": "d39061880ff231667e4f537bf8ec47656f3381c2efdc4ac72d106ff7ee73387e",
+"size": 8702
+},
+"simulator_linux/LIESMICH.txt": {
+"sha256": "4a3b00624af7c1d762b75857e841af9048e72cd242f92d64e07b05f3b5327edf",
+"size": 1052
+},
+"simulator_linux/build_simulator_linux.sh": {
+"sha256": "e67b7b38db429b04b192d3ac45da9ad79b5376409cfadfdaf305918ca44c8e5e",
+"size": 2328
+},
+"simulator_linux/wrapper_linux.cpp": {
+"sha256": "cc66c458d13e39a1778ef0f9b07e24acd3de08cf023cb29255bd37dd37438e07",
+"size": 5364
+},
 "test_headless_contract.py": {
-"sha256": "5f69d9c2766130c07864d57b5e785b0158025826fa5b85221bc192bb99a57832",
-"size": 6829
+"sha256": "551232114ef7aa07113672785dcbeaba5decaa26e8315c93ec89c8e81ab76e31",
+"size": 6984
 },
 "tkcolorpicker/__init__.py": {
 "sha256": "35a6dc62073355376fef8f28fd26583552ccaaf6a0b7798e47f348fdb84f623a",
 "size": 2529
-},
-"tkcolorpicker/__init__.pyo": {
-"sha256": "826e350a7b8b91ba5d1891c5656bf8cd8b49cb8cf3db1326ec56ceedf56ec1e8",
-"size": 327
 },
 "tkcolorpicker/__main__.py": {
 "sha256": "cc6f993177436afad4e4c07390f1e20d73051f8eeefec5b88ae8d9b5bc8a0a5e",
@@ -9238,41 +9174,21 @@
 "sha256": "fa1b5127bfee12029744d99617d340611f1ccfc76f3fe018916dae582141b8e6",
 "size": 7942
 },
-"tkcolorpicker/colorsquare.pyo": {
-"sha256": "17d0869491fd0d31d972d3c804e1d2c08f4cb25fbffdee5a320e2b24316ea4c8",
-"size": 5619
-},
 "tkcolorpicker/functions.py": {
 "sha256": "cc44c215f65cd506018deed1812037d6c1a4ce3d27b2f1485cdd53c368e1f138",
 "size": 7759
-},
-"tkcolorpicker/functions.pyo": {
-"sha256": "37bc7ff62fa1e8ec4ad859b7e4e9d37370e525ff99c88b8fe02c01c72ea77b66",
-"size": 4240
 },
 "tkcolorpicker/gradientbar.py": {
 "sha256": "3e798cade8b3aeee1953209343cc9bc436b3fa9ce00aeb36429d3a084755ac79",
 "size": 5318
 },
-"tkcolorpicker/gradientbar.pyo": {
-"sha256": "340bdcc021777d7fa75ef97f9792749e45621a76021cb6458d367e01c1a7d358",
-"size": 5568
-},
 "tkcolorpicker/limitvar.py": {
 "sha256": "e574005f7c0ed7d0fbcf2d50c46484a5935525d0e098f11278ebeafa289d61b7",
 "size": 2500
 },
-"tkcolorpicker/limitvar.pyo": {
-"sha256": "490e7bd22ae58b5ccc6775342a1a32bc8207ce1e3c4bae730cce8a6128f501cb",
-"size": 2263
-},
 "tkcolorpicker/spinbox.py": {
 "sha256": "d8541c2db99f7212410e88024f977b0fe9536a15413d8f9d93050e7ead680d80",
 "size": 5435
-},
-"tkcolorpicker/spinbox.pyo": {
-"sha256": "162abd205d25716dc41caeae0ebcb4d634c008dd2126c3654a5e2e93bc3dc1fc",
-"size": 4120
 },
 "tksheet/__init__.py": {
 "sha256": "02649dab04a2a90a462fb3426fe493043da85292726d531658f15464c59f8b20",
@@ -9359,8 +9275,8 @@
 "size": 337
 },
 "userdata.py": {
-"sha256": "63ab5ffc250365c5f5f3714e46d0e9de9e9b5dd4cc798c374146f6344660915f",
-"size": 5253
+"sha256": "76f169ecab5656313b481cda8573e3fce299b5944cb7a2ef86d182f255fee61a",
+"size": 5369
 },
 "vb2py/__init__.py": {
 "sha256": "e0ba8b72f361b6f4f71dc78a0b7a570475bdd44e176caad604ba134208475403",
@@ -9419,8 +9335,8 @@
 "size": 4184
 },
 "vb2py/vbclasses.py": {
-"sha256": "0ee45211199c4032973fb5902f4dd69032e475701b4c335e949a661acd5c180c",
-"size": 21163
+"sha256": "9dc63acff98d4916dc3bc5739607a418c010a6198c4760bb28308d2d0c0bb8b8",
+"size": 21646
 },
 "vb2py/vbconstants.py": {
 "sha256": "946ca48a4c9b2e34f349709c9144889bfe43cadfa53926633c7ce7a581c7233e",
@@ -9451,12 +9367,12 @@
 "size": 34
 },
 "webmobaledlib.py": {
-"sha256": "07ac5b4c80a2360966c128d2099cee7cb620e7deb4ada8bedb5ef7f4c7c9d545",
-"size": 517251
+"sha256": "10d7787785f8e3d5c0cc87648c8a3c43c56b608b43d4f796dcfef5099ecddfb7",
+"size": 565458
 }
 },
 "format": 1,
 "program": "webMobaLedLib",
 "type": "full",
-"version": "3.42 (2026-11-14)"
+"version": "3.93 (2026-11-18)"
 }

@@ -1,9 +1,9 @@
-# Datei-Version: 1.28 (2026-11-17) - web_form_options.py
+# Datei-Version: 1.29 (2026-11-18) - web_form_options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_options.py
 # Path:           _web/web_form_options.py
-# Version:        1.28
-# Last Update:    2026-11-17
+# Version:        1.29
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -15,6 +15,7 @@
 #   1.23  2026-11-13  Wechsel des Arduino-Typs (Optionen): eine bestehende serielle Verbindung wird getrennt und der gewaehlte COM Port zurueckgesetzt (_web_board_changed), damit beim naechsten Mal die Port-Erkennung startet ohne die Meldung 'Es ist kein ... angeschlossen' (Rueckmeldung des Excel-Entwicklers)
 #   1.24  2026-11-14  Reiter OTA (nur bei Board ESP32): WLAN, OTA, Hostname, Adresse, Passwort (Beitrag des Fork-Entwicklers; web_esp32_ota.settings_panel)
 #   1.28  2026-11-17  Knopf 'Board und USB Port erkennen' steht ueber 'USB Port erkennen'; Reiter 'LED Arduino' heisst 'Lichtmaschine', Reiter 'OTA' heisst 'WLAN (OTA)'
+#   1.29  2026-11-18  Reiter Dateien: Knopf Importieren v. altem Prog. ist aktiv und zeigt eine Anleitung (Daten ueber eine MLL_pgf-Datei uebernehmen); Knopf Kopiere von Seite zu Seite entfaellt (ersetzt durch Seite duplizieren)
 #   1.27  2026-11-17  Knopf 'Board und USB Port erkennen': stellt das erste gefundene Board ein und ruft USB Port erkennen auf (Formular mit gefundenem Board und Anschluss, dazu die anderen Boards); Anwender kann uebernehmen oder anderen Typ waehlen
 #   1.26  2026-11-17  Erkennen ohne voreingestellten COM Port und Board: der Knopf durchsucht selbst alle seriellen Anschluesse (Classify_Port), fragt bei mehreren Geraeten nach und traegt Board und COM Port ein
 #   1.25  2026-11-17  Reiter LED ARDUINO / DCC Arduino: statt des Hakens 'Automatisch erkennen' ein Knopf 'Erkennen' (erkennt das angeschlossene Board einmalig: Nano alt/neu ueber den Bootloader, ESP32, Pico); der Eintrag 'Typ von Arduino IDE benutzen' entfaellt (Vorschlag des Excel-Entwicklers)
@@ -396,9 +397,12 @@ def make_class(Base):
                     pages["right"] = {"radios": self._radios("_R"), "subtitle": subtitle, "auto_text": auto_text, "detect_text": detect_text, "detect_hint": detect_hint}  # v1.25
                     pages["left"]["nano_values"] = [v for v, _text in pages["left"]["radios"] if self._is_nano_value(v)]  # v1.06
                 files = tab_buttons(buttons, ["__Import_Button_Click", "__Save_Button_Click", "__Load_Button_Click", "__Copy_Page_Button_Click"])
+                files = [b for b in files if b["handler"] != "__Copy_Page_Button_Click"]  # v1.29: ersetzt durch Seite duplizieren
                 for b in files:
                     if b["handler"][2:] in {h[2:] for h in NOT_IN_WEB}:
                         b["disabled"] = True
+                    if b["handler"] == "__Import_Button_Click":  # v1.29
+                        b["disabled"] = False  # v1.29
                 tabs.append({"name": M09.Get_Language_Str("Dateien"), "kind": "list", "buttons": files,
                              "texts": ["Speichern lädt die Datei über den Browser herunter, Laden öffnet einen Upload-Dialog."]})
                 # Der Knopf des Originals "Update pyMobaLedLib" (__Update_pyMobaLedLib_Button_Click) fehlt hier absichtlich: Er laedt master.zip des
@@ -565,6 +569,14 @@ def make_class(Base):
             version = M08.PIO_Version(pio)  # v1.04
             P01.MsgBox((version or tr("PlatformIO ist vorhanden, antwortet aber nicht.")) + "\n" + pio, ns["vbInformation"] if version else vbCritical, "PlatformIO")  # v1.04
 
+        def _web_import_info(self):  # v1.29
+            """Knopf Importieren v. altem Prog.: erklaert, wie Daten des Excel-Programms ueber eine MLL_pgf-Datei uebernommen werden"""  # v1.29
+            P01.MsgBox(tr("So übernimmst du die Daten des alten Excel-Programms:") + "\n\n"  # v1.29
+                       + tr("1. Öffne im alten Programm Optionen und spezielle Funktionen, Reiter Dateien, und klicke auf Speichern in Datei. Speichere die Daten (alle Seiten oder die Seiten, die du brauchst) als Datei mit der Endung MLL_pgf.") + "\n"  # v1.29
+                       + tr("2. Öffne hier das Menü Datei und wähle ProgrammGenerator: PGF-Datei lesen. Du kannst die Datei auch auf die Tabelle ziehen.") + "\n"  # v1.29
+                       + tr("3. Prüfe danach die Tabelle, zum Beispiel die Spalten Verteiler-Nr. und Aktiv.") + "\n\n"  # v1.29
+                       + tr("Mehr dazu in der Online-Anleitung (Hilfe, Online Wiki), Seite Häufige Fragen."), ns["vbInformation"], tr("Importieren v. altem Prog."))  # v1.29
+
         def _web_pico_udev(self):  # v1.05
             """Knopf USB-Zugriff fuer den Pico einrichten (Linux): udev-Regel mit pkexec einrichten (install/install_pico_udev.sh)"""  # v1.05
             import proggen.M08_ARDUINO as M08  # v1.05
@@ -718,6 +730,9 @@ def make_class(Base):
                 if handler == "__Install_Git_Button_Click":               # gibt es nur im Web, nur unter Linux, nur wenn git fehlt  # v1.13
                     self._web_install_git()  # v1.13
                     continue  # v1.13
+                if handler == "__Import_Button_Click":                    # v1.29: Anleitung statt Import aus der Excel-Datei
+                    self._web_import_info()  # v1.29
+                    continue  # v1.29
                 if handler == "__Pico_Udev_Button_Click":                 # gibt es nur im Web, nur unter Linux  # v1.05
                     self._web_pico_udev()  # v1.05
                     continue  # v1.04

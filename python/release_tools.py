@@ -1,9 +1,9 @@
-# Datei-Version: 1.08 (2026-11-08) - release_tools.py
+# Datei-Version: 1.09 (2026-11-18) - release_tools.py
 # ----------------------------------------------------------------------------------------------
 # Name:           release_tools.py
 # Path:           release_tools.py
-# Version:        1.08
-# Last Update:    2026-11-08
+# Version:        1.09
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -16,6 +16,7 @@
 #   1.06  2026-10-26  Ordner .pio (PlatformIO, mehrere hundert MB) gehoert nicht ins Release (SKIP_DIRS); Warnung, wenn das ZIP entpackt ungewoehnlich gross ist (BIG_UNPACKED_MB)
 #   1.07  2026-10-26  Neu: Befehl zip (ZIP mit UTF-8-Kennzeichen fuer Umlaute) und Pruefung, dass Dateinamen mit Umlauten das UTF-8-Kennzeichen haben (tar von Windows schreibt es nicht: Pi entpackt falsch)
 #   1.08  2026-11-08  Alte Schreibweisen von Dateinamen (install/legacy_names.txt, Zeilen 'alter Name = neuer Name'): Pruefliste und ZIP enthalten sie als zusaetzliche Eintraege mit dem Inhalt der neuen Datei. Das Update einer aelteren Version (deren Update-Code Dateien in anderer Schreibweise loescht) loescht unter Windows und macOS sonst die neu geschriebenen Symbole und bricht mit 'nach dem Schreiben nicht lesbar' ab
+#   1.09  2026-11-18  START_HIER.txt liegt im ZIP neben dem Ordner python (zip: weitere Dateien als 3. Argument ab, check: ROOT_FILES sind ausserhalb von python erlaubt)
 # ----------------------------------------------------------------------------------------------
 """Pruefliste (Manifest) und Pruefungen fuer das Release von webMobaLedLib. Nur Standardbibliothek: laeuft auch, wenn das Programm selbst nicht mehr startet.
 
@@ -262,7 +263,7 @@ def verify_zip(zip_path: str, previous: str = "") -> Report:
         if not names:
             rep.errors.append("Das ZIP ist leer.")
             return rep
-        if not all(n.startswith("python/") for n in names):
+        if not all(n.startswith("python/") or n in ROOT_FILES for n in names):  # v1.09: START_HIER.txt darf im Wurzelordner liegen
             rep.errors.append("Nicht alle Dateien liegen im Ordner python (Aufbau: python/webmobaledlib.py ...).")
         data = {n[len("python/"):]: original for n, original in names.items() if n.startswith("python/")}
         manifest_raw = zf.read(data[MANIFEST_NAME]) if MANIFEST_NAME in data else None
@@ -436,7 +437,10 @@ def _print_report(rep: Report) -> int:
     return 0 if rep.ok else 1
 
 
-def build_zip(folder: str, zip_path: str) -> int:  # v1.07
+ROOT_FILES = ("START_HIER.txt",)  # v1.09: Dateien im Wurzelordner des ZIP (neben dem Ordner python)
+
+
+def build_zip(folder: str, zip_path: str, extras=()) -> int:  # v1.07  # v1.09: extras
     """ZIP aus dem Ordner python bauen (Aufbau python/...): Dateinamen mit Umlauten bekommen das UTF-8-Kennzeichen (Python setzt es selbst), Skripte (.sh, .command) die Rechte 755.
     Gebraucht von zip_erstellen.bat: tar und der Explorer von Windows schreiben Umlaute ohne dieses Kennzeichen, dann entpackt Linux falsch (zum Beispiel Pattern_Config_Examples/vorsignal_grün.png)."""
     folder = os.path.abspath(folder)  # v1.07
@@ -457,6 +461,13 @@ def build_zip(folder: str, zip_path: str) -> int:  # v1.07
             info.external_attr = (0o100755 if rel.endswith((".sh", ".command")) else 0o100644) << 16  # v1.07
             with open(path, "rb") as fh:  # v1.07
                 zf.writestr(info, fh.read())  # v1.07
+        for extra in extras:  # v1.09: Dateien neben dem Ordner python (nur die Namen aus ROOT_FILES)
+            if os.path.basename(extra) in ROOT_FILES and os.path.isfile(extra):  # v1.09
+                info = zipfile.ZipInfo.from_file(extra, os.path.basename(extra))  # v1.09
+                info.compress_type = zipfile.ZIP_DEFLATED  # v1.09
+                info.external_attr = 0o100644 << 16  # v1.09
+                with open(extra, "rb") as fh:  # v1.09
+                    zf.writestr(info, fh.read())  # v1.09
     print(f"ZIP geschrieben: {zip_path} ({len(set(rels)) + len(legacy)} Dateien, davon {len(legacy)} alte Schreibweisen aus {LEGACY_NAMES_FILE})")  # v1.08
     return 0  # v1.07
 
@@ -476,7 +487,8 @@ def main(argv) -> int:
         if len(argv) < 4:  # v1.07
             print("Aufruf: release_tools.py zip <Ordner python> <ZIP-Datei>")  # v1.07
             return 2  # v1.07
-        return build_zip(target, argv[3])  # v1.07
+        # return build_zip(target, argv[3])  # v1.07 (entfallen v1.09)
+        return build_zip(target, argv[3], argv[4:])  # v1.09
     if command == "make":
         path = write_manifest(target)
         data = json.load(open(path, encoding="utf-8"))

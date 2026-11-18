@@ -1,9 +1,22 @@
-Datei-Version: 1.23 (2026-11-17) - LIESMICH_Wiki_Gesamt.md
-Gilt für webMobaLedLib 3.85
+Datei-Version: 1.24 (2026-11-17) - LIESMICH_Wiki_Gesamt.md
+Gilt für webMobaLedLib 3.87
 
 # Wiki-Kapitel „webMobaLedLib“: alle Seiten, Stand 3.04
 
 Dieses Paket enthält **alle 29 Seiten** in ihrer neuesten Fassung (Seitenstand jeweils um 0,01 erhöht). Es ersetzt die früheren Pakete der sechs Wellen. **Die Seiten erst veröffentlichen, wenn ein Release mit 3.04 (oder neuer) auf GitHub liegt.**
+
+## Neu seit 3.87 (Stand 3.93): Häufige Fragen
+
+* **`faq`** (1.00, neu): Zellen nach unten kopieren (Strg+D, Reihe fortsetzen), Bedeutung von „V“ in der Spalte Verteiler, Lichtmaschine nicht als COM-Port erkannt (**Antwort aus dem Forum steht noch aus**, Abschnitt ist als offen gekennzeichnet), Daten aus dem alten Excel-Programm übernehmen (Umweg über MLL_pgf-Datei, bis der Knopf freigeschaltet ist), Datenordner, Online-Wiki-Knopf.
+* Die Startseite heißt im Wiki **`einfuehrung`** (vom Wiki-Administrator so benannt); die Datei `start.txt` heißt im Paket jetzt `einfuehrung.txt`, alle Links sind angepasst. `einfuehrung` 1.08 (Link auf `faq`), `pg_tabelle` 1.06 (zwei neue Kontextmenü-Einträge), `pg_grafisch` 1.04 (reine Zahl als Verteilernummer), `seiten_update` 1.06.
+* **Vom Entwickler zu prüfen:** der Abschnitt zum Datenimport nennt die Dateiendung `.MLL_pgf` und das Speichern im Excel-Programm; bitte gegen die Excel-Version prüfen. Bildschirmfotos fehlen (keine nötig).
+
+## Neu seit 3.85: zwei Seiten für Anwender und Entwickler
+
+* **`fehler_melden`** (1.00): Wie Anwender einen Fehler oder Wunsch im Issue Tracker auf GitHub eintragen (Konto, Vorlage, Protokoll und Anhänge, was nicht veröffentlicht werden darf, was danach passiert).
+* **`mitentwickeln`** (1.00): Wie andere Entwickler helfen (Fork, Branch, Pull Request, Regeln des Projekts, Tests), mit einer **Kurzfassung des KI-Prompts** und der Beschreibung, wie Änderungen **in den Entwicklungsstand zusammengeführt** werden (3-Wege-Vergleich, PR wird mit Kommentar geschlossen, Nennung im HOC).
+* Beide sind von der **Startseite** verlinkt (Liste „Wie geht es weiter?“ und Absatz „Was gibt es noch nicht?“). `start` ist jetzt 1.07.
+* **Vom Entwickler zu bestätigen:** (1) der beschriebene Ablauf der Übernahme („PR mit Kommentar schließen“, Urheber im HOC nennen), (2) die Aussage zur Lizenz LGPL V2.1 für Beiträge, (3) dass der Zweig `main` den letzten Release enthält, (4) ob der Issue Tracker Vorlagen oder Labels bekommen soll (dann Text anpassen).
 
 ## Neu im Release 3.85 (2026-11-17): Boardauswahl und neue Bezeichnungen
 
@@ -91,7 +104,7 @@ Dieses Paket enthält **alle 29 Seiten** in ihrer neuesten Fassung (Seitenstand 
 | `raspberrypi.txt` | `anleitungen:webmobaledlib:raspberrypi` | 1.02 |
 | `seiten_update.txt` | `anleitungen:webmobaledlib:seiten_update` | 1.00 |
 | `servo_animation.txt` | `anleitungen:webmobaledlib:servo_animation` | 1.05 |
-| `start.txt` | `anleitungen:webmobaledlib:start` | 1.04 |
+| `einfuehrung.txt` | `anleitungen:webmobaledlib:einfuehrung` | 1.08 |
 | `werkzeuge.txt` | `anleitungen:webmobaledlib:werkzeuge` | 1.07 |
 | `windows.txt` | `anleitungen:webmobaledlib:windows` | 1.02 |
 | `wz_arduino_einstellungen.txt` | `anleitungen:webmobaledlib:wz_arduino_einstellungen` | 1.04 |

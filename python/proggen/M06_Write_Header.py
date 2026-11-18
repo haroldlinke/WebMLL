@@ -1,9 +1,9 @@
-# Datei-Version: 1.08 (2026-11-15) - M06_Write_Header.py
+# Datei-Version: 1.09 (2026-11-17) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.08
-# Last Update:    2026-11-15
+# Version:        1.09
+# Last Update:    2026-11-17
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -15,6 +15,7 @@
 #   1.06  2026-11-14  Create_HeaderFile(HeaderOnly): nur die Header-Datei erzeugen (ESP32-OTA); Display-Block des ESP32 (UI_MLLTime) nach Bearbeitung im Browser wieder auf mehrere Zeilen (Beitrag des Fork-Entwicklers)
 #   1.07  2026-11-15  Umschalttaste: Simulator-Option 3 war umgekehrt (VBA: nur ohne Umschalttaste), Wert als bool
 #   1.08  2026-11-15  Simulator-Betriebsart ueber M39.Get_Sim_Mode (Auswahl Kein/Nur/Mit Simulator)
+#   1.09  2026-11-17  Fehlermeldung der House-Zeiten verweist auf die Programm Einstellungen statt auf die Seite Config (die Werte stehen dort)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -1593,10 +1594,11 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
         House_Max_T = 150
         # Default value used in the library
     if P01.val(House_Min_T) > P01.val(House_Max_T) or P01.val(House_Max_T) == 0:
-        PG.ThisWorkbook.Sheets(M02.ConfigSheet).Select()
-        P01.Range('MinTime_House').Select()
+        # PG.ThisWorkbook.Sheets(M02.ConfigSheet).Select()  # v1.09 (entfallen: die Zeiten stehen in den Programm Einstellungen)
+        # P01.Range('MinTime_House').Select()  # v1.09 (entfallen)
         #XLWA.Sleep(100)
-        P01.MsgBox(M09.Get_Language_Str('Fehler auf der \'Config\' Seite:' + vbCr + 'Die \'Minimale Zeit bis zur nächsten Änderung\' muss kleiner ' + 'oder gleich groß wie die Maximale Zeit sein.' + vbCr + 'Achtung: Wenn nichts eingegeben ist werden die Standard Werte vom 50/150 verwendet. ' + 'Dadurch kann es ebenfalls zu einem Konflikt kommen.'), vbCritical, M09.Get_Language_Str('Falsche Zeiten für die House() Funktion'))
+        # P01.MsgBox(M09.Get_Language_Str('Fehler auf der \'Config\' Seite:' + vbCr + 'Die \'Minimale Zeit bis zur nächsten Änderung\' muss kleiner ' + 'oder gleich groß wie die Maximale Zeit sein.' + vbCr + 'Achtung: Wenn nichts eingegeben ist werden die Standard Werte vom 50/150 verwendet. ' + 'Dadurch kann es ebenfalls zu einem Konflikt kommen.'), vbCritical, M09.Get_Language_Str('Falsche Zeiten für die House() Funktion'))  # v1.09 (entfallen)
+        P01.MsgBox(M09.Get_Language_Str('Fehler in den Programm Einstellungen (Programm Generator):' + vbCr + 'Die \'Minimale Zeit bis zur nächsten Änderung\' muss kleiner ' + 'oder gleich groß wie die Maximale Zeit sein.' + vbCr + 'Achtung: Wenn nichts eingegeben ist werden die Standard Werte vom 50/150 verwendet. ' + 'Dadurch kann es ebenfalls zu einem Konflikt kommen.'), vbCritical, M09.Get_Language_Str('Falsche Zeiten für die House() Funktion'))  # v1.09
         M30.EndProg()
     VBFiles.writeText(fp, '', '\n')
     Color_Test_Mode = M28.Get_String_Config_Var('Color_Test_Mode')
