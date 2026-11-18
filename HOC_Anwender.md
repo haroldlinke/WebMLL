@@ -5,6 +5,10 @@ Stand: webMobaLedLib 3.93
 
 Gilt ab Version 1.39. Neueste Version oben.
 
+## 3.93 (2026-11-18) - Fotowiderstand
+
+**Fotowiderstand aktivieren** richtet den Sensor beim Uebertragen auch ohne Makrozeile ein.
+
 ## 3.93 (2026-11-18) – OLED-Vorschau
 
 Korrekturen

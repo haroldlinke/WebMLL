@@ -1,12 +1,13 @@
-# Datei-Version: 1.06 (2026-11-16) - M06_Write_Header_SW.py
+# Datei-Version: 1.07 (2026-11-18) - M06_Write_Header_SW.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header_SW.py
 # Path:           proggen/M06_Write_Header_SW.py
-# Version:        1.06
-# Last Update:    2026-11-16
+# Version:        1.07
+# Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.07  2026-11-18  ESP-Einstellung aktiviert die originale LDR-Scanner-Initialisierung
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-21  Version K des Excel-Programms: Makros Name_LED_Number und Name_LED_Offset in Add_InpVars (bekannte LED-Variablen, KnownVariables); Praefix-Parameter (Get_Par_Prefix); Check_Nr_From_Var herausgezogen; Add_Undefined_Input_Var; Warnung bei mehrfach gesetzten Zielvariablen auch in Check_Detected_Variables
 #   1.02  2026-10-21  Fehlalarme: LED-Namen (Name_LED_Number, Name_LED_Offset), die mehrfach vorkommen, loesen die Warnung 'Zielvariablen werden mehrfach gesetzt' nicht mehr aus; die Warnung kommt je Liste nur einmal; Praefix-Tabelle bei jeder Erzeugung neu einlesen
@@ -1653,7 +1654,9 @@ def Init_HeaderFile_Generation_SW(firstRun):
     #---------------------------------------------------------
     if ( firstRun ) :
         MaxUsed_Loc_InCh = - 1
-        Read_LDR = False
+        # Read_LDR = False  # v1.07 (entfallen)
+        esp32_options = getattr(P01.ActiveSheet, "esp32_options", None) or {}  # v1.07
+        Read_LDR = M02a.Get_BoardTyp() == M02.HT_ESP32 and esp32_options.get("ldr") is True  # v1.07
         Store_Status_Enabled = False
         Use_WS2811 = False
         # The following variables are read from the data lines

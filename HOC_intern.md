@@ -9,6 +9,10 @@ Pfade beziehen sich auf den Ordner `python`.
 
 ---
 
+## 3.93 (2026-11-18) - Fotowiderstand
+
+Das ESP-Haekchen setzte `READ_LDR`, liess aber den internen Schalter fuer die Initialisierung des ADC-Scanners aus. `proggen/M06_Write_Header_SW.py` (1.07) setzt ihn jetzt beim ersten Blatt vor dem Makroscan. Syntax geprueft. Hardwaretest offen.
+
 ## 3.93 (2026-11-18) – OLED-Vorschau
 
 Korrektur der OLED-Vorschau. NiceGUI stellt den Namen des ESP-Reiters unter `props["name"]` bereit. `_web/web_form_options.py` 1.30 verwendet diese Eigenschaft im Timer. Python-Syntax und installierte NiceGUI-API geprüft. Browsertest offen.
