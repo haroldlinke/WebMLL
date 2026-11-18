@@ -1,4 +1,4 @@
-Datei-Version: 1.01 (2026-10-18) - HOC_intern.md
+Datei-Version: 1.02 (2026-11-18) - HOC_intern.md
 Stand: webMobaLedLib 3.93
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,10 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 3.93 (2026-11-18) – OLED-Vorschau
+
+Korrektur der OLED-Vorschau. NiceGUI stellt den Namen des ESP-Reiters unter `props["name"]` bereit. `_web/web_form_options.py` 1.30 verwendet diese Eigenschaft im Timer. Python-Syntax und installierte NiceGUI-API geprüft. Browsertest offen.
 
 ## 3.93 (2026-11-18) – ESP Einstellungen pro Blatt
 

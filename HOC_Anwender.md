@@ -1,9 +1,15 @@
-Datei-Version: 1.01 (2026-10-18) - HOC_Anwender.md
+Datei-Version: 1.02 (2026-11-18) - HOC_Anwender.md
 Stand: webMobaLedLib 3.93
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 3.93 (2026-11-18) – OLED-Vorschau
+
+Korrekturen
+
+- Die OLED-Vorschau im Reiter **ESP Einstellungen** löst beim Aktualisieren keinen Fehler wegen eines fehlenden Reiternamens mehr aus.
 
 ## Version 3.93 (2026-11-18)
 

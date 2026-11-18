@@ -1,12 +1,13 @@
-# Datei-Version: 1.29 (2026-11-18) - web_form_options.py
+# Datei-Version: 1.30 (2026-11-18) - web_form_options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_options.py
 # Path:           _web/web_form_options.py
-# Version:        1.29
+# Version:        1.30
 # Last Update:    2026-11-18
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.30  2026-11-18  OLED-Vorschau: Reiternamen aus NiceGUI-Props lesen (Fork)
 #   1.29  2026-11-17  ESP Einstellungen je Blatt mit OLED-Vorschau (Beitrag des Fork-Entwicklers)
 #   1.18  2026-11-12  Excel-Programm 3.5.0L3: Der Knopf Firmware installieren steht fuer ALLE Boards im Reiter LED ARDUINO (vorher nur beim Raspberry Pi Pico und nur mit Firmware-Dateien im Ordner); der Firmware-Ordner wird bei Bedarf angelegt (fruehere Versionen ohne Eintrag)
 #   1.19  2026-11-12  Excel-Programm 3.5.0L3: Firmware installieren oeffnet die Auswahl auch ohne Firmware-Dateien; der Knopf Firmware laden holt Firmware aus dem Internet (web_form_firmware_download, headless_firmware_dl) und waehlt sie danach vor
@@ -178,7 +179,7 @@ async def _options_async(spec: dict, st: dict):
 
                 def tick():  # v1.29
                     nonlocal frame  # v1.29
-                    if tabs.value == esp_tab.props["name"]:  # v1.29
+                    if tabs.value == esp_tab.props["name"]:  # v1.30
                         frame += 1  # v1.29
                         preview()  # v1.29
 
