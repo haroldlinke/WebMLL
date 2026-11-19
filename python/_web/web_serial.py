@@ -1,12 +1,14 @@
-# Datei-Version: 1.11 (2026-11-16) - web_serial.py
+# Datei-Version: 1.13 (2026-11-19) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.11
-# Last Update:    2026-11-16
+# Version:        1.13
+# Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.13  2026-11-19  COM-Konfigurationsfehler beim Verbinden mit 9600-Baud-Initialisierung behandeln
+#   1.12  2026-11-19  Geraetemanager: stille Hintergrundversuche und Verbindungsbeobachtung
 #   1.00  2026-10-12  Serielle Verbindung ohne Tk (Original, nicht erfasst)
 #   1.01  2026-10-20  send_to_ARDUINO_servo (Seite Servo Test 1): eigene Pause je Zeichen, Sendeschleife kennt eine Pause je Nachricht
 #   1.02  2026-10-20  tx_idle (Keep-Alive der Seite Servo Test nur bei leerer Sendewarteschlange)
@@ -210,6 +212,9 @@ class SerialMixin:
         self._rx_stop = threading.Event()
         self._rx_thread = None
         self._conn_lock = threading.RLock()
+        self._connection_context = threading.local()  # v1.12
+        self._esp32_session = False  # v1.12
+        self._connection_epoch = 0  # v1.12
 
     # ------------------------------------------------------------------ Empfang
     def _on_rx_line(self, text: str):
@@ -393,6 +398,9 @@ class SerialMixin:
 
     # ------------------------------------------------------------------ Meldungen
     def _msg(self, text: str, title: str, kind: int = 16):
+        if getattr(self._connection_context, "quiet", False):  # v1.12
+            logger.info("%s: %s", title, text)  # v1.12
+            return None  # v1.12
         try:
             import ExcelAPI.XLA_Application as X02
             return X02.MsgBox(text, kind, title)
@@ -527,7 +535,9 @@ class SerialMixin:
         if not self._board_needs_dtr():  # v1.06
             ser.dtr = False  # v1.06
             ser.rts = False  # v1.06
-        ser.open()  # v1.06
+        # ser.open()  # v1.13 (entfallen)
+        from headless.headless_serial_port import open_serial_port  # v1.13
+        open_serial_port(ser)  # v1.13
         return ser  # v1.06
 
     def connect_if_not_connected(self, port=None):
@@ -539,6 +549,9 @@ class SerialMixin:
         text = tr(text)  # v1.05: feste Texte wie 'Nicht Verbunden' in der eingestellten Sprache (zusammengesetzte Texte sind schon uebersetzt oder bleiben)
         self.connect_status = (text, fg)
         self.set_connectstatusmessage(text, fg=fg)
+        manager = getattr(self, "device_manager", None)  # v1.12
+        if manager is not None:  # v1.12
+            manager.observe()  # v1.12
 
     def _fail_connect(self):
         self.arduino = None
@@ -568,6 +581,7 @@ class SerialMixin:
             return self._connect(port)
 
     def _connect(self, port=None):
+        self._esp32_session = False  # v1.12
         self.ARDUINO_IP = False
         if port is None:
             port = self.getConfigData("serportname")
@@ -653,12 +667,20 @@ class SerialMixin:
             return self._fail_connect()
         self.ARDUINO_current_portname = port
         self.ARDUINO_status = "Connected"
+        self._connection_epoch += 1  # v1.12
         # self._set_connect_status("Verbunden mit " + port + " - EFFECT Mode", "green")  # v1.04 (entfallen)
         self._set_connect_status(tr('Verbunden mit ') + port + " - EFFECT Mode", "green")  # v1.04
         self._start_reader()
         return True
 
     def connect_esp32(self, host, password):
+        manager = getattr(self, "device_manager", None)  # v1.12
+        if manager is not None:  # v1.12
+            from headless import headless_esp32_ota  # v1.12
+            settings = headless_esp32_ota.load_settings()  # v1.12
+            if host in (settings.get("address"), settings.get("hostname")):  # v1.12
+                manager.register_wlan(settings)  # v1.12
+            manager.add("wlan", host, password=password)  # v1.12
         with self._conn_lock:
             if self.arduino:
                 self.disconnect()
@@ -668,6 +690,7 @@ class SerialMixin:
         """Connect to a WLAN Pico or authenticate to an ESP32 device session."""
         if not IPAdresse:
             return False
+        self._esp32_session = esp32_password is not None  # v1.12
         # self._set_connect_status("Versuch sich mit dem PICO- IP: " + IPAdresse + " zu verbinden ...", "red")  # v1.04 (entfallen)
         if esp32_password is None:
             self._set_connect_status(tr('Versuch sich mit dem PICO- IP: ') + IPAdresse + " zu verbinden ...", "red")
@@ -706,6 +729,7 @@ class SerialMixin:
             self.determine_ARDUINO_Properties_from_Startmessage(txt)
             self.ARDUINO_current_portname = IPAdresse
             self.ARDUINO_status = "Connected"
+            self._connection_epoch += 1  # v1.12
             # self._set_connect_status("Verbunden mit " + IPAdresse + " - EFFECT Mode", "green")  # v1.04 (entfallen)
             self._set_connect_status(tr('Verbunden mit ') + IPAdresse + " - EFFECT Mode", "green")  # v1.04
             self._start_reader()

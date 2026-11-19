@@ -1599,7 +1599,7 @@ Rot;Red;Rood;Rouge;Rosso;Rojo;Rød
 Rückgängig;Undo;Ongedaan maken;Annuler;Annulla;Deshacer;Fortryd
 Rückgängig: {aktion};Undo: {aktion};Ongedaan maken: {aktion};Annuler : {aktion};Annulla: {aktion};Deshacer: {aktion};Fortryd: {aktion}
 Scale-Schriftgröße in Punkten;Scale font size in points;Lettergrootte van de schuifregelaar in punten;Taille de police de l'échelle en points;Dimensione del carattere della scala in punti;Tamaño de letra de la escala en puntos;Skriftstørrelse for skala i punkter
-Schließen;Close;;;;;
+Schließen;Close;Sluiten;Fermer;Chiudi;Cerrar;Luk
 Schließen 'Multiplexer'…;Closing 'Multiplexer'…;'Multiplexer' wordt gesloten…;Fermeture du 'Multiplexeur'…;Chiusura del 'Multiplexer'…;Cerrando 'Multiplexor'…;Lukker 'Multiplexer'…
 Schneller Bootloader;Fast bootloader;Snelle bootloader;Chargeur d'amorçage rapide;Bootloader veloce;Gestor de arranque rápido;Hurtig bootloader
 Schreibt eine fertige Firmware (UF2-Datei aus dem Ordner MobaLedLib/firmware) auf den Raspberry Pi Pico;Writes a prebuilt firmware (UF2 file from the folder MobaLedLib/firmware) to the Raspberry Pi Pico;Schrijft een kant-en-klare firmware (UF2-bestand uit de map MobaLedLib/firmware) naar de Raspberry Pi Pico;Écrit un firmware prêt (fichier UF2 du dossier MobaLedLib/firmware) sur le Raspberry Pi Pico;Scrive un firmware pronto (file UF2 della cartella MobaLedLib/firmware) sul Raspberry Pi Pico;Escribe un firmware ya compilado (archivo UF2 de la carpeta MobaLedLib/firmware) en la Raspberry Pi Pico;Skriver en færdig firmware (UF2-fil fra mappen MobaLedLib/firmware) til Raspberry Pi Pico
@@ -2239,3 +2239,30 @@ Spalten auswählen;Select columns;Kolommen selecteren;Sélectionner les colonnes
 Alle Spalten;All columns;Alle kolommen;Toutes les colonnes;Tutte le colonne;Todas las columnas;Alle kolonner
 Zielseiten auswählen;Select destination sheets;Doelbladen selecteren;Sélectionner les feuilles de destination;Seleziona fogli di destinazione;Seleccionar hojas de destino;Vælg destinationsark
 Zurück;Back;Terug;Retour;Indietro;Atrás;Tilbage
+Gerätemanager;Device manager;Apparaatbeheer;Gestionnaire de périphériques;Gestione dispositivi;Administrador de dispositivos;Enhedshåndtering
+Gerätesuche läuft …;Searching for devices …;Zoeken naar apparaten …;Recherche des périphériques …;Ricerca dispositivi …;Buscando dispositivos …;Søger efter enheder …
+Verbindung wird hergestellt …;Connecting …;Verbinding maken …;Connexion en cours …;Connessione in corso …;Conectando …;Opretter forbindelse …
+Keine Verbindung möglich.;Unable to connect.;Verbinding niet mogelijk.;Connexion impossible.;Impossibile connettersi.;No se puede conectar.;Kan ikke oprette forbindelse.
+Keine Lichtmaschine verbunden;No light controller connected;Geen lichtcontroller verbonden;Aucun contrôleur lumineux connecté;Nessuna centralina luci connessa;Ningún controlador de luces conectado;Ingen lysstyring tilsluttet
+Geräte suchen;Search for devices;Apparaten zoeken;Rechercher des périphériques;Cerca dispositivi;Buscar dispositivos;Søg efter enheder
+Board wechseln …;Switch board …;Board wisselen …;Changer de carte …;Cambia scheda …;Cambiar placa …;Skift kort …
+Neu verbinden;Reconnect;Opnieuw verbinden;Reconnecter;Riconnetti;Volver a conectar;Tilslut igen
+Verbindung trennen;Disconnect;Verbinding verbreken;Déconnecter;Disconnetti;Desconectar;Afbryd forbindelse
+Beim Start automatisch verbinden;Connect automatically at startup;Automatisch verbinden bij starten;Connexion automatique au démarrage;Connetti automaticamente all'avvio;Conectar automáticamente al iniciar;Tilslut automatisk ved start
+Bevorzugtes Startgerät zurücksetzen;Clear preferred startup device;Voorkeursapparaat bij starten wissen;Effacer le périphérique de démarrage préféré;Reimposta dispositivo di avvio preferito;Restablecer dispositivo de inicio preferido;Nulstil foretrukken startenhed
+Bitte ein Gerät auswählen.;Please select a device.;Selecteer een apparaat.;Veuillez sélectionner un périphérique.;Seleziona un dispositivo.;Selecciona un dispositivo.;Vælg en enhed.
+Erkannt;Recognized;Herkend;Reconnu;Riconosciuto;Reconocido;Genkendt
+USB-Anschluss;USB port;USB-poort;Port USB;Porta USB;Puerto USB;USB-port
+Boardtyp;Board type;Boardtype;Type de carte;Tipo di scheda;Tipo de placa;Korttype
+Verbindung;Connection;Verbinding;Connexion;Connessione;Conexión;Forbindelse
+Adresse;Address;Adres;Adresse;Indirizzo;Dirección;Adresse
+Status;Status;Status;État;Stato;Estado;Status
+Gerätemanager öffnen. Rechtsklick für Trennen, Board wechseln und Neu verbinden.;Open device manager. Right-click to disconnect, switch board or reconnect.;Open apparaatbeheer. Rechtsklik om te verbreken, van board te wisselen of opnieuw te verbinden.;Ouvrir le gestionnaire. Clic droit pour déconnecter, changer de carte ou reconnecter.;Apri gestione dispositivi. Clic destro per disconnettere, cambiare scheda o riconnettere.;Abrir el administrador. Clic derecho para desconectar, cambiar placa o volver a conectar.;Åbn enhedshåndtering. Højreklik for at afbryde, skifte kort eller tilslutte igen.
+Gerät umbenennen;Rename device;Apparaat hernoemen;Renommer le périphérique;Rinomina dispositivo;Cambiar nombre del dispositivo;Omdøb enhed
+Gerätename;Device name;Apparaatnaam;Nom du périphérique;Nome dispositivo;Nombre del dispositivo;Enhedsnavn
+Bitte einen Gerätenamen eingeben.;Please enter a device name.;Voer een apparaatnaam in.;Veuillez saisir un nom de périphérique.;Inserisci un nome per il dispositivo.;Introduce un nombre de dispositivo.;Indtast et enhedsnavn.
+Umbenennen;Rename;Hernoemen;Renommer;Rinomina;Cambiar nombre;Omdøb
+USB-Anschluss wird geprüft …;Checking USB port …;USB-poort wordt gecontroleerd …;Vérification du port USB …;Verifica porta USB …;Comprobando puerto USB …;Kontrollerer USB-port …
+Gespeichert;Saved;Opgeslagen;Enregistré;Salvato;Guardado;Gemt
+Gerät löschen;Delete device;Apparaat verwijderen;Supprimer le périphérique;Elimina dispositivo;Eliminar dispositivo;Slet enhed
+Gerät „{name}“ aus dem Gerätemanager löschen?;Delete device “{name}” from the device manager?;Apparaat ‘{name}’ uit apparaatbeheer verwijderen?;Supprimer le périphérique « {name} » du gestionnaire ?;Eliminare il dispositivo «{name}» dalla gestione dispositivi?;¿Eliminar el dispositivo «{name}» del administrador?;Vil du slette enheden »{name}« fra enhedshåndteringen?

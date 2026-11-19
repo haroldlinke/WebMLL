@@ -24,3 +24,7 @@ Vorhandene Define-Zeilen bleiben auch bei aktivierten ESP-Einstellungen in der T
 
 Speichere die Optionen in der Arbeitsmappe und übertrage das Setup für das gewählte Blatt erneut auf den ESP32, damit die Firmware die Auswahl übernimmt.
 Wenn du OLED, Fotowiderstand und Zustandsspeicherung im ESP-Reiter für das Blatt eingerichtet hast, kannst du die entsprechenden manuellen Define-Zeilen löschen. Beim nächsten **Setup übertragen** erzeugt WebMLL die Defines aus den gespeicherten Einstellungen.
+
+Unter Windows startet die Desktop-Verknüpfung WebMLL ohne sichtbare Konsole. Für die Fehlersuche lässt sich weiterhin `install/start_windows.bat` direkt starten. Die OLED-Vorschau verwendet den von NiceGUI hinterlegten Namen des ESP-Reiters.
+
+OLED-Modus 4 zeigt die berechnete MLL-Zeit auch bei deaktiviertem Fotowiderstand. Bei gleichbleibendem Dunkelheitswert bleibt die berechnete Zeit entsprechend stehen.

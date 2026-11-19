@@ -1,12 +1,15 @@
-# Datei-Version: 3.95 (2026-11-18) - webmobaledlib.py
+# Datei-Version: 3.98 (2026-11-19) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        3.95
-# Last Update:    2026-11-18
+# Version:        3.98
+# Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   3.98  2026-11-19  Befehle pausieren Hintergrundverbindungen ohne USB-Unterdialoge zu blockieren
+#   3.97  2026-11-19  Verbindung nach COM-Port-Pruefung wiederherstellen
+#   3.96  2026-11-19  Geraetemanager und Hintergrundverbindung beim Start und nach Upload
 #   3.95  2026-11-18  Spaltenauswahl vor Auswahl der Zielseiten
 #   3.94  2026-11-18  Spaltenbreiten auf gewaehlte Seiten uebertragen, einstellbare Aussenabstaende
 #   3.87  2026-11-17  Programmgenerator und ESP32-Anbindung des Forks (Beitrag des Fork-Entwicklers)
@@ -641,6 +644,9 @@ def start_backend():
         ctrl.attach_tk_root(_hidden_root)       # Uebergang: Tk-Formulare erwarten ein Tk-Widget als Controller
     if os.environ.get("MLL_PRINT_STATUS") == "1":
         ctrl.on_status.append(lambda text, fg: print("STATUS:", text))     # nur zur Fehlersuche: Konsolenausgabe ist langsam
+    from _web.web_devices import DeviceManager  # v3.96
+    ctrl.device_manager = DeviceManager(ctrl, userdata.data_dir())  # v3.96
+    ctrl.device_manager.start()  # v3.96
     ctrl.create_excel_application()
     from headless.headless_proggen import HeadlessProgGeneratorPage
     from _web import web_log
@@ -648,6 +654,7 @@ def start_backend():
     from headless import headless_startup  # v1.79
     headless_startup.begin()                     # Fragen vom Start (zum Beispiel fehlende ARDUINO Bibliotheken) erst stellen, wenn ein Browser verbunden ist  # v1.79
     headless_startup.install()  # v1.79
+    ctrl.device_manager.ready.set()  # v3.96
     page = HeadlessProgGeneratorPage(ctrl)
     from _web import web_dialogs
     web_dialogs.install()                        # MsgBox/InputBox als Browser-Dialoge
@@ -668,6 +675,7 @@ def start_backend():
     import ExcelAPI.XLA_Application as _X02
     _X02.GetAsyncKeyState = lambda key: 0         # Maus-/Tastenstatus des Servers sagt im Web nichts ueber den Browser
     headless_startup.end()  # v1.79
+    nicegui_app.on_shutdown(ctrl.device_manager.shutdown)  # v3.96
 
 
 def _current_language_number() -> int:  # v2.46
@@ -2226,7 +2234,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         # connect_btn = ui.button("Mit ARDUINO verbinden", on_click=lambda: connect_from_header()).props("unelevated no-caps dense color=negative").classes("mll-connect")      # fuer alle Reiter: rot ohne, gruen mit Verbindung zum Arduino  # v2.01  # v3.83 (entfallen)
         connect_btn = ui.button(tr("Mit Lichtmaschine verbinden"), on_click=lambda: connect_from_header()).props("unelevated no-caps dense color=negative").classes("mll-connect")      # fuer alle Reiter: rot ohne, gruen mit Verbindung zum Arduino  # v2.01  # v3.83
         # connect_btn.tooltip("Verbindung zum Arduino herstellen (wie Lichtmaschine → Verbinden). Rot: keine Verbindung, grün: verbunden. Trennen: Menü Lichtmaschine → Trennen")  # v2.01  # v3.83  # v3.84 (entfallen)
-        connect_btn.tooltip("Verbindung zur Lichtmaschine herstellen (wie ARDUINO → Verbinden). Rot: keine Verbindung, grün: verbunden. Trennen: Menü ARDUINO → Trennen")  # v2.01  # v3.83
+        # connect_btn.tooltip("Verbindung zur Lichtmaschine herstellen (wie ARDUINO → Verbinden). Rot: keine Verbindung, grün: verbunden. Trennen: Menü ARDUINO → Trennen")  # v2.01  # v3.83  # v3.96 (entfallen)
+        connect_btn.tooltip("Gerätemanager öffnen. Rechtsklick für Trennen, Board wechseln und Neu verbinden.")  # v3.96
         web_fullscreen.button()                                       # Vollbild ein und aus: neben Beenden, in jedem Reiter erreichbar und auch im Vollbild sichtbar  # v1.81
         # ui.button("Beenden", on_click=quit_program, icon="power_settings_new").props("color=negative outline dense").classes("mll-quit")  # v3.78 (entfallen)
         with ui.column().classes("items-end gap-0 mll-quitcol"):  # v3.78: unter dem Knopf Beenden die Version der MobaLedLib (nur mit der ARDUINO IDE)
@@ -2256,6 +2265,10 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             connected = bool(ctrl.is_connection_open())  # v2.01
         except Exception:                                  # noqa: BLE001  # v2.01
             connected = False  # v2.01
+        if connected and not state["busy"] and state.get("device_connected_epoch") != getattr(ctrl, "_connection_epoch", 0):  # v3.96
+            callback = state.get("device_connected")  # v3.96
+            if callback is not None:  # v3.96
+                callback()  # v3.96
         if state.get("connected_shown") != connected:                   # Knopf Mit ARDUINO verbinden: rot ohne Verbindung, gruen mit Verbindung  # v2.01
             state["connected_shown"] = connected  # v2.01
             # connect_btn.set_text("Mit ARDUINO verbunden" if connected else "Mit ARDUINO verbinden")  # v2.01  # v3.83 (entfallen)
@@ -4577,12 +4590,19 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 try:
                     if any(p.default is p.empty and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)
                            for p in inspect.signature(func).parameters.values()):
-                        func(None)              # Tk uebergibt bei manchen Handlern ein Event
+                        # func(None)  # v3.96 (entfallen)
+                        # with ctrl._conn_lock:  # v3.98 (entfallen)
+                        with ctrl.device_manager.command_guard():  # v3.98
+                            func(None)  # v3.96
                     else:
-                        func()
+                        # func()  # v3.96 (entfallen)
+                        # with ctrl._conn_lock:  # v3.98 (entfallen)
+                        with ctrl.device_manager.command_guard():  # v3.98
+                            func()  # v3.96
                 except SystemExit:              # M30.EndProg() ruft sys.exit(0): darf den Server nicht beenden
                     raise RuntimeError("Das Makro wurde mit EndProg beendet (siehe Meldungen davor)") from None
                 finally:
+                    ctrl.device_manager.finish_port_detection()  # v3.97
                     try:
                         sync_shapes(ws)         # geaenderte Zeilen -> Shapes nachfuehren, geloeschte Zeilen -> Shapes entfernen
                     except Exception:           # noqa: BLE001
@@ -5096,12 +5116,15 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             connected = False  # v2.01
         if not connected:  # v2.01
             return  # v2.01
+        state["device_connected_epoch"] = getattr(ctrl, "_connection_epoch", 0)  # v3.96
         page = state.get(tabs.value)  # v2.01
         if page is not None and hasattr(page, "on_connected"):  # v2.01
             try:  # v2.01
                 page.on_connected()  # v2.01
             except Exception:                              # noqa: BLE001  # v2.01
                 logger.warning("Reiter %s nach dem Verbinden nicht aktualisiert", tabs.value, exc_info=True)  # v2.01
+
+    state["device_connected"] = after_connect  # v3.96
 
     async def connect_arduino():  # v2.01
         settings = headless_esp32_ota.load_settings()
@@ -5119,14 +5142,43 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         await _connect_usb_command() if (esp32_board() and settings["wifi"] and settings["ota"]) else await _connect_command()  # v2.01 / v3.42: nach der Antwort USB nur USB
         after_connect()  # v2.01
 
-    async def connect_from_header():  # v2.01
-        """Knopf Mit ARDUINO verbinden: ohne Verbindung wie ARDUINO -> Verbinden; mit Verbindung geschieht nichts (Trennen im Menue ARDUINO)"""  # v2.01
-        try:  # v2.01
-            if ctrl.is_connection_open():  # v2.01
-                return  # v2.01
-        except Exception:                                  # noqa: BLE001  # v2.01
-            pass  # v2.01
-        await connect_arduino()  # v2.01
+    def open_device_manager():  # v3.96
+        from _web import web_devices  # v3.96
+        ctrl.device_manager.register_wlan(headless_esp32_ota.load_settings())  # v3.96
+        port = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL).Value or "").strip()  # v3.96
+        if port.isdigit():  # v3.96
+            port = "COM" + port  # v3.96
+        if port and port.upper() != "NO DEVICE":  # v3.96
+            ctrl.device_manager.add("ip" if port.startswith("IP:") else "usb", port)  # v3.96
+        web_devices.open_dialog(ctrl.device_manager, after_connect)  # v3.96
+
+    async def reconnect_device():  # v3.96
+        key = ctrl.device_manager.last  # v3.96
+        if key:  # v3.96
+            ctrl.device_manager.cancel_pending()  # v3.96
+            await run_command(lambda: ctrl.device_manager.connect(key), "Neu verbinden")()  # v3.96
+            after_connect()  # v3.96
+        else:  # v3.96
+            open_device_manager()  # v3.96
+
+    with connect_btn:  # v3.96
+        with ui.context_menu():  # v3.96
+            ui.menu_item(tr("Gerätemanager"), on_click=open_device_manager)  # v3.96
+            ui.menu_item(tr("Verbindung trennen"), on_click=run_command(ctrl.device_manager.disconnect, "Verbindung trennen"))  # v3.96
+            ui.menu_item(tr("Board wechseln …"), on_click=open_device_manager)  # v3.96
+            ui.menu_item(tr("Neu verbinden"), on_click=reconnect_device)  # v3.96
+
+    # async def connect_from_header():  # v2.01  # v3.96 (entfallen)
+    # """Knopf Mit ARDUINO verbinden: ohne Verbindung wie ARDUINO -> Verbinden; mit Verbindung geschieht nichts (Trennen im Menue ARDUINO)"""  # v2.01  # v3.96 (entfallen)
+    # try:  # v2.01  # v3.96 (entfallen)
+    # if ctrl.is_connection_open():  # v2.01  # v3.96 (entfallen)
+    # return  # v2.01  # v3.96 (entfallen)
+    # except Exception:                                  # noqa: BLE001  # v2.01  # v3.96 (entfallen)
+    # pass  # v2.01  # v3.96 (entfallen)
+    # # await connect_arduino()  # v3.96 (entfallen)  # v3.96 (entfallen)
+    # open_device_manager()  # v3.96  # v3.96 (entfallen)
+    async def connect_from_header():  # v3.96
+        open_device_manager()  # v3.96
     from _web import web_esp32_ota
     import proggen.M02a_Public as ota_boards
     import proggen.M06_Write_Header as ota_header
@@ -5163,6 +5215,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         password = settings["password"]
         port = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL).Value)
 
+        @ctrl.device_manager.upload_guard  # v3.96
         def transfer():
             log = ctrl.weblog
             log.set_title(tr("ESP32-Setup über WLAN übertragen") if host else tr("ESP32-Setup über USB übertragen"))
@@ -5195,10 +5248,13 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))
                     headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)
                     log.add_text_to_textwindow(tr("USB-Upload erfolgreich."), highlight="OK")
+                    ctrl.device_manager.after_upload(port)  # v3.96
                     return
                 log.add_text_to_textwindow(tr("Firmware wird per WLAN übertragen …"))
                 result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)
                 log.add_text_to_textwindow(output)
+                if result == 0:  # v3.96
+                    ctrl.device_manager.after_upload(host, "wlan", upload_password)  # v3.96
                 if result and headless_esp32_ota.NO_RESPONSE in output:  # v3.38
                     log.add_text_to_textwindow(tr(web_esp32_ota.HINT_FIREWALL, port=headless_esp32_ota.HOST_PORT), highlight="Error")
                 log.add_text_to_textwindow(
@@ -5226,6 +5282,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         port = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL).Value)
         password = settings["password"]
 
+        @ctrl.device_manager.upload_guard  # v3.96
         def transfer():
             log = ctrl.weblog
             log.set_title(tr("Minimale ESP32-Firmware über USB übertragen"))
@@ -5264,6 +5321,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     ctrl.disconnect()
                 log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))
                 headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)
+                ctrl.device_manager.after_upload(port)  # v3.96
                 log.add_text_to_textwindow(tr("Minimale Firmware übertragen. Als Nächstes im Reiter OTA „WLAN über USB einrichten“."), highlight="OK")
             except ValueError as error:
                 log.add_text_to_textwindow(tr(str(error)), highlight="Error")
@@ -5322,8 +5380,13 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         # "ARDUINO": [  # v3.84 (entfallen)
         "Lichtmaschine": [  # v3.84
             ("ESP32-Firmware über WLAN hochladen …", lambda: web_esp32_ota.open_dialog(pio=ota_arduino.Find_PIO() if ota_options.Is_PlatformIO() else None)),
-            ("Verbinden", connect_arduino),  # v1.86
-            ("Trennen", run_command(lambda: ctrl.disconnect(), "Trennen")),
+            # ("Verbinden", connect_arduino),  # v3.96 (entfallen)
+            ("Verbinden", open_device_manager),  # v3.96
+            # ("Trennen", run_command(lambda: ctrl.disconnect(), "Trennen")),  # v3.96 (entfallen)
+            ("Trennen", run_command(ctrl.device_manager.disconnect, "Trennen")),  # v3.96
+            ("Gerätemanager", open_device_manager),  # v3.96
+            ("Board wechseln …", open_device_manager),  # v3.96
+            ("Neu verbinden", reconnect_device),  # v3.96
             ("Alle LED aus", run_command(lambda: ctrl.led_off(), "Alle LED aus")),
             # ("Konfiguration vom Pico laden (experimentell)", run_command(lambda: M06cfg.download_from_Pico(), "Konfiguration laden")),  # v2.02 (entfallen)
         ],

@@ -1,5 +1,29 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 2.90 (2026-11-18), gilt für webMobaLedLib 3.93*
+*Datei-Version: 2.93 (2026-11-19), gilt für webMobaLedLib 3.93*
+
+- [ ] Aktives Gerät löschen, Abbrechen prüfen, anderes Gerät löschen. Bleiben übrige Einträge und Verbindungen erhalten? Wird die Startauswahl bereinigt? Bleibt der Eintrag nach Neustart entfernt und lässt er sich über Geräte suchen erneut aufnehmen?
+
+- [ ] Nach automatischer USB-Rückverbindung die WLAN-Einrichtung öffnen, WLANs suchen und verbinden. Funktioniert dies ohne manuelles Trennen und ohne blockierten Dialog? Nach Schließen Rückverbindung prüfen.
+
+- [ ] COM-Konfigurationsfehler 31 bei 115200 Baud: Wird über 9600 Baud initialisiert und danach die gewünschte Baudrate verwendet? Verbindung und vollständigen Upload prüfen.
+
+- [ ] CH340/COM8 mit fehlschlagender 50-Baud-Blinkprüfung testen: Wird im Protokoll auf 9600 Baud gewechselt und kann anschließend übertragen werden?
+
+- [ ] Mit einer Lichtmaschine verbunden die COM-Port-Auswahl öffnen: Kein falscher Fremdprogramm-Hinweis, anschließend Rückverbindung. Bleibt im Gerätemanager nur ein Eintrag für COM8 und *COM8? Eigene Namen und Startauswahl prüfen.
+
+- [ ] Gerät umbenennen, erneut suchen und neu starten. Bleibt der eigene Name erhalten und funktioniert die WLAN-Anmeldung weiterhin?
+
+## Gerätemanager
+
+- [ ] Verbunden beenden und neu starten: Wird dasselbe USB-/WLAN-Gerät wieder verbunden, während die Tabellen laden?
+- [ ] Getrennt beenden: Findet und verbindet das Programm eine antwortende Lichtmaschine?
+- [ ] Mehrere USB-Boards und Bluetooth-Anschluss: Wird nur eine gültig antwortende Lichtmaschine verbunden?
+- [ ] Verbinden, Trennen, Neu verbinden, bevorzugtes Startgerät und Zurücksetzen prüfen.
+- [ ] Erfolgreichen USB-/OTA-Upload prüfen: Verbindet sich das Programm mit genau diesem Ziel? Bei fehlgeschlagenem Upload darf kein neues Ziel verbunden werden.
+- [ ] Gerätemanager in allen Sprachen und Kontextmenü am Verbindungsknopf prüfen.
+- [ ] Server starten und mehrere Browser öffnen: Läuft die automatische Suche nur einmal?
+
+- [ ] WLAN aktivieren, OTA-Updates ausschalten und ESP32-Setup per USB übertragen. Kompiliert es erfolgreich und funktioniert danach WLAN-Suche über USB?
 
 - [ ] Nur A und C wählen, Weiter, zwei Zielseiten anhaken und übertragen. Bleibt B unverändert?
 - [ ] Alle Spalten aus- und einschalten. Zurück und Abbrechen prüfen.

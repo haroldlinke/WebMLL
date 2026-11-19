@@ -111,7 +111,7 @@ if not exist "%~dp0mobaledlib.ico" "%VENV%\Scripts\python.exe" "%~dp0make_icons.
 
 REM --- 4. Verknuepfung auf dem Desktop
 echo [4/4] Verknuepfung auf dem Desktop anlegen
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$d=[Environment]::GetFolderPath('Desktop'); Remove-Item ($d+'\pyMobaLedLib - Web.lnk') -ErrorAction SilentlyContinue; $s=(New-Object -ComObject WScript.Shell).CreateShortcut($d+'\webMobaLedLib.lnk'); $s.TargetPath='%~dp0start_windows.bat'; $s.WorkingDirectory='%APPDIR%'; $s.IconLocation='%~dp0mobaledlib.ico'; $s.WindowStyle=7; $s.Description='webMobaLedLib Programmgenerator (Web-Oberflaeche)'; $s.Save()"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$d=[Environment]::GetFolderPath('Desktop'); Remove-Item ($d+'\pyMobaLedLib - Web.lnk') -ErrorAction SilentlyContinue; $s=(New-Object -ComObject WScript.Shell).CreateShortcut($d+'\webMobaLedLib.lnk'); $s.TargetPath=Join-Path $env:SystemRoot 'System32\wscript.exe'; $s.Arguments=[char]34+'%~dp0start_windows_hidden.vbs'+[char]34; $s.WorkingDirectory='%APPDIR%'; $s.IconLocation='%~dp0mobaledlib.ico'; $s.WindowStyle=7; $s.Description='webMobaLedLib Programmgenerator (Web-Oberflaeche)'; $s.Save()"
 if errorlevel 1 echo Die Verknuepfung konnte nicht angelegt werden. Starten Sie das Programm mit start_windows.bat.
 
 REM --- ARDUINO IDE 1.8.19 (nur mit /ide)

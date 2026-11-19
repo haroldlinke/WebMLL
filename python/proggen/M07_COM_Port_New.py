@@ -1,12 +1,13 @@
-# Datei-Version: 1.04 (2026-11-11) - M07_COM_Port_New.py
+# Datei-Version: 1.05 (2026-11-19) - M07_COM_Port_New.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port_New.py
 # Path:           proggen/M07_COM_Port_New.py
-# Version:        1.04
-# Last Update:    2026-11-11
+# Version:        1.05
+# Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.05  2026-11-19  Eigene Verbindung vor dem COM-Auswahldialog freigeben
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-28  Hinweis 'PICO im Bootmodus gefunden' funktioniert: Test_IsPicoInBootMode war ein leerer Rumpf, AskBootPico wurde nie auf True gesetzt
 #   1.02  2026-10-28  M12 im Aufruf importieren (nicht am Anfang des Moduls)
@@ -292,6 +293,9 @@ def Select_Arduino_w_Blinking_LEDs_Dialog(Caption, Title, Text, Picture, IsArdui
     #  1: If the left   Button is pressed  (Install, ...)
     #  2: If the middle Button is pressed  (Abort)
     #  3: If the right  Button is pressed  (OK)
+    manager = getattr(PG.global_controller, "device_manager", None)  # v1.05
+    if manager is not None:  # v1.05
+        manager.pause_for_port_detection()  # v1.05
     M07.CheckCOMPort = "999" #999
     P01.Application.OnTime(1000, __Blink_Arduino_LED)
     #__Blink_Arduino_LED()

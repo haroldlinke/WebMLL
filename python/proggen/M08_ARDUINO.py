@@ -1,12 +1,13 @@
-# Datei-Version: 1.21 (2026-11-17) - M08_ARDUINO.py
+# Datei-Version: 1.22 (2026-11-19) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.21
-# Last Update:    2026-11-17
+# Version:        1.22
+# Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.22  2026-11-19  Nach erfolgreichem LED-Upload Geraetemanager mit Zielanschluss benachrichtigen
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
 #   1.02  2026-10-26  Entwickler: PlatformIO (Create_PIO_Build_cmd, platformio.ini, Start_Arduino.cmd); Claude: PlatformIO auch fuer Linux, macOS und Raspberry Pi (Ordner bin statt Scripts, Find_PIO, PIO_Version), PATH nur einmal ergaenzt, verstaendliche Meldung wenn pio fehlt, platformio.ini wird beim Hochladen mit PlatformIO mit den aktuellen Einstellungen geschrieben
@@ -2495,6 +2496,9 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
         Debug.Print('Compile and upload duration: ' + P01.Format(P01.Time() - Start, 'hh:mm:ss'))
         M30.Show_Status_for_a_while(M09.Get_Language_Str('Programm erfolgreich hochgeladen. Kompilieren und Hochladen dauerte ') + P01.Format(P01.Time() - Start, 'hh:mm:ss'), '00:02:00')
         PG.global_controller.showFramebyName("ProgGeneratorPage")
+        manager = getattr(PG.global_controller, "device_manager", None)  # v1.22
+        if manager is not None and InoName == M02.InoName_LED and not CreateFilesOnly:  # v1.22
+            manager.after_upload(str(ComPort), "ip" if str(ComPort).startswith("IP:") else "usb")  # v1.22
         fn_return_value = True                                                         # VBA: Compile_and_Upload_Prog_to_Arduino = True (fehlte in der Umstellung: 'R OK' wurde nie gesetzt)  # v1.10
         return fn_return_value  # v1.10
         

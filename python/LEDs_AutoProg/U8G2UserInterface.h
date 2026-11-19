@@ -33,6 +33,7 @@ Revision History :
 10.11.20:  Version 1.0 (Jürgen)
 18.01.25:  Version 1.1 (Jürgen)
 30.03.25:  Version 1.2 (Peter)
+18.11.26:  Version 1.3 (Fork): Show calculated MLL time independently of the photoresistor setting
 	 
 */
 #ifdef ESP32
@@ -201,9 +202,6 @@ public:
       snprintf(line, sizeof(line), "LDR: aus  D: %d", int(Darkness));
 #endif
       center(33, line);
-      if (DayState == Unknown)
-        snprintf(line, sizeof(line), "MLL-Zeit: --:--");
-      else
         snprintf(line, sizeof(line), "MLL-Zeit: %02u:%02u", minutes / 60, minutes % 60);
       center(48, line);
 #else

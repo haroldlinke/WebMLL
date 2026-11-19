@@ -1,12 +1,15 @@
-# Datei-Version: 1.11 (2026-11-14) - M07_COM_Port.py
+# Datei-Version: 1.14 (2026-11-19) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.11
-# Last Update:    2026-11-12
+# Version:        1.14
+# Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.14  2026-11-19  Treiber-Wiederherstellung auch fuer Upload-Pruefung bei 115200 Baud
+#   1.13  2026-11-19  Blinkpruefung: bei Konfigurationsfehler mit 50 Baud auf 9600 Baud ausweichen
+#   1.12  2026-11-19  Eigene Verbindung mit Empfangsthread vor Bootloader-Pruefung geordnet freigeben
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  EnumComPorts: FTDI-Adapter (VID 0403, Beschreibung FT232 ...) werden erkannt, sonst meldete die Pruefung beim Hochladen 'kein Arduino angeschlossen'; DetectArduino: kein Absturz, wenn die Verbindung inzwischen getrennt wurde
 #   1.11  2026-11-14  Other_Type_Port_List (Liste statt Text, fuer die anklickbaren 'Andere Typen')
@@ -1077,6 +1080,23 @@ def DetectArduino(port, baudrate, HWVersion=255, SWMajorVersion=255, SWMinorVers
         return result  # v1.05
 
 
+# def _Open_Probe_Port(ser, baudrate):  # v1.13  # v1.14 (entfallen)
+#     try:  # v1.13  # v1.14 (entfallen)
+#         ser.open()  # v1.13  # v1.14 (entfallen)
+#     except serial.SerialException as error:  # v1.13  # v1.14 (entfallen)
+#         if baudrate != 50 or "Cannot configure port" not in str(error):  # v1.13  # v1.14 (entfallen)
+#             raise  # v1.13  # v1.14 (entfallen)
+#         logging.info("Blinkpruefung: 50 Baud nicht konfigurierbar, zweiter Versuch mit 9600 Baud")  # v1.13  # v1.14 (entfallen)
+#         _Close_Quiet(ser)  # v1.13  # v1.14 (entfallen)
+#         ser.baudrate = 9600  # v1.13  # v1.14 (entfallen)
+#         ser.open()  # v1.13  # v1.14 (entfallen)
+#   # v1.14 (entfallen)
+#   # v1.14 (entfallen)
+def _Open_Probe_Port(ser, baudrate):  # v1.14
+    from headless.headless_serial_port import open_serial_port  # v1.14
+    open_serial_port(ser)  # v1.14
+
+
 def _DetectArduino_once(port, baudrate, HWVersion=255, SWMajorVersion=255, SWMinorVersion=255, DeviceSignatur=- 1, Trials=3, PrintDebug=True, SleepTime=20):  # v1.05
     global Cmnd_STK_GET_SYNC, CheckCOMPort_Txt  # v1.05
     # protocol see application note 1AVR061 here http://ww1.microchip.com/downloads/en/Appnotes/doc2525.pdf
@@ -1089,6 +1109,9 @@ def _DetectArduino_once(port, baudrate, HWVersion=255, SWMajorVersion=255, SWMin
     logging.debug("M07.detect_arduino: %s", port)  # v1.05
     ser = None  # v1.05
     try:  # close the port if it is open and reopen it with DTR = False  # v1.05
+        manager = getattr(PG.global_controller, "device_manager", None)  # v1.12
+        if manager is not None:  # v1.12
+            manager.pause_for_port_detection()  # v1.12
         old_connection = PG.global_controller.arduino  # v1.05
         if old_connection and old_connection.is_open:  # v1.05
             old_connection.close()  # v1.05
@@ -1110,7 +1133,8 @@ def _DetectArduino_once(port, baudrate, HWVersion=255, SWMajorVersion=255, SWMin
         try:  # v1.05
             ser.port = port_str  # v1.05
             ser.dtr = False  # v1.05
-            ser.open()  # v1.05
+            # ser.open()  # v1.13 (entfallen)
+            _Open_Probe_Port(ser, baudrate)  # v1.13
         except BaseException as e:                                     # noqa: BLE001  # v1.05
             logging.debug("M07.detect_arduino: Error opening  port " + str(port_str))  # v1.05
             logging.debug(e, exc_info=True)  # v1.05

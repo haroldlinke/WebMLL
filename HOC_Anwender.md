@@ -1,9 +1,46 @@
-Datei-Version: 1.03 (2026-11-18) - HOC_Anwender.md
+Datei-Version: 1.06 (2026-11-19) - HOC_Anwender.md
 Stand: webMobaLedLib 3.93
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 3.93 (2026-11-19) – Gerät löschen
+
+Im Gerätemanager lässt sich ein ausgewähltes Gerät mit Bestätigung löschen. Eine aktive Verbindung wird getrennt. Mit Geräte suchen kann ein angeschlossenes Gerät später erneut aufgenommen werden.
+
+## 3.93 (2026-11-19) – USB-WLAN-Einrichtung mit Gerätemanager
+
+WLAN über USB einrichten gibt eine bestehende WebMLL-Verbindung automatisch frei. Hintergrundverbindungen bleiben während des Vorgangs pausiert. Unterdialoge werden durch den Befehlsschutz nicht mehr blockiert. Gespeicherte WLAN-Geräte erhalten eine passende Statusanzeige.
+
+## 3.93 (2026-11-19) – Wiederherstellung der COM-Konfiguration
+
+Bei einem COM-Treiber-Konfigurationsfehler wird der Port zunächst mit 9600 Baud initialisiert und danach auf die benötigte Baudrate eingestellt. Dies gilt für Verbinden und Upload-Prüfung.
+
+## 3.93 (2026-11-19) – Baudrate der COM-Port-Prüfung
+
+Die COM-Port-Blinkprüfung versucht bei einem Konfigurationsfehler mit 50 Baud nochmals 9600 Baud. Das behebt den im Protokoll erkannten Fehlerfall, der bisher als belegter Anschluss angezeigt wurde.
+
+## 3.93 (2026-11-19) – COM-Port-Prüfung mit Gerätemanager
+
+Doppelte Einträge wie COM8 und *COM8 werden zusammengeführt. Die bestehende WebMLL-Verbindung wird für die COM-Port-Prüfung geordnet freigegeben und danach wiederhergestellt.
+
+## 3.93 (2026-11-19) – Eigene Gerätenamen
+
+Geräte können über „Umbenennen“ einen frei wählbaren Anzeigenamen erhalten. Der Name bleibt bei erneuter Suche und nach Neustart erhalten. web_devices.py 1.01 trennt die Passwortzuordnung vom Anzeigenamen. Zehn Regressionstests einschließlich Umbenennung und erneuter Passwortauflösung erfolgreich. Hardware-/Browsertest weiterhin offen.
+
+## 3.93 (2026-11-19) – Gerätemanager
+
+Neue Funktionen
+
+- Gerätemanager mit bekannten USB- und eingetragenen WLAN-Geräten, Verbindungsstatus und bevorzugtem Startgerät.
+- Gerätesuche und Wiederherstellen der zuletzt aktiven Verbindung laufen im Hintergrund parallel zum Tabellenladen.
+- Nach erfolgreichem Upload wird das verwendete LED-Gerät erneut verbunden.
+- Kontextmenü am Verbindungsknopf und Menü Lichtmaschine bieten Gerätemanager, Trennen, Board wechseln und Neu verbinden.
+
+## 3.93 (2026-11-18) – WLAN ohne OTA
+
+Die ESP32-Firmware lässt sich mit aktiviertem WLAN und ausgeschalteten OTA-Updates wieder kompilieren.
 
 ## 3.93 (2026-11-18) – Spaltenbreiten und Zellinnenabstand
 

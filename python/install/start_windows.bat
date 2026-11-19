@@ -1,5 +1,5 @@
 @echo off
-REM Datei-Version: 1.04 (2026-10-15) - start_windows.bat
+REM Datei-Version: 1.05 (2026-11-18) - start_windows.bat
 REM Startet die Web-Oberflaeche von webMobaLedLib und oeffnet den Browser. Laeuft sie schon, wird nur der Browser geoeffnet.
 setlocal EnableExtensions
 title webMobaLedLib
@@ -7,7 +7,7 @@ for %%I in ("%~dp0..") do set "APPDIR=%%~fI"
 cd /d "%APPDIR%"
 if not exist "%APPDIR%\venv_web\Scripts\python.exe" (
   echo Die Installation fehlt. Bitte zuerst install_windows.bat ausfuehren.
-  pause
+  if not defined MLL_HIDDEN_START pause
   exit /b 1
 )
 set "MLL_HEADLESS=1"
@@ -26,5 +26,5 @@ goto :fehler_ende
 :fehler_eigener_ordner
 echo Das Programm wurde mit einem Fehler beendet. Meldungen: %MLL_DATA_DIR%\webmobaledlib.log
 :fehler_ende
-pause
+if not defined MLL_HIDDEN_START pause
 exit /b 1

@@ -1,4 +1,4 @@
-Datei-Version: 1.03 (2026-11-18) - HOC_intern.md
+Datei-Version: 1.06 (2026-11-19) - HOC_intern.md
 Stand: webMobaLedLib 3.93
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,42 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 3.93 (2026-11-19) – Gerät löschen
+
+web_devices.py 1.04 ergänzt Gerät löschen mit Bestätigung. Eine aktive Verbindung zum Ziel wird geordnet getrennt, Startvorgabe und Rückverbindungsziel werden bereinigt. Gelöschte Ziele werden bei automatischer Registrierung unterdrückt. Die ausdrückliche Gerätesuche kann sie erneut aufnehmen; ein erneuter Upload zum Ziel nimmt es ebenfalls wieder auf. Test_web_devices.py 1.06 prüft das Löschen aktiver und anderer Geräte sowie die Unterdrückung automatischer Wiederaufnahme. Alle 20 Tests erfolgreich. Bedienung im Browser noch zu prüfen.
+
+## 3.93 (2026-11-19) – USB-WLAN-Einrichtung mit Gerätemanager
+
+Die automatische USB-Rückverbindung nach dem ESP32-Upload belegte den Anschluss, während die bisherige WLAN-Einrichtung nur zum manuellen Trennen aufforderte. Zusätzlich hielt der neue allgemeine Befehlsaufruf die Verbindungssperre über modale Unterdialoge hinweg. webmobaledlib.py 3.98 und web_devices.py 1.03 pausieren Hintergrundversuche mit einem Befehlszustand, ohne die Port-Sperre während der Dialogwartezeit zu halten. web_esp32_ota.py 1.06 gibt die eigene Verbindung vor dem WLAN-USB-Vorgang automatisch frei und plant die Rückverbindung nach dem Schließen. headless_esp32_ota.py 1.10 nutzt auch hier die gemeinsame COM-Konfiguration. WLAN-Einträge zeigen Gespeichert statt USB-Anschluss. 18 Regressionstests sowie der echte perform-Callback mit ersetztem WLAN-Scan erfolgreich. TCP-Port 2323 an 192.168.10.27 war bei einer Prüfung erreichbar, eine folgende Anmeldung lief in einen Timeout. Eine stabile reale WLAN-Anmeldung und die USB-WLAN-Einrichtung nach Neustart sind noch zu prüfen.
+
+## 3.93 (2026-11-19) – Wiederherstellung der COM-Konfiguration
+
+Die weiteren Protokolle zeigen Windows-Fehler 31 auch bei 115200 Baud im normalen Verbindungsaufbau und vor dem Upload. Exklusives Öffnen des Windows-Handles von COM8 gelang; eine Fremdbelegung wurde damit ausgeschlossen. Direkte Tests zeigten erfolgreiche Konfiguration nach Initialisierung mit 9600 Baud. headless_serial_port.py 1.00 öffnet bei SerialException „Cannot configure port“ zunächst mit 9600 Baud und stellt anschließend die gewünschte Baudrate wieder her. Bei der 50-Baud-Blinkprüfung darf 9600 verwendet werden. web_serial.py 1.13 und M07_COM_Port.py 1.14 nutzen denselben Ablauf. Zugriffsverweigerungen lösen diese Wiederherstellung nicht aus. 16 Regressionstests erfolgreich. COM8 physisch mit 115200, 50 und erneut 115200 Baud geöffnet und geschlossen. Vollständiger Firmwareupload noch zu bestätigen. Ein zuvor versuchter Windows-Geräteneustart über pnputil scheiterte an fehlenden Administratorrechten.
+
+## 3.93 (2026-11-19) – Baudrate der COM-Port-Prüfung
+
+Das lokale Protokoll zeigt beim sekündlichen Öffnen von COM8 mit 50 Baud einen SerialException-Konfigurationsfehler mit Windows-Fehler 31. Die bisherige Meldung deutete jeden Öffnungsfehler als Fremdbelegung. M07_COM_Port.py 1.13 versucht ausschließlich bei diesem Konfigurationsfehler der 50-Baud-Blinkprüfung nochmals mit 9600 Baud zu öffnen. Echte Zugriffsverweigerungen und reguläre Upload-Baudraten bleiben bei der bestehenden Fehlerbehandlung. 15 Tests einschließlich des Fallbacks erfolgreich. Physischer Upload nach Neustart noch zu prüfen. Die lokale Prüfliste enthält nun auch die bereits eingespielte LDR-Korrektur.
+
+## 3.93 (2026-11-19) – COM-Port-Prüfung mit Gerätemanager
+
+Busy-Markierungen werden vor der Gerätezuordnung entfernt; vorhandene doppelte COM-Einträge werden mit Namen, Erkennungsstatus und Startauswahl zusammengeführt. web_devices.py 1.02 pausiert die eigene Verbindung geordnet vor der Bootloader-Prüfung. M07_COM_Port.py 1.12 und M07_COM_Port_New.py 1.05 rufen diese Freigabe vor Prüfung bzw. Dialog auf. webmobaledlib.py 3.97 stellt die Verbindung nach Ende des Befehls wieder her. Ein erfolgreicher Upload ersetzt das vorherige Rückverbindungsziel. Vier zusätzliche Regressionstests; alle 14 Tests und Python-Syntax erfolgreich. Prüfung am physischen COM-Port offen.
+
+## 3.93 (2026-11-19) – Eigene Gerätenamen
+
+Geräte können über „Umbenennen“ einen frei wählbaren Anzeigenamen erhalten. Der Name bleibt bei erneuter Suche und nach Neustart erhalten. web_devices.py 1.01 trennt die Passwortzuordnung vom Anzeigenamen. Zehn Regressionstests einschließlich Umbenennung und erneuter Passwortauflösung erfolgreich. Hardware-/Browsertest weiterhin offen.
+
+## 3.93 (2026-11-19) – Gerätemanager
+
+Der Gerätemanager (_web/web_devices.py 1.00) speichert bekannte Ziele und die beim Beenden aktive Verbindung in devices.json im Anwenderdatenordner. Die Suche beginnt in einem eigenen Thread vor dem Laden der Tabellen; die Verbindungsprüfung startet nach Initialisierung der Programmmodule parallel zum Tabellenladen. USB-Anschlüsse werden über pyserial aufgelistet und durch die bestehende Firmware-Antwort geprüft. WLAN verwendet eingetragene Ziele und den vorhandenen Passwortspeicher esp32-ota.json. Ein bevorzugtes Startgerät überschreibt die zuletzt aktive Verbindung. Ohne bevorzugtes oder zuletzt aktives Gerät wird der erste erfolgreich antwortende Kandidat verbunden.
+
+web_serial.py 1.12 ergänzt stille, threadlokale Verbindungsversuche und beobachtet Verbindungswechsel. headless_app_controller.py 1.11 sichert den Zustand vor dem Trennen beim Beenden. webmobaledlib.py 3.96 integriert Dialog und Menüs; M08_ARDUINO.py 1.22 meldet erfolgreiche LED-Uploads mit ihrem Anschluss. Hintergrundversuche und Programmbefehle werden am vorhandenen Verbindungsschloss koordiniert. Nach Upload warten begrenzte Wiederholungen auf den Neustart des exakten Zielgeräts.
+
+Tests: neun gezielte Regressionstests, Python-Syntax und Backend-Start mit frischem Datenordner und ersetzter Gerätesuche geprüft. NiceGUI-Dialog mit echten UI-Elementen aufgebaut und Hauptseite über HTTP erfolgreich mit Status 200 geladen. Physische USB-/WLAN-Geräte, vollständige Uploads und Bedienung im Browser sind noch zu prüfen.
+
+## 3.93 (2026-11-18) – WLAN ohne OTA
+
+Bei WLAN aktiv und OTA deaktiviert fehlten die Includes für Arduino.h und WiFi.h im erzeugten Sketch. ESP32WifiUsb.h konnte dadurch WiFi und WL_CONNECTED nicht auflösen. headless/headless_esp32_ota.py 1.09 fügt beide Includes unabhängig vom OTA-Schalter ein. Die zusätzlichen OTA-Deklarationen bleiben an OTA gebunden. Sketch-Erzeugung für WLAN mit und ohne OTA sowie Python-Syntax geprüft. Ein isolierter ESP32-Sketch mit der originalen ESP32WifiUsb.h und deaktiviertem OTA wurde mit PlatformIO espressif32 6.9.0 erfolgreich kompiliert (27,66 Sekunden). Vollständiger Anwender-Sketch und Hardwaretest offen.
 
 ## 3.93 (2026-11-18) – Spaltenbreiten und Zellinnenabstand
 

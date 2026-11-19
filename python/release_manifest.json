@@ -1,6 +1,6 @@
 {
 "created": "2026-11-18 11:02:54",
-"file_count": 2342,
+"file_count": 2346,
 "files": {
 "Boards/Heartbeat.uf2": {
 "sha256": "e984b97a7858984be7a8fc6e8cf0bf594128d32c4c517c3f3b696e5ef4dfdb50",
@@ -255,8 +255,8 @@
 "size": 447
 },
 "LEDs_AutoProg/U8G2UserInterface.h": {
-"sha256": "d1aae4e7ac1dc2ec5de5eae6b9248ebc4edaafcdee8ae6691f2f18bd446db1ff",
-"size": 9441
+"sha256": "8f5cf4400f658728611f2f62ec1aae47abdea932c890524a0a906bec570aa895",
+"size": 9162
 },
 "LEDs_AutoProg/UserInterface.cpp": {
 "sha256": "a76de21823befb96f09f67c2cc18021342aed9ae41e618abd74c872984fc7632",
@@ -903,8 +903,8 @@
 "size": 36604
 },
 "_web/web_esp32_ota.py": {
-"sha256": "1f3f1427f4d262b3d3e59037808f4e1a0984913e30c4010e54499876bfba58a3",
-"size": 13387
+"size": 14858,
+"sha256": "43b617387ed753f4842443530c8db06c20184927c201bb6c16f08fafa62f1872"
 },
 "_web/web_firewall.py": {
 "sha256": "e518e852a976e518bc120a22548868cd79d328db236ccfa23f00235850a2862c",
@@ -1007,8 +1007,8 @@
 "size": 8739
 },
 "_web/web_serial.py": {
-"sha256": "b8738d78a94b253645e7f645b94eb85eb4984b19107e36d696c5a6caedcc6ca5",
-"size": 38778
+"size": 40228,
+"sha256": "ef50a94e5bf2711ec5e7fe6ada481c02577195834be3dd608fa4143ae1f438ea"
 },
 "_web/web_serial_page.py": {
 "sha256": "c3e4115dc28200808c39c686e029fd7a1aaefdb45e21076db5cad56f94f3d122",
@@ -1163,8 +1163,8 @@
 "size": 1106
 },
 "csv/Web_Languages.csv": {
-"sha256": "50204c9c63229fb9673076f537e0185d7e1da748e4ac9a1c086b679fdbbf5685",
-"size": 576540
+"size": 580993,
+"sha256": "8689bf94420c3baf56d7a4e2658c02c695498d231aa4aa6726f25b2b77a1c587"
 },
 "csv/xLibraries.csv": {
 "sha256": "a737fc50e763b84683b77c46c5f9a4b338362e0587400daea97f0ed0e89e2b81",
@@ -1191,16 +1191,16 @@
 "size": 183
 },
 "headless/headless_app_controller.py": {
-"sha256": "5228e22e0c11f66d976e8851080e29db47c6902da0dd8935568977694196ad2c",
-"size": 22652
+"size": 22879,
+"sha256": "2c32c532decce67642ebd6db1724551c734db9f3555a2528635c51840de1b984"
 },
 "headless/headless_controller.py": {
 "sha256": "08a8653966a2287febdedae609ebc5310c90c8c292514d70680455f1358ada3e",
 "size": 4799
 },
 "headless/headless_esp32_ota.py": {
-"sha256": "de0aa433e1b4ba4a41d66bc24af228add0569c4f6db008a66c5abe4c479a3a8b",
-"size": 29718
+"size": 30179,
+"sha256": "d0e4a27862db112a9adb145168e4a3c86ffbffddd5a346c04eb0acfb49efd92c"
 },
 "headless/headless_firmware_dl.py": {
 "sha256": "87975ee02d50f5727dd6c4363a1a8c92104856595f1e943d576f890bac9d55b7",
@@ -7583,8 +7583,8 @@
 "size": 2829
 },
 "install/ANLEITUNG_Installation.md": {
-"sha256": "23d3a3a1b1605482cf18e2bfa65b0796da2ad0d4d3895b1d91bc9441a7621096",
-"size": 210434
+"size": 212346,
+"sha256": "c86a15ab9a193575b0c8bfae54a9e720b085489850d17840253883d1fa158db2"
 },
 "install/ANLEITUNG_Linux_Desktop.pdf": {
 "sha256": "ed3bf81790dab00eb36917e8a5bbc212fbf1d70682682223210bec33bb12efec",
@@ -7599,8 +7599,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "e31efc4d77bc8bb113d1fafe9535606d3132971d4b04842a0e40a2d6451d7f71",
-"size": 131889
+"size": 134027,
+"sha256": "f5cfaf47f216a37d25e57e7bb76c01d6acf9bbee324c307ee8924e6479eef4ef"
 },
 "install/UEBERSETZEN.md": {
 "sha256": "2a5b4bf59358e3c0e82fabb6e88b0f4605de0bfa334c777f0822b1765b4c4107",
@@ -7647,8 +7647,8 @@
 "size": 4189
 },
 "install/install_windows.bat": {
-"sha256": "4350b2e69663f061296c255ca0a1d27e59e161cea588e601f4d66fa247035295",
-"size": 9862
+"sha256": "a884c34708bb037a31b259c942fb78132dc00a02ad2170ed3e7ea66bff142146",
+"size": 9727
 },
 "install/legacy_names.txt": {
 "sha256": "a6e670b9d59568f019b1a4847338ed94c287da75fad0ec3750795ca69b7734c3",
@@ -7715,8 +7715,12 @@
 "size": 548
 },
 "install/start_windows.bat": {
-"sha256": "ae35bc37777847d15c64793ce3cb737657c6752781a8e02805169b420a207e79",
-"size": 1149
+"sha256": "d1f60543768384c21b6b4a37548b8836b3c15a032cdf429883d8f90012709b9f",
+"size": 1183
+},
+"install/start_windows_hidden.vbs": {
+"sha256": "7e6c86d7e7caccd1f0ae3c47774330895944e1da19f9edd3376629614a30f4ea",
+"size": 636
 },
 "install/uninstall_linux.sh": {
 "sha256": "7c6209541eab8582f0fb979c51df12aa2c7c2b0d2cc84341ddb65682b75c8a6e",
@@ -8719,8 +8723,8 @@
 "size": 9940
 },
 "proggen/M06_Write_Header_SW.py": {
-"sha256": "24d91299d37edb95c5571f0e22948c05e81089641d0e64293376673367cde853",
-"size": 106837
+"size": 106837,
+"sha256": "24d91299d37edb95c5571f0e22948c05e81089641d0e64293376673367cde853"
 },
 "proggen/M06_Write_Header_Sound.py": {
 "sha256": "89bd5046d9725d3b9cf36226fcad44fd211e3bf12a370b04e582482a551c5ce5",
@@ -8735,16 +8739,16 @@
 "size": 67860
 },
 "proggen/M07_COM_Port.py": {
-"sha256": "b0e8157452822f4d14454a444d50bd1b55059111d68c4a52fb10fe78a84f7351",
-"size": 79528
+"size": 80982,
+"sha256": "ae7d15e676742d415b205263064e4139e71d7113e1e895af4722d4ccca89de42"
 },
 "proggen/M07_COM_Port_New.py": {
-"sha256": "6063a6b33c7a3425582a6cf6c01f890a6d247fa8670ea92f91c166b9652bc430",
-"size": 25772
+"size": 26018,
+"sha256": "3cac5496d7a5e1183feac85019181a0940125633dad5c880d53fb4574ee1377e"
 },
 "proggen/M08_ARDUINO.py": {
-"sha256": "fbe84dc7e08a02706ab6b5405b595d12023077595b5169f5e7d16d53f55cb4fc",
-"size": 189638
+"size": 190027,
+"sha256": "0cd58fcaf3c9ceae7ed9e285d414d174ddc559516e0db2498bbf2c1e7f0d45d2"
 },
 "proggen/M08_Fast_ARDUINO.py": {
 "sha256": "e2feb5fda33f949f406f1a6b6cebb389b67ea61ccbfb54114e05b365333fa4e3",
@@ -9367,8 +9371,20 @@
 "size": 34
 },
 "webmobaledlib.py": {
-"sha256": "13c4b058bdb2f4f41e07e2062a68ae88439a2fc9bb81555f4862a24f0a158475",
-"size": 561022
+"size": 565041,
+"sha256": "47142e042394ff3623d85c03494765b77732f86f0f8330996e736165f18943f2"
+},
+"_web/web_devices.py": {
+"size": 25021,
+"sha256": "25a9b8e3b8b6a9aba6d41e19c9562c6fd372e4e365c796420cade94b49d30d21"
+},
+"test_web_devices.py": {
+"size": 16387,
+"sha256": "74ef19205a627b655422be3cf58b0bbccc68a3918aaa4829571245c9f9e235d0"
+},
+"headless/headless_serial_port.py": {
+"size": 1674,
+"sha256": "a47b90bc9f0f07a64440423415aafd8cd71be82419179131355095f54aef13da"
 }
 },
 "format": 1,

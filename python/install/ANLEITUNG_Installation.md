@@ -1,5 +1,19 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 3.94 (2026-11-18), gilt für webMobaLedLib 3.93*
+*Datei-Version: 3.97 (2026-11-19), gilt für webMobaLedLib 3.93*
+
+Zum Entfernen eines gespeicherten Geräts wählst du es im Gerätemanager aus und klickst **Gerät löschen**. Bestätige mit **Löschen**. Eine aktive Verbindung zu diesem Gerät wird getrennt. Über **Geräte suchen** kannst du angeschlossene Geräte erneut aufnehmen.
+
+Bei **WLAN über USB einrichten** wird eine bestehende WebMLL-Verbindung für die Suche oder Einrichtung automatisch freigegeben. Schließe den WLAN-Dialog nach der Einrichtung; die vorherige Verbindung wird anschließend wiederhergestellt.
+
+Im Gerätemanager kannst du ein Gerät auswählen und mit **Umbenennen** einen eigenen Anzeigenamen vergeben. WLAN-Geräte werden aus den WLAN-(OTA)-Einstellungen aufgenommen. Richte den ESP32 zuerst per USB ein und aktiviere WLAN sowie OTA-Updates. Im Gerätemanager wird die hinterlegte IP-Adresse oder der Hostname mit dem gespeicherten OTA-Passwort verwendet.
+
+## Lichtmaschinen verwalten
+
+Öffne **Lichtmaschine → Gerätemanager** oder klicke auf den Verbindungsknopf. Wähle ein Gerät und **Verbinden**. **Geräte suchen** aktualisiert die USB-Anschlüsse und eingetragenen WLAN-Geräte. Ein angezeigter USB-Anschluss wird erst nach erfolgreicher Firmware-Antwort als erkannt geführt. Ein unbekannter Boardtyp bleibt leer.
+
+**Beim Start automatisch verbinden** legt das ausgewählte Gerät als bevorzugtes Startgerät fest. Ohne diese Vorgabe stellt das Programm die beim letzten Beenden aktive Verbindung wieder her. War keine Verbindung aktiv, versucht es die gefundenen Kandidaten und verbindet den ersten, der korrekt antwortet. Die Suche läuft parallel zum Tabellenladen. **Bevorzugtes Startgerät zurücksetzen** entfernt die feste Vorgabe.
+
+Nach einem erfolgreichen LED-Upload wartet das Programm auf den Neustart und verbindet sich wieder mit genau diesem USB- oder WLAN-Ziel. Das Kontextmenü am Verbindungsknopf bietet Trennen, Board wechseln und Neu verbinden.
 
 Wähle nach **Spaltenbreiten übertragen …** zuerst einzelne Spalten A, B, C usw. oder **Alle Spalten**. Mit **Weiter** öffnest du die Auswahl der Zielseiten. **Zurück** erhält deine Spaltenauswahl.
 
