@@ -5,6 +5,12 @@ Stand: webMobaLedLib 4.22
 
 Gilt ab Version 1.39. Neueste Version oben.
 
+## 4.22 (2026-11-19) – ESP32-Portangabe
+
+Ist im Blatt noch kein USB-Port eingetragen, wird der bereits in den Programmeinstellungen hinterlegte serportname verwendet. Dadurch kann die manuell geprüfte Verbindung auch vor einer erneuten USB-Erkennung zum Upload verwendet werden.
+
+ESP32-USB-Portwerte werden vor dem Build normalisiert: 7, 7.0, COM7 und *COM7 verwenden denselben Anschluss. Die Portprüfung erfolgt vor Headererzeugung und Kompilierung. WLAN benötigt keinen USB-Port. Acht Upload-/Prozesstests sind erfolgreich; der erneute Hardwaretest steht noch aus.
+
 ## 4.22 (2026-11-19) – ESP32-Live-Ausgabe
 
 ESP32-Kompilierung und USB-/WLAN-Upload zeigen Ausgaben fortlaufend. Fortschritt ohne Zeilenumbruch, Passwortmaskierung, Zeitlimits und Prozessabbruch werden berücksichtigt. Der separate Firmware-Dateiupload erhält ebenfalls eine Live-Anzeige.

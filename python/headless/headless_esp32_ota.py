@@ -1,12 +1,13 @@
-# Datei-Version: 1.10 (2026-11-19) - headless_esp32_ota.py
+# Datei-Version: 1.11 (2026-11-19) - headless_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_esp32_ota.py
 # Path:           headless/headless_esp32_ota.py
-# Version:        1.10
+# Version:        1.11
 # Last Update:    2026-11-19
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.11  2026-11-19  Tabellenwerte des USB-Ports vor dem Build normalisieren
 #   1.10  2026-11-19  Build und Upload live ausgeben, Passwortmaskierung und Prozessabbruch beibehalten
 #   1.09  2026-11-18  WLAN ohne OTA: Arduino.h und WiFi.h fuer USB-WLAN-Einrichtung immer einbinden
 #   1.00  2026-11-14  Neu: ESP32-WLAN und OTA ohne Oberflaeche (OTA-Upload mit espota, Build mit PlatformIO oder Arduino Builder, USB-Upload, WLAN-Einrichtung ueber USB, Einstellungen esp32-ota.json)
@@ -361,12 +362,22 @@ def ota_partitions(table):
     return partitions
 
 
+def normalize_usb_port(port):  # v1.11
+    port = str(port or "").strip().removeprefix("*").strip()  # v1.11
+    if re.fullmatch(r"[0-9]+(?:\.0+)?", port):  # v1.11
+        port = "COM" + str(int(port.split(".", 1)[0]))  # v1.11
+    if not re.fullmatch(r"COM[1-9][0-9]*|/dev/(tty|cu)\.?[A-Za-z0-9_.-]+", port, re.IGNORECASE):  # v1.11
+        raise ValueError("Bitte in den ARDUINO-Einstellungen zuerst einen ESP32-COM-Port wählen.")  # v1.11
+    return port.upper() if port[:3].upper() == "COM" else port
+
+
 def flash_usb(port, image, partition_table, report, *, pio=None):
     """Flash the app using an existing matching ESP32 OTA partition table."""
-    port = (port or "").strip()
-    if not re.fullmatch(r"COM[1-9][0-9]*|/dev/(tty|cu)\.?[A-Za-z0-9_.-]+", port, re.IGNORECASE):  # v1.04: auch Linux/Mac
-        raise ValueError("Bitte in den ARDUINO-Einstellungen zuerst einen ESP32-COM-Port wählen.")
-    port = port.upper() if port[:3].upper() == "COM" else port
+    # port = (port or "").strip()  # v1.11 (entfallen)
+    # if not re.fullmatch(r"COM[1-9][0-9]*|/dev/(tty|cu)\.?[A-Za-z0-9_.-]+", port, re.IGNORECASE):  # v1.04: auch Linux/Mac  # v1.11 (entfallen)
+    # raise ValueError("Bitte in den ARDUINO-Einstellungen zuerst einen ESP32-COM-Port wählen.")  # v1.11 (entfallen)
+    # port = port.upper() if port[:3].upper() == "COM" else port  # v1.11 (entfallen)
+    port = normalize_usb_port(port)  # v1.11
     if pio:
         packages = platformio_packages()
         core = packages / "framework-arduinoespressif32"

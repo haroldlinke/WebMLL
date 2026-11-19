@@ -1,5 +1,5 @@
 {
-"created": "2026-11-19 11:45:51",
+"created": "2026-11-19 12:07:03",
 "file_count": 2347,
 "files": {
 "Boards/Heartbeat.uf2": {
@@ -1203,8 +1203,8 @@
 "size": 4799
 },
 "headless/headless_esp32_ota.py": {
-"sha256": "a5a887ff85d88c98bc36797ad9c13bd368d545a5b5a43daf0883ef9b6b215ec9",
-"size": 35411
+"sha256": "8a7157c78572863d0e16c76747a45a5c8f47f4973043b62f4cfe24050d6c8789",
+"size": 36142
 },
 "headless/headless_extensions.py": {
 "sha256": "32100a2fbadaf5a8a85a5fe6584adef9001782821085b1dfb8896bc9e55e212d",
@@ -7607,8 +7607,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "5e42cde5738b8e651a527d3fcfca2ce892c357e6649a1a0c34b6656d76213495",
-"size": 141281
+"sha256": "ae84a04d76e8edc1dc3fa74495b3b20cb536f3e739ceb6df9aa59718cbd1f729",
+"size": 141456
 },
 "install/UEBERSETZEN.md": {
 "sha256": "2a5b4bf59358e3c0e82fabb6e88b0f4605de0bfa334c777f0822b1765b4c4107",
@@ -8759,8 +8759,8 @@
 "size": 25772
 },
 "proggen/M08_ARDUINO.py": {
-"sha256": "c5b56a18880c87c5fb5064339ee35f15693d5d8711c477b89568652599346b59",
-"size": 194570
+"sha256": "2bb427e32036d48877e272af0b343b30225aec2b250faf9d20ef557c8d0c2d48",
+"size": 195093
 },
 "proggen/M08_Fast_ARDUINO.py": {
 "sha256": "e2feb5fda33f949f406f1a6b6cebb389b67ea61ccbfb54114e05b365333fa4e3",
@@ -9167,8 +9167,8 @@
 "size": 5364
 },
 "test_esp32_live_output.py": {
-"sha256": "285680283a7dfee9f3d96dcc3050e097b2cb3fb9eaae030da92b9166417a38ee",
-"size": 5096
+"sha256": "88ede0d59c7865c488220bbb60b7c967da98d8cf755de8bc2b103b673d1a05e6",
+"size": 7457
 },
 "test_headless_contract.py": {
 "sha256": "551232114ef7aa07113672785dcbeaba5decaa26e8315c93ec89c8e81ab76e31",

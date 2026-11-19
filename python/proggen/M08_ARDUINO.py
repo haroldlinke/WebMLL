@@ -1,12 +1,13 @@
-# Datei-Version: 1.25 (2026-11-19) - M08_ARDUINO.py
+# Datei-Version: 1.26 (2026-11-19) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.25
+# Version:        1.26
 # Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.26  2026-11-19  USB-Port vor Headererzeugung und Kompilierung pruefen
 #   1.25  2026-11-19  ESP32-Build und OTA-Upload live im Logfenster anzeigen
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
@@ -2542,6 +2543,12 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
     log.delete_text_from_textwindow()  # v1.22
     log.show()  # v1.22
     try:  # v1.22
+        if not host:  # v1.26
+            raw_port = str(port or "").strip()  # v1.26
+            if raw_port.removeprefix("*").strip().upper() in ("", "COM?", "NO DEVICE"):  # v1.26
+                port = getattr(ctrl, "getConfigData", lambda key: None)("serportname")  # v1.26
+            port = headless_esp32_ota.normalize_usb_port(port)  # v1.26
+            log.add_text_to_textwindow("ESP32 " + tr("USB-Port") + ": " + port)  # v1.26
         if not M06.Create_HeaderFile(HeaderOnly=True):  # v1.22
             raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))  # v1.22
         sketch = os.path.join(GetWorkbookPath(), M02.Ino_Dir_LED)  # v1.22

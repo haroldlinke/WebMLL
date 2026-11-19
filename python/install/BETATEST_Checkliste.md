@@ -385,3 +385,6 @@ Rückmeldungen an den Entwickler (Kontakt siehe GitHub-Seite des Projekts: <http
 274. **Tastenkombination einstellen (4.17, Issue 21):** Programm Einstellungen, Allgemeine Einstellungen, „Tastenkombination: Inkrementell speichern“, zum Beispiel Strg+Alt+S eintragen und die Einstellungen speichern: Löst die neue Kombination sofort das inkrementelle Speichern aus, und die alte nicht mehr? Eine ungültige Eingabe (zum Beispiel nur „S“) zeigt einen Hinweis.
 275. **Erweiterung mit libraries.json (4.22, Issue 6):** Eine Erweiterung mit Datei `libraries.json` (name, description) einfügen, zum Beispiel DummyMLX von Jürgen: Zeigt der Reiter Erweiterungen den Namen und die Beschreibung aus der Datei? Ohne die Datei erscheinen die bisherigen Angaben.
 276. **Kompilieren mit neuer Erweiterung (4.21, Issue 6):** Eigene Erweiterung hinzufügen und ein Programm damit übersetzen: Steht in der platformio.ini `Name=symlink://…\Ordner` (ohne MobaLedLib.properties), und läuft der Build durch?
+
+
+- [ ] ESP32-USB-Port manuell als Zahl und COM-Port auswählen und übertragen. Ein leerer USB-Port muss vor dem Build gemeldet werden; WLAN-Upload ohne USB-Port prüfen.
