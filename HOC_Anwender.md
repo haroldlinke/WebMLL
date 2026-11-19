@@ -1,9 +1,13 @@
-Datei-Version: 1.10 (2026-11-18) - HOC_Anwender.md
+Datei-Version: 1.11 (2026-11-19) - HOC_Anwender.md
 Stand: webMobaLedLib 4.22
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 4.22 (2026-11-19) – ESP32-Live-Ausgabe
+
+ESP32-Kompilierung und USB-/WLAN-Upload zeigen Ausgaben fortlaufend. Fortschritt ohne Zeilenumbruch, Passwortmaskierung, Zeitlimits und Prozessabbruch werden berücksichtigt. Der separate Firmware-Dateiupload erhält ebenfalls eine Live-Anzeige.
 
 ## Version 4.22 (2026-11-19)
 

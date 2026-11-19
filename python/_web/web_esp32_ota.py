@@ -1,12 +1,13 @@
-# Datei-Version: 1.06 (2026-11-18) - web_esp32_ota.py
+# Datei-Version: 1.07 (2026-11-19) - web_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_esp32_ota.py
 # Path:           _web/web_esp32_ota.py
-# Version:        1.06
-# Last Update:    2026-11-18
+# Version:        1.07
+# Last Update:    2026-11-19
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.07  2026-11-19  OTA-Dateiupload zeigt Fortschritt fortlaufend
 #   1.00  2026-11-14  Neu: Dialoge fuer ESP32-WLAN und OTA (Firmware hochladen, Ziel waehlen, Reiter OTA, WLAN ueber USB einrichten)
 #   1.01  2026-11-14  Firewall-Hinweis bei "No response from device" (Port 32323)
 #   1.02  2026-11-14  Reiter OTA: Knopf "Minimale Firmware per USB hochladen" (schaltet WLAN und OTA ein, ruft minimal_firmware_handler)
@@ -16,6 +17,7 @@
 #   1.04  2026-11-15  Knopf Hilfe im Reiter OTA: oeffnet die Wiki-Seite ESP32 per WLAN und OTA
 # ----------------------------------------------------------------------------------------------
 from subprocess import TimeoutExpired
+import asyncio  # v1.07
 
 from nicegui import run, ui
 
@@ -70,9 +72,14 @@ def open_dialog(*, pio=None):
         close.disable()
         status.set_text(tr("WLAN-Übertragung läuft …"))
         output.set_text("")
+        loop = asyncio.get_running_loop()  # v1.07
+        progress = []  # v1.07
+        def report(text):  # v1.07
+            progress.append(text)  # v1.07
+            loop.call_soon_threadsafe(output.set_text, "".join(progress))  # v1.07
         try:
             code, log = await run.io_bound(
-                headless_esp32_ota.upload, host.value, password.value or "", *image, pio=pio,
+                headless_esp32_ota.upload, host.value, password.value or "", *image, pio=pio, report=report,  # v1.07
             )
             status.set_text(tr("Firmware übertragen.") if code == 0 else tr("OTA-Upload fehlgeschlagen."))
             output.set_text(log + ((chr(10) + tr(HINT_FIREWALL, port=headless_esp32_ota.HOST_PORT)) if code and headless_esp32_ota.NO_RESPONSE in log else ""))

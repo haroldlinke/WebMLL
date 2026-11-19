@@ -1,12 +1,13 @@
-# Datei-Version: 1.24 (2026-11-19) - M08_ARDUINO.py
+# Datei-Version: 1.25 (2026-11-19) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.24
+# Version:        1.25
 # Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.25  2026-11-19  ESP32-Build und OTA-Upload live im Logfenster anzeigen
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
 #   1.02  2026-10-26  Entwickler: PlatformIO (Create_PIO_Build_cmd, platformio.ini, Start_Arduino.cmd); Claude: PlatformIO auch fuer Linux, macOS und Raspberry Pi (Ordner bin statt Scripts, Find_PIO, PIO_Version), PATH nur einmal ergaenzt, verstaendliche Meldung wenn pio fehlt, platformio.ini wird beim Hochladen mit PlatformIO mit den aktuellen Einstellungen geschrieben
@@ -2570,8 +2571,9 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
             Last_Upload.update(ok=True, host='')  # v1.24
             return  # v1.22
         log.add_text_to_textwindow(tr("Firmware wird per WLAN übertragen …"))  # v1.22
-        result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)  # v1.22
-        log.add_text_to_textwindow(output)  # v1.22
+        # result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)  # v1.25 (entfallen)
+        result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio, report=log.add_text_to_textwindow)  # v1.25
+        # log.add_text_to_textwindow(output)  # v1.25 (entfallen)
         if result and headless_esp32_ota.NO_RESPONSE in output:  # v3.38  # v1.22
             log.add_text_to_textwindow(tr(firewall_hint, port=headless_esp32_ota.HOST_PORT), highlight="Error")  # v1.22
         log.add_text_to_textwindow(  # v1.22

@@ -1,4 +1,4 @@
-Datei-Version: 1.10 (2026-11-18) - HOC_intern.md
+Datei-Version: 1.11 (2026-11-19) - HOC_intern.md
 Stand: webMobaLedLib 4.22
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,12 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 4.22 (2026-11-19) – ESP32-Live-Ausgabe
+
+ESP32-Kompilierung und USB-/WLAN-Upload zeigen Ausgaben fortlaufend. Fortschritt ohne Zeilenumbruch, Passwortmaskierung, Zeitlimits und Prozessabbruch werden berücksichtigt. Der separate Firmware-Dateiupload erhält ebenfalls eine Live-Anzeige.
+
+Prüfung: sechs Regressionstests mit echten Kindprozessen erfolgreich. Ein echter PlatformIO-Build des kombinierten Arbeitsstands war erfolgreich; physischer OTA-Upload und Arduino Builder auf diesem getrennten Branch noch offen.
 
 ## 2.12 (2026-10-23) - Release-Stand
 

@@ -1,12 +1,13 @@
-# Datei-Version: 1.09 (2026-11-18) - headless_esp32_ota.py
+# Datei-Version: 1.10 (2026-11-19) - headless_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_esp32_ota.py
 # Path:           headless/headless_esp32_ota.py
-# Version:        1.09
-# Last Update:    2026-11-18
+# Version:        1.10
+# Last Update:    2026-11-19
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.10  2026-11-19  Build und Upload live ausgeben, Passwortmaskierung und Prozessabbruch beibehalten
 #   1.09  2026-11-18  WLAN ohne OTA: Arduino.h und WiFi.h fuer USB-WLAN-Einrichtung immer einbinden
 #   1.00  2026-11-14  Neu: ESP32-WLAN und OTA ohne Oberflaeche (OTA-Upload mit espota, Build mit PlatformIO oder Arduino Builder, USB-Upload, WLAN-Einrichtung ueber USB, Einstellungen esp32-ota.json)
 #   1.01  2026-11-14  wifi_usb: nach dem Oeffnen des Anschlusses 2,5 s warten (ESP32 startet neu) und den Scan-Befehl bis zur ersten Antwort alle 6 s wiederholen
@@ -30,9 +31,101 @@ import subprocess
 import struct
 import sys
 import tempfile
-from threading import Lock
+from threading import Lock, Thread
+import codecs  # v1.10
+import queue  # v1.10
+import time  # v1.10
 
 MAX_IMAGE_SIZE = 16 * 1024 * 1024
+
+
+def _run_live(command, report=None, *, timeout, secrets=()):  # v1.10
+    from mlpyproggen.Prog_Generator import _kill_tree, _spawn_kwargs  # v1.10
+    secrets = sorted({value for value in secrets if value}, key=len, reverse=True)  # v1.10
+    def redact(text):  # v1.10
+        for secret in secrets:  # v1.10
+            text = text.replace(secret, "********")  # v1.10
+        return text  # v1.10
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,  # v1.10
+                               stdin=subprocess.DEVNULL, env=dict(os.environ, PYTHONUNBUFFERED="1"),  # v1.10
+                               creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),  # v1.10
+                               **_spawn_kwargs())  # v1.10
+    chunks = queue.Queue()  # v1.10
+    def read_output():  # v1.10
+        try:  # v1.10
+            while True:  # v1.10
+                chunk = process.stdout.read1(4096)  # v1.10
+                if not chunk:  # v1.10
+                    break  # v1.10
+                chunks.put(chunk)  # v1.10
+        finally:  # v1.10
+            chunks.put(None)  # v1.10
+    reader = Thread(target=read_output, name="esp32-build-output", daemon=True)  # v1.10
+    reader.start()  # v1.10
+    decoder = codecs.getincrementaldecoder("utf8")(errors="replace")  # v1.10
+    deadline = time.monotonic() + timeout  # v1.10
+    pending = ""  # v1.10
+    output = []  # v1.10
+    keep = max((len(secret) - 1 for secret in secrets), default=0)  # v1.10
+    last_report = time.monotonic()  # v1.10
+    controller = getattr(getattr(report, "__self__", None), "ctrl", None)  # v1.10
+    previous_bindings = {}  # v1.10
+    def cancel(event=None):  # v1.10
+        _kill_tree(process)  # v1.10
+    if controller is not None and isinstance(getattr(controller, "bindings", None), dict):  # v1.10
+        for key in ("Control-c", "c"):  # v1.10
+            previous_bindings[key] = controller.bindings.get(key)  # v1.10
+            controller.bind(key, cancel)  # v1.10
+    def emit(text):  # v1.10
+        text = redact(text).replace("\r\n", "\n").replace("\r", "\n")  # v1.10
+        output.append(text)  # v1.10
+        if report is not None and text:  # v1.10
+            report(text)  # v1.10
+    try:  # v1.10
+        done = False  # v1.10
+        while not done:  # v1.10
+            remaining = deadline - time.monotonic()  # v1.10
+            if remaining <= 0:  # v1.10
+                raise subprocess.TimeoutExpired([redact(str(arg)) for arg in command], timeout)  # v1.10
+            try:  # v1.10
+                chunk = chunks.get(timeout=min(.2, remaining))  # v1.10
+                done = chunk is None  # v1.10
+                pending += decoder.decode(chunk or b"", final=done)  # v1.10
+            except queue.Empty:  # v1.10
+                pass  # v1.10
+            cut = max(pending.rfind("\n"), pending.rfind("\r")) + 1  # v1.10
+            if not cut and time.monotonic() - last_report >= .5:  # v1.10
+                cut = max(0, len(pending) - keep)  # v1.10
+                for secret in secrets:  # v1.10
+                    start = pending.find(secret)  # v1.10
+                    while start >= 0:  # v1.10
+                        if start < cut < start + len(secret):  # v1.10
+                            cut = start  # v1.10
+                        start = pending.find(secret, start + 1)  # v1.10
+            if done:  # v1.10
+                cut = len(pending)  # v1.10
+            if cut:  # v1.10
+                emit(pending[:cut])  # v1.10
+                pending = pending[cut:]  # v1.10
+                last_report = time.monotonic()  # v1.10
+        process.wait(timeout=max(.01, deadline - time.monotonic()))  # v1.10
+        return subprocess.CompletedProcess(command, process.returncode, "".join(output), "")  # v1.10
+    except BaseException as error:  # v1.10
+        if isinstance(error, subprocess.TimeoutExpired):  # v1.10
+            error.cmd = [redact(str(arg)) for arg in command]  # v1.10
+        _kill_tree(process)  # v1.10
+        process.wait(timeout=5)  # v1.10
+        raise  # v1.10
+    finally:  # v1.10
+        for key, previous in previous_bindings.items():  # v1.10
+            if controller.bindings.get(key) is cancel:  # v1.10
+                if previous is None:  # v1.10
+                    controller.bindings.pop(key, None)  # v1.10
+                else:  # v1.10
+                    controller.bind(key, previous)  # v1.10
+        reader.join(timeout=2)  # v1.10
+        if not reader.is_alive():  # v1.10
+            process.stdout.close()  # v1.10
 
 
 def find_uploader():
@@ -74,7 +167,7 @@ NO_RESPONSE = "No response from device"
 HOST_PORT = 32323  # v1.05: fester Rueckkanal-Port (der ESP32 verbindet sich nach der Anmeldung zum PC zurueck); eine Firewall-Regel braucht eine feste Portnummer
 
 
-def upload(host, password, filename, image, *, pio=None):
+def upload(host, password, filename, image, *, pio=None, report=None):  # v1.10
     if (
         not filename.lower().endswith(".bin")
         or filename.lower().endswith((".merged.bin", ".bootloader.bin", ".partitions.bin"))
@@ -98,11 +191,15 @@ def upload(host, password, filename, image, *, pio=None):
     with tempfile.TemporaryDirectory(prefix="webmll-ota-") as folder:
         firmware = Path(folder) / "firmware.bin"
         firmware.write_bytes(image)
-        result = subprocess.run(
+        # result = subprocess.run(  # v1.10 (entfallen)
+        # [*uploader, "-i", address, "-p", "3232", "-P", str(HOST_PORT), "-d", "--auth=" + password,  # v1.10 (entfallen)
+        # "-f", str(firmware)],  # v1.10 (entfallen)
+        # capture_output=True, text=True, errors="replace", timeout=180,  # v1.10 (entfallen)
+        # )  # v1.10 (entfallen)
+        result = _run_live(
             [*uploader, "-i", address, "-p", "3232", "-P", str(HOST_PORT), "-d", "--auth=" + password,
-             "-f", str(firmware)],
-            capture_output=True, text=True, errors="replace", timeout=180,
-        )
+             "-f", str(firmware)], report, timeout=180, secrets=(password,),
+        )  # v1.10
     output = (result.stdout + result.stderr).strip()
     if password:
         output = output.replace(password, "********")
@@ -175,8 +272,9 @@ def build_project(sketch_dir, ide, sketchbook, fqbn, password, report, *, hostna
             "-libraries", str(libraries), "-fqbn", fqbn,
             "-build-path", str(build), str(sketch / "LEDs_AutoProg.ino"),
         ]
-        result = subprocess.run(command, capture_output=True, text=True, errors="replace", timeout=600)
-        report((result.stdout + result.stderr).replace(password, "********").replace(secret, "********") if password else result.stdout + result.stderr)
+        # result = subprocess.run(command, capture_output=True, text=True, errors="replace", timeout=600)  # v1.10 (entfallen)
+        # report((result.stdout + result.stderr).replace(password, "********").replace(secret, "********") if password else result.stdout + result.stderr)  # v1.10 (entfallen)
+        result = _run_live(command, report, timeout=600, secrets=(password, secret))  # v1.10
         if result.returncode:
             raise ValueError("ESP32-Kompilierung fehlgeschlagen.")
         return (
@@ -237,11 +335,13 @@ def build_platformio_project(sketch_dir, pio, password, report, write_config, *,
         if not ini.is_file() or ini.read_bytes() != config:
             ini.write_bytes(config)
         sync_build_tree(Path(sketch_dir).parent / "libraries", project / "libraries")
-        result = subprocess.run(
-            [str(pio), "run", "--project-dir", str(project), "-e", "esp32"],
-            capture_output=True, text=True, errors="replace", timeout=900,
-        )
-        report((result.stdout + result.stderr).replace(password, "********").replace(secret, "********") if password else result.stdout + result.stderr)
+        # result = subprocess.run(  # v1.10 (entfallen)
+        # [str(pio), "run", "--project-dir", str(project), "-e", "esp32"],  # v1.10 (entfallen)
+        # capture_output=True, text=True, errors="replace", timeout=900,  # v1.10 (entfallen)
+        # )  # v1.10 (entfallen)
+        # report((result.stdout + result.stderr).replace(password, "********").replace(secret, "********") if password else result.stdout + result.stderr)  # v1.10 (entfallen)
+        result = _run_live([str(pio), "run", "--project-dir", str(project), "-e", "esp32"],
+                           report, timeout=900, secrets=(password, secret))  # v1.10
         if result.returncode:
             raise ValueError("ESP32-Kompilierung mit PlatformIO fehlgeschlagen.")
         build = project / ".pio/build/esp32"
@@ -290,12 +390,11 @@ def flash_usb(port, image, partition_table, report, *, pio=None):
     with tempfile.TemporaryDirectory(prefix="webmll-ota-usb-") as folder:
         work = Path(folder)
         current = work / "partitions.bin"
-        result = subprocess.run(
+        result = _run_live(
             [*base, "read_flash", "0x8000", str(len(partition_table)), str(current)],
-            capture_output=True, text=True, errors="replace", timeout=30,
+            report, timeout=30,
         )
         if result.returncode:
-            report(result.stdout + result.stderr)
             raise ValueError("Die ESP32-Partitionstabelle konnte nicht gelesen werden.")
         expected = ota_partitions(partition_table)
         if (
@@ -308,12 +407,11 @@ def flash_usb(port, image, partition_table, report, *, pio=None):
             raise ValueError("Die OTA-Partitionen des ESP32 passen nicht zum Projekt. Zuerst den normalen USB-Upload ausführen.")
         app = work / "application.bin"
         app.write_bytes(image)
-        result = subprocess.run(
+        result = _run_live(
             [*base, "write_flash", "-z", "0xe000", str(core / "tools/partitions/boot_app0.bin"),
              "0x10000", str(app)],
-            capture_output=True, text=True, errors="replace", timeout=120,
+            report, timeout=120,
         )
-        report(result.stdout + result.stderr)
         if result.returncode:
             raise ValueError("ESP32-Upload über USB fehlgeschlagen.")
 

@@ -1,5 +1,9 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.22 (2026-11-19), gilt für webMobaLedLib 4.22*
+*Datei-Version: 4.23 (2026-11-19), gilt für webMobaLedLib 4.22*
+
+## ESP32-Live-Ausgabe
+
+Beim ESP32 erscheinen Compiler-, Bibliotheks- und Übertragungsmeldungen während des Vorgangs im Logfenster. Das gilt für PlatformIO, Arduino Builder und USB-/WLAN-Upload. Der separate Firmware-Dateiupload zeigt seinen Fortschritt ebenfalls fortlaufend.
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 

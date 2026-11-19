@@ -1,5 +1,9 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 3.11 (2026-11-19), gilt für webMobaLedLib 4.22*
+*Datei-Version: 3.12 (2026-11-19), gilt für webMobaLedLib 4.22*
+
+## ESP32-Live-Ausgabe
+
+- [ ] ESP32-Build und WLAN-Upload prüfen: Werden Meldungen vor Abschluss sichtbar? Abbrechen, Zeitlimit und maskierte Passwörter testen. PlatformIO und Arduino Builder prüfen.
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
