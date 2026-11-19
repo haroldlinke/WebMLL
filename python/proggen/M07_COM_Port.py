@@ -1,12 +1,13 @@
-# Datei-Version: 1.12 (2026-11-19) - M07_COM_Port.py
+# Datei-Version: 1.13 (2026-11-19) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.12
+# Version:        1.13
 # Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.13  2026-11-19  Eigene Verbindung geordnet freigeben, COM-Konfiguration wiederherstellen
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  EnumComPorts: FTDI-Adapter (VID 0403, Beschreibung FT232 ...) werden erkannt, sonst meldete die Pruefung beim Hochladen 'kein Arduino angeschlossen'; DetectArduino: kein Absturz, wenn die Verbindung inzwischen getrennt wurde
 #   1.11  2026-11-14  Other_Type_Port_List (Liste statt Text, fuer die anklickbaren 'Andere Typen')
@@ -1099,6 +1100,8 @@ def _DetectArduino_once(port, baudrate, HWVersion=255, SWMajorVersion=255, SWMin
     logging.debug("M07.detect_arduino: %s", port)  # v1.05
     ser = None  # v1.05
     try:  # close the port if it is open and reopen it with DTR = False  # v1.05
+        if PG.global_controller.ARDUINO_status == "Connected" and PG.global_controller.is_connection_open():  # v1.13
+            PG.global_controller.disconnect()  # v1.13
         old_connection = PG.global_controller.arduino  # v1.05
         if old_connection and old_connection.is_open:  # v1.05
             old_connection.close()  # v1.05
@@ -1120,7 +1123,9 @@ def _DetectArduino_once(port, baudrate, HWVersion=255, SWMajorVersion=255, SWMin
         try:  # v1.05
             ser.port = port_str  # v1.05
             ser.dtr = False  # v1.05
-            ser.open()  # v1.05
+            # ser.open()  # v1.05  # v1.13 (entfallen)
+            from headless.headless_serial_port import open_serial_port  # v1.13
+            open_serial_port(ser)  # v1.13
         except BaseException as e:                                     # noqa: BLE001  # v1.05
             logging.debug("M07.detect_arduino: Error opening  port " + str(port_str))  # v1.05
             logging.debug(e, exc_info=True)  # v1.05

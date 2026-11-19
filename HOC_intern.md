@@ -1,4 +1,4 @@
-Datei-Version: 1.10 (2026-11-18) - HOC_intern.md
+Datei-Version: 1.11 (2026-11-19) - HOC_intern.md
 Stand: webMobaLedLib 4.22
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,12 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 4.22 (2026-11-19) – Gerätemanager auf 4.22
+
+Gerätemanager auf Basis von Harold 4.22. Geräteliste, eigene Namen, Löschen und Gerätevorwahl verwenden die originale AutoConnect-Steuerung. COM-Treiber-Wiederherstellung und USB-Freigabe bei WLAN-Einrichtung sind enthalten. Der automatische Verbindungsaufbau nach der Porterkennung verwendet den gespeicherten NiceGUI-Seitenkontext.
+
+Prüfung: 15 gezielte Registry-, Verbindungs- und Kontexttests erfolgreich; physische USB-/WLAN-Uploads auf diesem getrennten Branch noch offen.
 
 ## 2.12 (2026-10-23) - Release-Stand
 

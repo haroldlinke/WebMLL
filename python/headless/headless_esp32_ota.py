@@ -1,12 +1,13 @@
-# Datei-Version: 1.09 (2026-11-18) - headless_esp32_ota.py
+# Datei-Version: 1.10 (2026-11-19) - headless_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_esp32_ota.py
 # Path:           headless/headless_esp32_ota.py
-# Version:        1.09
-# Last Update:    2026-11-18
+# Version:        1.10
+# Last Update:    2026-11-19
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.10  2026-11-19  WLAN-USB nutzt gemeinsame COM-Konfiguration
 #   1.09  2026-11-18  WLAN ohne OTA: Arduino.h und WiFi.h fuer USB-WLAN-Einrichtung immer einbinden
 #   1.00  2026-11-14  Neu: ESP32-WLAN und OTA ohne Oberflaeche (OTA-Upload mit espota, Build mit PlatformIO oder Arduino Builder, USB-Upload, WLAN-Einrichtung ueber USB, Einstellungen esp32-ota.json)
 #   1.01  2026-11-14  wifi_usb: nach dem Oeffnen des Anschlusses 2,5 s warten (ESP32 startet neu) und den Scan-Befehl bis zur ersten Antwort alle 6 s wiederholen
@@ -413,6 +414,8 @@ def wifi_usb(port, ssid=None, password=""):
     device.port = port
     device.dtr = device.rts = False
     networks = {}
+    from headless.headless_serial_port import open_serial_port  # v1.10
+    open_serial_port(device)  # v1.10
     with device:
         # v1.01: Beim Oeffnen des Anschlusses startet der ESP32 oft neu (CP210x/Windows). Bis er wieder laeuft,
         # gehen gesendete Zeichen verloren. Deshalb zuerst auf das Ende des Starts warten und den Scan-Befehl wiederholen,

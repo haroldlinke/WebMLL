@@ -1,12 +1,13 @@
-# Datei-Version: 1.06 (2026-11-18) - web_esp32_ota.py
+# Datei-Version: 1.07 (2026-11-19) - web_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_esp32_ota.py
 # Path:           _web/web_esp32_ota.py
-# Version:        1.06
-# Last Update:    2026-11-18
+# Version:        1.07
+# Last Update:    2026-11-19
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.07  2026-11-19  WLAN-Einrichtung uebernimmt eigene USB-Verbindung unter vorhandener Port-Sperre
 #   1.00  2026-11-14  Neu: Dialoge fuer ESP32-WLAN und OTA (Firmware hochladen, Ziel waehlen, Reiter OTA, WLAN ueber USB einrichten)
 #   1.01  2026-11-14  Firewall-Hinweis bei "No response from device" (Port 32323)
 #   1.02  2026-11-14  Reiter OTA: Knopf "Minimale Firmware per USB hochladen" (schaltet WLAN und OTA ein, ruft minimal_firmware_handler)
@@ -249,9 +250,9 @@ def open_usb_wifi(controller, on_address):
         status = ui.label()
 
         async def perform(join=False):
-            if controller.is_connection_open() and controller.ARDUINO_current_portname == port.value:
-                status.set_text(tr("Bitte zuerst die bestehende USB-Geräteverbindung trennen."))
-                return
+            # if controller.is_connection_open() and controller.ARDUINO_current_portname == port.value:  # v1.07 (entfallen)
+            # status.set_text(tr("Bitte zuerst die bestehende USB-Geräteverbindung trennen."))  # v1.07 (entfallen)
+            # return  # v1.07 (entfallen)
             if not port.value or (join and not ssid.value):
                 status.set_text(tr("Bitte USB-Port und zum Verbinden den WLAN-Namen auswählen."))
                 return
@@ -259,10 +260,18 @@ def open_usb_wifi(controller, on_address):
                 button.disable()
             status.set_text(tr("ESP32 verbindet sich …") if join else tr("ESP32 sucht WLANs …"))
             try:
-                result = await run.io_bound(
-                    headless_esp32_ota.wifi_usb, port.value,
-                    ssid.value if join else None, password.value if join else "",
-                )
+                # result = await run.io_bound(  # v1.07 (entfallen)
+                # headless_esp32_ota.wifi_usb, port.value,  # v1.07 (entfallen)
+                # ssid.value if join else None, password.value if join else "",  # v1.07 (entfallen)
+                # )  # v1.07 (entfallen)
+                selected_port = port.value  # v1.07
+                selected_ssid, selected_password = ssid.value if join else None, password.value if join else ""  # v1.07
+                def provision():  # v1.07
+                    with controller._conn_lock:  # v1.07
+                        if controller.is_connection_open():  # v1.07
+                            controller.disconnect()  # v1.07
+                        return headless_esp32_ota.wifi_usb(selected_port, selected_ssid, selected_password)  # v1.07
+                result = await run.io_bound(provision)  # v1.07
                 if join:
                     if remember_target(result):
                         on_address(result)

@@ -1,12 +1,14 @@
-# Datei-Version: 4.22 (2026-11-19) - webmobaledlib.py
+# Datei-Version: 4.24 (2026-11-19) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        4.22
+# Version:        4.24
 # Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   4.24  2026-11-19  AutoConnect nach Porterkennung im gespeicherten NiceGUI-Seitenkontext ausfuehren
+#   4.23  2026-11-19  Geraetemanager als Auswahloberflaeche fuer originale AutoConnect-Steuerung
 #   1.39  2026-10-17  Reiter Patterngenerator (Runde 1): Anzeige der Tabelle, Aufbau erst beim ersten Oeffnen (build_patt, _PATT); Kopf eingefuegt; davor bis 1.38 nicht erfasst
 #   1.40  2026-10-17  Patterngenerator Runde 2: Bearbeiten, Werkzeugleiste, Beschreibung, Balken (Module web_pattgen, headless_pattgen)
 #   1.41  2026-10-17  Patterngenerator: lesbare Spalten, Textueberlauf, Balken bei jedem Start (web_pattgen 1.02, headless_pattgen 1.02)
@@ -667,6 +669,8 @@ def start_backend():
         ctrl.attach_tk_root(_hidden_root)       # Uebergang: Tk-Formulare erwarten ein Tk-Widget als Controller
     if os.environ.get("MLL_PRINT_STATUS") == "1":
         ctrl.on_status.append(lambda text, fg: print("STATUS:", text))     # nur zur Fehlersuche: Konsolenausgabe ist langsam
+    from _web.web_devices import DeviceManager  # v4.23
+    ctrl.device_manager = DeviceManager(ctrl, userdata.data_dir())  # v4.23
     ctrl.create_excel_application()
     from headless.headless_proggen import HeadlessProgGeneratorPage
     from _web import web_log
@@ -1936,6 +1940,7 @@ def safe_shutdown():  # v3.24
 
 def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     """Die Seite aufbauen. start_tab: Schluessel des Reiters, der sich oeffnet (Adressen siehe web_tabs); fullscreen: gleich im Vollbild (?vollbild=1)"""  # v1.82
+    page_client = context.client  # v4.24
     t_page = time.monotonic()
     marks = {"t": t_page}
 
@@ -2326,6 +2331,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             connect_arrow = ui.button(icon="arrow_drop_down").props("unelevated dense color=negative")  # v4.14
             with connect_arrow:  # v4.14
                 with ui.menu():  # v4.14
+                    ui.menu_item(tr("Gerätemanager"), on_click=lambda: open_device_manager())  # v4.23
                     ui.menu_item(tr("Verbindung trennen"), on_click=lambda: disconnect_arduino())  # v4.14
                     ui.menu_item(tr("Neu verbinden"), on_click=lambda: reconnect_arduino())  # v4.14
                     ui.menu_item(tr("Board wechseln …"), on_click=lambda: change_board())  # v4.14
@@ -4180,8 +4186,9 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         """fn im Worker-Thread ausfuehren. Dialoge (MsgBox/InputBox) erscheinen waehrenddessen im
         Browser, der Worker wartet auf die Antwort. Waehrenddessen sind weitere Befehle gesperrt."""
         state["busy"] = True
-        web_dialogs.set_bridge(asyncio.get_running_loop(), context.client)
+        # web_dialogs.set_bridge(asyncio.get_running_loop(), context.client)  # v4.24 (entfallen)
         try:
+            web_dialogs.set_bridge(asyncio.get_running_loop(), page_client)  # v4.24
             return await run.io_bound(fn)
         finally:
             web_dialogs.clear_bridge()
@@ -5655,7 +5662,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         await _connect_usb_command()
         after_connect()
 
-    web_dialogs._bridge["auto_connect"] = auto_connect_after_detect  # v4.04
+    async def auto_connect_in_page():  # v4.24
+        with page_client:  # v4.24
+            await auto_connect_after_detect()  # v4.24
+
+    # web_dialogs._bridge["auto_connect"] = auto_connect_after_detect  # v4.24 (entfallen)
+    web_dialogs._bridge["auto_connect"] = auto_connect_in_page  # v4.24
 
     async def connect_arduino():  # v2.01
         settings = headless_esp32_ota.load_settings()
@@ -5686,6 +5698,21 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             pass  # v2.01
         await connect_arduino()  # v2.01
     # ------------------------------------------------------------------ Verbinden beim Start und nach dem Hochladen (v4.14, Issue 20)
+    def open_device_manager():  # v4.23
+        from _web import web_devices  # v4.23
+        ctrl.device_manager.register_wlan(headless_esp32_ota.load_settings())  # v4.23
+        own, _ = _stored_ports()  # v4.23
+        if own:  # v4.23
+            ctrl.device_manager.add("usb", own)  # v4.23
+        web_devices.open_dialog(ctrl.device_manager, after_connect)  # v4.23
+
+    with connect_btn:  # v4.23
+        with ui.context_menu():  # v4.23
+            ui.menu_item(tr("Gerätemanager"), on_click=open_device_manager)  # v4.23
+            ui.menu_item(tr("Verbindung trennen"), on_click=lambda: disconnect_arduino())  # v4.23
+            ui.menu_item(tr("Neu verbinden"), on_click=lambda: reconnect_arduino())  # v4.23
+            ui.menu_item(tr("Board wechseln …"), on_click=lambda: change_board())  # v4.23
+
     async def disconnect_arduino():  # v4.14
         """Verbindung trennen und merken, dass beim naechsten Start nicht automatisch verbunden werden soll"""  # v4.14
         await run_command(lambda: ctrl.disconnect(), "Trennen")()  # v4.14
@@ -5731,13 +5758,24 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         finally:  # v4.14
             ctrl.quiet, ctrl.dtr_override = False, None  # v4.14
 
+    def connect_managed_device(device):  # v4.23
+        if device["kind"] == "wlan":  # v4.23
+            return _silent_connect(esp32=(device["address"], ctrl.device_manager._password(device)))  # v4.23
+        if device["kind"] == "ip":  # v4.23
+            return _silent_connect(port="IP:" + device["address"], wlan=False)  # v4.23
+        return _silent_connect(port=device["address"], wlan=False, dtr=True if device.get("board") == "Pico" else None)  # v4.23
+
+    ctrl.device_manager.connector = connect_managed_device  # v4.23
+
     def _search_lichtmaschine(own_port, other_port):  # v4.14
         """Genau eine angeschlossene Lichtmaschine (Nano, ESP32 oder Pico) suchen: (Anschluss, Typ) oder None. Der Anschluss der anderen Seite (LNet/DCC) wird ausgelassen."""  # v4.14
         import proggen.M07_COM_Port as _M07  # v4.14
         cands = []  # v4.14
         try:  # v4.14
             from serial.tools import list_ports as _lp  # v4.14
-            for cp in _lp.comports(include_links=False):  # v4.14
+            for cp in _lp.comports(include_links=False):
+                if "usb:" + ctrl.device_manager.normalize_address("usb", cp.device) in ctrl.device_manager.ignored:  # v4.23
+                    continue  # v4.23  # v4.14
                 if os.name != "nt" and re.match(r"^/dev/ttyS\d+$", str(cp.device)) and str(cp.hwid).strip().lower() in ("n/a", ""):  # v4.14
                     continue  # v4.14
                 t = _M07.Classify_Port(cp)  # v4.14
@@ -5779,6 +5817,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             if not state["busy"]:  # v4.14
                 break  # v4.14
             await asyncio.sleep(0.1)  # v4.14
+        if state["busy"]:  # v4.23
+            return  # v4.23
         last = str(ctrl.getConfigData("LastConnected") or "").strip() == "1"  # v4.14
         own_port, other_port = _stored_ports()  # v4.14
         target = None  # v4.14
@@ -5788,7 +5828,12 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             logger.debug("WLAN-Ziel nicht ermittelbar", exc_info=True)  # v4.14
         logger.info("Automatisch verbinden: letzte Verbindung aktiv=%s, Anschluss '%s', LNet/DCC '%s', WLAN-Ziel %s", last, own_port, other_port, target[0] if target else "-")  # v4.14
         ok, what = False, ""  # v4.14
-        if last and (target or _port_present(own_port)):  # v4.14
+        preferred = ctrl.device_manager.start_device(last)  # v4.23
+        if preferred:  # v4.23
+            what = ctrl.device_manager.devices[preferred]["address"]  # v4.23
+            ok = await run.io_bound(ctrl.device_manager.connect, preferred)  # v4.23
+        # if last and (target or _port_present(own_port)):  # v4.23 (entfallen)
+        if not ok and last and (target or _port_present(own_port)):  # v4.23
             what = target[0] if target else own_port  # v4.14
             ok = await run.io_bound(_silent_connect, None if target else own_port, True if target else False)  # v4.14: mit WLAN-Ziel zuerst WLAN (dann USB), sonst USB am eingestellten Anschluss
         if not ok and not ctrl.is_connection_open():  # v4.14
@@ -5819,6 +5864,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             if not state["busy"]:  # v4.14
                 break  # v4.14
             await asyncio.sleep(0.1)  # v4.14
+        if state["busy"]:  # v4.23
+            return  # v4.23
         host = info.get("host") or ""  # v4.14
         ok = False  # v4.14
         if host:  # v4.14: der ESP32 startet nach dem Update neu: einige Sekunden warten, dann bis zu 5 Versuche
@@ -5832,7 +5879,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         else:  # v4.14: Nano, ESP32 und Pico per USB: der Arduino startet nach dem Hochladen neu
             await asyncio.sleep(2)  # v4.14
             for _ in range(2):  # v4.14
-                ok = await run.io_bound(_silent_connect, None, False, None)  # v4.14
+                ok = await run.io_bound(_silent_connect, info.get("port") or None, False, None)  # v4.23
                 if ok:  # v4.14
                     break  # v4.14
                 await asyncio.sleep(2)  # v4.14
@@ -5952,6 +5999,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         await run_command(transfer, "ESP32-Setup übertragen")()
 
     headless_esp32_ota.sheet_provider = lambda: state["ws"]  # v3.40: WLAN-Einstellungen gehoeren zum aktiven Blatt
+    ctrl.device_manager.register_wlan(headless_esp32_ota.load_settings())  # v4.23
 
     minimal_state = {"running": False}  # v3.40a
 
@@ -6067,6 +6115,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ("Verbinden", connect_arduino),  # v1.86
             # ("Trennen", run_command(lambda: ctrl.disconnect(), "Trennen")),  # v4.14 (entfallen: merkt jetzt, dass nicht automatisch verbunden wird)
             ("Trennen", disconnect_arduino),  # v4.14
+            ("Gerätemanager", open_device_manager),  # v4.23
             ("Neu verbinden", reconnect_arduino),  # v4.14
             ("Board wechseln …", change_board),  # v4.14
             ("Alle LED aus", run_command(lambda: ctrl.led_off(), "Alle LED aus")),
