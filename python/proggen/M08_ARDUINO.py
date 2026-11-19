@@ -1,12 +1,13 @@
-# Datei-Version: 1.24 (2026-11-19) - M08_ARDUINO.py
+# Datei-Version: 1.25 (2026-11-19) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.24
+# Version:        1.25
 # Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.25  2026-11-19  USB-Zielanschluss in originalem Last_Upload fuer Rueckverbindung merken
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
 #   1.02  2026-10-26  Entwickler: PlatformIO (Create_PIO_Build_cmd, platformio.ini, Start_Arduino.cmd); Claude: PlatformIO auch fuer Linux, macOS und Raspberry Pi (Ordner bin statt Scripts, Find_PIO, PIO_Version), PATH nur einmal ergaenzt, verstaendliche Meldung wenn pio fehlt, platformio.ini wird beim Hochladen mit PlatformIO mit den aktuellen Einstellungen geschrieben
@@ -2506,7 +2507,7 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
         Debug.Print('Compile and upload duration: ' + P01.Format(P01.Time() - Start, 'hh:mm:ss'))
         M30.Show_Status_for_a_while(M09.Get_Language_Str('Programm erfolgreich hochgeladen. Kompilieren und Hochladen dauerte ') + P01.Format(P01.Time() - Start, 'hh:mm:ss'), '00:02:00')
         PG.global_controller.showFramebyName("ProgGeneratorPage")
-        Last_Upload.update(ok=(not CreateFilesOnly), host='')  # v1.24: Hochladen per USB geklappt
+        Last_Upload.update(ok=(not CreateFilesOnly), host='', port=str(ComPort))   # v1.25
         fn_return_value = True                                                         # VBA: Compile_and_Upload_Prog_to_Arduino = True (fehlte in der Umstellung: 'R OK' wurde nie gesetzt)  # v1.10
         return fn_return_value  # v1.10
         
@@ -2567,7 +2568,7 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
             log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))  # v1.22
             headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)  # v1.22
             log.add_text_to_textwindow(tr("USB-Upload erfolgreich."), highlight="OK")  # v1.22
-            Last_Upload.update(ok=True, host='')  # v1.24
+            Last_Upload.update(ok=True, host='', port=str(port))   # v1.25
             return  # v1.22
         log.add_text_to_textwindow(tr("Firmware wird per WLAN übertragen …"))  # v1.22
         result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)  # v1.22

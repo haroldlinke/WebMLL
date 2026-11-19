@@ -1,12 +1,13 @@
-# Datei-Version: 1.10 (2026-11-12) - headless_app_controller.py
+# Datei-Version: 1.11 (2026-11-19) - headless_app_controller.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_app_controller.py
 # Path:           headless/headless_app_controller.py
-# Version:        1.10
-# Last Update:    2026-11-12
+# Version:        1.11
+# Last Update:    2026-11-19
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.11  2026-11-19  Aktive Verbindung vor dem Trennen beim Beenden sichern
 #   1.09  2026-11-08  Die Suche nach der ARDUINO IDE schreibt keine Warnung mehr ins Protokoll, wenn PlatformIO installiert ist (Standard seit 2.92): dann nur eine Info (fruehere Versionen ohne Eintrag)
 #   1.10  2026-11-12  ARDUINOTest wird bei jedem Zugriff aus den Einstellungen gelesen (Eigenschaft); vorher einmal beim Start: das Einschalten von 'Test ARDUINO Programm Creation' wirkte erst nach einem Neustart (Rueckmeldung des Entwicklers zu 3.22: es kamen keine Fragen)
 # ----------------------------------------------------------------------------------------------
@@ -324,6 +325,9 @@ class HeadlessAppController(SerialMixin, HeadlessController):
         temporaere Workbook-JSON speichern. (Fensterposition und persistente Makroparameter
         gibt es im Web nicht.)"""
         import ExcelAPI.XLA_Application as P01
+        manager = getattr(self, "device_manager", None)  # v1.11
+        if manager is not None:  # v1.11
+            manager.shutdown()  # v1.11
         try:
             if self.is_connection_open():
                 self.disconnect()                # LEDs aus, "#X" senden, Port schliessen

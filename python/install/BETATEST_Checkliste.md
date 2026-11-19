@@ -1,5 +1,9 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 3.11 (2026-11-19), gilt für webMobaLedLib 4.22*
+*Datei-Version: 3.12 (2026-11-19), gilt für webMobaLedLib 4.22*
+
+## Gerätemanager auf 4.22
+
+- [ ] Gerätenamen, Löschen, Startvorwahl und AutoConnect aus/an prüfen. USB-/WLAN-Wechsel sowie Verbindung nach Porterkennung und nach Upload testen.
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.

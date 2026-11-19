@@ -1,5 +1,9 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.22 (2026-11-19), gilt für webMobaLedLib 4.22*
+*Datei-Version: 4.23 (2026-11-19), gilt für webMobaLedLib 4.22*
+
+## Gerätemanager auf 4.22
+
+Unter **Lichtmaschine → Gerätemanager** sowie am Pfeil- und Rechtsklickmenü des Verbindungsknopfs wählst du Geräte aus. **Umbenennen**, **Gerät löschen** und eine Startvorwahl sind verfügbar. Die Programmeinstellung **Automatisch mit der Lichtmaschine verbinden** steuert Start und Rückverbindung nach Upload.
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
