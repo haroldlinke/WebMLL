@@ -1,12 +1,15 @@
-# Datei-Version: 1.01 (2026-11-19) - M42_Dyn_Config.py
+# Datei-Version: 1.04 (2026-11-22) - M42_Dyn_Config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M42_Dyn_Config.py
 # Path:           proggen/M42_Dyn_Config.py
-# Version:        1.01
-# Last Update:    2026-11-19
+# Version:        1.04
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.04  2026-11-22  Bei fehlender END-Antwort ueber WLAN gespeicherte Konfiguration nach Neustart verifizieren
+#   1.03  2026-11-22  PlatformIO: AVR-Werkzeuge ohne Arduino-IDE-Suche ermitteln
+#   1.02  2026-11-22  ESP32-WLAN ueber vorhandenen Geraetekanal; Wiederholungen nach OTA-Neustart
 #   1.01  2026-11-19  Ausgabefenster: Der schnelle Weg zeigt, dass nur die Konfiguration uebertragen wird, den Fortschritt (25-%-Schritte) und die Fertigstellung; bei einem Rueckfall auf das ganze Programm steht der Grund da (Zeilen mit '# v1.01')
 #   1.00  2026-11-19  Neu: ESP32 und Pico: Das Programm wird nur noch hochgeladen, wenn sich Quellcode, Erweiterungen oder Einstellungen aendern; sonst geht nur die Konfiguration
 #                     ueber die serielle Schnittstelle zum Geraet (Einstellung 'serial_cfg'). Die Arbeit steckt in headless/headless_dyn_config.py
@@ -78,14 +81,15 @@ def _tools():
     if not _state["tools_checked"]:
         _state["tools_checked"] = True
         extra_bin, extra_plat = [], []
-        try:
-            import proggen.M08_ARDUINO as M08
-            ide = M30.FilePath(M08.Find_ArduinoExe())
-            if ide:
-                extra_bin.append(os.path.join(ide, "hardware", "tools", "avr", "bin"))
-                extra_plat.append(os.path.join(ide, "hardware", "arduino", "avr"))
-        except BaseException:                              # noqa: BLE001
-            pass
+        if not M28.Is_PlatformIO():  # v1.03: IDE-Suche darf bei PlatformIO keinen Dialog oeffnen
+            try:
+                import proggen.M08_ARDUINO as M08
+                ide = M30.FilePath(M08.Find_ArduinoExe())
+                if ide:
+                    extra_bin.append(os.path.join(ide, "hardware", "tools", "avr", "bin"))
+                    extra_plat.append(os.path.join(ide, "hardware", "arduino", "avr"))
+            except BaseException:                              # noqa: BLE001
+                pass
         tools = DC.find_avr_tools(extra_bin, extra_plat)
         if tools is None:
             try:
@@ -101,8 +105,9 @@ def _tools():
     return _state["tools"]
 
 
-def Decide(CreateFilesOnly, HeaderOnly):
+def Decide(CreateFilesOnly, HeaderOnly, firmware_key=""):  # v1.02
     """Soll die Kopfdatei im Modus MLL_DYNAMIC_CONFIG geschrieben werden?"""
+    _state["firmware_key"] = firmware_key  # v1.02
     _state["active"] = False
     _state["output"] = False  # v1.01
     off = _state["off"]
@@ -116,8 +121,10 @@ def Decide(CreateFilesOnly, HeaderOnly):
     port = P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL)
     if not M28.Is_PlatformIO():
         why = "nur mit PlatformIO moeglich"
-    elif _is_ip(port) or (board == M02.HT_ESP32 and P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL + 1) not in ("", None)):
-        why = "nicht beim Hochladen per WLAN (IP-Adresse)"
+    # elif _is_ip(port) or (board == M02.HT_ESP32 and P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL + 1) not in ("", None)):  # v1.02 (entfallen)
+        # why = "nicht beim Hochladen per WLAN (IP-Adresse)"  # v1.02 (entfallen)
+    elif board == M02.HT_PICO and _is_ip(port):  # v1.02: Pico-WLAN bleibt beim bisherigen Weg
+        why = "Pico-Konfiguration nur ueber USB"  # v1.02
     elif _tools() is None:
         why = "die AVR-Werkzeuge (avr-g++ und Arduino-Kern) fehlen"
     if why:
@@ -146,6 +153,9 @@ def Finalize(header_path):
         with open(header_path, "rb") as fh:
             raw = fh.read()
         sig = DC.compute_signature(raw.decode("utf-8", errors="replace"), sketch_dir, header_path, project_dir, os.path.join(project_dir, "platformio.ini"), env)
+        if _state.get("firmware_key"):  # v1.02: WLAN-Einstellungen gehoeren zur Firmware
+            import hashlib  # v1.02
+            sig = hashlib.sha256((sig + _state["firmware_key"]).encode("utf-8")).hexdigest()[:16]  # v1.02
         workdir = os.path.join(project_dir, M02.Cfg_Dir_LED.strip("/\\"), "dyn")
         blob = DC.build_blob(sketch_dir, _lib_src(project_dir), _state["tools"], workdir, sig)
         blob_file = os.path.join(workdir, "mllcfg.bin")
@@ -255,13 +265,47 @@ def _fallback(text, **values):  # v1.01
     return False  # v1.01
 
 
-def Try_Config_Only(ComPort):
+# def Try_Config_Only(ComPort):  # v1.02 (entfallen)
+def _send_config(link, blob, host="", password=""):  # v1.04
+    done = [0]  # v1.04
+    report = _progress()  # v1.04
+    def progress(pos, total):  # v1.04
+        done[0] = pos  # v1.04
+        report(pos, total)  # v1.04
+    try:  # v1.04
+        DC.send_blob(link, blob, progress)  # v1.04
+        return  # v1.04
+    except (DC.DynConfigError, OSError):  # v1.04
+        if not host or done[0] != len(blob):  # v1.04
+            raise  # v1.04
+        link.close()  # v1.04
+        # END kann bereits gespeichert und den Neustart ausgeloest haben.  # v1.04
+        deadline = time.monotonic() + 25.0  # v1.04
+        while time.monotonic() < deadline:  # v1.04
+            check = None  # v1.04
+            try:  # v1.04
+                check = DC.TcpLink(host, password)  # v1.04
+                info = DC.query_info(check, 2.0)  # v1.04
+                if info and info.get("sig") == _state["sig"] and info.get("valid") == "1" and info.get("cfg") == "%08x" % DC.blob_crc(blob):  # v1.04
+                    log.info("Konfiguration nach fehlender END-Antwort ueber WLAN verifiziert (Signatur und CRC)")  # v1.04
+                    return  # v1.04
+            except (DC.DynConfigError, OSError):  # v1.04
+                pass  # v1.04
+            finally:  # v1.04
+                if check is not None:  # v1.04
+                    check.close()  # v1.04
+            time.sleep(0.5)  # v1.04
+        raise  # v1.04: ohne gueltigen Nachweis bleibt die Uebertragung fehlgeschlagen
+
+
+def Try_Config_Only(ComPort, *, host="", password=""):  # v1.02
     """True wenn das Geraet die Firmware dieser Kopfdatei hat und die Konfiguration uebertragen wurde (oder schon aktuell ist). Sonst False: dann das ganze Programm hochladen."""
     blob = _state["blob"]
     t0 = time.time()  # v1.01
     _open_output()  # v1.01
     try:
-        link = DC.Link(ComPort, dtr=_state["pico"])
+        # link = DC.Link(ComPort, dtr=_state["pico"])  # v1.02 (entfallen)
+        link = DC.TcpLink(host, password) if host else DC.Link(ComPort, dtr=_state["pico"])  # v1.02
     except Exception as e:                                 # noqa: BLE001
         log.info("Konfiguration getrennt: Anschluss %s nicht zu oeffnen (%s) - ganzes Programm", ComPort, e)
         return _fallback("Der Anschluss {port} lässt sich nicht öffnen ({reason}). Es wird das ganze Programm hochgeladen.", port=ComPort, reason=e)  # v1.01
@@ -281,34 +325,60 @@ def Try_Config_Only(ComPort):
             return True
         _status("Die Konfiguration wird uebertragen ...")
         _out(_t("Die Firmware im Gerät passt. Das Programm wird nicht neu hochgeladen, es wird nur die Konfiguration übertragen ({n} Bytes).", n=len(blob)))  # v1.01
-        DC.send_blob(link, blob, _progress())  # v1.01
+        # DC.send_blob(link, blob, _progress())  # v1.04 (entfallen)
+        _send_config(link, blob, host, password)  # v1.04
         log.info("Konfiguration getrennt: %d Bytes uebertragen, das Geraet startet neu", len(blob))
         _out(_t("Fertig: Die Konfiguration wurde in {seconds} s übertragen, das Gerät startet neu.", seconds="%.1f" % (time.time() - t0)), "OK")  # v1.01
         return True
-    except DC.DynConfigError as e:
+    # except DC.DynConfigError as e:  # v1.02 (entfallen)
+    except (DC.DynConfigError, OSError) as e:  # v1.02
         log.warning("Konfiguration getrennt: %s - ganzes Programm", e)
         return _fallback("Die Konfiguration konnte nicht übertragen werden ({reason}). Es wird das ganze Programm hochgeladen.", reason=e)  # v1.01
     finally:
         link.close()
 
 
-def After_Full_Flash(ComPort):
+# def After_Full_Flash(ComPort):  # v1.02 (entfallen)
+def After_Full_Flash(ComPort, *, host="", password=""):  # v1.02
     """Nach dem Flashen die Konfiguration schicken. True wenn sie im Geraet angekommen ist."""
     blob = _state["blob"]
     t0 = time.time()  # v1.01
     _out("")  # v1.01
     _out(_t("Das Programm ist hochgeladen. Jetzt wird die Konfiguration übertragen ..."))  # v1.01
-    port = DC.wait_for_port(ComPort, _state["pico"], 25.0)
-    if port is None:
-        log.warning("Konfiguration getrennt: der Anschluss %s erscheint nach dem Hochladen nicht wieder", ComPort)
-        _out(_t("Der Anschluss {port} erscheint nach dem Hochladen nicht wieder. Die Konfiguration wurde nicht übertragen.", port=ComPort), "Error")  # v1.01
-        return False
-    try:
-        link = DC.Link(port, dtr=_state["pico"])
-    except Exception as e:                                 # noqa: BLE001
-        log.warning("Konfiguration getrennt: Anschluss %s nicht zu oeffnen: %s", port, e)
-        _out(_t("Der Anschluss {port} lässt sich nicht öffnen ({reason}). Die Konfiguration wurde nicht übertragen.", port=port, reason=e), "Error")  # v1.01
-        return False
+    # port = DC.wait_for_port(ComPort, _state["pico"], 25.0)  # v1.02 (entfallen)
+    # if port is None:  # v1.02 (entfallen)
+        # log.warning("Konfiguration getrennt: der Anschluss %s erscheint nach dem Hochladen nicht wieder", ComPort)  # v1.02 (entfallen)
+        # _out(_t("Der Anschluss {port} erscheint nach dem Hochladen nicht wieder. Die Konfiguration wurde nicht übertragen.", port=ComPort), "Error")  # v1.01  # v1.02 (entfallen)
+        # return False  # v1.02 (entfallen)
+    # try:  # v1.02 (entfallen)
+        # link = DC.Link(port, dtr=_state["pico"])  # v1.02 (entfallen)
+    # except Exception as e:                                 # noqa: BLE001  # v1.02 (entfallen)
+        # log.warning("Konfiguration getrennt: Anschluss %s nicht zu oeffnen: %s", port, e)  # v1.02 (entfallen)
+        # _out(_t("Der Anschluss {port} lässt sich nicht öffnen ({reason}). Die Konfiguration wurde nicht übertragen.", port=port, reason=e), "Error")  # v1.01  # v1.02 (entfallen)
+        # return False  # v1.02 (entfallen)
+    if host:  # v1.02
+        deadline = time.monotonic() + 30.0  # v1.02
+        while True:  # v1.02
+            try:  # v1.02
+                link = DC.TcpLink(host, password)  # v1.02
+                break  # v1.02
+            except (OSError, DC.DynConfigError):  # v1.02
+                if time.monotonic() >= deadline:  # v1.02
+                    _out(_t("Die Konfiguration konnte nicht übertragen werden ({reason}).", reason="WLAN-Verbindung nach Neustart nicht verfuegbar"), "Error")  # v1.02
+                    return False  # v1.02
+                time.sleep(0.5)  # v1.02
+    else:  # v1.02
+        port = DC.wait_for_port(ComPort, _state["pico"], 25.0)  # v1.02
+        if port is None:  # v1.02
+            log.warning("Konfiguration getrennt: der Anschluss %s erscheint nach dem Hochladen nicht wieder", ComPort)  # v1.02
+            _out(_t("Der Anschluss {port} erscheint nach dem Hochladen nicht wieder. Die Konfiguration wurde nicht übertragen.", port=ComPort), "Error")  # v1.01  # v1.02
+            return False  # v1.02
+        try:  # v1.02
+            link = DC.Link(port, dtr=_state["pico"])  # v1.02
+        except Exception as e:                                 # noqa: BLE001  # v1.02
+            log.warning("Konfiguration getrennt: Anschluss %s nicht zu oeffnen: %s", port, e)  # v1.02
+            _out(_t("Der Anschluss {port} lässt sich nicht öffnen ({reason}). Die Konfiguration wurde nicht übertragen.", port=port, reason=e), "Error")  # v1.01  # v1.02
+            return False  # v1.02
     try:
         _status("Die Konfiguration wird uebertragen ...")
         info = DC.query_info(link, 20.0)
@@ -318,12 +388,15 @@ def After_Full_Flash(ComPort):
             return False
         if info.get("sig") != _state["sig"]:
             log.warning("Konfiguration getrennt: Firmware %s statt %s", info.get("sig"), _state["sig"])
+            return False  # v1.02: keine fremde Konfiguration senden
         _out(_t("Die Konfiguration wird übertragen ({n} Bytes) ...", n=len(blob)))  # v1.01
-        DC.send_blob(link, blob, _progress())  # v1.01
+        # DC.send_blob(link, blob, _progress())  # v1.04 (entfallen)
+        _send_config(link, blob, host, password)  # v1.04
         log.info("Konfiguration getrennt: %d Bytes uebertragen, das Geraet startet neu", len(blob))
         _out(_t("Fertig: Die Konfiguration wurde in {seconds} s übertragen, das Gerät startet neu.", seconds="%.1f" % (time.time() - t0)), "OK")  # v1.01
         return True
-    except DC.DynConfigError as e:
+    # except DC.DynConfigError as e:  # v1.02 (entfallen)
+    except (DC.DynConfigError, OSError) as e:  # v1.02
         log.warning("Konfiguration getrennt: %s", e)
         _out(_t("Die Konfiguration konnte nicht übertragen werden ({reason}).", reason=e), "Error")  # v1.01
         return False

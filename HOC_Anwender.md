@@ -1,9 +1,22 @@
-Datei-Version: 1.51 (2026-11-21) - HOC_Anwender.md
+Datei-Version: 1.52 (2026-11-22) - HOC_Anwender.md
 Stand: webMobaLedLib 4.67
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Ergänzung zu 4.67 – ESP32-Konfiguration über WLAN (2026-11-22)
+
+Neue Funktionen:
+- Mit PlatformIO und aktiviertem „Schnelles Update“ lassen sich ESP32-Konfigurationen über WLAN übertragen, ohne jedes Mal die Firmware zu kompilieren.
+- Ist die Konfiguration unverändert, muss nichts übertragen werden. Bei erforderlichem Firmwarewechsel folgt die Konfiguration automatisch auf den vollständigen Upload.
+
+Korrekturen:
+- Der ESP32-Neustart nach dem Speichern erfolgt verzögert; danach greift die bestehende automatische Geräteverbindung.
+- Bei verlorener Abschlussantwort wird die gespeicherte Konfiguration anhand von Signatur und Prüfsumme überprüft.
+- Mit PlatformIO erscheint keine unnötige Nachfrage nach der Arduino-IDE.
+
+Einmal muss die angepasste Firmware übertragen werden. Danach gelten die bisherigen WLAN-Einstellungen und das OTA-Passwort. USB bleibt verfügbar; Pico nutzt weiterhin USB. Mehrere WLAN-Konfigurationsupdates und die erneute Verbindung wurden vom Anwender bestätigt.
 
 ## Version 4.67 (2026-11-21)
 

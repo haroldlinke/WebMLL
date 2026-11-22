@@ -1,12 +1,13 @@
-# Datei-Version: 1.43 (2026-11-21) - web_form_options.py
+# Datei-Version: 1.44 (2026-11-22) - web_form_options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_options.py
 # Path:           _web/web_form_options.py
-# Version:        1.43
-# Last Update:    2026-11-21
+# Version:        1.44
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.44  2026-11-22  Hinweis fuer schnelle ESP32-Konfiguration ueber WLAN
 #   1.18  2026-11-12  Excel-Programm 3.5.0L3: Der Knopf Firmware installieren steht fuer ALLE Boards im Reiter LED ARDUINO (vorher nur beim Raspberry Pi Pico und nur mit Firmware-Dateien im Ordner); der Firmware-Ordner wird bei Bedarf angelegt (fruehere Versionen ohne Eintrag)
 #   1.19  2026-11-12  Excel-Programm 3.5.0L3: Firmware installieren oeffnet die Auswahl auch ohne Firmware-Dateien; der Knopf Firmware laden holt Firmware aus dem Internet (web_form_firmware_download, headless_firmware_dl) und waehlt sie danach vor
 #   1.20  2026-11-12  Reiter LED ARDUINO: der Kommentar zum Knopf Firmware installieren steht unter dem Knopf (schmal) statt daneben; die Auswahl des Boards behaelt ihre Breite (keine umbrochenen Beschriftungen) und rutscht auf schmalen Bildschirmen unter die Knoepfe
@@ -759,7 +760,8 @@ def make_class(Base):
                              "texts": [tr("Das Programm webMobaLedLib selbst aktualisieren: Menü Hilfe → Update webMobaLedLib …")],  # v1.07
                              "arduino_text": tr("ARDUINO-IDE (Standard)"), "pio_text": tr("PlatformIO (Ersatz für die ARDUINO-IDE)"),  # v1.04
                              "serial_cfg_text": tr("Schnelles Update: nur geänderte Konfiguration übertragen (ESP32/Pico)"),  # v1.39
-                             "serial_cfg_hint": tr("Übertragen werden nur Änderungen an der Konfiguration, also Makros, Farben und Startwerte. Das dauert wenige Sekunden. Das Programm selbst wird nur beim ersten Mal oder nach Änderungen an Programm, Erweiterungen, LED-Anzahl oder Pins neu übertragen. Arduino Nano und Uno sind nicht betroffen. Nur mit PlatformIO und USB."),  # v1.39
+                    # "serial_cfg_hint": tr("Übertragen werden nur Änderungen an der Konfiguration, also Makros, Farben und Startwerte. Das dauert wenige Sekunden. Das Programm selbst wird nur beim ersten Mal oder nach Änderungen an Programm, Erweiterungen, LED-Anzahl oder Pins neu übertragen. Arduino Nano und Uno sind nicht betroffen. Nur mit PlatformIO und USB."),  # v1.39 (entfallen)
+                             "serial_cfg_hint": tr("Überträgt nur die Konfiguration, wenn die Firmware passt. Mit PlatformIO: ESP32 über USB oder WLAN, Pico über USB. Bei geänderter Firmware wird vollständig hochgeladen. Arduino Nano und Uno sind nicht betroffen."),  # v1.39  # v1.44
                              "status": (tr("PlatformIO gefunden: {pfad}", pfad=pio) if pio else  # v1.04
                                         # tr("PlatformIO wurde nicht gefunden. Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio)")),  # v1.05 (entfallen)
                                         tr("PlatformIO wurde nicht gefunden. Installation: {hinweis}", hinweis=tr(M08.PIO_Install_Hint()))),  # v1.05

@@ -1,4 +1,6 @@
 // MLLDynConfig.h - Konfiguration getrennt vom Programm (nur ESP32 und Pico)
+// Version 1.04 (2026-11-22): ESP32-Neustart nach Konfiguration aus Hauptschleife statt MLLTask auf Core 0.
+// Version 1.03 (2026-11-22): Konfigurationsprotokoll ueber USB oder authentifizierten WLAN-Stream.
 // Version 1.02 (2026-11-19): Dateiformat 5 mit Abschnitt 'Parameter': LED Anzahl, LEDs je LED Kanal, ControllerCount und Controller-Tabelle (Pin, erste LED, LED-Anzahl je FastLED-Controller),
 //                           LEDS_PER_CHANNEL, START_MSG und Start/Anzahl der Send-Inputs kommen aus der Konfigurationsdatei. SETUP_FASTLED() legt die Controller in einer Schleife
 //                           ueber mllControllerConfig[] an (MllAddLeds). Zeilen mit '// v1.02'. Die ATmega Varianten benutzen diese Datei nicht (nur mit MLL_DYNAMIC_CONFIG).
@@ -312,11 +314,14 @@ static void MllRxAbort()
 }
 
 //----------------------------------------
-static void MllCfgErr(const __FlashStringHelper *Reason)
+// static void MllCfgErr(const __FlashStringHelper *Reason) // v1.03 (entfallen)
+static void MllCfgErr(Stream &port, const __FlashStringHelper *Reason) // v1.03
 //----------------------------------------
 {
-  Serial.print(F("~MLLCFG ERR "));
-  Serial.println(Reason);
+//   Serial.print(F("~MLLCFG ERR ")); // v1.03 (entfallen)
+//   Serial.println(Reason); // v1.03 (entfallen)
+  port.print(F("~MLLCFG ERR ")); // v1.03
+  port.println(Reason); // v1.03
 }
 
 //---------------------------------------
@@ -330,27 +335,41 @@ static int MllHexVal(char c)
 }
 
 //------------------------------------------
-static void MllRestart()
-//------------------------------------------
+// static void MllRestart() // v1.03 (entfallen)
+static volatile bool mllCfgRestartPending = false; // v1.04
+static uint32_t mllCfgRestartAt = 0; // v1.04
+
+static void MllCfgPollRestart() // v1.04
 {
-  Serial.flush();
+#ifdef ESP32
+  if (mllCfgRestartPending && (int32_t)(millis() - mllCfgRestartAt) >= 0) ESP.restart(); // v1.04
+#endif
+}
+
+static void MllRestart(Stream &port) // v1.04
+{
+#ifdef ESP32
+  // ESP.restart(); // v1.04 (entfallen: Empfang laeuft auf Core 0, Neustart in loop auf Core 1)
+  mllCfgRestartAt = millis() + 750; // v1.04: Zeit fuer TCP-Abschlussantwort
+  mllCfgRestartPending = true; // v1.04: nach dem Termin setzen
+#else
+  port.flush();
   delay(300);
-  #ifdef ESP32
-    ESP.restart();
-  #else
-    rp2040.restart();
-  #endif
+  rp2040.restart();
+#endif
 }
 
 //-------------------------------------------
-static void MllCfgProcessLine(char *Line)
+// static void MllCfgProcessLine(char *Line) // v1.03 (entfallen)
+static void MllCfgProcessLine(Stream &port, char *Line) // v1.03
 //-------------------------------------------
 {
   if (strcmp(Line, "INFO") == 0)
      {
      char s[120];
      sprintf(s, "~MLLCFG INFO proto=2 sig=%s cfg=%08lx valid=%d free=%lu", MLL_FIRMWARE_SIG, (unsigned long)mllDyn.id, mllDyn.valid ? 1 : 0, (unsigned long)(MllFsBegin() ? MllFsFreeBytes() : 0));
-     Serial.println(s);
+//      Serial.println(s); // v1.03 (entfallen)
+     port.println(s); // v1.03
      }
   else if (strncmp(Line, "BEGIN ", 6) == 0)
      {
@@ -358,47 +377,60 @@ static void MllCfgProcessLine(char *Line)
      char *End;
      uint32_t Size = strtoul(Line + 6, &End, 10);
      uint32_t Crc  = strtoul(End, NULL, 16);
-     if (Size < MLL_CFG_HEADER_SIZE)                  { MllCfgErr(F("size"));  return; }
-     if (!MllFsBegin())                               { MllCfgErr(F("fs"));    return; }
-     if (Size + 4096 > MllFsFreeBytes())              { MllCfgErr(F("full"));  return; }
+//      if (Size < MLL_CFG_HEADER_SIZE)                  { MllCfgErr(F("size"));  return; } // v1.03 (entfallen)
+//      if (!MllFsBegin())                               { MllCfgErr(F("fs"));    return; } // v1.03 (entfallen)
+//      if (Size + 4096 > MllFsFreeBytes())              { MllCfgErr(F("full"));  return; } // v1.03 (entfallen)
+     if (Size < MLL_CFG_HEADER_SIZE)                  { MllCfgErr(port, F("size"));  return; } // v1.03
+     if (!MllFsBegin())                               { MllCfgErr(port, F("fs"));    return; } // v1.03
+     if (Size + 4096 > MllFsFreeBytes())              { MllCfgErr(port, F("full"));  return; } // v1.03
      mllRxFile = LittleFS.open(MLL_CFG_TMP, "w");
-     if (!mllRxFile)                                  { MllCfgErr(F("open"));  return; }
+//      if (!mllRxFile)                                  { MllCfgErr(F("open"));  return; } // v1.03 (entfallen)
+     if (!mllRxFile)                                  { MllCfgErr(port, F("open"));  return; } // v1.03
      mllRxActive = true;
      mllRxSize = Size; mllRxCrcExp = Crc; mllRxPos = 0; mllRxCrc = 0;
-     Serial.println(F("~MLLCFG READY"));
+//      Serial.println(F("~MLLCFG READY")); // v1.03 (entfallen)
+     port.println(F("~MLLCFG READY")); // v1.03
      }
   else if (strncmp(Line, "DATA ", 5) == 0)
      {
-     if (!mllRxActive)                                { MllCfgErr(F("nobegin")); return; }
+//      if (!mllRxActive)                                { MllCfgErr(F("nobegin")); return; } // v1.03 (entfallen)
+     if (!mllRxActive)                                { MllCfgErr(port, F("nobegin")); return; } // v1.03
      char *End;
      uint32_t Pos = strtoul(Line + 5, &End, 10);
-     if (Pos != mllRxPos)                             { MllCfgErr(F("pos"));   return; }
+//      if (Pos != mllRxPos)                             { MllCfgErr(F("pos"));   return; } // v1.03 (entfallen)
+     if (Pos != mllRxPos)                             { MllCfgErr(port, F("pos"));   return; } // v1.03
      while (*End == ' ') End++;
      size_t Len = strlen(End);
      uint8_t Buf[MLL_CFG_LINE_MAX / 2];
-     if ((Len & 1) || Len / 2 > sizeof(Buf) || mllRxPos + Len / 2 > mllRxSize) { MllCfgErr(F("len")); return; }
+//      if ((Len & 1) || Len / 2 > sizeof(Buf) || mllRxPos + Len / 2 > mllRxSize) { MllCfgErr(F("len")); return; } // v1.03 (entfallen)
+     if ((Len & 1) || Len / 2 > sizeof(Buf) || mllRxPos + Len / 2 > mllRxSize) { MllCfgErr(port, F("len")); return; } // v1.03
      for (size_t i = 0; i < Len; i += 2)
         {
         int h = MllHexVal(End[i]), l = MllHexVal(End[i + 1]);
-        if (h < 0 || l < 0)                           { MllCfgErr(F("hex"));   return; }
+//         if (h < 0 || l < 0)                           { MllCfgErr(F("hex"));   return; } // v1.03 (entfallen)
+        if (h < 0 || l < 0)                           { MllCfgErr(port, F("hex"));   return; } // v1.03
         Buf[i / 2] = (uint8_t)(h << 4 | l);
         }
      size_t n = Len / 2;
      if (mllRxFile.write(Buf, n) != n)
         {
         MllRxAbort();
-        MllCfgErr(F("write"));
+//         MllCfgErr(F("write")); // v1.03 (entfallen)
+        MllCfgErr(port, F("write")); // v1.03
         return;
         }
      for (size_t i = 0; i < n && mllRxPos + i < MLL_CFG_HEADER_SIZE; i++) mllRxHead[mllRxPos + i] = Buf[i];
      mllRxCrc = MllCrc32(mllRxCrc, Buf, n);
      mllRxPos += n;
-     Serial.print(F("~MLLCFG ACK "));
-     Serial.println(mllRxPos);
+//      Serial.print(F("~MLLCFG ACK ")); // v1.03 (entfallen)
+//      Serial.println(mllRxPos); // v1.03 (entfallen)
+     port.print(F("~MLLCFG ACK ")); // v1.03
+     port.println(mllRxPos); // v1.03
      }
   else if (strcmp(Line, "END") == 0)
      {
-     if (!mllRxActive)                                { MllCfgErr(F("nobegin")); return; }
+//      if (!mllRxActive)                                { MllCfgErr(F("nobegin")); return; } // v1.03 (entfallen)
+     if (!mllRxActive)                                { MllCfgErr(port, F("nobegin")); return; } // v1.03
      mllRxFile.close();
      mllRxActive = false;
      uint32_t Len[MLL_CFG_PARTS], Crc;
@@ -407,24 +439,31 @@ static void MllCfgProcessLine(char *Line)
      if (!Ok)
         {
         MllRxAbort();
-        MllCfgErr(F("check"));
+//         MllCfgErr(F("check")); // v1.03 (entfallen)
+        MllCfgErr(port, F("check")); // v1.03
         return;
         }
      LittleFS.remove(MLL_CFG_PATH);
-     if (!LittleFS.rename(MLL_CFG_TMP, MLL_CFG_PATH))   { LittleFS.remove(MLL_CFG_TMP); MllCfgErr(F("rename")); return; }
-     Serial.println(F("~MLLCFG OK"));
-     MllRestart();
+//      if (!LittleFS.rename(MLL_CFG_TMP, MLL_CFG_PATH))   { LittleFS.remove(MLL_CFG_TMP); MllCfgErr(F("rename")); return; } // v1.03 (entfallen)
+//      Serial.println(F("~MLLCFG OK")); // v1.03 (entfallen)
+//      MllRestart(); // v1.03 (entfallen)
+     if (!LittleFS.rename(MLL_CFG_TMP, MLL_CFG_PATH))   { LittleFS.remove(MLL_CFG_TMP); MllCfgErr(port, F("rename")); return; } // v1.03
+     port.println(F("~MLLCFG OK")); // v1.03
+     MllRestart(port); // v1.03
      }
   else if (strcmp(Line, "ABORT") == 0)
      {
      MllRxAbort();
-     Serial.println(F("~MLLCFG OK"));
+//      Serial.println(F("~MLLCFG OK")); // v1.03 (entfallen)
+     port.println(F("~MLLCFG OK")); // v1.03
      }
-  else MllCfgErr(F("cmd"));
+//   else MllCfgErr(F("cmd")); // v1.03 (entfallen)
+  else MllCfgErr(port, F("cmd")); // v1.03
 }
 
 //-----------------------------------
-static bool MllCfgReceive(char c)
+// static bool MllCfgReceive(char c) // v1.03 (entfallen)
+static bool MllCfgReceive(char c, Stream &port) // v1.03
 //-----------------------------------
 // Wird fuer jedes empfangene Zeichen aufgerufen. Zeilen, die mit '~' beginnen, werden hier vollstaendig gelesen
 // und ausgefuehrt (dauert bei 115200 Baud etwa 20 ms). Gibt true zurueck, wenn das Zeichen verbraucht wurde.
@@ -436,8 +475,10 @@ static bool MllCfgReceive(char c)
   unsigned long Deadline = millis() + 1000;
   while (millis() < Deadline)
      {
-     if (!Serial.available()) continue;
-     char x = Serial.read();
+//      if (!Serial.available()) continue; // v1.03 (entfallen)
+//      char x = Serial.read(); // v1.03 (entfallen)
+     if (!port.available()) { delay(1); continue; }  // v1.03: WLAN und Watchdog bedienen
+     char x = port.read(); // v1.03
      Deadline = millis() + 1000;
      if (x == '\n') { Complete = true; break; }
      if (x == '\r') continue;
@@ -445,9 +486,12 @@ static bool MllCfgReceive(char c)
      else Over = true;
      }
   Line[n] = 0;
-  if (!Complete || Over)                      MllCfgErr(F("line"));
-  else if (strncmp(Line, "MLLCFG ", 7) == 0)  MllCfgProcessLine(Line + 7);
-  else                                        MllCfgErr(F("cmd"));
+//   if (!Complete || Over)                      MllCfgErr(F("line")); // v1.03 (entfallen)
+//   else if (strncmp(Line, "MLLCFG ", 7) == 0)  MllCfgProcessLine(Line + 7); // v1.03 (entfallen)
+//   else                                        MllCfgErr(F("cmd")); // v1.03 (entfallen)
+  if (!Complete || Over)                      MllCfgErr(port, F("line")); // v1.03
+  else if (strncmp(Line, "MLLCFG ", 7) == 0)  MllCfgProcessLine(port, Line + 7); // v1.03
+  else                                        MllCfgErr(port, F("cmd")); // v1.03
   return true;
 }
 

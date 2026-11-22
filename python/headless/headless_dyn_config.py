@@ -1,12 +1,13 @@
-# Datei-Version: 1.01 (2026-11-19) - headless_dyn_config.py
+# Datei-Version: 1.02 (2026-11-22) - headless_dyn_config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_dyn_config.py
 # Path:           headless/headless_dyn_config.py
-# Version:        1.01
-# Last Update:    2026-11-19
+# Version:        1.02
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.02  2026-11-22  Authentifizierter TCP-Transport fuer ESP32-Konfiguration; USB-Protokoll bleibt erhalten
 #   1.01  2026-11-19  Konfigurationsdatei Format 5: neuer Abschnitt 'Parameter' mit LED-Anzahl (NUM_LEDS), LEDs je LED-Kanal, ControllerCount und Controller-Tabelle (je FastLED-Controller: Pin, erste LED, LED-Anzahl),
 #                     LEDS_PER_CHANNEL und START_MSG. Diese Werte stehen nicht mehr in der Firmware:
 #                     eine andere LED-Anzahl, andere LED-Gruppen, andere Pins oder ein anderer Starttext aendern die Firmware-Signatur nicht mehr (parse_params, pack_params; Zeilen mit '# v1.01'). Kopf 52 Bytes, SIG_SALT mlldyn-5
@@ -436,6 +437,26 @@ class Link:
                 self.buf += self.ser.read(max(1, self.ser.in_waiting))
             except Exception as e:                         # noqa: BLE001
                 raise DynConfigError("Schnittstelle: %s" % e)
+
+
+class TcpLink(Link):  # v1.02
+    """ESP32-Geraetekanal: derselbe HMAC-Handshake wie beim Verbinden."""  # v1.02
+    def __init__(self, host, password, timeout=5.0):  # v1.02
+        import hmac  # v1.02
+        from _web.web_serial import TcpPort  # v1.02
+        self.ser = TcpPort(host, 2323, timeout=timeout)  # v1.02
+        self.buf = b""  # v1.02
+        try:  # v1.02
+            nonce = self.ser.read_until(timeout=timeout).strip()  # v1.02
+            if len(nonce) != 32 or any(c not in b"0123456789abcdef" for c in nonce):  # v1.02
+                raise DynConfigError("Keine gueltige ESP32-Anmeldeanfrage")  # v1.02
+            self.ser.write(hmac.digest(password.encode("utf-8"), nonce, "sha256").hex().encode("ascii") + b"\n")  # v1.02
+            if self.ser.read_until(timeout=timeout).strip() != b"OK":  # v1.02
+                raise DynConfigError("ESP32-Anmeldung fehlgeschlagen")  # v1.02
+            self.ser.sock.settimeout(0.1)  # v1.02
+        except BaseException:  # v1.02
+            self.close()  # v1.02
+            raise  # v1.02
 
 
 def parse_info(msg):

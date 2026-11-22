@@ -1,3 +1,4 @@
+// Datei-Version: WLAN-Konfiguration 1.02 (2026-11-22): vorhandenes MLLCFG-Protokoll auf USB und WLAN.
 /*
  MobaLedLib: LED library for model railways
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1350,6 +1351,9 @@ uint8_t Handle_Command(uint8_t Type, const uint8_t* arguments, bool process)
       }
       Buff_Nr = 2;
       c = mllDeviceClient.read();
+#ifdef MLL_DYNAMIC_CONFIG
+      if (MllCfgReceive(c, mllDeviceClient)) return 0;  // v1.01 WLAN-Konfiguration
+#endif
       return 1;
     }
 #endif
@@ -1358,7 +1362,8 @@ uint8_t Handle_Command(uint8_t Type, const uint8_t* arguments, bool process)
 		Buff_Nr = 0;
 		c = Serial.read();
 #ifdef MLL_DYNAMIC_CONFIG
-		if (MllCfgReceive(c)) return 0;                                                                       // Konfiguration ueber die serielle Schnittstelle (Zeilen mit '~')
+// 		if (MllCfgReceive(c)) return 0;                                                                       // Konfiguration ueber die serielle Schnittstelle (Zeilen mit '~') // v1.01 WLAN-Konfiguration (entfallen)
+		if (MllCfgReceive(c, Serial)) return 0;                                                                       // Konfiguration ueber die serielle Schnittstelle (Zeilen mit '~') // v1.01 WLAN-Konfiguration
 #endif
 #ifdef MLL_OTA_SAVED_WIFI
 		if (WifiUsbReceive(c)) return 0;
@@ -2382,6 +2387,9 @@ void Set_Mainboard_LEDs()
 
 //-----------
 void loop(){
+#ifdef MLL_DYNAMIC_CONFIG
+  MllCfgPollRestart(); // v1.02 WLAN-Konfiguration: Neustart aus Core 1
+#endif
 //-----------
 #ifdef USE_COMM_INTERFACE
   commInterface->process();

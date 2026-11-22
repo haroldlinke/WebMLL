@@ -1,4 +1,4 @@
-Datei-Version: 1.51 (2026-11-21) - HOC_intern.md
+Datei-Version: 1.52 (2026-11-22) - HOC_intern.md
 Stand: webMobaLedLib 4.67
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,32 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 4.67 – ESP32-Konfiguration über WLAN (2026-11-22)
+
+Branch: `feature/konfiguration-wlan`, Basis `2b27561` (Originalstand 4.67).
+
+Bei aktiviertem „Schnelles Update“ verwendet der zentrale ESP32-Upload die vorhandene dynamische Konfiguration auch über WLAN. Der Empfänger nutzt den bestehenden, per HMAC geschützten Gerätekanal TCP 2323 und das OTA-Passwort. Signatur, Dateiformat, CRC und Empfangsbestätigungen bleiben erhalten. Bei identischer Konfiguration entfällt die Übertragung; bei abweichender Firmware erfolgt der vollständige Build-/Upload-Weg mit anschließendem Nachsenden der Konfiguration.
+
+M06 reicht die dynamischen Optionen bis zur inneren Generatorfunktion weiter und finalisiert vor der HeaderOnly-Rückgabe. Hostname, Passwort und OTA-Aktivierung gehen gehasht in die Firmware-Signatur ein. M42 vermeidet bei PlatformIO die Arduino-IDE-Suche. Nach vollständigem OTA-Upload wartet M42 auf die Erreichbarkeit des Geräts und verwendet das neue Passwort. Fehlende END-Antworten werden nach vollständig bestätigter Datenübertragung nur dann als Erfolg behandelt, wenn erneute Anmeldung, Firmware-Signatur, valid=1 und Datei-CRC den gespeicherten Stand bestätigen. Ansonsten bleibt der Vorgang fehlgeschlagen.
+
+Der ESP32-Konfigurationsempfang läuft im MLLTask auf Core 0. Der Neustart wird nach 750 ms aus der Hauptschleife auf Core 1 ausgelöst; Pico behält seinen bisherigen USB-/Neustartweg. Die ursprüngliche automatische Wiederverbindung übernimmt weiterhin Last_Upload. Keine eigenen Reconnect-Threads oder neuen Upload-Dienste.
+
+| Datei (relativ zu python) | Version | Änderung |
+|---|---|---|
+| headless/headless_dyn_config.py | 1.02 | TCP-Link mit vorhandener HMAC-Anmeldung |
+| proggen/M42_Dyn_Config.py | 1.04 | WLAN, Nachsenden, Signatur-/CRC-Nachprüfung, PlatformIO-Werkzeugsuche |
+| proggen/M06_Write_Header.py | 1.15 | HeaderOnly mit dynamischer Konfiguration und Parameterweitergabe |
+| proggen/M08_ARDUINO.py | 1.29 | Zentralen USB-/OTA-Ablauf anbinden |
+| LEDs_AutoProg/MLLDynConfig.h | 1.04 | Antworten auf Ursprungsstream, verzögerter ESP32-Neustart |
+| LEDs_AutoProg/LEDs_AutoProg.ino | WLAN 1.02 | Empfang auf WLAN-Stream, Neustart aus Hauptschleife |
+| _web/web_form_options.py | 1.44 | Hinweis zu ESP32-WLAN und Pico-USB |
+| csv/Web_Languages.csv | Ergänzung 22.11. | Hinweis in Deutsch und sechs Übersetzungen |
+| test_dyn_config_wlan.py | 1.04 | 14 Prüfungen für TCP, Upload, Fehler und Parameterweitergabe |
+
+Prüfungen: 179 bestehende Prüfungen, 14 neue Tests, Python-Syntax, echter Übersetzer in sieben Sprachen und Backend-Start mit frischem Datenordner erfolgreich. ESP32-PlatformIO-Firmwarebuild mit Neustartkorrektur erfolgreich (21,13 s). Hardwareprotokoll: 2048 Bytes ohne Firmware-Build in 6,3 s übertragen; Neustart und anschließende WLAN-Effektverbindung protokolliert. Weitere Konfigurationsübertragungen samt stabiler Wiederverbindung wurden vom Anwender nach der Neustartkorrektur bestätigt.
+
+Nicht geprüft: macOS/Linux/Raspberry Pi mit echter Hardware, Pico-/Nano-Hardware-Regression, absichtlich herbeigeführter Verlust der END-Antwort am echten Gerät sowie Wechsel des OTA-Passworts am Gerät. Diese Fehlerfälle sind teilweise automatisiert geprüft, ersetzen aber keinen Hardwaretest.
 
 ## 2.12 (2026-10-23) - Release-Stand
 

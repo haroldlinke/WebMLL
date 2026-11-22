@@ -1,12 +1,13 @@
-# Datei-Version: 1.28 (2026-11-21) - M08_ARDUINO.py
+# Datei-Version: 1.29 (2026-11-22) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.28
-# Last Update:    2026-11-21
+# Version:        1.29
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.29  2026-11-22  ESP32-Setup nutzt dynamische Konfiguration auch ueber WLAN; nach OTA Konfiguration nachsenden
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
 #   1.02  2026-10-26  Entwickler: PlatformIO (Create_PIO_Build_cmd, platformio.ini, Start_Arduino.cmd); Claude: PlatformIO auch fuer Linux, macOS und Raspberry Pi (Ordner bin statt Scripts, Find_PIO, PIO_Version), PATH nur einmal ergaenzt, verstaendliche Meldung wenn pio fehlt, platformio.ini wird beim Hochladen mit PlatformIO mit den aktuellen Einstellungen geschrieben
@@ -2563,9 +2564,17 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
                 raise ValueError(tr("Es ist kein USB-Anschluss gewählt."))  # v1.27
             _raw = str(P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL)).strip().lstrip("*").strip()  # v1.27
             port = ("COM" + _raw) if (_raw.isdigit() and os.name == "nt") else _raw  # v1.27
-        if not M06.Create_HeaderFile(HeaderOnly=True):  # v1.22
+        # if not M06.Create_HeaderFile(HeaderOnly=True):  # v1.22  # v1.29 (entfallen)
+        import hashlib, json  # v1.29
+        firmware_key = hashlib.sha256(json.dumps([hostname, password, bool(ota)], ensure_ascii=True).encode("utf-8")).hexdigest()  # v1.29
+        if not M06.Create_HeaderFile(HeaderOnly=True, DynamicConfig=True, DynFirmwareKey=firmware_key):  # v1.22  # v1.29
             raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))  # v1.22
         sketch = os.path.join(GetWorkbookPath(), M02.Ino_Dir_LED)  # v1.22
+        if M42.Active() and getattr(ctrl, "execute_upload", True):  # v1.29
+            ctrl.disconnect()  # v1.29
+            if M42.Try_Config_Only(host or port, host=host, password=upload_password):  # v1.29
+                Last_Upload.update(ok=True, host=host or '')  # v1.29
+                return  # v1.29
         log.add_text_to_textwindow(tr("ESP32-Firmware wird kompiliert …"))  # v1.22
         pio = None  # v1.22
         if M28.Is_PlatformIO():  # v1.22
@@ -2589,7 +2598,9 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
             log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))  # v1.22
             headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)  # v1.22
             log.add_text_to_textwindow(tr("USB-Upload erfolgreich."), highlight="OK")  # v1.22
-            Last_Upload.update(ok=True, host='')  # v1.24
+            # Last_Upload.update(ok=True, host='')  # v1.24  # v1.29 (entfallen)
+            config_ok = not M42.Active() or M42.After_Full_Flash(port)  # v1.29
+            Last_Upload.update(ok=config_ok, host='')  # v1.29
             return  # v1.22
         log.add_text_to_textwindow(tr("Firmware wird per WLAN übertragen …"))  # v1.22
         result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)  # v1.22
@@ -2600,7 +2611,9 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
             tr("OTA-Upload erfolgreich.") if result == 0 else tr("OTA-Upload fehlgeschlagen."),  # v1.22
             highlight="OK" if result == 0 else "Error",  # v1.22
         )  # v1.22
-        Last_Upload.update(ok=(result == 0), host=host if result == 0 else '')  # v1.24
+        # Last_Upload.update(ok=(result == 0), host=host if result == 0 else '')  # v1.24  # v1.29 (entfallen)
+        config_ok = result == 0 and (not M42.Active() or M42.After_Full_Flash(host, host=host, password=password))  # v1.29
+        Last_Upload.update(ok=config_ok, host=host if config_ok else '')  # v1.24  # v1.29
     except ValueError as error:  # v1.22
         log.add_text_to_textwindow(tr(str(error)), highlight="Error")  # v1.22
     except (OSError, subprocess.TimeoutExpired):  # v1.22

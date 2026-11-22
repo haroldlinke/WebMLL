@@ -1,12 +1,14 @@
-# Datei-Version: 1.13 (2026-11-20) - M06_Write_Header.py
+# Datei-Version: 1.15 (2026-11-22) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.13
-# Last Update:    2026-11-19
+# Version:        1.15
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.15  2026-11-22  Dynamische Optionen bis Write_Header_File_and_Upload_to_Arduino durchreichen (NameError behoben)
+#   1.14  2026-11-22  HeaderOnly kann dynamische Konfiguration fuer zentralen ESP32-Upload erzeugen
 #   1.01  2026-10-18  LED Kanal von Zeilen ohne Eintrag: Previous_LEDChannel als Modulvariable von M06 (global in Create_Header_Entry und ProcessSheet), Bedingung auf den Zellentext statt Trim(Val()) (nie leer); LED_to_Var in eingebundenen Blaettern bekam Kanal 0 und dessen Offset (LED2Var_Tab stimmte nicht mit Excel); davor Original-Port, nicht erfasst
 #   1.02  2026-10-18  Create_HeaderFile: vor dem Erzeugen alle Blaetter neu rechnen (Update_All_Start_LedNr), das aktive Blatt danach wieder auswaehlen
 #   1.03  2026-10-21  Version K des Excel-Programms: Makros Name_LED_Number und Name_LED_Offset (Proc_Special_Functions), Variable #ChannelOffset (Generate_Config_Line mit ChannelBaseOffset), Adresse 0 (Addr >= 1 in Create_Header_Entry, Addr >= 0 in ProcessLine), keine Pruefung des Boards bei nur Simulator, START_MSG ohne Test_Suffix, inch_t in HandleValue_t
@@ -1172,7 +1174,8 @@ def Write_ATTINY_GBM_H_if_used(fp):
 
 
 #--------------------------------------------------------------------------------------------
-def Create_HeaderFile(CreateFilesOnly = False, *, HeaderOnly=False): #20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files
+# def Create_HeaderFile(CreateFilesOnly = False, *, HeaderOnly=False): #20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files  # v1.14 (entfallen)
+def Create_HeaderFile(CreateFilesOnly = False, *, HeaderOnly=False, DynamicConfig=False, DynFirmwareKey=""):  # v1.14 #20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files
 #--------------------------------------------------------------------------------------------
     _fn_return_value = False
     Ctrl_Pressed = False
@@ -1252,7 +1255,8 @@ def Create_HeaderFile(CreateFilesOnly = False, *, HeaderOnly=False): #20.12.21: 
         return _fn_return_value
     if M37.CheckArduinoHomeDir() == False:
         return _fn_return_value
-    _fn_return_value = Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly, LEDsInUse=LEDs_per_Channel, HeaderOnly=HeaderOnly)
+    # _fn_return_value = Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly, LEDsInUse=LEDs_per_Channel, HeaderOnly=HeaderOnly)  # v1.15 (entfallen)
+    _fn_return_value = Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly, LEDsInUse=LEDs_per_Channel, HeaderOnly=HeaderOnly, DynamicConfig=DynamicConfig, DynFirmwareKey=DynFirmwareKey)  # v1.15
     # 20.12.21: Jürgen return result of called function
     return _fn_return_value
 
@@ -1457,7 +1461,8 @@ def Store_ValuesTxt_Used():
     _fn_return_value = ( Store_ValuesTxt != '' )
     return _fn_return_value
 
-def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=None, *, HeaderOnly=False): #20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files
+# def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=None, *, HeaderOnly=False):  # v1.15 (entfallen)
+def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=None, *, HeaderOnly=False, DynamicConfig=False, DynFirmwareKey=""):  # v1.15 #20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files
     global ErrorText, Ext_AddrTxt, Store_ValuesTxt, InChTxt, LocInChNr, Channel, ConfigTxt, LEDs_per_ChannelList, Start_Values
     if PG.global_controller.ARDUINOTest:
         # answer = tk.messagebox.askyesno ('ARDUINOTest','Schreiben der Headerdatei wird gestartet',default='yes')  # v1.05 (entfallen)
@@ -1491,7 +1496,7 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     # 20.12.21: Jürgen add CreateFilesOnly for programatically generation of header files
     #----------------------------------------------------
     
-    # ErrorText=""   # v1.13 (entfallen): loeschte die Fehler aus ProcessSheet (Init_HeaderFile_Generation setzt ErrorText schon zu Beginn zurueck)
+    # ErrorText=""   # v1.14 (entfallen): loeschte die Fehler aus ProcessSheet (Init_HeaderFile_Generation setzt ErrorText schon zu Beginn zurueck)
     MaxLed = M30.Get_Current_Platform_Int('MaxLed')
     MaxInput = M30.Get_Current_Platform_Int("MaxInput")            #26.11.25: Juergen, max Inputs depends on board type
     for Nr in vbForRange(0, M02.LED_CHANNELS - 1):
@@ -1515,7 +1520,8 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     except:
         pass
     Debug.Print("Write_Header - Filename:"+Name)
-    DynMode = M42.Decide(CreateFilesOnly, HeaderOnly)                                                          # v1.07: ESP32/Pico: Konfiguration getrennt von der Firmware
+    # DynMode = M42.Decide(CreateFilesOnly, HeaderOnly)                                                          # v1.07: ESP32/Pico: Konfiguration getrennt von der Firmware  # v1.14 (entfallen)
+    DynMode = M42.Decide(CreateFilesOnly, HeaderOnly and not DynamicConfig, DynFirmwareKey)                                                          # v1.07: ESP32/Pico: Konfiguration getrennt von der Firmware  # v1.14
     Ext_AddrTxt=DelTailingEmptyLines(Ext_AddrTxt)
     Store_ValuesTxt=DelTailingEmptyLines(Store_ValuesTxt)
     # 01.05.20: Jürgen
@@ -1919,12 +1925,17 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     # 02.12.21: Juergen see forum post #7085
     comport = P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL).Value
     
-    if HeaderOnly:
+    # if HeaderOnly:  # v1.14 (entfallen)
+    if HeaderOnly and not DynamicConfig:  # v1.14
         return True
 
     if DynMode and not M42.Finalize(Name):  # v1.07: Konfigurationsdatei und Signatur; sonst die Kopfdatei klassisch (mit allen Tabellen) neu schreiben
         M42.Disable_Once("die Konfigurationsdatei konnte nicht erzeugt werden")  # v1.07
-        return Create_HeaderFile(CreateFilesOnly, HeaderOnly=HeaderOnly)  # v1.07
+        # return Create_HeaderFile(CreateFilesOnly, HeaderOnly=HeaderOnly)  # v1.07  # v1.14 (entfallen)
+        return Create_HeaderFile(CreateFilesOnly, HeaderOnly=HeaderOnly, DynamicConfig=DynamicConfig, DynFirmwareKey=DynFirmwareKey)  # v1.07  # v1.14
+
+    if HeaderOnly:  # v1.14
+        return True  # v1.14
 
     if False: #type(comport) == str and InStr(comport, 'IP:') > 0:
         M06cfg.create_MLLconfig_and_upload_to_PICO(P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL), ConfigTxt, LEDsInUse)
