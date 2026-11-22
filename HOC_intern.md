@@ -1,4 +1,4 @@
-Datei-Version: 1.51 (2026-11-21) - HOC_intern.md
+Datei-Version: 1.52 (2026-11-22) - HOC_intern.md
 Stand: webMobaLedLib 4.67
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,13 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 4.67 – Helleres dunkles Farbschema (2026-11-22)
+
+Korrekturen:
+- Dunkle Hintergrundflächen, Dialoge und die optional dunkle Tabelle sind etwas heller und deutlicher abgestuft. Feste Zellfarben bleiben erhalten.
+
+Datei: _web/web_layout.py 1.21. Ausschließlich CSS unter body--dark bzw. mll-grid-dark; keine Änderungen am Upload oder an gespeicherten Einstellungen. Python-Syntax geprüft. Die hellere Farbgebung wurde vom Anwender bestätigt. Andere Browser/Plattformen wurden nicht gesondert visuell geprüft.
 
 ## 2.12 (2026-10-23) - Release-Stand
 

@@ -1,9 +1,17 @@
-Datei-Version: 1.51 (2026-11-21) - HOC_Anwender.md
+Datei-Version: 1.52 (2026-11-22) - HOC_Anwender.md
 Stand: webMobaLedLib 4.67
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 4.67 – Helleres dunkles Farbschema (2026-11-22)
+
+Neue Funktionen:
+- Keine.
+
+Korrekturen:
+- Dunkle Hintergrundflächen, Dialoge und die optional dunkle Tabelle sind etwas heller und deutlicher abgestuft. Feste Zellfarben bleiben erhalten.
 
 ## Version 4.67 (2026-11-21)
 

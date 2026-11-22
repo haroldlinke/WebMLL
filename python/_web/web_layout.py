@@ -1,12 +1,13 @@
-# Datei-Version: 1.20 (2026-11-18) - web_layout.py
+# Datei-Version: 1.21 (2026-11-22) - web_layout.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_layout.py
 # Path:           _web/web_layout.py
-# Version:        1.20
-# Last Update:    2026-11-18
+# Version:        1.21
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.21  2026-11-22  Dunkles Farbschema: hellere Grundflaechen, Dialoge und optionale dunkle Tabellen
 #   1.20  2026-11-18  Einstellung steuert Zellinnenabstaende statt Tabellenrahmen
 #   1.19  2026-11-18  Einstellbarer Aussenabstand gilt ausschliesslich fuer die Programmgenerator-Tabelle
 #   1.18  2026-11-18  Aussenabstand in Pixeln einstellbar und speicherbar
@@ -46,6 +47,20 @@ DEFAULT_MODE = "normal"
 AUTO_HEIGHT = 800
 
 CSS = """
+/* v1.21: Dunkelmodus mit etwas helleren, abgestuften Flaechen. */
+body.body--dark { --q-dark: #343d49; --q-dark-page: #272e38; background: #272e38; color: #edf1f5; }
+body.body--dark .q-card--dark, body.body--dark .q-menu--dark, body.body--dark .q-dialog .q-card { background: #343d49; }
+body.body--dark .q-tab-panels--dark, body.body--dark .q-table--dark { background: #303844; }
+body.body--dark .q-field--dark.q-field--filled .q-field__control { background: rgba(255,255,255,.08); }
+html.mll-grid-dark body.body--dark .ag-theme-balham,
+html.mll-grid-dark body.body--dark .ag-theme-balham-dark,
+html.mll-grid-dark body.body--dark .nicegui-aggrid {
+    --ag-background-color: #303844; --ag-foreground-color: #edf1f5;
+    --ag-header-background-color: #404c5b; --ag-header-foreground-color: #f4f6f8;
+    --ag-odd-row-background-color: #35404d; --ag-border-color: #637184;
+    --ag-row-border-color: #536172; --ag-secondary-border-color: #536172;
+    --ag-row-hover-color: rgba(150,190,230,.16); --ag-selected-row-background-color: rgba(120,175,230,.24);
+}
 /* Kopfzeile: das Menue gehoert zur Kopfzeile (normal: eigene Zeile darunter, kompakt: in derselben Zeile) */
 .mll-header { flex-wrap: wrap; }
 .mll-header > .mll-menu { order: 10; flex: 1 1 100%; }

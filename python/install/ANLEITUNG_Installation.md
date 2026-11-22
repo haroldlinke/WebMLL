@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.67 (2026-11-21), gilt für webMobaLedLib 4.67*
+*Datei-Version: 4.68 (2026-11-22), gilt für webMobaLedLib 4.67*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1727,3 +1727,5 @@ Ein Update kann abbrechen, wenn der Strom ausfällt, das Programm beendet wird o
 - **Mehrsprachigkeit:** Die Texte, die das Web-Programm selbst ergänzt (Menüs, Dialoge, Einstellungen, Meldungen), sind nur deutsch. Die Mehrsprachigkeit folgt später.
 
 Bei einer Fehlermeldung bitte den Text aus dem Installationsfenster und die Dateien `webmobaledlib.log` und `webmobaledlib-crash.log` aus dem Datenordner (2.6) schicken.
+
+Darstellung (22.11.): Das dunkle Farbschema verwendet hellere Flächen. Zu prüfen: Dialoge, Eingabefelder und „Dunkel mit Tabelle“ gut lesbar; feste Zellfarben weiterhin sichtbar. Die Farbgebung wurde vom Anwender bestätigt.
