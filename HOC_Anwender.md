@@ -1,4 +1,4 @@
-Datei-Version: 1.52 (2026-11-22) - HOC_Anwender.md
+Datei-Version: 1.53 (2026-11-22) - HOC_Anwender.md
 Stand: webMobaLedLib 4.67
 
 # webMobaLedLib: Änderungen (Kurzfassung)
@@ -6,6 +6,9 @@ Stand: webMobaLedLib 4.67
 Gilt ab Version 1.39. Neueste Version oben.
 
 ## Ergänzung zu 4.67 – ESP32-Konfiguration über WLAN (2026-11-22)
+
+Ergänzung 22.11.: WLAN-Konfigurationsübertragungen werden bei Transportfehlern maximal dreimal insgesamt versucht, mit neuer Anmeldung und erneuter Firmware-/CRC-Prüfung je Versuch. Eine neue BEGIN-Sequenz startet die Datenübertragung sauber von vorn. Erst nach drei Fehlern erfolgt der bisherige Firmware-Rückfall; beim Nachsenden nach bereits erfolgtem Flashen wird stattdessen ein Fehler gemeldet. Abweichende Firmware-Signaturen werden nicht wiederholt. USB bleibt bei einem Versuch. M42 1.05, WLAN-Tests 1.05: 18 Tests sowie 179 bestehende Prüfungen erfolgreich. Wiederholungsfall am echten Gerät noch zu prüfen.
+
 
 Neue Funktionen:
 - Mit PlatformIO und aktiviertem „Schnelles Update“ lassen sich ESP32-Konfigurationen über WLAN übertragen, ohne jedes Mal die Firmware zu kompilieren.

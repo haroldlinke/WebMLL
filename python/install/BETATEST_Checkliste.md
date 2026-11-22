@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 3.50 (2026-11-22), gilt für webMobaLedLib 4.67*
+*Datei-Version: 3.51 (2026-11-22), gilt für webMobaLedLib 4.67*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -427,3 +427,5 @@ Rückmeldungen an den Entwickler (Kontakt siehe GitHub-Seite des Projekts: <http
 - Hostname oder OTA-Passwort aendern: vollstaendiger Upload, anschliessend Anmeldung mit neuem Passwort?
 - Falsches Passwort, ausgeschaltetes Geraet oder WLAN-Abbruch: verstaendlicher Fehler, keine falsche Erfolgsmeldung?
 - USB am ESP32 und Pico weiterhin erfolgreich? Automatische Rueckverbindung nach Neustart?
+
+WLAN-Wiederholungen: Bei Transportfehlern sind drei Versuche insgesamt vorgesehen. Zu prüfen: kurzer WLAN-Ausfall, erfolgreicher zweiter/dritter Versuch und Fehlermeldung nach drei gescheiterten Versuchen. USB wird nicht automatisch wiederholt.

@@ -1,12 +1,13 @@
-# Datei-Version: 1.04 (2026-11-22) - M42_Dyn_Config.py
+# Datei-Version: 1.05 (2026-11-22) - M42_Dyn_Config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M42_Dyn_Config.py
 # Path:           proggen/M42_Dyn_Config.py
-# Version:        1.04
+# Version:        1.05
 # Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.05  2026-11-22  WLAN-Konfiguration bei Transportfehlern hoechstens dreimal mit neuer Sitzung versuchen
 #   1.04  2026-11-22  Bei fehlender END-Antwort ueber WLAN gespeicherte Konfiguration nach Neustart verifizieren
 #   1.03  2026-11-22  PlatformIO: AVR-Werkzeuge ohne Arduino-IDE-Suche ermitteln
 #   1.02  2026-11-22  ESP32-WLAN ueber vorhandenen Geraetekanal; Wiederholungen nach OTA-Neustart
@@ -265,6 +266,28 @@ def _fallback(text, **values):  # v1.01
     return False  # v1.01
 
 
+def _wlan_attempts(operation, *, after_flash=False):  # v1.05
+    for attempt in range(1, 4):  # v1.05: drei Versuche insgesamt
+        try:  # v1.05
+            return operation()  # v1.05: Signaturfehler wird nicht wiederholt
+        except (DC.DynConfigError, OSError) as error:  # v1.05
+            _out(_t("WLAN-Konfiguration: Versuch {attempt} von {total} fehlgeschlagen ({reason}).", attempt=attempt, total=3, reason=error))  # v1.05
+            if attempt < 3:  # v1.05
+                time.sleep(1.0)  # v1.05: vorherige Sitzung freigeben lassen
+                continue  # v1.05
+            if after_flash:  # v1.05
+                _out(_t("Die Konfiguration konnte nicht übertragen werden ({reason}).", reason=error), "Error")  # v1.05
+                return False  # v1.05
+            return _fallback("Die Konfiguration konnte nicht übertragen werden ({reason}). Es wird das ganze Programm hochgeladen.", reason=error)  # v1.05
+
+
+def Try_Config_Only(ComPort, *, host="", password=""):  # v1.05
+    _open_output()  # v1.05
+    if host:  # v1.05
+        return _wlan_attempts(lambda: _try_config_once(ComPort, host=host, password=password))  # v1.05
+    return _try_config_once(ComPort)  # v1.05: USB bleibt bei einem Versuch
+
+
 # def Try_Config_Only(ComPort):  # v1.02 (entfallen)
 def _send_config(link, blob, host="", password=""):  # v1.04
     done = [0]  # v1.04
@@ -298,15 +321,17 @@ def _send_config(link, blob, host="", password=""):  # v1.04
         raise  # v1.04: ohne gueltigen Nachweis bleibt die Uebertragung fehlgeschlagen
 
 
-def Try_Config_Only(ComPort, *, host="", password=""):  # v1.02
+def _try_config_once(ComPort, *, host="", password=""):  # v1.05
     """True wenn das Geraet die Firmware dieser Kopfdatei hat und die Konfiguration uebertragen wurde (oder schon aktuell ist). Sonst False: dann das ganze Programm hochladen."""
     blob = _state["blob"]
     t0 = time.time()  # v1.01
-    _open_output()  # v1.01
+    # _open_output()  # v1.05 (entfallen: Ausgabe bleibt zwischen Versuchen erhalten)
     try:
         # link = DC.Link(ComPort, dtr=_state["pico"])  # v1.02 (entfallen)
         link = DC.TcpLink(host, password) if host else DC.Link(ComPort, dtr=_state["pico"])  # v1.02
     except Exception as e:                                 # noqa: BLE001
+        if host:  # v1.05
+            raise DC.DynConfigError(str(e)) from e  # v1.05
         log.info("Konfiguration getrennt: Anschluss %s nicht zu oeffnen (%s) - ganzes Programm", ComPort, e)
         return _fallback("Der Anschluss {port} lässt sich nicht öffnen ({reason}). Es wird das ganze Programm hochgeladen.", port=ComPort, reason=e)  # v1.01
     try:
@@ -314,6 +339,8 @@ def Try_Config_Only(ComPort, *, host="", password=""):  # v1.02
         _out(_t("Die Firmware im Gerät ({port}) wird geprüft ...", port=ComPort))  # v1.01
         info = DC.query_info(link, 8.0)
         if info is None:
+            if host:  # v1.05
+                raise DC.DynConfigError("Keine Antwort auf INFO")  # v1.05
             log.info("Konfiguration getrennt: das Geraet antwortet nicht (Firmware ohne diese Funktion?) - ganzes Programm")
             return _fallback("Das Gerät antwortet nicht (noch nicht programmiert oder eine Firmware ohne diese Funktion). Es wird das ganze Programm hochgeladen.")  # v1.01
         if info.get("sig") != _state["sig"]:
@@ -332,6 +359,8 @@ def Try_Config_Only(ComPort, *, host="", password=""):  # v1.02
         return True
     # except DC.DynConfigError as e:  # v1.02 (entfallen)
     except (DC.DynConfigError, OSError) as e:  # v1.02
+        if host:  # v1.05
+            raise  # v1.05: aeussere Schleife wiederholt erst nach link.close()
         log.warning("Konfiguration getrennt: %s - ganzes Programm", e)
         return _fallback("Die Konfiguration konnte nicht übertragen werden ({reason}). Es wird das ganze Programm hochgeladen.", reason=e)  # v1.01
     finally:
@@ -361,7 +390,9 @@ def After_Full_Flash(ComPort, *, host="", password=""):  # v1.02
         while True:  # v1.02
             try:  # v1.02
                 link = DC.TcpLink(host, password)  # v1.02
-                break  # v1.02
+                link.close()  # v1.05: Bereitschaft geprueft; jeder Versuch bekommt eine neue Sitzung
+                return _wlan_attempts(lambda: _try_config_once(ComPort, host=host, password=password), after_flash=True)  # v1.05
+                # break  # v1.05 (entfallen)  # v1.02
             except (OSError, DC.DynConfigError):  # v1.02
                 if time.monotonic() >= deadline:  # v1.02
                     _out(_t("Die Konfiguration konnte nicht übertragen werden ({reason}).", reason="WLAN-Verbindung nach Neustart nicht verfuegbar"), "Error")  # v1.02

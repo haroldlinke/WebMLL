@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.68 (2026-11-22), gilt für webMobaLedLib 4.67*
+*Datei-Version: 4.69 (2026-11-22), gilt für webMobaLedLib 4.67*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1731,3 +1731,5 @@ Bei einer Fehlermeldung bitte den Text aus dem Installationsfenster und die Date
 ## ESP32: schnelle Konfiguration ueber WLAN (Erweiterung zu 4.67)
 
 Unter Optionen/Werkzeuge im Reiter Entwicklungsumgebung â€žSchnelles Update: nur geÃ¤nderte Konfiguration Ã¼bertragen (ESP32/Pico)â€œ einschalten und PlatformIO verwenden. WLAN und OTA am ESP32 wie bisher einrichten. Einmal muss die Firmware mit der neuen Empfangsfunktion uebertragen werden. Bei weiteren Uebertragungen ueber WLAN prueft WebMLL die Firmware: Passt sie, werden nur die Konfigurationsdaten gesendet; ist alles unveraendert, wird nichts gesendet. Bei erforderlichem Firmwarewechsel erfolgt ein vollstaendiger OTA-Upload und anschliessend die Konfiguration. Danach startet der ESP32 neu. Der vorhandene Geraetekanal (TCP 2323) und das OTA-Passwort werden verwendet. Pico bleibt bei USB. Mehrere WLAN-Konfigurationsupdates und die erneute Verbindung wurden unter Windows am ESP32 vom Anwender bestätigt. Andere Plattformen und Pico-Hardware bleiben zu prüfen.
+
+WLAN-Wiederholungen: Bei Transportfehlern sind drei Versuche insgesamt vorgesehen. Zu prüfen: kurzer WLAN-Ausfall, erfolgreicher zweiter/dritter Versuch und Fehlermeldung nach drei gescheiterten Versuchen. USB wird nicht automatisch wiederholt.

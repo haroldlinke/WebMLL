@@ -1,11 +1,12 @@
-# Datei-Version: 1.04 (2026-11-22) - test_dyn_config_wlan.py
+# Datei-Version: 1.05 (2026-11-22) - test_dyn_config_wlan.py
 # Name: test_dyn_config_wlan.py
 # Path: test_dyn_config_wlan.py
-# Version: 1.04
+# Version: 1.05
 # Last Update: 2026-11-22
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.05 2026-11-22 Drei WLAN-Versuche, Erfolg im dritten Versuch, Abbruch nach drei Fehlern.
 #   1.04 2026-11-22 Verzoegerten Firmware-Neustart absichern; insgesamt 14 Tests.
 #   1.03 2026-11-22 Abschlusspruefung bei verlorener END-Antwort.
 #   1.02 2026-11-22 PlatformIO-Werkzeugsuche ohne IDE und isolierte Uploadtests.
@@ -117,6 +118,46 @@ class WlanTests(unittest.TestCase):
             finally:
                 link.close()
         thread.join(4)
+
+
+class RetryTests(unittest.TestCase):
+    def run_attempts(self, outcomes, after_flash=False):
+        import ast
+        from unittest.mock import MagicMock
+        source = Path(__file__).with_name("proggen") / "M42_Dyn_Config.py"
+        node = next(n for n in ast.parse(source.read_text(encoding="utf-8")).body if isinstance(n, ast.FunctionDef) and n.name == "_wlan_attempts")
+        operation = MagicMock(side_effect=outcomes)
+        fallback = MagicMock(return_value=False)
+        clock = MagicMock()
+        env = dict(DC=DC, _out=MagicMock(), _t=lambda text, **kw: text.format(**kw), time=clock, _fallback=fallback)
+        exec(compile(ast.Module(body=[node], type_ignores=[]), str(source), "exec"), env)
+        result = env["_wlan_attempts"](operation, after_flash=after_flash)
+        return result, operation, fallback, clock
+
+    def test_third_attempt_succeeds(self):
+        result, op, fallback, clock = self.run_attempts([DC.DynConfigError("DATA"), OSError("TCP"), True])
+        self.assertTrue(result)
+        self.assertEqual(op.call_count, 3)
+        fallback.assert_not_called()
+        self.assertEqual(clock.sleep.call_count, 2)
+
+    def test_three_failures_fallback_once(self):
+        result, op, fallback, clock = self.run_attempts([OSError("TCP")] * 3)
+        self.assertFalse(result)
+        self.assertEqual(op.call_count, 3)
+        fallback.assert_called_once()
+
+    def test_mismatch_not_retried(self):
+        result, op, fallback, clock = self.run_attempts([False])
+        self.assertFalse(result)
+        op.assert_called_once()
+        clock.sleep.assert_not_called()
+
+    def test_after_flash_failure_does_not_flash_again(self):
+        result, op, fallback, clock = self.run_attempts([OSError("TCP")] * 3, after_flash=True)
+        self.assertFalse(result)
+        self.assertEqual(op.call_count, 3)
+        fallback.assert_not_called()
 
 
 class FirmwareRestartTests(unittest.TestCase):
