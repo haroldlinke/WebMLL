@@ -1,12 +1,13 @@
-# Datei-Version: 4.79-daten1 (2026-11-23) - webmobaledlib.py
+# Datei-Version: 4.79-daten2 (2026-11-23) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        4.79-daten1
+# Version:        4.79-daten2
 # Last Update:    2026-11-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   4.79-daten2 2026-11-23 Datenuebertragung aktualisiert Tabelle und Reiter direkt nach Neuberechnung.
 #   4.79-daten1 2026-11-23 Optionaler Dialog Datenuebertragung; Quellfreigabe beim Start aus.
 #   1.39  2026-10-17  Reiter Patterngenerator (Runde 1): Anzeige der Tabelle, Aufbau erst beim ersten Oeffnen (build_patt, _PATT); Kopf eingefuegt; davor bis 1.38 nicht erfasst
 #   1.40  2026-10-17  Patterngenerator Runde 2: Bearbeiten, Werkzeugleiste, Beschreibung, Balken (Module web_pattgen, headless_pattgen)
@@ -2378,6 +2379,15 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 sync_shapes(sheet)
             except Exception:                      # noqa: BLE001
                 logger.exception("Shapes von Blatt %s nicht nachgefuehrt", getattr(sheet, "Name", "?"))
+
+    def refresh_after_transfer():  # v4.79-daten2
+        """Nach externer Tabellenuebernahme denselben Anzeigeweg wie run_command nutzen."""  # v4.79-daten2
+        load_sheet_dict()  # v4.79-daten2
+        hook_selection()  # v4.79-daten2
+        current = wb.ActiveSheet if wb.ActiveSheet in wb.sheets else wb.sheets[0]  # v4.79-daten2
+        state["ws"] = current  # v4.79-daten2
+        rebuild_sheet_tabs()  # v4.79-daten2
+        show(current)  # v4.79-daten2
 
     def recalc_table():  # v1.59
         """Menue Tabelle: Proggenerator Tabelle neuberechnen. Alle Tabellenblaetter neu rechnen (LED-Zahlen je Kanal und Start-LED-Nummern, auch die
@@ -7052,7 +7062,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ("Spezial", lambda: open_settings_group("Spezialeinstellungen")),  # v4.51
             ("Erweiterungen …", open_extensions),  # v4.51: Schritt 2 verschiebt die Erweiterungen hierher, bis dahin das Optionenfenster auf dem Reiter Erweiterungen
             None,  # v4.51
-            ("Datenübertragung", lambda: __import__("_web.web_table_sync", fromlist=["open_dialog"]).open_dialog()),  # v4.79-daten1
+            ("Datenübertragung", lambda: __import__("_web.web_table_sync", fromlist=["open_dialog"]).open_dialog(on_changed=refresh_after_transfer)),  # v4.79-daten1
             ("Einstellungen sichern …", export_settings),  # v4.24  # v4.51 (aus dem Menue Datei)
             ("Einstellungen übernehmen …", import_settings),  # v4.24  # v4.51 (aus dem Menue Datei)
         ],

@@ -1,11 +1,12 @@
-# Datei-Version: 1.07 (2026-11-23) - web_table_sync.py
+# Datei-Version: 1.08 (2026-11-23) - web_table_sync.py
 # Name: web_table_sync.py
 # Path: _web/web_table_sync.py
-# Version: 1.07
+# Version: 1.08
 # Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.08 2026-11-23 Nach Import und Rueckgaengig Tabellenansicht ueber Originalpfad sofort aktualisieren.
 #   1.07 2026-11-23 Kanalauswahl wie bei neuer Zeile, Standard 0, Quellkanaele optional erhalten.
 #   1.06 2026-11-23 Feature-Branch auf Basis 4.79; Sprachen und Startvorgaben dokumentiert.
 #   1.05 2026-11-23 Quellfreigabe nach jedem Start ausgeschaltet; Aktivierung nur im Dialog.
@@ -52,10 +53,10 @@ def recalculate_workbook(wb, *, logic=None, columns=None):  # v1.01
 _open_dialog = None  # v1.02
 
 
-def open_dialog():  # v1.02
+def open_dialog(on_changed=None):  # v1.08
     if _open_dialog is None:  # v1.02
         raise RuntimeError("Tabellenabgleich noch nicht initialisiert")  # v1.02
-    _open_dialog()  # v1.02
+    _open_dialog(on_changed=on_changed)  # v1.08
 
 
 def install(app, ctrl, workbook, version):  # v1.06
@@ -140,7 +141,7 @@ def install(app, ctrl, workbook, version):  # v1.06
         finally:  # v1.06
             state["busy"] = False  # v1.06
 
-    def build_dialog():  # v1.02
+    def build_dialog(on_changed=None):  # v1.08
         ui.add_css("""
             /* v1.02: Dialog bleibt innerhalb des Browserfensters, Inhalt scrollt. */
             .mll-sync-dialog { width: 760px; max-width: 94vw !important; max-height: 90vh;
@@ -345,7 +346,10 @@ def install(app, ctrl, workbook, version):  # v1.06
                                             apply(raw)  # v1.06
                                             ui.notify(tr("Tabellen übernommen. Das letzte Backup wurde erneuert."), type="positive")  # v1.06
                                         dialog.close()  # v1.06
-                                        status.set_text(tr("Bitte die Programmseite neu laden."))  # v1.06
+                                        # status.set_text(tr("Bitte die Programmseite neu laden."))  # v1.08 (entfallen)
+                                        if on_changed is not None:  # v1.08
+                                            on_changed()  # v1.08
+                                        status.set_text(tr("Zeilen eingefügt und neu berechnet.") if mode.value == "insert" else tr("Tabellen übernommen. Das letzte Backup wurde erneuert."))  # v1.08
                                     except Exception as error:  # v1.06
                                         ui.notify(tr(str(error)), type="negative")  # v1.06
 
@@ -369,7 +373,9 @@ def install(app, ctrl, workbook, version):  # v1.06
                                     sync.restore(folder, target_file())  # v1.06
                                     load_target()  # v1.06
                                     dialog.close()  # v1.06
-                                    status.set_text(tr("Backup wiederhergestellt. Bitte die Programmseite neu laden."))  # v1.06
+                                    if on_changed is not None:  # v1.08
+                                        on_changed()  # v1.08
+                                    status.set_text(tr("Backup wiederhergestellt."))  # v1.08
                                 except Exception as error:  # v1.06
                                     ui.notify(tr(str(error)), type="negative")  # v1.06
                             ui.button(tr("Backup wiederherstellen"), on_click=confirm)  # v1.06

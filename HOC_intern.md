@@ -1,4 +1,4 @@
-Datei-Version: 1.59 (2026-11-23) - HOC_intern.md
+Datei-Version: 1.60 (2026-11-23) - HOC_intern.md
 Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,12 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## Anzeige nach Datenübertragung aktualisieren (2026-11-23)
+
+Die Berechnung wurde ausgeführt und gespeichert, die Tabellenansicht jedoch nicht direkt aktualisiert. Nach Übernahme und Rückgängig wird jetzt der ursprüngliche Anzeigeweg verwendet: Blattliste laden, Auswahl anbinden, Reiter neu aufbauen und aktuelles Blatt anzeigen. Kein manuelles Neuladen mehr nötig. Die Aktualisierungsfunktion gehört zur jeweils geöffneten Programmseite.
+
+Dateien: webmobaledlib.py 4.79-daten2, _web/web_table_sync.py 1.08, test_table_sync.py 1.05; Statusmeldung in sieben Sprachen. 24 automatisierte Tests; tatsächliche Berechnung mit Originaldaten separat geprüft.
 
 ## LED-Kanal beim Zeileneinfügen (2026-11-23)
 

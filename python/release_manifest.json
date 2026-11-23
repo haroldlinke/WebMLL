@@ -1,5 +1,5 @@
 {
-"created": "2026-11-23 10:40:14",
+"created": "2026-11-23 10:48:50",
 "file_count": 2337,
 "files": {
 "Boards/Heartbeat.uf2": {
@@ -1043,8 +1043,8 @@
 "size": 18289
 },
 "_web/web_table_sync.py": {
-"sha256": "b7c793dc43a38cbe78c9b1248d2ef471889ee237af1ea28346c9bebdfb7332b3",
-"size": 29708
+"sha256": "7200e061bdca2702aca7ea008805efe48ccced16d393814af561821a60915f7b",
+"size": 30328
 },
 "_web/web_tabs.py": {
 "sha256": "a3f6d20324f734bdc7a2dbf46c8116288d2a8ccda18a9b367db1180bc6913028",
@@ -1171,8 +1171,8 @@
 "size": 4169848
 },
 "csv/Web_Languages.csv": {
-"sha256": "886e18df1560f04f61bdf197211d058a677679a8b40c83fe8d09b6fbec309a47",
-"size": 700582
+"sha256": "62f5bc6669babae06adea51fe37da985525bf2c6eea00e6a2a28dbe83080ecf3",
+"size": 700745
 },
 "csv/xLibraries.csv": {
 "sha256": "a737fc50e763b84683b77c46c5f9a4b338362e0587400daea97f0ed0e89e2b81",
@@ -7535,8 +7535,8 @@
 "size": 2829
 },
 "install/ANLEITUNG_Installation.md": {
-"sha256": "3f5275c3e47944e1e899ec8c5921fc4c1896ca8801dfa1b9fdca76c577d844e4",
-"size": 243185
+"sha256": "22fe2f28cf141458fe98bc19b3fbdcd165ebb69b679e4d909ee244c9975e998c",
+"size": 243338
 },
 "install/ANLEITUNG_Linux_Desktop.pdf": {
 "sha256": "ed3bf81790dab00eb36917e8a5bbc212fbf1d70682682223210bec33bb12efec",
@@ -7551,8 +7551,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "751a351eb211cbedd1353d84f842547c160f8d96e1d98a752e4b49c513d03783",
-"size": 165644
+"sha256": "e6b79ced57762116dfa6e7b8e9aef38c3adb1859d499191cf0add6ba44aac362",
+"size": 165802
 },
 "install/UEBERSETZEN.md": {
 "sha256": "2a5b4bf59358e3c0e82fabb6e88b0f4605de0bfa334c777f0822b1765b4c4107",
@@ -9131,8 +9131,8 @@
 "size": 15553
 },
 "test_table_sync.py": {
-"sha256": "6df25e1f1866e2531f707fac93e12f47bea4cc119a0f42cc9205ed27dd29dc1b",
-"size": 18548
+"sha256": "d76ac45ee6297c618684fdd1e5bc81458831cf1d7222573fdbeaca078320a15b",
+"size": 19150
 },
 "tkcolorpicker/__init__.py": {
 "sha256": "35a6dc62073355376fef8f28fd26583552ccaaf6a0b7798e47f348fdb84f623a",
@@ -9347,8 +9347,8 @@
 "size": 33
 },
 "webmobaledlib.py": {
-"sha256": "7c22664aef5594c90d644d487c9b51eed28c6a1eb362c38f1b956419e11a127c",
-"size": 717383
+"sha256": "4cd6b9aed9e05faf9e7e24c083733e969b2c5c96cba676f3676f47bf10385276",
+"size": 717999
 }
 },
 "format": 1,

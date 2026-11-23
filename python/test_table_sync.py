@@ -1,11 +1,12 @@
-# Datei-Version: 1.04 (2026-11-23) - test_table_sync.py
+# Datei-Version: 1.05 (2026-11-23) - test_table_sync.py
 # Name: test_table_sync.py
 # Path: test_table_sync.py
-# Version: 1.04
+# Version: 1.05
 # Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.05 2026-11-23 Aktualisierungsfunktion der aktuellen Programmseite an Dialog uebergeben.
 #   1.04 2026-11-23 Kanalauswahl beim Zeilenimport pruefen.
 #   1.03 2026-11-23 Feature-Branch auf Basis 4.79; Sprachen und Startvorgaben dokumentiert.
 #   1.02 2026-11-23 Zeilenauswahl, Einfuegeposition, Metadaten, Konflikte, Backup und Protokollschutz.
@@ -257,6 +258,16 @@ class NetworkTests(unittest.TestCase):  # v1.03
             reply.read()  # v1.03
         with self.assertRaises(HTTPError):  # v1.03
             urlopen(Request(self.address + "/tables", headers=headers))  # v1.03
+
+
+class DialogRefreshTests(unittest.TestCase):  # v1.05
+    def test_dialog_receives_current_pages_refresh_callback(self):  # v1.05
+        from unittest.mock import MagicMock  # v1.05
+        from _web import web_table_sync as web  # v1.05
+        callback, builder = MagicMock(), MagicMock()  # v1.05
+        with patch.object(web, "_open_dialog", builder):  # v1.05
+            web.open_dialog(on_changed=callback)  # v1.05
+        builder.assert_called_once_with(on_changed=callback)  # v1.05
 
 
 class StartupTests(unittest.IsolatedAsyncioTestCase):  # v1.03

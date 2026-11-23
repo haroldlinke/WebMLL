@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 3.63 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 3.64 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -445,3 +445,5 @@ Rückmeldungen an den Entwickler (Kontakt siehe GitHub-Seite des Projekts: <http
 - Windows/Linux/macOS/Raspberry Pi/iPad: Oberfläche und Übernahme testen. Windows-Firewall nur nach bewusster Administratorbestätigung prüfen.
 
 - Zeilen mit LED-Kanal 0/1 und weiteren Kanälen einfügen: gilt die Auswahl nur für eingefügte Zeilen? Bleiben Quellkanäle bei der entsprechenden Auswahl erhalten? Sind die LED-Nummern nach Neuberechnung korrekt?
+
+- Werden nach Datenübertragung und Rückgängig die berechneten LED-Nummern und neue Tabellenreiter sofort angezeigt, ohne F5 oder Tabelle neu berechnen?
