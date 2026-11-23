@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.79-daten3 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 4.79-daten4 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1801,3 +1801,5 @@ Unter **Einstellungen → Datenübertragung** kannst du Tabellen übernehmen ode
 Beim Einfügen ausgewählter Zeilen kannst du den LED-Kanal wählen (Standard 0) oder die Quellkanäle beibehalten. Die vorhandenen Zielzeilen behalten ihren Kanal.
 
 Nach einer Datenübertragung oder dem Rückgängigmachen wird die Tabellenansicht automatisch aktualisiert. Manuelles Neuladen ist nicht mehr nötig.
+
+Wird der Verbindungscode nicht akzeptiert, prüfe den im Quell-PC angezeigten Code und versuche die Verbindung erneut. Der Code wird bei jedem Abruf geprüft.

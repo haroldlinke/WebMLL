@@ -1,9 +1,13 @@
-Datei-Version: 1.66 (2026-11-23) - HOC_Anwender.md
+Datei-Version: 1.67 (2026-11-23) - HOC_Anwender.md
 Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Verständliche Meldung bei falschem Verbindungscode (2026-11-23)
+
+Beim Abruf der Tabellen wird HTTP 403 nun als „Verbindungscode nicht akzeptiert. Bitte den Code des Quell-PCs prüfen und erneut versuchen.“ angezeigt. Andere HTTP-Fehler bleiben unterscheidbar. headless_table_sync.py 1.04 und test_table_sync.py 1.06; Meldung in sieben Sprachen. Echte HTTP-Ablehnung und Übersetzungen durch die bestehende Testsuite geprüft.
 
 ## Anzeige nach Datenübertragung aktualisieren (2026-11-23)
 

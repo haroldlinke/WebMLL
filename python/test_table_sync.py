@@ -1,11 +1,12 @@
-# Datei-Version: 1.05 (2026-11-23) - test_table_sync.py
+# Datei-Version: 1.06 (2026-11-23) - test_table_sync.py
 # Name: test_table_sync.py
 # Path: test_table_sync.py
-# Version: 1.05
+# Version: 1.06
 # Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.06 2026-11-23 Falschen Code ueber echten HTTP-Server mit verstaendlicher Meldung pruefen.
 #   1.05 2026-11-23 Aktualisierungsfunktion der aktuellen Programmseite an Dialog uebergeben.
 #   1.04 2026-11-23 Kanalauswahl beim Zeilenimport pruefen.
 #   1.03 2026-11-23 Feature-Branch auf Basis 4.79; Sprachen und Startvorgaben dokumentiert.
@@ -241,9 +242,11 @@ class NetworkTests(unittest.TestCase):  # v1.03
         self.assertEqual(package["sheets"]["DCC"]["data"]["TKSHEET_data"][1][0], "netz")  # v1.03
 
     def test_wrong_code_denied(self):  # v1.03
-        with self.assertRaises(HTTPError) as error:  # v1.03
-            s.fetch(self.address, "wrong-code")  # v1.03
-        self.assertEqual(error.exception.code, 403)  # v1.03
+        # with self.assertRaises(HTTPError) as error:  # v1.06 (entfallen)
+        with self.assertRaisesRegex(ValueError, "Verbindungscode nicht akzeptiert") as error:  # v1.06
+            s.fetch(self.address, "wrong-code")  # v1.06
+        self.assertNotIn("wrong-code", str(error.exception))  # v1.06
+        self.assertNotIn("403", str(error.exception))  # v1.06
 
     def test_real_udp_discovery(self):  # v1.03
         found = s.discover(address="127.0.0.1", port=self.share.discovery_port, timeout=0.3)  # v1.03

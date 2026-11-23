@@ -1,11 +1,12 @@
-# Datei-Version: 1.03 (2026-11-23) - headless_table_sync.py
+# Datei-Version: 1.04 (2026-11-23) - headless_table_sync.py
 # Name: headless_table_sync.py
 # Path: headless/headless_table_sync.py
-# Version: 1.03
+# Version: 1.04
 # Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.04 2026-11-23 HTTP 403 beim Tabellenabruf als verstaendlichen Verbindungscode-Hinweis melden.
 #   1.03 2026-11-23 LED-Kanal nur fuer eingefuegte Zeilen setzen und validieren.
 #   1.02 2026-11-23 Feature-Branch auf Basis 4.79; Sprachen und Startvorgaben dokumentiert.
 #   1.01 2026-11-23 Ausgewaehlte Zeilen mit Konfliktpruefung und Backup in bestehende Tabellen einfuegen.
@@ -26,6 +27,7 @@ import socket  # v1.02
 import threading  # v1.02
 import time  # v1.02
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer  # v1.02
+from urllib.error import HTTPError  # v1.04
 from urllib.parse import urlsplit  # v1.02
 from urllib.request import Request, urlopen  # v1.02
 
@@ -455,10 +457,16 @@ def fetch(address, code):  # v1.02
     if len(nonce) != 48 or any(c not in "0123456789abcdef" for c in nonce):  # v1.02
         raise ValueError("Keine gültige WebMLL-Quelle.")  # v1.02
     request = Request(address + "/tables", headers={"X-MLL-Nonce": nonce, "X-MLL-Signature": mac(code, nonce + " /tables")})  # v1.02
-    with opener.open(request, timeout=20) as response:  # v1.02
-        raw = response.read(MAX_BYTES + 1)  # v1.02
-        expected = mac(code, nonce + " " + hashlib.sha256(raw).hexdigest())  # v1.02
-        if not hmac.compare_digest(response.headers.get("X-MLL-Reply", ""), expected):  # v1.02
-            raise ValueError("Antwort der Quelle konnte nicht bestätigt werden.")  # v1.02
+    try:  # v1.04
+        with opener.open(request, timeout=20) as response:  # v1.02
+            raw = response.read(MAX_BYTES + 1)  # v1.02
+            expected = mac(code, nonce + " " + hashlib.sha256(raw).hexdigest())  # v1.02
+            if not hmac.compare_digest(response.headers.get("X-MLL-Reply", ""), expected):  # v1.02
+                raise ValueError("Antwort der Quelle konnte nicht bestätigt werden.")  # v1.02
+    except HTTPError as error:  # v1.04
+        if error.code == 403:  # v1.04
+            error.close()  # v1.04
+            raise ValueError("Verbindungscode nicht akzeptiert. Bitte den Code des Quell-PCs prüfen und erneut versuchen.") from None  # v1.04
+        raise  # v1.04
     validate(raw)  # v1.02
     return raw  # v1.02
