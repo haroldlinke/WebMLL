@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.79-m08 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 4.79-m08.1 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1801,3 +1801,5 @@ Ein angepasstes PlatformIO-Build-Verzeichnis wird beim Übertragen der ESP32-Sta
 ## Gemeinsamer M08-Uploadweg (Feature-Test)
 
 Nano, Pico und ESP32 behalten ihre Boardeinstellungen. PlatformIO-Build und Upload laufen gemeinsam über M08. Für ESP32 kannst du beim Übertragen USB-Anschluss oder WLAN-Ziel auswählen. Bei Nano/Pico gilt die vorhandene USB-Erkennung. Nutze für den Feature-Test eine getrennte Datenkopie. Einzelheiten und Testgrenzen: [M08-Upload](../../M08_UPLOAD.md).
+
+Wurde ein früherer Versuch mit „nobuild: firmware.bin not found“ abgebrochen, starte die Übertragung nach Installation dieser Korrektur erneut. Die bereits entfernte Firmware wird dabei neu erzeugt; der anschließende Upload behält die Dateien.

@@ -1,5 +1,5 @@
 {
-"created": "2026-11-23 18:50:56",
+"created": "2026-11-23 19:37:56",
 "file_count": 2337,
 "files": {
 "Boards/Heartbeat.uf2": {
@@ -207,8 +207,8 @@
 "size": 4947
 },
 "LEDs_AutoProg/LEDs_AutoProg.h": {
-"sha256": "b94846a05d1ae1010fb6687f9073cbbfcf430a1cff3bf9bd71473a567dac8ec0",
-"size": 9507
+"sha256": "23fa446278565660cab06c8b53aabcc98e7c8a8c30a793b8752f8b2ee1c921e1",
+"size": 30959
 },
 "LEDs_AutoProg/LEDs_AutoProg.ino": {
 "sha256": "d6520d1bc6a49eb61d4e8f3d61749b4b3300ad92f16852a181d52f5767222d2f",
@@ -1307,8 +1307,8 @@
 "size": 4473
 },
 "headless/headless_upload.py": {
-"sha256": "3f670252d120cecdcffb5b9b2d46ce16279630a146c1637cad0169abffd15b25",
-"size": 12701
+"sha256": "127d49bb468c69485f746fc59b5495257eb83b7eb86cebc924724b1a9380ceef",
+"size": 12824
 },
 "hex-files/400_bootloader.hex": {
 "sha256": "30ced5d5dd07cf93371e24132294e9a11bc19e4d2f7c22d6fc40d5aee4460146",
@@ -7531,8 +7531,8 @@
 "size": 2829
 },
 "install/ANLEITUNG_Installation.md": {
-"sha256": "c4187d217e2e7b55b37298b16bcfec43f6952c953cce16723d49846f72282101",
-"size": 243508
+"sha256": "05f9f20cafd3b229b5a14c01eab0dbf8b9771396f7e77e81fc3b9abc2d6e4622",
+"size": 243765
 },
 "install/ANLEITUNG_Linux_Desktop.pdf": {
 "sha256": "ed3bf81790dab00eb36917e8a5bbc212fbf1d70682682223210bec33bb12efec",
@@ -7547,8 +7547,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "dd1f1f190ade7607efa10c7f388d3693c0b7842b86dbf599403f97ec4b42721e",
-"size": 165906
+"sha256": "9cd7d987ade2790d8d6c3d878295065bcd18d8993a5235298c69110bd1d3a912",
+"size": 166115
 },
 "install/UEBERSETZEN.md": {
 "sha256": "2a5b4bf59358e3c0e82fabb6e88b0f4605de0bfa334c777f0822b1765b4c4107",
@@ -8555,8 +8555,8 @@
 "size": 7614
 },
 "platformio.ini": {
-"sha256": "c5fea09b9de19338556a53967be96a9bebdd9bbe1311f3f8939cf45ae8dcbc11",
-"size": 1932
+"sha256": "869da5131784f20116299f3a2c0b6b4d04596c99a6d02e056cd74eed8a71de10",
+"size": 1861
 },
 "processed_output/LEDs_AutoProg.h.ccg.html": {
 "sha256": "d2b981fbe46f492452841ea8e61fef4b0bd46cdb78f8c6cd305b1c2582516c58",
@@ -9127,8 +9127,8 @@
 "size": 6984
 },
 "test_m08_upload.py": {
-"sha256": "157c3436349ec341d5db510a4d581c2696375dcf8ccdd204aab336522bd5f986",
-"size": 11221
+"sha256": "1b1e1fb700c4c1deddd988179568cc9f7f5a6f3df73c248af7f8fb293c8cd729",
+"size": 11386
 },
 "test_macro_edit.py": {
 "sha256": "8a92a09b45beea4d4a9f82ae9aef8448e75b565f23aa4c3f701aff63d8bb1460",

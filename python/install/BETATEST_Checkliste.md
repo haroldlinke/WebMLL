@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 3.63 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 3.64 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -449,3 +449,5 @@ Rückmeldungen an den Entwickler (Kontakt siehe GitHub-Seite des Projekts: <http
 - Windows/Linux/macOS/Raspberry Pi: Standard- und externe Buildpfade, Leerzeichen/Umlaute, serielle Gerätenamen und fehlende Werkzeuge prüfen.
 - Timeline-/ATTiny-Spezialmodule: bleiben Programmer-Einstellungen, Ausgabe und Rückgabewerte korrekt?
 - Neue Meldungen und Geräteauswahl in DE/EN/NL/FR/IT/ES/DA prüfen. Keine Passwörter im Protokoll oder in der temporären Protokollkonfiguration?
+
+- Nach erfolgreichem ESP32-Build: bleiben firmware.bin und partitions.bin beim Wechsel zur Upload-Konfiguration erhalten? USB und OTA prüfen; keine Meldung „Source firmware.bin not found“ bei nobuild.

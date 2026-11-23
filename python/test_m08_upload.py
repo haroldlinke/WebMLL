@@ -1,11 +1,12 @@
-# Datei-Version: 1.00 (2026-11-23) - test_m08_upload.py
+# Datei-Version: 1.01 (2026-11-23) - test_m08_upload.py
 # Name: test_m08_upload.py
 # Path: test_m08_upload.py
-# Version: 1.00
+# Version: 1.01
 # Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.01 2026-11-23 nobuild darf beim Protokollwechsel keine fertige Firmware bereinigen.
 #   1.00 2026-11-23 Gemeinsame Befehle, Prozessausfuehrung, Nano/Pico/ESP32 und M08-Verdrahtung.
 import no_tk  # v1.00
 no_tk.install(force=True)  # v1.00
@@ -39,7 +40,8 @@ class CommandTests(unittest.TestCase):  # v1.00
         self.assertNotIn("--upload-port", job.argv)  # v1.00
         precompiled = shared.PlatformIOJob("pio", ".", "nano_old", port="COM1", nobuild=True)  # v1.00
         self.assertEqual(precompiled.argv.count("upload"), 1)  # v1.00
-        self.assertIn("nobuild", precompiled.argv)  # v1.00
+        self.assertIn("nobuild", precompiled.argv)
+        self.assertIn("--disable-auto-clean", precompiled.argv)  # v1.01  # v1.00
 
     def test_wlan_password_never_in_command_or_argv(self):  # v1.00
         previous_protocol = os.environ.get("PLATFORMIO_UPLOAD_PROTOCOL")  # v1.00

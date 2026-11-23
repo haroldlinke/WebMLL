@@ -1,6 +1,6 @@
 # Gemeinsamer Build- und Uploadweg über M08
 
-Datei-Version: 1.00 (2026-11-23), gilt für webMobaLedLib 4.79, Branch `feature/m08-upload-vereinheitlichen`.
+Datei-Version: 1.01 (2026-11-23), gilt für webMobaLedLib 4.79, Branch `feature/m08-upload-vereinheitlichen`.
 
 ## Ziel und Aufbau
 
@@ -30,7 +30,7 @@ Auch die schnelle Pico-/ESP32-Konfiguration erhält ihre AVR-Werkzeugpfade über
 
 USB und WLAN sind zwei Transportarten desselben PlatformIO-Befehls. Für das Protokoll wird kurzzeitig eine private Kopie der Projektkonfiguration verwendet; sie wird auch nach Fehlern entfernt und verändert die normale platformio.ini nicht. Das OTA-Passwort wird darin nicht gespeichert. Es wird nur an den Kindprozess übergeben und in dessen Ausgabe maskiert. Der OTA-Rückkanal verwendet weiterhin den festen Port 32323.
 
-Reines Kompilieren erzeugt keinen Uploadauftrag. Vorgefertigte Nano-Dateien verwenden nobuild/upload. Bei selbst gebauter ESP32-Firmware wird vor dem Upload geprüft, dass das Build-Ergebnis noch dem gerade erzeugten Bild entspricht. Ein Abbruch beendet auf Windows den Prozessbaum; auf POSIX die eigene Prozessgruppe. Die Ausgabe läuft während des Vorgangs weiter ins vorhandene Protokollfenster.
+Reines Kompilieren erzeugt keinen Uploadauftrag. Vorgefertigte Nano-Dateien verwenden nobuild/upload. Alle nobuild-Aufrufe verwenden --disable-auto-clean, damit der Wechsel der Upload-Konfiguration keine gerade erzeugten Binärdateien entfernt. Bei selbst gebauter ESP32-Firmware wird vor dem Upload geprüft, dass das Build-Ergebnis noch dem gerade erzeugten Bild entspricht. Ein Abbruch beendet auf Windows den Prozessbaum; auf POSIX die eigene Prozessgruppe. Die Ausgabe läuft während des Vorgangs weiter ins vorhandene Protokollfenster.
 
 ## Tests und Grenzen
 

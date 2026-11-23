@@ -1,11 +1,12 @@
-# Datei-Version: 1.00 (2026-11-23) - headless_upload.py
+# Datei-Version: 1.01 (2026-11-23) - headless_upload.py
 # Name: headless_upload.py
 # Path: headless/headless_upload.py
-# Version: 1.00
+# Version: 1.01
 # Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.01 2026-11-23 nobuild behaelt Build-Dateien beim Wechsel der Upload-Protokollkonfiguration.
 #   1.00 2026-11-23 Gemeinsame Prozessausfuehrung und PlatformIO-Befehle hinter M08, Windows/Linux/macOS.
 """Ein gemeinsamer Prozess- und PlatformIO-Unterbau; M08 steuert die Fachablaeufe."""  # v1.00
 import logging  # v1.00
@@ -37,7 +38,7 @@ class PlatformIOJob(str):  # v1.00
         argv = [str(pio), "run", "--project-dir", str(Path(project).resolve()), "-e", str(environment)]  # v1.00
         if upload:  # v1.00
             if nobuild:  # v1.00
-                argv += ["-t", "nobuild"]  # v1.00
+                argv += ["--disable-auto-clean", "-t", "nobuild"]  # v1.01
             argv += ["-t", "upload"]  # v1.00
             if port:  # v1.00
                 argv += ["--upload-port", str(port)]  # v1.00

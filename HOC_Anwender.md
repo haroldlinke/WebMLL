@@ -1,9 +1,16 @@
-Datei-Version: 1.65 (2026-11-23) - HOC_Anwender.md
+Datei-Version: 1.66 (2026-11-23) - HOC_Anwender.md
 Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Fertige Firmware beim Upload erhalten (2026-11-23)
+
+Nach erfolgreichem ESP32-Build änderte die temporäre Upload-Protokollkonfiguration die PlatformIO-Konfigurationssignatur. PlatformIO bereinigte dadurch die Build-Dateien, bevor das Ziel nobuild auf firmware.bin zugreifen konnte. Strukturierte nobuild-Aufrufe erhalten nun --disable-auto-clean. Das betrifft den Upload bereits erzeugter Firmware; normale Builds bleiben bei der bisherigen Bereinigung.
+
+Dateien: headless/headless_upload.py 1.01, test_m08_upload.py 1.01. Regressionstest für den Befehlsaufbau ergänzt. Ein echter Compile-/nobuild-Protokollwechsel wird zusätzlich ohne Geräteübertragung geprüft. Nach der Korrektur ist ein neuer Build nötig, wenn der vorherige Versuch die Dateien bereits entfernt hat.
+
 
 ## Feature: gemeinsamer M08-Uploadweg (2026-11-23)
 
