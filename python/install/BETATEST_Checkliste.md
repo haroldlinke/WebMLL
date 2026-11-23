@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 3.61 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 3.62 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -432,3 +432,14 @@ Rückmeldungen an den Entwickler (Kontakt siehe GitHub-Seite des Projekts: <http
 324. **Dialoge und Menüs (4.77, Issue 34):** Alle Dialoge (zum Beispiel Update Testversion, Typauswahl im Timeline Editor) und Auswahlmenüs erscheinen über der Seite, abgedunkelt, in der Mitte des Fensters; besonders auf dem Mac (Safari, Chrome) und nach hartem Neuladen prüfen.
 325. **Simulator Fensterlage (4.78, Issue 45):** Programm Einstellungen, Simulatoreinstellungen, Lage X/Y auf −32000 setzen (Windows). „Setup simulieren“: Das Fenster erscheint sichtbar (Lage 800/400), und die Einstellungen zeigen wieder 800/400. Simulatorfenster minimieren und Programm beenden: Die Lage bleibt wie vorher.
 326. **Statische IP oder DHCP (4.79, nur ESP32):** Hardware Optionen, Reiter „WLAN (OTA)“: Unter „Hostname“ die Auswahl „DHCP“ / „Statische IP-Adresse“. Bei „Statisch“ erscheinen IP-Adresse, Gateway, Subnetzmaske (Vorgabe 255.255.255.0), DNS-Server 1 und 2. Falsche Eingaben (zum Beispiel Gateway in einem anderen Netz, IP = Gateway, Maske 255.0.255.0) werden beim Speichern mit einer verständlichen Meldung abgelehnt. Mit gültigen Werten speichern, dann „ESP32-Setup übertragen“ (USB oder WLAN): Der ESP32 meldet sich unter der festen Adresse (Router-Liste, OLED-Modus 5, Verbindung testen). Wieder auf DHCP stellen und neu übertragen: Der ESP32 bekommt wieder eine Adresse vom Router. Bei DHCP ändert sich nichts gegenüber früher (keine zusätzliche Vollübertragung).
+
+## Datenübertragung (Feature-Branch, Basis 4.79)
+
+- Bleibt die Quellfreigabe nach jedem Neustart aus, auch wenn sie vorher aktiv war? Bleiben Name, Code und Auswahl gespeichert?
+- Wird der Quell-PC nach bewusster Freigabe gefunden? Funktioniert die direkte Adresse bei fehlender Suche? Wird ein falscher Code abgelehnt?
+- Werden nur ausgewählte Tabellen übernommen? Bleiben lokale COM-/WLAN-Adressen, globale Einstellungen und ESP/WLAN-Zugangsdaten erhalten?
+- Funktioniert Zeileneinfügen vor/nach/am Ende, ohne vorhandene Zeilen zu verlieren? Werden Kopfzeilen und inkompatible Protokolle abgelehnt?
+- Werden Adress-/Namenskonflikte angezeigt und nur nach ausdrücklicher Bestätigung übernommen?
+- Werden Icons, Testtasten und Tabellen nach Import und Rückgängig neu berechnet? Stellt Rückgängig den letzten Arbeitsmappenstand wieder her?
+- Funktioniert der Dialog in DE, EN, NL, FR, IT, ES und DA, auch bei langen Texten und auf kleinen Bildschirmen?
+- Windows/Linux/macOS/Raspberry Pi/iPad: Oberfläche und Übernahme testen. Windows-Firewall nur nach bewusster Administratorbestätigung prüfen.

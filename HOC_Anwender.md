@@ -1,9 +1,18 @@
-Datei-Version: 1.63 (2026-11-23) - HOC_Anwender.md
+Datei-Version: 1.64 (2026-11-23) - HOC_Anwender.md
 Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Feature Datenübertragung (2026-11-23, Basis 4.79)
+
+**Neue Funktionen:** Unter Einstellungen → Datenübertragung lassen sich ausgewählte Tabellen von einem anderen PC übernehmen oder ausgewählte Zeilen in bestehende Tabellen einfügen. Vor jeder Übernahme wird die bisherige Arbeitsmappe gesichert und anschließend neu berechnet. Der letzte Import kann rückgängig gemacht werden. Quell-PCs werden im lokalen Netzwerk gesucht. Die Freigabe muss nach jedem Start bewusst aktiviert werden. Dialog und Meldungen stehen in sieben Sprachen bereit.
+
+**Korrekturen:** Lokale Programmeinstellungen, WLAN-Zugangsdaten und ESP-Einstellungen bleiben am Ziel erhalten. COM-Port und WLAN-Zieladresse werden nicht überschrieben. Beim Zeileneinfügen werden mögliche Konflikte angezeigt.
+
+Bedienung und Grenzen: [Datenübertragung](DATENUEBERTRAGUNG.md).
+
 
 ## Version 4.79 (2026-11-23)
 

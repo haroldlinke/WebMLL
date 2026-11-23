@@ -1,12 +1,13 @@
-# Datei-Version: 4.79 (2026-11-23) - webmobaledlib.py
+# Datei-Version: 4.79-daten1 (2026-11-23) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        4.79
+# Version:        4.79-daten1
 # Last Update:    2026-11-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   4.79-daten1 2026-11-23 Optionaler Dialog Datenuebertragung; Quellfreigabe beim Start aus.
 #   1.39  2026-10-17  Reiter Patterngenerator (Runde 1): Anzeige der Tabelle, Aufbau erst beim ersten Oeffnen (build_patt, _PATT); Kopf eingefuegt; davor bis 1.38 nicht erfasst
 #   1.40  2026-10-17  Patterngenerator Runde 2: Bearbeiten, Werkzeugleiste, Beschreibung, Balken (Module web_pattgen, headless_pattgen)
 #   1.41  2026-10-17  Patterngenerator: lesbare Spalten, Textueberlauf, Balken bei jedem Start (web_pattgen 1.02, headless_pattgen 1.02)
@@ -7051,6 +7052,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ("Spezial", lambda: open_settings_group("Spezialeinstellungen")),  # v4.51
             ("Erweiterungen …", open_extensions),  # v4.51: Schritt 2 verschiebt die Erweiterungen hierher, bis dahin das Optionenfenster auf dem Reiter Erweiterungen
             None,  # v4.51
+            ("Datenübertragung", lambda: __import__("_web.web_table_sync", fromlist=["open_dialog"]).open_dialog()),  # v4.79-daten1
             ("Einstellungen sichern …", export_settings),  # v4.24  # v4.51 (aus dem Menue Datei)
             ("Einstellungen übernehmen …", import_settings),  # v4.24  # v4.51 (aus dem Menue Datei)
         ],
@@ -7884,6 +7886,8 @@ def main():
     for line in FILE_PROBLEMS:  # v1.75
         logger.error("Datei passt nicht zur Version %s: %s", VERSION, line)  # v1.75
     start_backend()
+    from _web import web_table_sync  # v4.79-daten1
+    web_table_sync.install(nicegui_app, ctrl, lambda: page.workbook, VERSION)  # v4.79-daten1
     shown_host = browser_host(args.host)  # v1.66
     print(f"\nwebmobaledlib.py Version {VERSION}")
     print(f"Datenordner: {userdata.data_dir()}")

@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.79 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 4.79-daten1 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1793,3 +1793,7 @@ In Hardware Optionen, Reiter Entwicklungsumgebung, **PlatformIO** wählen und �
 ## ESP32: feste IP-Adresse statt DHCP (ab 4.79)
 
 Im Reiter „WLAN (OTA)“ der Hardware Optionen wählst du, ob der ESP32 seine Adresse per **DHCP** vom Router bekommt oder eine **feste IP-Adresse** verwendet. Bei „Statische IP-Adresse“ trägst du IP-Adresse, Gateway (meist der Router), Subnetzmaske (meist 255.255.255.0) und DNS-Server ein (leer: Gateway). Das Programm prüft die Eingaben. Danach das ESP32-Setup einmal neu übertragen und bei „Adresse für WebMLL“ die neue IP-Adresse eintragen (bleibt das Feld leer, nimmt das Programm die feste IP). Die feste Adresse darf nicht im DHCP-Bereich des Routers liegen. Verstecktes WLAN und mehrere WLANs werden nicht unterstützt.
+
+## Datenübertragung zwischen PCs (Feature-Branch 4.79-daten1)
+
+Unter **Einstellungen → Datenübertragung** kannst du Tabellen übernehmen oder ausgewählte Zeilen in bestehende Tabellen einfügen. Die Quellfreigabe ist nach jedem Start ausgeschaltet. Anleitung, Rückgängig und Netzwerkhinweise: [Datenübertragung](../../DATENUEBERTRAGUNG.md).

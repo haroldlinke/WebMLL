@@ -1,4 +1,4 @@
-Datei-Version: 1.57 (2026-11-23) - HOC_intern.md
+Datei-Version: 1.58 (2026-11-23) - HOC_intern.md
 Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,26 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## Feature Datenübertragung (2026-11-23, Basis 4.79)
+
+Neuer Branch auf origin/main 958e80a. Optionaler Dialog unter Einstellungen, Quellfreigabe mit Auswahl, LAN-Suche, Challenge/HMAC, Tabellenübernahme und Einfügen ausgewählter Zeilen. Wiederverwendung von SaveWorkbook/LoadWorkbook, HeadlessSheet.insert_rows und der ursprünglichen Neuberechnung. Quellfreigabe bei jedem Start aus; Hardware-AutoConnect bleibt unverändert.
+
+Ein gemeinsames Importbackup, Schutz lokaler COM-/WLAN-Adressen und globaler Einstellungen, Konflikthinweise beim Zeileneinfügen. HTTP überträgt Tabellen unverschlüsselt; Grenzen und Bedienung stehen in DATENUEBERTRAGUNG.md. Keine Datenordner, Zugangscodes oder Teststarter im Branch.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| webmobaledlib.py | 4.79-daten1 | Menü und optionale Initialisierung, Programmversion 4.79 bleibt Basis |
+| _web/web_table_sync.py | 1.06 | Dialog, Quellfreigabe, Vorschau, Import, Rückgängig, Neuberechnung |
+| headless/headless_table_sync.py | 1.02 | LAN-Protokoll, Datenpaket, Zeileneinfügen, Sicherung |
+| test_table_sync.py | 1.03 | 22 Tests einschließlich Startvorgabe und tatsächlicher Übersetzung DE/EN/NL/FR/IT/ES/DA |
+| csv/Web_Languages.csv | Katalog für 4.79-daten1 | Dialog- und Validierungstexte in sieben Sprachen |
+| DATENUEBERTRAGUNG.md | 1.00 | Bedienung, Datenschutzumfang, Grenzen und Netzwerk |
+| install/ANLEITUNG_Installation.md | 4.79-daten1 | Verweis auf Bedienungsanleitung |
+| install/BETATEST_Checkliste.md | 3.62 | Testfälle für Freigabe und Übernahme |
+
+Tests: 22 automatisierte Tests auf dem Branch unter Windows bestanden. Syntaxprüfung und echter Backendstart mit frischem Datenordner ebenfalls bestanden. Nicht geprüft: Hardware-Upload, macOS, Raspberry Pi, iPad, Windows-UAC/Firewallregeländerung. Linux-Prototyp zuvor mit 20 Tests geprüft; neue Sprach-/Starttests separat dokumentiert.
+
 
 ## 2.12 (2026-10-23) - Release-Stand
 
