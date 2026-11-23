@@ -1,12 +1,14 @@
-Datei-Version: 1.40 (2026-11-21) - LIESMICH_Wiki_Gesamt.md
-Gilt für webMobaLedLib 4.67
+Datei-Version: 1.53 (2026-11-23) - LIESMICH_Wiki_Gesamt.md
+Gilt für webMobaLedLib 4.79
 
-# Wiki-Kapitel „webMobaLedLib“: alle Seiten, Stand 4.67
+# Wiki-Kapitel „webMobaLedLib“: alle Seiten, Stand 4.79
 
-Dieses Paket enthält **alle 29 Seiten** in ihrer neuesten Fassung (Seitenstand jeweils um 0,01 erhöht). Es ersetzt die früheren Pakete der sechs Wellen. **Die Seiten erst veröffentlichen, wenn ein Release mit 3.04 (oder neuer) auf GitHub liegt.**
+Dieses Paket enthält **alle 40 Seiten** in ihrer neuesten Fassung (Seitenstand jeweils um 0,01 erhöht). Es ersetzt die früheren Pakete der sechs Wellen. **Die Seiten erst veröffentlichen, wenn ein Release mit 3.04 (oder neuer) auf GitHub liegt.**
 
-## Neu seit Stand 4.36 (Stand 4.67): Menüs neu geordnet
+## Neu seit Stand 4.36 (Stand 4.79): Menüs neu geordnet
 
+* **`ota`** (1.05, 4.79): neu **DHCP oder Statische IP-Adresse** (IP-Adresse, Gateway, Subnetzmaske, DNS) im Reiter WLAN (OTA).
+* **Alle Seiten auf Stand 4.79 geprüft** (Seitenstand jeweils um 0,01 erhöht, Kopfzeile „gilt für webMobaLedLib 4.79“). Inhaltlich geändert: `pg_werkzeugleiste` (Reiter der Hardware Optionen neu: ESP Einstellungen, WLAN (OTA), ohne DATEIEN und Erweiterungen; Schnelles Update), `pg_arduino` (Status neben dem Knopf, Übertragungsfenster, Abschnitt Schnelles Update), `programmgenerator` (Kopfzeile), `pg_tabelle` (Rückgängig und Wiederholen, Makrotext in Spalte L, Spaltenbreiten übertragen), `pg_speichern` (verworfene Änderungen, Datei bereit), `wz_programm_einstellungen` (Fenster automatisch schließen, Zellinnenabstand, Dunkel ab 4.75, neue Schriftbezeichnung), `ota` (ESP Einstellungen, Schnelles Update über WLAN, feste IP), `fehlersuche` (hang_dump.txt, Dialoge unter der Tabelle), `aktualisieren` (eigener Link oder ZIP bei Update Testversion), `erweiterungen`, `modus`, `simulator`, `seiten_update` (neue Tabelle, Hinweis zu Bildern). Die übrigen Seiten wurden geprüft und nur im Seitenstand angehoben.
 * **Tabelle drucken (4.62):** `pg_speichern`: neuer Menüpunkt Datei, Tabelle drucken … (Druckansicht mit allen Zeilen).
 * **Mini-Farbtest (4.59):** `pg_tabelle`: F3 oder Kontextmenü bei der Zelle Beleuchtung mit dem Makro ConstRGB.
 * **Einstellungen als Fenster (4.56):** `wz_programm_einstellungen`, `pg_tabelle`: Jeder Eintrag im Menü Einstellungen und „Tabelle färben …“ öffnet ein Fenster mit festen Knöpfen; nach dem Färben springt das Programm in den Programm Generator. Bilder `wz_07_programm_einstellungen.png` und die Seite Tabelle färben neu aufnehmen.

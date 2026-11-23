@@ -1,12 +1,13 @@
-# Datei-Version: 1.29 (2026-11-22) - M08_ARDUINO.py
+# Datei-Version: 1.30 (2026-11-23) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.29
-# Last Update:    2026-11-22
+# Version:        1.30
+# Last Update:    2026-11-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.30  2026-11-23  ESP32-Setup: statische IP-Adresse statt DHCP (network_settings), die Netzwerkwerte gehoeren zum Firmware-Schluessel
 #   1.29  2026-11-22  ESP32-Setup nutzt dynamische Konfiguration auch ueber WLAN; nach OTA Konfiguration nachsenden
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (Create_Cmd_file)
@@ -2547,7 +2548,8 @@ def GetCPUTypeFromSignature(DeviceSignature, DefaultType='ATMega328P'):
         _fn_return_value = DefaultType
     return _fn_return_value
 
-def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, password, hostname, ota, firewall_hint):  # v1.22
+# def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, password, hostname, ota, firewall_hint):  # v1.22  # v1.30 (entfallen)
+def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, password, hostname, ota, firewall_hint, network_settings=None):  # v1.22  # v1.30
     """Build the active ESP32 project and transfer it using the selected transport."""  # v1.22
     from _web.web_i18n import tr  # v1.22
     from headless import headless_esp32_ota  # v1.22
@@ -2566,7 +2568,9 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
             port = ("COM" + _raw) if (_raw.isdigit() and os.name == "nt") else _raw  # v1.27
         # if not M06.Create_HeaderFile(HeaderOnly=True):  # v1.22  # v1.29 (entfallen)
         import hashlib, json  # v1.29
-        firmware_key = hashlib.sha256(json.dumps([hostname, password, bool(ota)], ensure_ascii=True).encode("utf-8")).hexdigest()  # v1.29
+        network = headless_esp32_ota.network_of(network_settings) if network_settings else None  # v1.30: statische IP (None = DHCP)
+        # firmware_key = hashlib.sha256(json.dumps([hostname, password, bool(ota)], ensure_ascii=True).encode("utf-8")).hexdigest()  # v1.29  # v1.30 (entfallen)
+        firmware_key = hashlib.sha256(json.dumps([hostname, password, bool(ota)] + ([network] if network else []), ensure_ascii=True, sort_keys=True).encode("utf-8")).hexdigest()  # v1.30 (DHCP: Schluessel wie bisher)
         if not M06.Create_HeaderFile(HeaderOnly=True, DynamicConfig=True, DynFirmwareKey=firmware_key):  # v1.22  # v1.29
             raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))  # v1.22
         sketch = os.path.join(GetWorkbookPath(), M02.Ino_Dir_LED)  # v1.22
@@ -2583,14 +2587,14 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
             image, partitions = headless_esp32_ota.build_platformio_project(  # v1.22
                 sketch, pio, password, log.add_text_to_textwindow,  # v1.22
                 lambda path: Write_PIO_Project("esp32", path),  # v1.22
-                hostname=hostname, ota=ota,  # v1.22
+                hostname=hostname, ota=ota, network=network,  # v1.22  # v1.30
             )  # v1.22
         else:  # v1.22
             log.add_text_to_textwindow(tr("Build-Umgebung: Arduino Builder"))  # v1.22
             image, partitions = headless_esp32_ota.build_project(  # v1.22
                 sketch, Find_ArduinoExe(), M02a.Get_Sketchbook_Path(),  # v1.22
                 board, password, log.add_text_to_textwindow,  # v1.22
-                hostname=hostname, ota=ota,  # v1.22
+                hostname=hostname, ota=ota, network=network,  # v1.22  # v1.30
             )  # v1.22
         if ctrl.is_connection_open():  # v1.22
             ctrl.disconnect()  # v1.22

@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Installation auf dem Mac ======
-//Seitenstand 1.02 (2026-11-10), gilt für webMobaLedLib 3.08//
+//Seitenstand 1.03 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Diese Seite gilt für **macOS ab Version 10.13**, auch für Macs mit Apple-Chip (M1 und neuer). Für die Installation öffnest du **einmal das Terminal**. Die Schritte dafür stehen unten Schritt für Schritt.
 

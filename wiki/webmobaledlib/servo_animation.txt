@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Servo Animation ======
-//Seitenstand 1.05 (2026-11-09), gilt für webMobaLedLib 3.04//
+//Seitenstand 1.06 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Mit der **Servo Animation** bestimmst du, **wie sich ein Servo bewegt**: wie schnell, mit welcher Beschleunigung, mit Pausen und mit eigenen Zwischenstellungen. So lässt du ein Tor sanft aufgehen, eine Schranke langsam senken oder einen Baum mit ein paar Rucklern umstürzen. Du **zeichnest den Bewegungsablauf als Kurve**, und das Programm macht daraus die Einträge für die Lichtmaschine.
 

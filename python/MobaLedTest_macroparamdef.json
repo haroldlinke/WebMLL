@@ -402,7 +402,7 @@
         "Min": "",
         "Max": "",
         "Default": "",
-        "Input Text": "ProgGen/PattGen DefaultFont",
+        "Input Text": "Programm Generator/Timeline Editor Standardschrift",
         "Hint": "Schrift der Tabelle des Programm Generators (Größe und Schriftart). Die Änderung gilt nach dem Speichern der Einstellungen sofort.",
         "Implementation comment": "",
         "MultipleParams": [

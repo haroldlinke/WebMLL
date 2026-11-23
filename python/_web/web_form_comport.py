@@ -1,13 +1,14 @@
-# Datei-Version: 1.08 (2026-11-19) - web_form_comport.py
+# Datei-Version: 1.09 (2026-11-22) - web_form_comport.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_comport.py
 # Path:           _web/web_form_comport.py
-# Version:        1.08
-# Last Update:    2026-11-19
+# Version:        1.09
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.02  2026-10-15  Web-Ersatz fuer Select_COM_Port_Userform (Original, nicht erfasst)
+#   1.09  2026-11-22  Issue 37: nach dem Wechsel des Boards ueber 'Andere Typen' werden Bild, Beschreibungstext und roter Hinweis des Dialogs neu gesetzt
 #   1.08  2026-11-19  Bilddatei unabhaengig von Gross- und Kleinschreibung suchen (LED_Image heisst LED_image.png: unter Linux und auf dem Pi fehlte das Bild; Issue 27, Juergen)
 #   1.07  2026-11-14  'Andere Typen' anklickbar: Rueckfrage, Typwechsel (zuletzt benutzte Variante), Anschluss waehlen; Abbrechen stellt den alten Typ wieder her
 #   1.06  2026-11-14  Zeile 'Andere Typen: COM3(ESP32), COM5(Pico)' wie in Excel
@@ -77,7 +78,8 @@ async def _comport_async(form, spec):
             with ui.row().classes("no-wrap w-full items-start"):
                 with ui.column().classes("grow gap-2"):
                     ui.label(spec["title"]).classes("text-h6")
-                    ui.label(spec["text"]).style("white-space: pre-line")
+                    # ui.label(spec["text"]).style("white-space: pre-line")  # v1.09 (entfallen)
+                    text_lbl = ui.label(spec["text"]).style("white-space: pre-line")  # v1.09: Referenz fuer den Boardwechsel
                     status = ui.label("").classes("text-grey-8").style("white-space: pre-line")
                     error = ui.label("").classes("text-red-8 text-bold").style("white-space: pre-line")
                     error.set_visibility(False)
@@ -89,10 +91,14 @@ async def _comport_async(form, spec):
                         other_box = ui.row().classes("items-center gap-1 text-caption")  # v1.07: Andere Typen, anklickbar
                         ui.label(spec["hint"]).style("white-space: pre-line")
                 with ui.column().classes("items-end gap-2").style("min-width: 200px"):
-                    if spec["red_hint"]:
-                        ui.label(spec["red_hint"]).classes("text-red-8").style("white-space: pre-line")
-                    if spec["image"]:
-                        ui.image(spec["image"]).classes("w-48")
+                    # if spec["red_hint"]:  # v1.09 (entfallen)
+                    #     ui.label(spec["red_hint"]).classes("text-red-8").style("white-space: pre-line")  # v1.09 (entfallen)
+                    # if spec["image"]:  # v1.09 (entfallen)
+                    #     ui.image(spec["image"]).classes("w-48")  # v1.09 (entfallen)
+                    red_lbl = ui.label(spec["red_hint"] or "").classes("text-red-8").style("white-space: pre-line")  # v1.09: immer anlegen, damit der Boardwechsel sie aendern kann
+                    red_lbl.set_visibility(bool(spec["red_hint"]))  # v1.09
+                    img = ui.image(spec["image"] or "").classes("w-48")  # v1.09
+                    img.set_visibility(bool(spec["image"]))  # v1.09
             with ui.row().classes("justify-end w-full"):
                 for n, text in spec["buttons"]:
                     ui.button(text, on_click=lambda n=n: dlg.submit(n)).props("" if n == 3 else "outline").classes(
@@ -121,6 +127,16 @@ async def _comport_async(form, spec):
                     sel.set_options(ports_, value=dev if dev in ports_ else (port_ if port_ in ports_ else None))
                     avail.set_text(avail_)
                     render_other()
+                    if spec.get("main_col"):  # v1.09: Issue 37: Bild, Text und roter Hinweis zum neuen Board
+                        try:  # v1.09
+                            view = form._board_view()  # v1.09
+                            text_lbl.set_text(view["text"])  # v1.09
+                            red_lbl.set_text(view["red_hint"])  # v1.09
+                            red_lbl.set_visibility(bool(view["red_hint"]))  # v1.09
+                            img.set_source(view["image"])  # v1.09
+                            img.set_visibility(bool(view["image"]))  # v1.09
+                        except Exception:                                   # noqa: BLE001  # v1.09
+                            logger.exception("Port-Auswahl: Anzeige nach dem Boardwechsel nicht aktualisiert")  # v1.09
 
             def render_other():  # v1.07
                 if other_box is None:
@@ -194,6 +210,37 @@ def make_class(Base):
                         break
                 return
             WebSelectComPort._VARIANTS[typ] = buildopt.replace(M02.AUTODETECT_STR, "").strip()
+
+        def _find_image(self, picture):  # v1.09: Bilddatei ohne Beachtung der Gross-/Kleinschreibung suchen (wie in ShowDialog)
+            try:  # v1.09
+                wanted = (picture + ".png").lower()  # v1.09
+                found = next((f for f in os.listdir(os.path.join(here, "images")) if f.lower() == wanted), None)  # v1.09
+            except OSError:  # v1.09
+                found = None  # v1.09
+            return "/mll_images/" + found if found else ""  # v1.09
+
+        def _board_view(self):  # v1.09: Bild, Beschreibungstext und roter Hinweis fuer das aktuell eingestellte Board (wie M07_COM_Port_New.Show_USB_Port_Dialog)
+            import proggen.M02a_Public as M02a  # v1.09
+            import proggen.M08_ARDUINO as M08  # v1.09
+            is_arduino = True  # v1.09
+            if M02a.Get_BoardTyp() == M02.HT_ESP32:  # v1.09
+                picture, is_arduino = "ESP32_Image", False  # v1.09
+                M08.SetArduName()  # v1.09
+            elif M02a.Get_BoardTyp() == M02.HT_PICO:  # v1.09
+                picture, is_arduino = "PICO_Image", False  # v1.09
+                M08.SetArduName()  # v1.09
+            elif InStr(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL), "WLAN") > 0:  # v1.09
+                picture, is_arduino = "PICOWL_Image", False  # v1.09
+                M08.SetArduName("PICOWL")  # v1.09
+            else:  # v1.09
+                picture = "LED_Image"  # v1.09
+                M08.SetArduName("LED")  # v1.09
+            text = M09.Get_Language_Str("Es wird der COM Port überprüft bzw. ausgewählt, an den der #1# angeschlossen ist.").replace("#1#", M08.GetArduName())  # v1.09
+            red_hint = ""  # v1.09
+            if is_arduino:  # v1.09
+                text = text + vbCr + vbCr + M09.Get_Language_Str("OK, wenn die LEDs am richtigen Arduino schnell blinken.")  # v1.09
+                red_hint = M09.Get_Language_Str("Tipp: Der ausgewählte Arduino blinkt schnell")  # v1.09
+            return {"text": text, "red_hint": red_hint, "image": self._find_image(picture)}  # v1.09
 
         def _switch_type(self, typ):  # v1.07
             """Zentralentyp wechseln (linker Arduino): zuletzt benutzte Variante des Typs, sonst die Standardvariante. True, wenn gewechselt wurde."""
@@ -368,7 +415,8 @@ def make_class(Base):
                     "show_unknown": self._show_unknown, "hint": hint, "buttons": buttons,
                     "other_text": M09.Get_Language_Str("Andere Typen:"),
                     "switch_text": M09.Get_Language_Str("Zentrale auf %1 umstellen und %2 verwenden?"),
-                    "yes_text": M09.Get_Language_Str("Ja"), "no_text": M09.Get_Language_Str("Nein")}  # v1.07
+                    "yes_text": M09.Get_Language_Str("Ja"), "no_text": M09.Get_Language_Str("Nein"),  # v1.07
+                    "main_col": Picture in ("LED_Image", "ESP32_Image", "PICO_Image", "PICOWL_Image")}  # v1.09: nur der Dialog der Lichtmaschine wechselt Bild und Text
             self.IsActive = True
             pressed = wd.call_in_loop(_comport_async, self, spec, default=2)
             self.IsActive = False

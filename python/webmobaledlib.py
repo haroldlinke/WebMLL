@@ -1,9 +1,9 @@
-# Datei-Version: 4.67 (2026-11-21) - webmobaledlib.py
+# Datei-Version: 4.79 (2026-11-23) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        4.67
-# Last Update:    2026-11-21
+# Version:        4.79
+# Last Update:    2026-11-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -313,6 +313,18 @@
 #   4.65  2026-11-21  F3 (Mini-Farbtest) oeffnete bei fehlendem Zellfokus die Browser-Suche: F3 wird seitenweit abgefangen
 #   4.66  2026-11-21  Fehler aus 4.65: F3 oeffnete den Mini-Farbtest nicht mehr, weil AG Grid bereits abgefangene Tasten ignoriert; F3-Abfang jetzt in der Bubble-Phase (nach der Tabelle)
 #   4.67  2026-11-21  Menue-Umstellung Teil 2: Knopf Optionen Werkzeuge heisst Hardware Optionen; Reiter Bootloader heisst Firmware Installation und enthaelt jetzt auch den Knopf Firmware installieren mit Beschreibung (web_form_options 1.43)
+#   4.68  2026-11-22  Menue-Umstellung Teil 2 Rest: Dialog Hardware Optionen (Titel, Anfaenger Modus, Boardnamen, Entwicklungsumgebung, Hinweis WLAN) (web_form_options 1.44)
+#   4.69  2026-11-22  Adresse /ARDUINOEinstellungen entfaellt (web_tabs 1.35)
+#   4.70  2026-11-22  Hardware Optionen, Reiter Entwicklungsumgebung: Hinweis Schnelles Update nicht kompatibel mit WLAN (web_form_options 1.45)
+#   4.71  2026-11-22  Pull Request 54 (moosbewohner): ESP32-Konfiguration ueber WLAN (M06 1.15, M08 1.29, M42 1.05, headless_dyn_config 1.02, MLLDynConfig.h 1.04, LEDs_AutoProg.ino, test_dyn_config_wlan 1.05); Warnhinweise aus 4.68/4.70 entfernt (web_form_options 1.46)
+#   4.72  2026-11-22  Dialog Datei bereit: Knopf Speichern unter ... wird ausgeblendet, wenn der Browser keinen Speichern-Dialog bietet (kein https/localhost oder kein Edge/Chrome), mit Hinweis
+#   4.73  2026-11-22  Anwender-Wunsch: Meldung des Programms und Verbindungsstatus in einer eigenen Zeile unter der Kopfzeile (die Knoepfe Mit Lichtmaschine verbinden, Vollbild, Beenden bleiben stehen); Tabelle faerben: Farbfelder zeigen die Farbe (web_dialogs 1.12); Textfehler: Sound-Datei, Programm Einstellungen, Standardschrift
+#   4.74  2026-11-22  Kopfzeile: Verbindungsstatus wieder direkt neben dem Knopf Mit Lichtmaschine verbinden, Meldung des Programms in der Menuezeile neben Zwischengespeichert (keine eigene Zeile mehr)
+#   4.75  2026-11-22  Pull Request 55 (moosbewohner): dunkles Farbschema mit helleren, abgestuften Flaechen (web_layout 1.21, nur CSS)
+#   4.76  2026-11-22  Issue 37: Port-Auswahl: nach dem Wechsel des Boards ueber Andere Typen aendern sich Bild, Text und roter Hinweis (web_form_comport 1.09)
+#   4.77  2026-11-22  Issue 34: Dialoge und Menues fest am Fenster (CSS); Issue 30: Startmeldung der Lichtmaschine mit Datum TT.MM.JJ (M06_Write_Header 1.16)
+#   4.79  2026-11-23  ESP32: wahlweise DHCP oder statische IP-Adresse (Reiter OTA: IP-Adresse, Gateway, Subnetzmaske, DNS); Firmware muss einmal neu uebertragen werden (web_esp32_ota 1.07, headless_esp32_ota 1.12, M08_ARDUINO 1.30, ESP32Extensions.h, Web_Languages.csv)
+#   4.78  2026-11-22  Issue 45: Simulator: Fensterlage -32000 (minimiertes Fenster) wird nicht mehr gespeichert, ungueltige Lage wird beim Oeffnen zurueckgesetzt (M39_Simulator 1.12)
 #   4.40  2026-11-20  Pull Request 44 von Juergen (Issues 41, 42): Makrotext bei direkter Eingabe pruefen (Fehler korrigieren oder wiederherstellen), bei Makrowechsel Name und Symbol aktualisieren, danach LEDs, InCnt, LocInCh, Adressen, Testtasten und Start-LEDs neu setzen (headless_macro_edit 1.01); Uebertragungsfenster schliesst sich automatisch (web_log 1.11)
 #   4.39  2026-11-20  Issue 48: Fehlerpruefung beim Erzeugen der Kopfdatei (zum Beispiel Adresse mit zwei verschiedenen Typen) wirkte nicht, das Kompilieren startete trotzdem (M06_Write_Header 1.13)
 #   4.38  2026-11-20  Tastenkuerzel ueberall auf der Seite (Issue 49, Juergen): Strg+Z Rueckgaengig, Strg+Y / Strg+Umschalt+Z Wiederholen, neu Strg+S = dauerhaft speichern in die Hauptdatei (Menue Datei: Speichern); nicht in Eingabefeldern und Dialogen
@@ -531,11 +543,17 @@ REQUIRED_FILES = {  # v1.75
     "headless/headless_search.py": "1.01",  # v3.29
     "proggen/M39_Simulator.py": "1.11", "_web/web_simulator.py": "1.00",  # v3.56
     # "proggen/M07_COM_Port.py": "1.13", "_web/web_tabs.py": "1.32",  # v4.42  # v4.44  # v4.47  # v4.48  # v4.49  # v4.50  # v4.51 (entfallen)
-    "proggen/M07_COM_Port.py": "1.13", "_web/web_tabs.py": "1.34",  # v4.42  # v4.44  # v4.47  # v4.48  # v4.49  # v4.50  # v4.51
+    "proggen/M07_COM_Port.py": "1.13", "_web/web_tabs.py": "1.35",  # v4.42  # v4.44  # v4.47  # v4.48  # v4.49  # v4.50  # v4.51
     # "_web/web_serial.py": "1.13", "_web/web_dialogs.py": "1.11", "_web/web_params.py": "1.14",  # v4.50  # v4.51 (entfallen)
     # "_web/web_serial.py": "1.13", "_web/web_dialogs.py": "1.11", "_web/web_params.py": "1.15",  # v4.50  # v4.51  # v4.52 (entfallen)
-    "_web/web_serial.py": "1.13", "_web/web_dialogs.py": "1.11", "_web/web_params.py": "1.17", "_web/web_form_options.py": "1.43",  # v4.50  # v4.51  # v4.52  # v4.53  # v4.54
-    "proggen/M08_ARDUINO.py": "1.28",  # v4.43
+    "_web/web_serial.py": "1.13", "_web/web_dialogs.py": "1.11", "_web/web_params.py": "1.17", "_web/web_form_options.py": "1.46",  # v4.50  # v4.51  # v4.52  # v4.53  # v4.54
+    "proggen/M08_ARDUINO.py": "1.29",  # v4.43  # v4.71
+    "_web/web_dialogs.py": "1.12",  # v4.73
+    "_web/web_layout.py": "1.21",  # v4.75
+    "_web/web_form_comport.py": "1.09",  # v4.76
+    "proggen/M06_Write_Header.py": "1.16",  # v4.77
+    "proggen/M39_Simulator.py": "1.12",  # v4.78
+    "proggen/M08_ARDUINO.py": "1.30", "headless/headless_esp32_ota.py": "1.12", "_web/web_esp32_ota.py": "1.07",  # v4.79
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -1390,6 +1408,9 @@ body.body--dark .text-grey, body.body--dark .text-grey-5, body.body--dark .text-
 body.body--dark .q-field__label, body.body--dark .q-field__hint { color: #c4ccd4; }
 /* Seite fuellt genau das Fenster: Kopfzeile, Menue, Reiter und Werkzeugleiste behalten ihre Groesse, die Tabelle nimmt den Rest */
 .q-page { display: flex; }
+/* v4.77 (Issue 34): Dialoge und Menues muessen immer ueber der Seite liegen (fest am Fenster). Mit dem vollstaendigen Quasar-Stylesheet aendert das nichts; fehlt es (Mac, Cache), landeten sie unter der Tabelle */
+.q-dialog.fullscreen { position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; z-index: 6000; }
+.q-menu, .q-tooltip { position: fixed !important; }
 .nicegui-content { width: 100%; height: 100vh; flex: 1 1 auto; flex-wrap: nowrap; overflow: auto; }
 .main-tabs { border-bottom: 1px solid #c9c9c9; margin-bottom: 4px; }
 .nicegui-content .mll-header { row-gap: 0 !important; }                 /* v4.19: !important, damit nicht der Standardabstand 16 px von NiceGUI gewinnt */
@@ -1484,7 +1505,7 @@ def font_scales(ctrl) -> dict:
 # VERSION = "4.47 (2026-11-21)"  # v4.48 (entfallen)
 # VERSION = "4.48 (2026-11-21)"  # v4.49 (entfallen)
 # VERSION = "4.49 (2026-11-21)"  # v4.50 (entfallen)
-VERSION = "4.67 (2026-11-21)"  # v3.64  # v4.26  # v4.27  # v4.28  # v4.29  # v4.30  # v4.31  # v4.32  # v4.33  # v4.34  # v4.35  # v4.36  # v4.37  # v4.38  # v4.39  # v4.40  # v4.41  # v4.42  # v4.43  # v4.44  # v4.45  # v4.46  # v4.47  # v4.48  # v4.49  # v4.50  # v4.51  # v4.52  # v4.53  # v4.54  # v4.55  # v4.56  # v4.57  # v4.58  # v4.59  # v4.60  # v4.61  # v4.62  # v4.63  # v4.64  # v4.65  # v4.66  # v4.67
+VERSION = "4.79 (2026-11-23)"  # v3.64  # v4.26  # v4.27  # v4.28  # v4.29  # v4.30  # v4.31  # v4.32  # v4.33  # v4.34  # v4.35  # v4.36  # v4.37  # v4.38  # v4.39  # v4.40  # v4.41  # v4.42  # v4.43  # v4.44  # v4.45  # v4.46  # v4.47  # v4.48  # v4.49  # v4.50  # v4.51  # v4.52  # v4.53  # v4.54  # v4.55  # v4.56  # v4.57  # v4.58  # v4.59  # v4.60  # v4.61  # v4.62  # v4.63  # v4.64  # v4.65  # v4.66  # v4.67  # v4.68  # v4.69  # v4.70  # v4.71  # v4.72  # v4.73  # v4.74  # v4.75  # v4.76  # v4.77  # v4.78  # v4.79
 # VERSION = "4.09 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.08 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.07 (2026-11-19)"  # v3.64 (entfallen)
@@ -2212,6 +2233,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
         # -------------------------------------------------------------- Menue (wie im Tk-Hauptfenster); im kompakten Layout in der Kopfzeile
         menu_slot = ui.row().classes("items-center gap-0 mll-menu")
+    # status_row = ui.row().classes("items-center w-full no-wrap mll-statusrow").style("min-height: 20px; margin-top: -6px; margin-bottom: 2px")  # v4.73: Meldung und Verbindungsstatus: feste Zeile unter den Knoepfen, damit die Knoepfe nicht springen  # v4.74 (entfallen: Verbindung wieder neben dem Knopf, Meldung neben Zwischengespeichert)
     autosave_label = ui.label("").classes("text-caption text-grey-7 mll-autosave")
     autosave_label.set_visibility(False)  # v4.16: ohne Text keine leere Zeile (mit ihrem Abstand) im Kopfbereich, Issue 22
     if FILE_PROBLEMS:                                   # rote Meldung oben auf der Seite  # v1.75
@@ -2517,8 +2539,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
 
     with header_row:                                              # Statusmeldung und Beenden: von allen Registerkarten aus erreichbar
         ui.space()
-        status_label = ui.label("").classes("mll-status")         # Meldung des Programms: verschwindet nach einigen Sekunden
-        conn_label = ui.label("").classes("text-caption mll-conn")        # Verbindung zum Arduino: bleibt stehen
+        # status_label = ui.label("").classes("mll-status")         # Meldung des Programms: verschwindet nach einigen Sekunden  # v4.73 (entfallen: steht in der Zeile unter den Knoepfen)
+        # conn_label = ui.label("").classes("text-caption mll-conn")        # Verbindung zum Arduino: bleibt stehen  # v4.73 (entfallen)
+        conn_label = ui.label("").classes("text-caption mll-conn").style("white-space: nowrap")  # v4.74: Verbindung zum Arduino: bleibt stehen, direkt neben dem Knopf
+    status_label = ui.label("").classes("mll-status").style("white-space: nowrap; margin-right: 12px")  # v4.74: Meldung des Programms (verschwindet nach einigen Sekunden); wird unten neben Zwischengespeichert gesetzt
+    with header_row:  # v4.74
         # connect_btn = ui.button("Mit ARDUINO verbinden", on_click=lambda: connect_from_header()).props("unelevated no-caps dense color=negative").classes("mll-connect")      # fuer alle Reiter: rot ohne, gruen mit Verbindung zum Arduino  # v2.01  # v3.83 (entfallen)
         # connect_btn = ui.button(tr("Mit Lichtmaschine verbinden"), on_click=lambda: connect_from_header()).props("unelevated no-caps dense color=negative").classes("mll-connect")  # v4.14 (entfallen: jetzt mit Pfeil und Menue)
         with ui.button_group().props("unelevated"):  # v4.14: Knopf mit Pfeil: Verbindung trennen, neu verbinden, Board wechseln
@@ -4376,14 +4401,24 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[520px] max-w-full"):
             ui.label("Datei bereit").classes("text-h6")
             ui.label(name).classes("text-bold")
-            ui.label("Speichern unter ... fragt nach dem Speicherort (Edge, Chrome). Sonst landet die Datei im "
-                     "Downloads-Ordner.").classes("text-caption text-grey-8")
+            # ui.label("Speichern unter ... fragt nach dem Speicherort (Edge, Chrome). Sonst landet die Datei im "  # v4.72 (entfallen)
+            #          "Downloads-Ordner.").classes("text-caption text-grey-8")  # v4.72 (entfallen)
+            ui.label("Speichern unter ... fragt nach dem Speicherort (Edge, Chrome). Sonst landet die Datei im "  # v4.72
+                     "Downloads-Ordner.").classes("text-caption text-grey-8 mll-saveas-hint")  # v4.72
+            ui.label("Dieser Zugang erlaubt keine Auswahl des Speicherorts: Der Browser bietet sie nur mit Edge oder Chrome "  # v4.72
+                     "und nur über https oder auf dem Rechner selbst (localhost) an. Die Datei landet im Downloads-Ordner "  # v4.72
+                     "(in den Browser-Einstellungen lässt sich „Vor dem Download nach dem Speicherort fragen“ einschalten).").classes("text-caption text-grey-8 mll-saveas-nohint").style("display: none")  # v4.72
             with ui.row().classes("justify-end w-full"):
                 ui.button("Verwerfen", on_click=dlg.close).props("flat").classes("mll-cancel")
                 ui.button("In den Downloads-Ordner",
                           on_click=lambda: (ui.download(open(path, "rb").read(), name), dlg.close())).props("outline")
-                ui.button("Speichern unter ...").classes("mll-default").on("click", lambda: dlg.close(), js_handler=js)
+                ui.button("Speichern unter ...").classes("mll-default mll-saveas").on("click", lambda: dlg.close(), js_handler=js)  # v4.72 (Klasse mll-saveas)
         dlg.open()
+        # v4.72: Ohne showSaveFilePicker (Firefox, oder http statt https im Netz) wuerde der Knopf nur in den Downloads-Ordner speichern: ausblenden
+        ui.run_javascript("setTimeout(() => { if (typeof window.showSaveFilePicker !== 'function') { "
+                          "document.querySelectorAll('.mll-saveas').forEach(e => e.style.display = 'none'); "
+                          "document.querySelectorAll('.mll-saveas-hint').forEach(e => e.style.display = 'none'); "
+                          "document.querySelectorAll('.mll-saveas-nohint').forEach(e => e.style.display = ''); } }, 150);")  # v4.72
 
     def flush_downloads():
         """Dateien, die ein Befehl "gespeichert" hat (asksaveasfilename), dem Anwender zum Speichern anbieten."""
@@ -6671,7 +6706,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ota_arduino.Compile_and_Upload_ESP32_Setup(  # v3.94
                 ctrl, board, port, host=host, upload_password=upload_password,  # v3.94
                 password=password, hostname=settings["hostname"], ota=settings["ota"],  # v3.94
-                firewall_hint=web_esp32_ota.HINT_FIREWALL,  # v3.94
+                firewall_hint=web_esp32_ota.HINT_FIREWALL, network_settings=settings,  # v3.94  # v4.79
             )  # v3.94
 
         await run_command(transfer, "ESP32-Setup übertragen")()
@@ -7043,6 +7078,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                             if len(entry) > 2:  # v4.51: Eintrag mit Schluessel (progcfg, sim): im Anfaenger Modus ausgeblendet
                                 menu_elems[entry[2]] = mi  # v4.51
         ui.space()
+        status_label.move(menu_slot)  # v4.74: Meldung des Programms links neben Zwischengespeichert
         autosave_label.move(menu_slot)
     apply_optional_tabs()                              # Menueeintraege Tabelle faerben und Simulator im Anfaenger Modus ausblenden  # v4.51
 

@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Der Programmgenerator ======
-//Seitenstand 1.08 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.09 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Der **Programmgenerator** ist das Herz der webMobaLedLib. In einer **Tabelle** legst du fest, was auf deiner Anlage passieren soll. Daraus erzeugt das Programm das Programm für die Lichtmaschine und überträgt es.
 
@@ -10,7 +10,7 @@ Diese Seite zeigt dir, wie das Fenster aufgebaut ist und wie du Schritt für Sch
 ===== Wie das Fenster aufgebaut ist =====
 
 ^ Bereich ^ Was ist das? ^
-| **Kopfzeile** | Ganz oben: der Titel mit der **Programmversion**, rechts der **Status** der Verbindung („Nicht verbunden“ oder „Verbunden“), der Knopf **Mit Lichtmaschine verbinden** (er funktioniert nur, wenn auf der Lichtmaschine schon ein MobaLedLib-Programm läuft), **Vollbild** und **Beenden**. |
+| **Kopfzeile** | Ganz oben: der Titel mit der **Programmversion**, rechts der Knopf **Mit Lichtmaschine verbinden** mit dem **Verbindungsstatus** („Nicht verbunden“ oder „Verbunden mit …“) direkt daneben (der Knopf funktioniert nur, wenn auf der Lichtmaschine schon ein MobaLedLib-Programm läuft), **Vollbild** und **Beenden**. Meldungen des Programms stehen in der Menüzeile neben „Zwischengespeichert“. |
 | **Menü** | **Datei**, **Tabelle**, **Einstellungen** und **Hilfe**. Hier laden und speichern du deine Arbeit, färbst und rechnest die Tabelle neu und stellst das Programm ein. Die Lichtmaschine verbindest du mit dem Knopf oben rechts und seinem Pfeil. |
 | **Reiter** | Darunter die Seiten des Programms: **Programm Generator** (diese Seite), [[anleitungen:webmobaledlib:patterngenerator|**Timeline Editor**]], **Farb Test**, **Servo Einstellungen**, **Sound Test**, **DCC Keyboard**, **Serial Monitor** und weitere. Die Einstellungen des Programms stehen im Menü **Einstellungen**, nicht mehr in Reitern. |
 | **Werkzeugleiste** | Die Knöpfe mit Symbol und Beschriftung: **Dialog Wizard**, **Setup übertragen**, **Zeilen löschen** und so weiter. Rechts davon wählst du die Ansicht **Tabelle**, **Grafik** oder **Beides** und siehst die Version der MobaLedLib-Bibliothek. |

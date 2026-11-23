@@ -89,7 +89,7 @@
         "Button_2": "n",
         "Button_3": "",
         "Kurzbeschreibung": "Einstellungsparameter",
-        "Ausführliche Beschreibung": "pyProgramGenerator Einstellungen\n\r\n\rHier können Sie die Grundeinstellungen für das Programm an Ihre Wünsche anpassen.",
+        "Ausführliche Beschreibung": "Programm Einstellungen\n\r\n\rHier können Sie die Grundeinstellungen für das Programm an Ihre Wünsche anpassen.",
         "Params": [
             "FontConfig",
             "FontConfig_PattGen",
@@ -237,7 +237,7 @@
         "Button_2": "",
         "Button_3": "",
         "Kurzbeschreibung": "Testen des MLL-Sound-Gerätes",
-        "Ausführliche Beschreibung": "Auf dieser Seite können Sie die MLL-Sound-Geräte testen. Die MLL-Soundplatine mit dem <MP3-TF-16>-Modul ermöglicht die Erzeugung von verschiedenen selbst erzeugten Geräuschen. Leider kommt es immer wieder vor, dass die wiedergegebenen Sounds nicht richtig stimmen. Es kommt nicht immer die gewünschte Sounde Datei. Das liegt an Bauteiltoleranzen. Auf der Sound-Testseite können die Werte für die verschiedenen Geräusche ausprobiert werden. Einfach die Soundmodul-Adresse angeben und in den Feldern R/G/B die verschiedenen Werte durchprobieren, bis der richtige Sound kommt.",
+        "Ausführliche Beschreibung": "Auf dieser Seite können Sie die MLL-Sound-Geräte testen. Die MLL-Soundplatine mit dem <MP3-TF-16>-Modul ermöglicht die Erzeugung von verschiedenen selbst erzeugten Geräuschen. Leider kommt es immer wieder vor, dass die wiedergegebenen Sounds nicht richtig stimmen. Es kommt nicht immer die gewünschte Sound-Datei. Das liegt an Bauteiltoleranzen. Auf der Sound-Testseite können die Werte für die verschiedenen Geräusche ausprobiert werden. Einfach die Soundmodul-Adresse angeben und in den Feldern R/G/B die verschiedenen Werte durchprobieren, bis der richtige Sound kommt.",
         "Params": [
             "SoundAddress",
             "SoundLEDChannel",

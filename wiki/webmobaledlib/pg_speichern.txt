@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Speichern und Laden ======
-//Seitenstand 1.04 (2026-11-19), gilt für webMobaLedLib 4.24//
+//Seitenstand 1.05 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Das Programm speichert deine Arbeit **automatisch**. Zusätzlich kannst du sie als **Datei** sichern, weitergeben und wieder laden.
 
@@ -9,6 +9,8 @@ Das Programm speichert deine Arbeit **automatisch**. Zusätzlich kannst du sie a
   * Zwischendurch macht das Programm eine **Zwischensicherung**, wenn du etwas geändert hast und eine Weile nicht weiterarbeitest. Oben rechts im Menü steht dann „Zwischengespeichert <Uhrzeit>“. Wurde das Programm einmal **nicht normal beendet** (Absturz, Stromausfall), fragt es beim nächsten Start, ob die Zwischensicherung wiederhergestellt werden soll.
   * Mit //Datei → Jetzt zwischenspeichern// löst du die Zwischensicherung selbst aus.
   * Mit **Strg+S** (oder //Datei → Speichern//) speicherst du wie im Excel-Programm **dauerhaft**: Beendest du danach mit „Beenden ohne Speichern“, ist beim nächsten Start dieser Stand wieder da. Die Zwischensicherung wird dabei nicht gebraucht. **Strg+Z** macht rückgängig, **Strg+Y** oder **Strg+Umschalt+Z** wiederholt, überall auf der Seite (nicht beim Tippen in einem Feld).
+  * **Beenden ohne Speichern** hebt die nicht gespeicherten Änderungen auf. Beim nächsten Start fragt das Programm einmal: „Die letzten verworfenen Änderungen wiederherstellen?“ (seit 4.02). Mit **Verwerfen** beim Start (Zwischengespeicherter Stand gefunden) beginnst du mit dem gespeicherten Stand.
+  * **Datei bereit** (Speichern, Protokoll, Einstellungen sichern): Wo der Browser **keine Auswahl des Speicherorts** bietet (Zugriff über das Netz per http, Firefox), fehlt der Knopf „Speichern unter …“. Ein Hinweis erklärt den Grund, und die Datei geht in den **Downloads-Ordner** (seit 4.72).
 
 Deine Daten liegen im **Datenordner** des Programms, getrennt von den Programmdateien. Sie bleiben bei einem Update erhalten.
 

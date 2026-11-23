@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Einführung ======
-//Seitenstand 1.07 (2026-11-17), gilt für webMobaLedLib 3.87//
+//Seitenstand 1.08 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 ===== Was ist die webMobaLedLib? =====
 

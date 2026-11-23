@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Fehlersuche ======
-//Seitenstand 1.10 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.11 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Auf dieser Seite stehen die häufigsten Probleme mit ihren Lösungen. Suche den Bereich, in dem es hakt, und die Beobachtung, die zu deinem Problem passt. Probleme, die nur eine bestimmte Installation betreffen (zum Beispiel „Python wurde nicht gefunden“), stehen am Ende der Seite für dein System: [[anleitungen:webmobaledlib:windows|Windows]], [[anleitungen:webmobaledlib:macos|macOS]], [[anleitungen:webmobaledlib:linux|Linux]], [[anleitungen:webmobaledlib:raspberrypi|Raspberry Pi]].
 
@@ -41,6 +41,9 @@ Auf dieser Seite stehen die häufigsten Probleme mit ihren Lösungen. Suche den 
 | Beim **Raspberry Pico** meldet das Hochladen //picotool was unable to connect// (Linux) | Der USB-Zugriff für den Pico ist nicht eingerichtet. Klicke in **Hardware Optionen → ENTWICKLUNGSUMGEBUNG** auf **USB-Zugriff für den Pico einrichten** (einmalig, das Programm fragt nach dem Passwort). |
 | **ESP32:** Das Hochladen bleibt bei //Connecting........_____// stehen und endet mit //Failed to connect to ESP32// | Der Chip kommt nicht in den Bootloader: **Halte auf dem ESP32-Board die Taste BOOT gedrückt**, sobald im Fenster „Connecting…“ erscheint, bis „Writing at …“ kommt. Viele Nachbauten haben keinen zuverlässigen Auto-Reset. Hilft es nicht: ein Datenkabel direkt am Rechner ohne Hub und einen anderen USB-Port probieren. |
 | Meldung **„Die ARDUINO IDE wurde nicht gefunden“** | Mit **PlatformIO** (Standard) sollte sie nicht kommen. Klicke in **Hardware Optionen → ENTWICKLUNGSUMGEBUNG** auf **PlatformIO prüfen**. Benutzt du die ARDUINO IDE, siehe [[anleitungen:webmobaledlib:wz_arduino_einstellungen|ARDUINO Einstellungen]]. |
+| Beim **Übertragen** bleibt das Fenster stehen, nichts passiert mehr | Hängt ein Befehl länger als **25 Sekunden**, schreibt das Programm den Zustand in die Datei ''hang_dump.txt'' im Datenordner (seit 4.28). Schick die Datei mit dem Protokoll (**Hilfe → Logfile anzeigen**) ins Forum. **Vorgang abbrechen** beendet den Vorgang, der Anschluss ist danach sofort wieder frei. |
+| Meldung **„Es läuft noch ein Vorgang“** bleibt stehen und blockiert alle Eingaben | Bis 4.34 möglich (nach einem Fehler beim Verbinden). Aktualisiere auf die neueste Version. |
+| **Dialoge und Menüs** erscheinen nicht über der Seite, sondern **unter der Tabelle** (bisher nur bei einem Mac gemeldet) | Seit 4.77 liegen sie durch eine CSS-Absicherung fest über der Seite. Aktualisiere, starte das Programm neu und lade die Seite mit **Strg+F5** (am Mac **Cmd+Umschalt+R**) neu. Hilft es nicht, melde im Forum oder als Issue: Browser mit Version, Vollbild oder Zoom, Meldungen der Browser-Konsole. |
 
 ===== Das Programm erzeugen: Makros und Tabelle =====
 

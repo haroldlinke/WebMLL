@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Anfänger Modus und Experten Modus ======
-//Seitenstand 1.02 (2026-11-15), gilt für webMobaLedLib 3.43//
+//Seitenstand 1.03 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Die webMobaLedLib hat viele Funktionen. Für den Einstieg brauchst du nur einen Teil davon. Deshalb gibt es zwei Modi.
 
@@ -8,6 +8,7 @@ Die webMobaLedLib hat viele Funktionen. Für den Einstieg brauchst du nur einen 
 Eine **neue Installation startet im Anfänger Modus**. Er zeigt nur, was du zum Einstieg brauchst, und blendet aus:
 
   * die Reiter **Timeline Editor** und **Z21 Simulator**,
+  * in den **Hardware Optionen** die Reiter **Entwicklungsumgebung** und **Firmware Installation** (seit 4.68),
   * den Menüeintrag **Tabelle, Tabelle färben …** und die Gruppe **Simulator** im Menü **Einstellungen**,
   * einige **Makros** in der **Makroauswahl**, in der Suche und in der grafischen Ansicht (welche, wird noch festgelegt).
 

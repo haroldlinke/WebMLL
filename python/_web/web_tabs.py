@@ -1,9 +1,9 @@
-# Datei-Version: 1.34 (2026-11-21) - web_tabs.py
+# Datei-Version: 1.35 (2026-11-22) - web_tabs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_tabs.py
 # Path:           _web/web_tabs.py
-# Version:        1.34
-# Last Update:    2026-11-21
+# Version:        1.35
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -42,6 +42,7 @@
 #   1.32  2026-11-21  Neue Einstellung LedOffOnDisconnect: beim Trennen alle LEDs ausschalten (Vorgabe aus)
 #   1.33  2026-11-21  Version 4.51 (Menue Einstellungen): Option HideColorButton entfaellt (der Knopf Zeilen Faerben ist weg); Hinweis der Option AutoColorRows nennt Menue Tabelle -> Tabelle faerben
 #   1.34  2026-11-21  Version 4.67: Hinweistext nennt Hardware Optionen (vorher Optionen Werkzeuge)
+#   1.35  2026-11-22  Version 4.69: Adresse /ARDUINOEinstellungen entfaellt (die Einstellungen sind ein Fenster im Menue Einstellungen und im Reiter Entwicklungsumgebung)
 # ----------------------------------------------------------------------------------------------
 """Adressen der Reiter: Ein Reiter laesst sich direkt aufrufen, zum Beispiel http://localhost:8080/Farbtest. Mit dem Zusatz ?vollbild=1 oeffnet er sich gleich im Vollbild
 (Titel, Menue und Reiterleiste ausgeblendet, siehe web_fullscreen). Die Startseite / bleibt wie sie ist (Programm Generator).
@@ -68,7 +69,7 @@ TAB_URLS = {                                  # Adresse -> Schluessel des Reiter
     "DCCKeyboard": "dcc",  # v1.03
     "Z21Simulator": "z21",  # v1.05
     "SerialMonitor": "mon",
-    "ARDUINOEinstellungen": "arduinocfg",
+    # "ARDUINOEinstellungen": "arduinocfg",  # v1.35 (entfallen)
     "ProgrammEinstellungen": "config",
 }
 # TAB_TITLES = {"pg": "Programm Generator", "patt": "Patterngenerator", "progcfg": "ProgGenerator Einstellungen", "farb": "Farb Test", "servo1": "Servo Einstellungen", "servo2": "DM Servo Einstellungen", "sound": "Sound Test", "dcc": "DCC Keyboard", "mon": "Serial Monitor",  # v1.05 (entfallen)

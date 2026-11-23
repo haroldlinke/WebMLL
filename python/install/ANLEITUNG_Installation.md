@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.69 (2026-11-22), gilt für webMobaLedLib 4.67*
+*Datei-Version: 4.79 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -433,9 +433,68 @@ Ist unter **Hardware Optionen** ein **ESP32** als LED-Zentrale gewählt, erschei
 - **Rückfrage beim Öffnen (seit 3.98):** Benutzt eine Datei eine **ausgeschaltete** Erweiterung, fragt das Programm, ob es sie einschalten soll (einmal je Erweiterung und Sitzung); ohne sie fehlen die Zeilen in der erzeugten Datei.
 - **Wiki:** eigene Seite `erweiterungen` (siehe Wiki-Paket 3.98).
 
-### 2.9k Neu seit 3.93 (3.94 bis 4.67)
+### 2.9k Neu seit 3.93 (3.94 bis 4.78)
 
 Kurzfassung der Änderungen seit dem letzten Release, neueste Version zuerst (ausführlich in `HOC_Anwender.md`):
+
+**Version 4.78**
+
+*Korrekturen:*
+- Simulator: Eine gespeicherte Fensterlage außerhalb des Bildschirms (−32000, minimiertes Fenster) wird nicht mehr gespeichert und beim Öffnen auf 800/400 zurückgesetzt.
+
+**Version 4.77**
+
+*Korrekturen:*
+- Startmeldung der Lichtmaschine: Datum wieder als TT.MM.JJ.
+- Dialoge und Menüs liegen fest über der Seite (Absicherung gegen Anzeige unter der Tabelle).
+
+**Version 4.76**
+
+*Korrekturen:*
+- Auswahl des COM Ports: Nach dem Wechsel des Boards über „Andere Typen“ ändern sich Bild, Text und roter Hinweis (Issue 37).
+
+**Version 4.75**
+
+*Neue Funktionen:*
+- Dunkles Farbschema mit helleren, abgestuften Flächen (Beitrag von moosbewohner).
+
+**Version 4.74**
+
+*Korrekturen:*
+- Der Verbindungsstatus steht direkt neben dem Knopf „Mit Lichtmaschine verbinden“, die Meldung des Programms in der Menüzeile neben „Zwischengespeichert“. Die Knöpfe oben rechts springen nicht mehr.
+
+**Version 4.73**
+
+*Neue Funktionen:*
+- Tabelle färben: Die Felder „Farbe“ zeigen die Farbe selbst, nicht nur den Farbcode.
+
+*Korrekturen:*
+- Textfehler: „Sound-Datei“, „Programm Einstellungen“, „Programm Generator/Timeline Editor Standardschrift“.
+
+**Version 4.72**
+
+*Korrekturen:*
+- Datei bereit (Speichern, Protokoll, Einstellungen sichern): Wo der Browser keine Auswahl des Speicherorts bietet (zum Beispiel Zugriff über das Netz per http oder Firefox), fehlt der Knopf „Speichern unter …“; stattdessen erklärt ein Hinweis, warum, und die Datei geht in den Downloads-Ordner.
+
+**Version 4.71**
+
+*Neue Funktionen:*
+- ESP32 über WLAN: Mit PlatformIO und „Schnelles Update“ überträgt das Programm auch über WLAN nur noch die Konfiguration (Beitrag von moosbewohner, Pull Request 54). Passt die Firmware im Gerät, entfällt das Kompilieren; ist die Konfiguration unverändert, wird nichts übertragen. Bei Übertragungsfehlern gibt es bis zu drei Versuche. Einmal muss die angepasste Firmware auf den ESP32 übertragen werden (USB oder WLAN). Pico bleibt bei USB.
+
+**Version 4.70**
+
+*Neue Funktionen:*
+- Hardware Optionen, Reiter Entwicklungsumgebung: Unter dem Haken „Schnelles Update“ steht der Hinweis, dass die Einstellung nicht mit WLAN vereinbar ist und bei eingeschaltetem WLAN ignoriert wird.
+
+**Version 4.69**
+
+*Korrekturen:*
+- Die Adresse /ARDUINOEinstellungen entfällt; die ARDUINO-IDE Einstellungen öffnest du im Menü Einstellungen oder im Reiter Entwicklungsumgebung.
+
+**Version 4.68**
+
+*Neue Funktionen:*
+- Hardware Optionen: Der Titel des Fensters ist „Hardware Optionen“. Im Anfänger Modus fehlen die Reiter Entwicklungsumgebung und Firmware Installation. Die Boards heißen „Lichtmaschine Classic, Mini (Nano (neue Version))“, „Lichtmaschine Pro (ESP32)“ und „Lichtmaschine Pico Zero, MoLLi (Raspberry Pico)“. In der Entwicklungsumgebung steht PlatformIO (Standard) oben; der Knopf „ARDUINO-IDE Einstellungen“ erscheint nur mit der ARDUINO-IDE. Der Reiter WLAN (OTA) warnt, dass WLAN nicht mit „Schnelles Update“ vereinbar ist.
 
 **Version 4.67**
 
@@ -921,7 +980,6 @@ Der Reiter **Timeline Editor** erstellt aus einer Tabelle ein Muster für die LE
 | `/DCCKeyboard` | DCC Keyboard |
 | `/Z21Simulator` | Z21 Simulator (nur mit eingeschalteter Option, siehe 2.14) |
 | `/SerialMonitor` | Serial Monitor |
-| `/ARDUINOEinstellungen` | ARDUINO Einstellungen |
 | `/ProgrammEinstellungen` | Programm Einstellungen |
 
   Groß- und Kleinschreibung ist egal (`/farbtest` wird umgeleitet). Mit dem Zusatz **`?vollbild=1`** öffnet sich der Reiter gleich im Vollbild (zum Beispiel `/ServoTest1?vollbild=1`);
@@ -986,7 +1044,7 @@ Die Seite wird in allen Browsern neu geladen, und alle Texte erscheinen in der n
 
 Programme werden mit der **ARDUINO IDE** (Standard, Abschnitt 2.2) oder mit **PlatformIO** übersetzt und auf den Arduino, Pico oder ESP32 geladen. PlatformIO ist ein Ersatz für die ARDUINO IDE; man braucht dafür nur das Kommandozeilenprogramm `pio`, nicht die IDE.
 
-- **Umschalten:** Menü **Optionen → Optionen und spezielle Funktionen**, Reiter **Entwicklungsumgebung**: *ARDUINO-IDE (Standard)* oder *PlatformIO (Ersatz für die ARDUINO-IDE)*. Die Auswahl wird beim Schließen des Dialogs übernommen. Darunter steht, ob PlatformIO gefunden wurde; der Knopf **PlatformIO prüfen** zeigt die Version.
+- **Umschalten:** Menü **Optionen → Optionen und spezielle Funktionen**, Reiter **Entwicklungsumgebung**: *PlatformIO (Standard)* oder *ARDUINO-IDE (nur Kompatibilität - nicht mehr nutzen)*. Der Reiter fehlt im Anfänger Modus; der Knopf **ARDUINO-IDE Einstellungen** erscheint nur mit der ARDUINO-IDE. Die Auswahl wird beim Schließen des Dialogs übernommen. Darunter steht, ob PlatformIO gefunden wurde; der Knopf **PlatformIO prüfen** zeigt die Version.
 - **Installieren:** PlatformIO muss einmal installiert werden (Anleitung: https://platformio.org/install/cli).
   - **Windows:** zum Beispiel mit `pip install platformio` oder mit der PlatformIO-Erweiterung von Visual Studio Code.
   - **Linux, macOS und Raspberry Pi:** mit **pipx**: `pipx install platformio`, danach `pipx ensurepath` und neu anmelden (oder den Rechner neu starten). Debian, Ubuntu und Raspberry Pi OS erlauben `pip install` nicht außerhalb einer virtuellen Umgebung (Meldung „externally-managed-environment“); dort vorher `sudo apt install pipx`. Das Installationsskript von platformio.org (Ordner `~/.platformio`) geht ebenfalls.
@@ -1728,8 +1786,10 @@ Ein Update kann abbrechen, wenn der Strom ausfällt, das Programm beendet wird o
 
 Bei einer Fehlermeldung bitte den Text aus dem Installationsfenster und die Dateien `webmobaledlib.log` und `webmobaledlib-crash.log` aus dem Datenordner (2.6) schicken.
 
-## ESP32: schnelle Konfiguration ueber WLAN (Erweiterung zu 4.67)
+## ESP32: schnelle Konfiguration über WLAN (ab 4.71)
 
-Unter Optionen/Werkzeuge im Reiter Entwicklungsumgebung â€žSchnelles Update: nur geÃ¤nderte Konfiguration Ã¼bertragen (ESP32/Pico)â€œ einschalten und PlatformIO verwenden. WLAN und OTA am ESP32 wie bisher einrichten. Einmal muss die Firmware mit der neuen Empfangsfunktion uebertragen werden. Bei weiteren Uebertragungen ueber WLAN prueft WebMLL die Firmware: Passt sie, werden nur die Konfigurationsdaten gesendet; ist alles unveraendert, wird nichts gesendet. Bei erforderlichem Firmwarewechsel erfolgt ein vollstaendiger OTA-Upload und anschliessend die Konfiguration. Danach startet der ESP32 neu. Der vorhandene Geraetekanal (TCP 2323) und das OTA-Passwort werden verwendet. Pico bleibt bei USB. Mehrere WLAN-Konfigurationsupdates und die erneute Verbindung wurden unter Windows am ESP32 vom Anwender bestätigt. Andere Plattformen und Pico-Hardware bleiben zu prüfen.
+In Hardware Optionen, Reiter Entwicklungsumgebung, **PlatformIO** wählen und „Schnelles Update: nur geänderte Konfiguration übertragen“ einschalten. WLAN und OTA am ESP32 wie bisher einrichten. Beim ersten Mal muss die Firmware mit der neuen Empfangsfunktion übertragen werden. Danach prüft das Programm bei jeder Übertragung über WLAN die Firmware im Gerät: Passt sie, wird nur die Konfiguration gesendet und der ESP32 startet neu. Ist die Konfiguration unverändert, wird nichts gesendet. Bei einem Übertragungsfehler gibt es bis zu drei Versuche, danach wird das ganze Programm hochgeladen. Ändern sich Hostname, OTA-Passwort oder OTA-Schalter, wird die Firmware ebenfalls neu übertragen. Pico und USB bleiben unverändert.
 
-WLAN-Wiederholungen: Bei Transportfehlern sind drei Versuche insgesamt vorgesehen. Zu prüfen: kurzer WLAN-Ausfall, erfolgreicher zweiter/dritter Versuch und Fehlermeldung nach drei gescheiterten Versuchen. USB wird nicht automatisch wiederholt.
+## ESP32: feste IP-Adresse statt DHCP (ab 4.79)
+
+Im Reiter „WLAN (OTA)“ der Hardware Optionen wählst du, ob der ESP32 seine Adresse per **DHCP** vom Router bekommt oder eine **feste IP-Adresse** verwendet. Bei „Statische IP-Adresse“ trägst du IP-Adresse, Gateway (meist der Router), Subnetzmaske (meist 255.255.255.0) und DNS-Server ein (leer: Gateway). Das Programm prüft die Eingaben. Danach das ESP32-Setup einmal neu übertragen und bei „Adresse für WebMLL“ die neue IP-Adresse eintragen (bleibt das Feld leer, nimmt das Programm die feste IP). Die feste Adresse darf nicht im DHCP-Bereich des Routers liegen. Verstecktes WLAN und mehrere WLANs werden nicht unterstützt.

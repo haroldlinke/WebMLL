@@ -1,13 +1,12 @@
-# Datei-Version: 1.44 (2026-11-22) - web_form_options.py
+# Datei-Version: 1.46 (2026-11-22) - web_form_options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_options.py
 # Path:           _web/web_form_options.py
-# Version:        1.44
+# Version:        1.46
 # Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
-#   1.44  2026-11-22  Hinweis fuer schnelle ESP32-Konfiguration ueber WLAN
 #   1.18  2026-11-12  Excel-Programm 3.5.0L3: Der Knopf Firmware installieren steht fuer ALLE Boards im Reiter LED ARDUINO (vorher nur beim Raspberry Pi Pico und nur mit Firmware-Dateien im Ordner); der Firmware-Ordner wird bei Bedarf angelegt (fruehere Versionen ohne Eintrag)
 #   1.19  2026-11-12  Excel-Programm 3.5.0L3: Firmware installieren oeffnet die Auswahl auch ohne Firmware-Dateien; der Knopf Firmware laden holt Firmware aus dem Internet (web_form_firmware_download, headless_firmware_dl) und waehlt sie danach vor
 #   1.20  2026-11-12  Reiter LED ARDUINO: der Kommentar zum Knopf Firmware installieren steht unter dem Knopf (schmal) statt daneben; die Auswahl des Boards behaelt ihre Breite (keine umbrochenen Beschriftungen) und rutscht auf schmalen Bildschirmen unter die Knoepfe
@@ -35,6 +34,9 @@
 #   1.41  2026-11-21  Version 4.53: Erweiterungen sind ein eigenes Fenster (open_extensions_window, Schliessen) statt eines Reiters im Optionenfenster; ext_panel auf Modulebene
 #   1.42  2026-11-21  Version 4.54: Reiter Dateien entfaellt (Importieren v. altem Prog. steht im Menue Datei); Fenster Erweiterungen: Hinweis, dass alle Aenderungen sofort wirksam sind
 #   1.43  2026-11-21  Version 4.67: Reiter Bootloader heisst Firmware Installation; der Knopf Firmware installieren (mit Beschreibungstext) ist vom Reiter Lichtmaschine dorthin umgezogen
+#   1.44  2026-11-22  Version 4.68: Titel Hardware Optionen; Reiter Entwicklungsumgebung und Firmware Installation nicht im Anfaenger Modus; Boardnamen Lichtmaschine Classic/Pro/Pico; PlatformIO (Standard) zuerst, ARDUINO-IDE (nur Kompatibilitaet), Knopf ARDUINO-IDE Einstellungen nur mit ARDUINO-IDE; Hinweis WLAN (OTA) zu Schnelles Update
+#   1.45  2026-11-22  Version 4.70: Reiter Entwicklungsumgebung: roter Hinweis unter dem Haken Schnelles Update (nicht kompatibel mit WLAN)
+#   1.46  2026-11-22  Version 4.71: Warnhinweise zu Schnelles Update und WLAN entfernt (Pull Request 54: Schnelles Update geht fuer den ESP32 jetzt auch ueber WLAN); neuer Hinweistext zum Schnellen Update (aus dem Pull Request, dort als 1.44)
 # ----------------------------------------------------------------------------------------------
 """Web-Ersatz fuer proggen/UserForm_Options.py (Optionen und spezielle Funktionen).
 
@@ -568,6 +570,7 @@ async def _options_async(spec: dict, st: dict):
                 with ui.tab_panel(esp_tab):  # v1.30
                     esp_panel()  # v1.30
                 with ui.tab_panel(ota_tab):
+                    # ui.label(tr('ACHTUNG: Die WLAN-Einstellung ist nicht kompatibel mit der Einstellung "Schnelles Update". "Schnelles Update" wird ignoriert, wenn WLAN eingeschaltet ist.')).classes("text-negative text-weight-medium")  # v1.44  # v1.46 (entfallen)
                     settings_panel()
                     if ota_upload_handler is not None:  # v1.40
                         ui.button(tr("ESP32-Firmware über WLAN hochladen …"), on_click=lambda: ota_upload_handler()).props("outline no-caps")  # v1.40
@@ -586,16 +589,21 @@ async def _options_async(spec: dict, st: dict):
                                 board_group(t["side"], tab)
                         elif t["kind"] == "ide":  # v1.04
                             ui.label(t["intro"]).classes("text-grey-8").style("white-space: pre-line")  # v1.04
-                            ui.radio({0: t["arduino_text"], 1: t["pio_text"]}, value=1 if vals.get("use_pio") else 0,  # v1.04
+                            # ui.radio({0: t["arduino_text"], 1: t["pio_text"]}, value=1 if vals.get("use_pio") else 0,  # v1.04  # v1.44 (entfallen: PlatformIO zuerst)
+                            ide_btn = {}  # v1.44
+                            ui.radio({1: t["pio_text"], 0: t["arduino_text"]}, value=1 if vals.get("use_pio") else 0,  # v1.44
                                      # on_change=lambda e: vals.__setitem__("use_pio", bool(e.value)))  # v1.07 (entfallen)
-                                     on_change=lambda e: (vals.__setitem__("use_pio", bool(e.value)), update_ide_tabs()))  # v1.07
+                                     on_change=lambda e: (vals.__setitem__("use_pio", bool(e.value)), update_ide_tabs(), ide_btn["b"].set_visibility(not bool(e.value)) if "b" in ide_btn else None))  # v1.07  # v1.44
                             ui.checkbox(t["serial_cfg_text"], value=bool(vals.get("serial_cfg")),  # v1.32
                                         on_change=lambda e: vals.__setitem__("serial_cfg", bool(e.value))).tooltip(t["serial_cfg_hint"])  # v1.32
+                            # ui.label(tr('ACHTUNG: Die "Schnelles Update" Einstellung ist nicht kompatibel mit der Einstellung "WLAN". "Schnelles Update" wird ignoriert, wenn WLAN eingeschaltet ist.')).classes("text-negative text-weight-medium")  # v1.45  # v1.46 (entfallen)
                             ui.label(t["status"]).classes("text-grey-8").style("white-space: pre-line")  # v1.04
                             for b in t["buttons"]:  # v1.04
                                 button_row(b)  # v1.04
                             if arduino_settings_handler is not None:  # v1.40
-                                ui.button(tr("ARDUINO-IDE Einstellungen"), on_click=lambda: arduino_settings_handler()).props("outline no-caps")  # v1.40
+                                # ui.button(tr("ARDUINO-IDE Einstellungen"), on_click=lambda: arduino_settings_handler()).props("outline no-caps")  # v1.40  # v1.44 (entfallen)
+                                ide_btn["b"] = ui.button(tr("ARDUINO-IDE Einstellungen"), on_click=lambda: arduino_settings_handler()).props("outline no-caps")  # v1.44
+                                ide_btn["b"].set_visibility(not vals.get("use_pio"))  # v1.44: nur mit ARDUINO-IDE
                             for text in t.get("texts", []):  # v1.07
                                 ui.label(text).classes("text-grey-8").style("white-space: pre-line")  # v1.07
                         else:
@@ -703,11 +711,22 @@ def make_class(Base):
                 # if rb.startswith("ESP32") and not M37.ESP32_Lib_Installed() and not M28pio.Is_PlatformIO():  # v1.08 (entfallen)
                     # continue  # v1.08 (entfallen)
                 # items.append((d["value"], d["text"]))  # v1.08 (entfallen)
-                items.append((d["value"], d["text"]))                     # ESP32 immer: ob er angezeigt wird, entscheidet der Dialog live (IDE ohne ESP32-Paket: nein, PlatformIO: ja)  # v1.08
+                text_ = d["text"]  # v1.44
+                if side == "_L":  # v1.44: Namen der Lichtmaschinen
+                    text_ = {"Nano_New_L": tr("Lichtmaschine Classic, Mini (Nano (neue Version))"), "ESP32_L": tr("Lichtmaschine Pro (ESP32)"),  # v1.44
+                             "PICO_L": tr("Lichtmaschine Pico Zero, MoLLi (Raspberry Pico)")}.get(rb, text_)  # v1.44
+                # items.append((d["value"], d["text"]))  # v1.44 (entfallen)
+                items.append((d["value"], text_))  # v1.44 (Kommentar v1.08: ESP32 immer: ob er angezeigt wird, entscheidet der Dialog live)
             return sorted(items)
 
         def _web_spec(self, first_page_only):
             import proggen.M02a_Public as M02a  # v1.06
+            try:  # v1.44
+                import mlpyproggen.Prog_Generator as PG_  # v1.44
+                from _web import web_tabs as WT_  # v1.44
+                beginner = WT_.is_beginner_mode(PG_.global_controller)  # v1.44
+            except Exception:                                      # noqa: BLE001  # v1.44
+                beginner = False  # v1.44
             buildopt = str(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL))
             wlan_device = "WLAN" in buildopt
             cands = buttons.get("__Detect_LED_Port_Button_Click", [])
@@ -758,10 +777,9 @@ def make_class(Base):
                 tabs.append({"name": tr("Entwicklungsumgebung"), "kind": "ide",  # v1.04
                              "intro": tr("Womit sollen die Programme übersetzt und auf den Arduino geladen werden?"),  # v1.04
                              "texts": [tr("Das Programm webMobaLedLib selbst aktualisieren: Menü Hilfe → Update webMobaLedLib …")],  # v1.07
-                             "arduino_text": tr("ARDUINO-IDE (Standard)"), "pio_text": tr("PlatformIO (Ersatz für die ARDUINO-IDE)"),  # v1.04
+                             "arduino_text": tr("ARDUINO-IDE (nur Kompatibilität - nicht mehr nutzen)"), "pio_text": tr("PlatformIO (Standard)"),  # v1.04  # v1.44
                              "serial_cfg_text": tr("Schnelles Update: nur geänderte Konfiguration übertragen (ESP32/Pico)"),  # v1.39
-                    # "serial_cfg_hint": tr("Übertragen werden nur Änderungen an der Konfiguration, also Makros, Farben und Startwerte. Das dauert wenige Sekunden. Das Programm selbst wird nur beim ersten Mal oder nach Änderungen an Programm, Erweiterungen, LED-Anzahl oder Pins neu übertragen. Arduino Nano und Uno sind nicht betroffen. Nur mit PlatformIO und USB."),  # v1.39 (entfallen)
-                             "serial_cfg_hint": tr("Überträgt nur die Konfiguration, wenn die Firmware passt. Mit PlatformIO: ESP32 über USB oder WLAN, Pico über USB. Bei geänderter Firmware wird vollständig hochgeladen. Arduino Nano und Uno sind nicht betroffen."),  # v1.39  # v1.44
+                             "serial_cfg_hint": tr("Übertragen werden nur Änderungen an der Konfiguration, also Makros, Farben und Startwerte. Das dauert wenige Sekunden. Das Programm selbst wird nur beim ersten Mal oder nach Änderungen an Programm, Erweiterungen, LED-Anzahl oder Pins neu übertragen. Arduino Nano und Uno sind nicht betroffen. Nur mit PlatformIO und USB."),  # v1.39
                              "status": (tr("PlatformIO gefunden: {pfad}", pfad=pio) if pio else  # v1.04
                                         # tr("PlatformIO wurde nicht gefunden. Installation: https://platformio.org/install/cli (zum Beispiel mit: pip install platformio)")),  # v1.05 (entfallen)
                                         tr("PlatformIO wurde nicht gefunden. Installation: {hinweis}", hinweis=tr(M08.PIO_Install_Hint()))),  # v1.05
@@ -798,7 +816,10 @@ def make_class(Base):
                     "ide_only": False})                      # der schnelle Bootloader braucht ArduinoISP und avrdude der IDE; der Knopf fuer den WLAN-Pico nur eine Webseite  # v1.17
             lower = [dict(buttons[h][0], handler=h) for h in ("__HardiForum_Button_Click", "__Close_Button_Click") if h in buttons]
             # return {"title": M09.Get_Language_Str("Optionen und spezielle Funktionien"), "tabs": tabs,  # v1.22 (entfallen: Schreibfehler)
-            return {"title": M09.Get_Language_Str("Optionen und spezielle Funktionen"), "tabs": tabs,  # v1.22
+            if beginner:  # v1.44: im Anfaenger Modus fehlen die Reiter Entwicklungsumgebung und Firmware Installation
+                tabs = [t_ for t_ in tabs if t_["name"] not in (tr("Entwicklungsumgebung"), tr("Firmware Installation"))]  # v1.44
+            # return {"title": M09.Get_Language_Str("Optionen und spezielle Funktionen"), "tabs": tabs,  # v1.22  # v1.44 (entfallen)
+            return {"title": tr("Hardware Optionen"), "tabs": tabs,  # v1.44
                     "pages": pages, "lower": lower}
 
         def _web_ensure_text(self, left):

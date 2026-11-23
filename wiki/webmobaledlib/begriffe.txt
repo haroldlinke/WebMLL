@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Begriffe ======
-//Seitenstand 1.06 (2026-11-15), gilt für webMobaLedLib 3.43//
+//Seitenstand 1.07 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Hier stehen die Wörter, die auf den Seiten zur webMobaLedLib vorkommen, in alphabetischer Reihenfolge.
 

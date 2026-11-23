@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Häufige Fragen ======
-//Seitenstand 1.00 (2026-11-18), gilt für webMobaLedLib 3.93//
+//Seitenstand 1.01 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Diese Seite beantwortet Fragen, die Einsteiger oft stellen. Fehlt deine Frage, schau in die [[anleitungen:webmobaledlib:fehlersuche|Fehlersuche]] oder frag im [[https://forum.mobaledlib.de/viewforum.php?f=14|Forum der MobaLedLib]].
 

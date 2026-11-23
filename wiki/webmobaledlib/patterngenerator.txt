@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Der Timeline Editor ======
-//Seitenstand 1.01 (2026-11-15), gilt für webMobaLedLib 3.43//
+//Seitenstand 1.02 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Mit dem **Timeline Editor** entwirfst du **eigene Lichtmuster** für LEDs: Wechselblinker, Lauflichter, Ampeln, Signale und vieles mehr. Du schreibst in einer Tabelle auf, **welche LED wie lange leuchtet**, und das Programm macht daraus ein **Makro**. Das Makro trägst du in den [[anleitungen:webmobaledlib:programmgenerator|Programmgenerator]] ein, und es geht mit auf die Lichtmaschine.
 

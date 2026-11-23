@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Die grafische Ansicht ======
-//Seitenstand 1.04 (2026-11-18), gilt für webMobaLedLib 3.93//
+//Seitenstand 1.05 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Neben der Tabelle zeigt die webMobaLedLib deine Zeilen auch **als Bild**. Du siehst auf einen Blick, welches Gerät an welcher LED-Kette hängt, und kannst Effekte **mit der Maus** anlegen und verschieben. Das gab es in der Excel-Version nicht.
 

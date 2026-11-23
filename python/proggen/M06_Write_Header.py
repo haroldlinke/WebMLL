@@ -1,12 +1,13 @@
-# Datei-Version: 1.15 (2026-11-22) - M06_Write_Header.py
+# Datei-Version: 1.16 (2026-11-22) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.15
+# Version:        1.16
 # Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.16  2026-11-22  Issue 30: Startmeldung der Lichtmaschine mit Datum TT.MM.JJ und Uhrzeit hh:mm unabhaengig von der Spracheinstellung des Rechners (US-Format 11.19.26)
 #   1.15  2026-11-22  Dynamische Optionen bis Write_Header_File_and_Upload_to_Arduino durchreichen (NameError behoben)
 #   1.14  2026-11-22  HeaderOnly kann dynamische Konfiguration fuer zentralen ESP32-Upload erzeugen
 #   1.01  2026-10-18  LED Kanal von Zeilen ohne Eintrag: Previous_LEDChannel als Modulvariable von M06 (global in Create_Header_Entry und ProcessSheet), Bedingung auf den Zellentext statt Trim(Val()) (nie leer); LED_to_Var in eingebundenen Blaettern bekam Kanal 0 und dessen Offset (LED2Var_Tab stimmte nicht mit Excel); davor Original-Port, nicht erfasst
@@ -1570,7 +1571,9 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     VBFiles.writeText(fp, '', '\n')
     # 30.03.25 Juergen/Harold: add board type to version information
     # VBFiles.writeText(fp, '#define START_MSG "LEDs_AutoProg Ver 3: ' + M02a.Get_BoardTyp() + " " + M37.Get_Lib_Version("MobaLedLib") + M02.Test_Suffix + " " + P01.Format(P01.Date_str(), 'dd.mm.yy') + ' ' + P01.Format(P01.Time_str(), 'hh:mm') + '"', '\n')  # v1.03 (entfallen)
-    Start_Msg = 'LEDs_AutoProg Ver 3: ' + M02a.Get_BoardTyp() + " " + M37.Get_Lib_Version("MobaLedLib") + " " + P01.Format(P01.Date_str(), 'dd.mm.yy') + ' ' + P01.Format(P01.Time_str(), 'hh:mm')  # v1.12
+    # Start_Msg = 'LEDs_AutoProg Ver 3: ' + M02a.Get_BoardTyp() + " " + M37.Get_Lib_Version("MobaLedLib") + " " + P01.Format(P01.Date_str(), 'dd.mm.yy') + ' ' + P01.Format(P01.Time_str(), 'hh:mm')  # v1.12  # v1.16 (entfallen: Date_str liefert je nach Rechner das US-Format)
+    import datetime as _dt  # v1.16
+    Start_Msg = 'LEDs_AutoProg Ver 3: ' + M02a.Get_BoardTyp() + " " + M37.Get_Lib_Version("MobaLedLib") + " " + _dt.datetime.now().strftime("%d.%m.%y %H:%M")  # v1.16: TT.MM.JJ hh:mm, unabhaengig von der Sprache des Rechners
     if not DynMode:  # v1.12: ESP32/Pico mit Konfigurationsdatei: der Text steht in der Konfigurationsdatei (siehe unten)
         VBFiles.writeText(fp, '#define START_MSG "' + Start_Msg + '"', '\n')  # v1.03
     # The version could be read out in a future version of this tool

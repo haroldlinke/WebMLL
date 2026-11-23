@@ -1,25 +1,77 @@
-Datei-Version: 1.53 (2026-11-22) - HOC_Anwender.md
-Stand: webMobaLedLib 4.67
+Datei-Version: 1.63 (2026-11-23) - HOC_Anwender.md
+Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
 
-## Ergänzung zu 4.67 – ESP32-Konfiguration über WLAN (2026-11-22)
-
-Ergänzung 22.11.: WLAN-Konfigurationsübertragungen werden bei Transportfehlern maximal dreimal insgesamt versucht, mit neuer Anmeldung und erneuter Firmware-/CRC-Prüfung je Versuch. Eine neue BEGIN-Sequenz startet die Datenübertragung sauber von vorn. Erst nach drei Fehlern erfolgt der bisherige Firmware-Rückfall; beim Nachsenden nach bereits erfolgtem Flashen wird stattdessen ein Fehler gemeldet. Abweichende Firmware-Signaturen werden nicht wiederholt. USB bleibt bei einem Versuch. M42 1.05, WLAN-Tests 1.05: 18 Tests sowie 179 bestehende Prüfungen erfolgreich. Wiederholungsfall am echten Gerät noch zu prüfen.
-
+## Version 4.79 (2026-11-23)
 
 Neue Funktionen:
-- Mit PlatformIO und aktiviertem „Schnelles Update“ lassen sich ESP32-Konfigurationen über WLAN übertragen, ohne jedes Mal die Firmware zu kompilieren.
-- Ist die Konfiguration unverändert, muss nichts übertragen werden. Bei erforderlichem Firmwarewechsel folgt die Konfiguration automatisch auf den vollständigen Upload.
+- ESP32 über WLAN: Der ESP32 kann wahlweise per **DHCP** (IP-Adresse vom Router) oder mit einer **festen IP-Adresse** ins Netz. Im Reiter „WLAN (OTA)“ gibt es dafür die Auswahl „DHCP“ oder „Statische IP-Adresse“ mit den Feldern IP-Adresse, Gateway, Subnetzmaske und DNS-Server. Das hilft bei Netzen mit festen Adressen, Pi-hole oder MAC-Filter (Anregung aus dem Forum). Die Eingaben werden geprüft (gültige Adressen, Gateway im selben Netz). Nach einer Umstellung die Firmware einmal neu übertragen („ESP32-Setup übertragen“) und bei „Adresse für WebMLL“ die neue IP-Adresse eintragen. Nicht enthalten: verstecktes WLAN und mehrere WLANs.
+
+## Version 4.78 (2026-11-22)
 
 Korrekturen:
-- Der ESP32-Neustart nach dem Speichern erfolgt verzögert; danach greift die bestehende automatische Geräteverbindung.
-- Bei verlorener Abschlussantwort wird die gespeicherte Konfiguration anhand von Signatur und Prüfsumme überprüft.
-- Mit PlatformIO erscheint keine unnötige Nachfrage nach der Arduino-IDE.
+- Simulator: Das Fenster erschien nur in der Taskleiste, weil als gespeicherte Lage −32000 eingetragen war (so meldet Windows ein minimiertes Fenster). Diese Lage wird nicht mehr gespeichert, und eine ungültige gespeicherte Lage wird beim Öffnen auf 800/400 zurückgesetzt, auch in den Einstellungen (Issue 45).
 
-Einmal muss die angepasste Firmware übertragen werden. Danach gelten die bisherigen WLAN-Einstellungen und das OTA-Passwort. USB bleibt verfügbar; Pico nutzt weiterhin USB. Mehrere WLAN-Konfigurationsupdates und die erneute Verbindung wurden vom Anwender bestätigt.
+## Version 4.77 (2026-11-22)
+
+Korrekturen:
+- Startmeldung der Lichtmaschine: Das Datum steht wieder als TT.MM.JJ (zum Beispiel 19.11.26 16:09), unabhängig von der Spracheinstellung des Rechners (vorher US-Format 11.19.26; Issue 30).
+- Dialoge und Menüs liegen fest über der Seite. Beim Anwender mit Mac erschienen sie unterhalb der Tabelle (Issue 34, Ursache noch nicht sicher geklärt; Rückmeldung des Anwenders steht aus).
+
+## Version 4.76 (2026-11-22)
+
+Korrekturen:
+- Auswahl des COM Ports: Wechselt man über „Andere Typen“ das Board (zum Beispiel von Nano auf ESP32), ändern sich jetzt auch Bild, Beschreibungstext und der rote Hinweis (Issue 37).
+
+## Version 4.75 (2026-11-22)
+
+Neue Funktionen:
+- Dunkles Farbschema mit helleren, deutlicher abgestuften Flächen für Dialoge, Eingabefelder und die Tabelle bei „Dunkel mit Tabelle“ (Beitrag von moosbewohner, Pull Request 55). Feste Zellfarben bleiben erhalten.
+
+## Version 4.74 (2026-11-22)
+
+Korrekturen:
+- Der Verbindungsstatus („Verbunden mit …“, „Nicht verbunden“) steht wieder direkt neben dem Knopf „Mit Lichtmaschine verbinden“. Die Meldung des Programms steht in der Menüzeile neben „Zwischengespeichert“. Die Knöpfe oben rechts bleiben an ihrem Platz, eine eigene Zeile entfällt.
+
+## Version 4.73 (2026-11-22)
+
+Neue Funktionen:
+- Tabelle färben: Die Felder „Farbe“ zeigen die Farbe selbst (Hintergrund, Schrift schwarz oder weiß), nicht nur den Farbcode.
+
+Korrekturen:
+- Die Meldung des Programms steht nicht mehr neben den Knöpfen oben rechts (Änderung in 4.74 beachten).
+- Textfehler: „Sound-Datei“ (Sound Test), „Programm Einstellungen“ statt „pyProgramGenerator Einstellungen“, „Programm Generator/Timeline Editor Standardschrift“ statt „ProgGen/PattGen DefaultFont“.
+
+## Version 4.72 (2026-11-22)
+
+Korrekturen:
+- Datei bereit (Speichern, Protokoll, Einstellungen sichern): Wo der Browser keine Auswahl des Speicherorts bietet (zum Beispiel Zugriff über das Netz per http oder Firefox), fehlt der Knopf „Speichern unter …“; stattdessen erklärt ein Hinweis, warum, und die Datei geht in den Downloads-Ordner.
+
+## Version 4.71 (2026-11-22)
+
+Neue Funktionen:
+- ESP32 über WLAN: Mit PlatformIO und „Schnelles Update“ überträgt das Programm auch über WLAN nur noch die Konfiguration (Beitrag von moosbewohner, Pull Request 54). Passt die Firmware im Gerät, entfällt das Kompilieren; ist die Konfiguration unverändert, wird nichts übertragen. Bei Übertragungsfehlern gibt es bis zu drei Versuche. Einmal muss die angepasste Firmware auf den ESP32 übertragen werden (USB oder WLAN). Pico bleibt bei USB.
+
+Korrekturen:
+- Die Warnhinweise zu „Schnelles Update“ und WLAN sind entfernt, weil beides zusammen für den ESP32 jetzt funktioniert.
+
+## Version 4.70 (2026-11-22)
+
+Neue Funktionen:
+- Hardware Optionen, Reiter Entwicklungsumgebung: Unter dem Haken „Schnelles Update“ steht der Hinweis, dass die Einstellung nicht mit WLAN vereinbar ist.
+
+## Version 4.69 (2026-11-22)
+
+Korrekturen:
+- Die Adresse /ARDUINOEinstellungen entfällt.
+
+## Version 4.68 (2026-11-22)
+
+Neue Funktionen:
+- Hardware Optionen: Im Anfänger Modus fehlen die Reiter Entwicklungsumgebung und Firmware Installation. Die Boards heißen „Lichtmaschine Classic, Mini (Nano (neue Version))“, „Lichtmaschine Pro (ESP32)“ und „Lichtmaschine Pico Zero, MoLLi (Raspberry Pico)“. PlatformIO (Standard) steht in der Entwicklungsumgebung oben, „ARDUINO-IDE Einstellungen“ erscheint nur mit der ARDUINO-IDE, und der Reiter WLAN (OTA) warnt vor der Kombination mit „Schnelles Update“.
 
 ## Version 4.67 (2026-11-21)
 

@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Erweiterungen (MLX) ======
-//Seitenstand 1.01 (2026-11-19), gilt für webMobaLedLib 4.22//
+//Seitenstand 1.02 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 **Erweiterungen** (englisch //MobaLedLib Extensions//, kurz **MLX**) bringen **zusätzliche Makros** in die Makroauswahl, zum Beispiel einen **Zeitplan**, ein **Kaminfeuer** oder den Empfang von **Infrarot-Fernbedienungen**. Sie gehören nicht zum Kern der MobaLedLib, sondern sind kleine Programmpakete, die jemand zusätzlich geschrieben hat. Du schaltest sie im Fenster **Erweiterungen** (Menü **Einstellungen, Erweiterungen …**) im Reiter **Erweiterungen** ein und aus.
 
@@ -18,7 +18,7 @@ Die Haken gelten **für alle Dateien** und bleiben beim [[anleitungen:webmobaled
 
 ===== Die bekannten Erweiterungen =====
 
-Der Reiter zeigt drei Gruppen. Neben jeder Erweiterung steht, ob sie **im Programmpaket**, schon **geladen** oder **noch nicht geladen** ist.
+Das Fenster zeigt drei Gruppen. Neben jeder Erweiterung steht, ob sie **im Programmpaket**, schon **geladen** oder **noch nicht geladen** ist.
 
 ^ Gruppe ^ Erweiterung ^ Wofür ^
 | **Standard** (vorab eingeschaltet, im Programmpaket) | **P_ScheduleMLX** | Schaltet Beleuchtungen nach der **Uhrzeit** (ein Zeitbereich). |
@@ -39,7 +39,7 @@ Klappt der Download nicht (kein Internet, GitHub nicht erreichbar), meldet das P
 
 ===== Eigene Erweiterungen hinzufügen =====
 
-Wer eine neue Erweiterung entwickelt oder eine fertige benutzen möchte, die noch nicht in der Liste steht, trägt sie unten im Reiter ein:
+Wer eine neue Erweiterung entwickelt oder eine fertige benutzen möchte, die noch nicht in der Liste steht, trägt sie unten im Fenster ein:
 
   - Schreibe in das Feld **Eigene Erweiterung hinzufügen** eine **Zeile** in einer dieser Formen:
 

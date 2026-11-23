@@ -1,5 +1,5 @@
 ====== webMobaLedLib – DCC Keyboard ======
-//Seitenstand 1.06 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.07 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Das **DCC Keyboard** ist eine **virtuelle Tastatur** mit **32 Tasten**. Sie schickt der Lichtmaschine dieselben Schaltbefehle, die sonst eine Digitalzentrale (DCC) schicken würde. So **probierst du deine Schalter** und Effekte aus, **auch ohne Zentrale**.
 

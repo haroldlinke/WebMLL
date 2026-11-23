@@ -1,5 +1,5 @@
 ====== webMobaLedLib – ARDUINO-IDE Einstellungen ======
-//Seitenstand 1.05 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.06 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 **Mit PlatformIO (Standard) brauchst du diese Seite nicht.** Das Fenster **ARDUINO-IDE Einstellungen** (Hardware Optionen, Reiter Entwicklungsumgebung, Knopf **ARDUINO-IDE Einstellungen**, mit **Speichern** und **Abbrechen**) ist nur für die **ARDUINO IDE** da, die Programmierumgebung der Arduino-Welt. Du brauchst ihn nur, wenn du die ARDUINO IDE **statt PlatformIO** benutzt (siehe [[anleitungen:webmobaledlib:arduino_ide|Zusätzlich: Arduino IDE]]).
 

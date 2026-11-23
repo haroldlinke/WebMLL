@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Programm Einstellungen ======
-//Seitenstand 1.15 (2026-11-21), gilt für webMobaLedLib 4.56//
+//Seitenstand 1.16 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Im Menü **Einstellungen** (seit 4.51, vorher der Reiter **Programm Einstellungen**) passt du das Programm an dich an: die **Sprache**, die **Schriftgröße**, die **Darstellung** und einiges mehr. Die Einstellungen werden **gespeichert**, wenn du auf **Geänderte Einstellungen übernehmen** (bzw. **Speichern**) klickst, und gelten danach für das Programm auf diesem Rechner. Einige wirken **sofort**, andere erst nach einem **Neustart** des Programms. Das steht bei der jeweiligen Einstellung als Hinweis, wenn du mit der Maus darauf zeigst.
 
@@ -41,11 +41,13 @@ Die Einstellungen stehen in **fünf Gruppen**, jede mit einer Überschrift. So f
 | **Beim Trennen alle LEDs ausschalten** (seit 4.50) | Mit Haken sendet das Programm beim Trennen den Befehl **Alle LEDs aus**. Ohne Haken (Vorgabe) bleibt die Anlage unverändert, zum Beispiel leuchten die schwach leuchtenden LEDs der Pushbutton-Kanäle weiter. |
 | **Kein Anschluss in der Tabelle: bei mehreren Boards** (seit 4.42) | Ist beim Hochladen kein USB-Anschluss eingetragen, aber die Lichtmaschine verbunden, nimmt das Programm deren Anschluss. Bei mehreren Boards entscheidet diese Einstellung: **Aktive Verbindung verwenden** (Vorgabe) oder **Erkennen-Fenster öffnen**. |
 | **Tastenkombination: Inkrementell speichern** | Die Tastenkombination für //Datei → Inkrementell speichern//. Vorgabe: **Strg+Umschalt+S**. Sie muss **Strg** oder **Alt** oder eine **F-Taste** enthalten, zum Beispiel **Strg+Alt+S** oder **Strg+F9**. Ist die Vorgabe schon belegt (zum Beispiel von einem Screenshot-Programm), stelle hier eine andere ein. Siehe [[anleitungen:webmobaledlib:pg_speichern|Speichern und Laden]]. |
+| **Fenster nach Erfolg automatisch schließen**, **Fenster nach Fehler automatisch schließen** (seit 4.40) | Wann sich das Fenster beim Übertragen schließt: sofort, nach 5, 10 oder 30 Sekunden oder nie. Vorgabe: 5 Sekunden nach Erfolg, 30 Sekunden nach Fehler. |
 | **Sprache** | Die Sprache der Oberfläche (siehe oben). |
-| **Darstellung der Oberfläche** (seit 4.44) | **Hell** (Vorgabe, bisheriger Stil), **Hell mit Kontrast** (kräftigere Blattreiter und dunklere Hinweistexte), **Dunkel**, **Dunkel mit Tabelle** (zeigt auch die Tabellen dunkel, fest eingestellte Farben bleiben, wie sie sind) oder **Wie System**. Bei **Dunkel** bleibt die Tabelle zur besseren Lesbarkeit der Zellfarben hell. Die Änderung gilt nach dem Speichern sofort. |
+| **Darstellung der Oberfläche** (seit 4.44) | **Hell** (Vorgabe, bisheriger Stil), **Hell mit Kontrast** (kräftigere Blattreiter und dunklere Hinweistexte), **Dunkel**, **Dunkel mit Tabelle** (zeigt auch die Tabellen dunkel, fest eingestellte Farben bleiben, wie sie sind) oder **Wie System**. Bei **Dunkel** bleibt die Tabelle zur besseren Lesbarkeit der Zellfarben hell. Die Änderung gilt nach dem Speichern sofort. Seit 4.75 sind die dunklen Flächen von Dialogen, Eingabefeldern und Tabelle heller abgestuft (Beitrag von moosbewohner). |
 | **Darstellung auf kleinen Bildschirmen** | Das **Kompakte Layout** (siehe unten). |
+| **Zellinnenabstand links/rechts (px)** (seit 4.08) | Der Abstand links und rechts im Text der Tabellenzellen in Pixeln. Kleinere Werte geben auf kleinen Bildschirmen mehr Platz. |
 | **Schriftgröße anpassen** | Die Größe der Schrift in der Oberfläche. Wirkt nach einem **Neustart**. |
-| **ProgGen/PattGen DefaultFont** | Die Schriftart und die Schriftgrößen für den Programmgenerator und den Timeline Editor (**Kleine Schrift**, **Normale Schrift**, **Große Schrift**). Wirkt nach einem **Neustart**. |
+| **Programm Generator/Timeline Editor Standardschrift** (bis 4.72 „ProgGen/PattGen DefaultFont“) | Die Schriftart und die Schriftgrößen für den Programmgenerator und den Timeline Editor (**Kleine Schrift**, **Normale Schrift**, **Große Schrift**). Wirkt nach einem **Neustart**. |
 | **Icon Größe (%)** | Wie groß die Symbole in der Tabelle sind (100 % = normal). Wirkt nach einem **Neustart**. |
 
 ==== Programm Generator ====

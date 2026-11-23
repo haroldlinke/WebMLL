@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Die Tabelle bedienen ======
-//Seitenstand 1.06 (2026-11-18), gilt für webMobaLedLib 3.93//
+//Seitenstand 1.07 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 In der Tabelle des [[anleitungen:webmobaledlib:programmgenerator|Programmgenerators]] steht jede Zeile für einen Effekt oder ein Gerät. Auf dieser Seite steht, wie du die Tabelle bedienst.
 
@@ -21,6 +21,14 @@ In der Makroauswahl stehen **alle Makros**, nach Gruppen sortiert (zum Beispiel 
   * **Aktiv:** Klicke in das Kästchen der Spalte **Aktiv**, um den **Haken** zu setzen oder zu entfernen. Nur Zeilen **mit Haken** kommen ins Programm für die Lichtmaschine.
   * Der **Doppelklick** bearbeitet standardmäßig die Zelle. Wenn er stattdessen die **Makroauswahl** öffnen soll (wie im Excel-Programm), schalte das im Menü **Einstellungen, Allgemein** ein: Karte **Bedienung der Tabelle**, Haken **„Doppelklick auf Name und Beleuchtung öffnet die Makroauswahl“**, dann **Speichern**.
 
+===== Rückgängig und Wiederholen =====
+
+**Strg + Z** nimmt die letzte Änderung zurück, **Strg + Y** (oder **Strg + Umschalt + Z**) stellt sie wieder her. Das gilt überall auf der Seite, nicht beim Tippen in einem Feld, und steht auch im Kontextmenü. Das Programm merkt sich **die letzten 50 Änderungen je Blatt**: Eingabe in einer Zelle, Löschen, Ausschneiden, Einfügen, Nach unten ausfüllen, Reihe fortsetzen, Farbe setzen. Werden Zeilen eingefügt oder gelöscht, beginnt der Verlauf des Blatts neu.
+
+===== Makrotext direkt ändern (Spalte „Beleuchtung, Sound, oder andere Effekte“) =====
+
+Du kannst den Makrotext (seit 4.40, Beitrag von Jürgen) direkt in der Zelle ändern. Das Programm **prüft den Text sofort** (Klammern, leere Parameter, Zahl der Parameter). Bei einem Fehler kannst du den **ursprünglichen Text wiederherstellen** oder **weiter bearbeiten**. Nach einer gültigen Änderung setzt das Programm Name, Symbol, LEDs, InCnt, Loc InCh, Adressen, Testtasten und Start-LEDs neu.
+
 ===== Das Kontextmenü (rechte Maustaste) =====
 
 Mit der **rechten Maustaste** (auf dem Tablet: lange drücken) auf eine Zelle erscheint das Menü:
@@ -30,6 +38,7 @@ Mit der **rechten Maustaste** (auf dem Tablet: lange drücken) auf eine Zelle er
 | Kopieren (Strg + C), Ausschneiden (Strg + X), Einfügen (Strg + V) | Wie in Excel: übertragen werden Text **und Feldfarbe** (nur von Hand gesetzte Farben). Sind mehrere Zeilen markiert, wird das kopierte Muster wiederholt |
 | Nur Text einfügen (Strg + Umschalt + V) | Fügt nur den Text ein, ohne Farbe |
 | Als Zeilen einfügen | Fügt kopierte Zeilen als neue Zeilen ein |
+| Rückgängig (Strg + Z), Wiederholen (Strg + Y oder Strg + Umschalt + Z) | Nimmt die letzte Änderung zurück bzw. stellt sie wieder her. Der Eintrag nennt die Aktion, zum Beispiel „Rückgängig: Strg+D, 12 Zellen“ (seit 4.02) |
 | Löschen (Entf) | Löscht den Inhalt |
 | Nach unten ausfüllen (Strg + D) | Kopiert die oberste markierte Zelle in die markierten Zeilen darunter; bei einer Zelle die Zelle darüber |
 | Reihe fortsetzen | Wie Nach unten ausfüllen, aber die Zahl am Ende zählt weiter (1, 2, 3 oder V1, V2, V3) |
@@ -68,6 +77,7 @@ Die **Blattreiter** ganz unten wählst du mit einem Klick. Mit der **rechten Mau
   * **Umbenennen …:** Das geht nur bei **eigenen Blättern** (Kopien). Die Blätter **DCC**, **Selectrix**, **CAN** und **LNet** und die Systemblätter heißen immer gleich, weil das Programm sie am Namen erkennt. Der Name darf höchstens 31 Zeichen haben und nicht die Zeichen ''[ ] : * ? / \'' enthalten.
   * **Duplizieren …:** Legt eine **Kopie** eines Datenblatts an (mit Zellen, Symbolen, Testtasten und Farbe). Das Programm schlägt einen freien Namen vor, zum Beispiel //DCC_1//.
   * **Nach links verschieben**, **Nach rechts verschieben:** Ändert die Reihenfolge der Reiter.
+  * **Spaltenbreiten übertragen …** (seit 4.08, Beitrag von moosbewohner): Du wählst die **Spalten** und die **Zielseiten**, und die Breiten werden auf diese Seiten übertragen. Bei kleinen Bildschirmen hilft außerdem der **Zellinnenabstand** (siehe [[anleitungen:webmobaledlib:wz_programm_einstellungen|Programm Einstellungen]]).
 
 Du kannst Reiter auch **ziehen**: Halte die **Alt-Taste** gedrückt und ziehe den Reiter mit der linken Maustaste an eine andere Stelle. Die Reihenfolge wird gespeichert.
 

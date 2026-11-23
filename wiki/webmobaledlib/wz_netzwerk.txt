@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Zugriff aus dem Netz ======
-//Seitenstand 1.04 (2026-11-16), gilt für webMobaLedLib 3.66//
+//Seitenstand 1.05 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Normalerweise bedienst du die webMobaLedLib auf dem Rechner, auf dem sie läuft. Du kannst sie aber auch von einem **anderen Gerät im Heimnetz** aus bedienen: vom **Laptop**, **Tablet** oder **Smartphone**, zum Beispiel direkt an der Modellbahn. Das ist besonders praktisch mit dem **Raspberry Pi**, der ohne Bildschirm an der Anlage bleibt.
 

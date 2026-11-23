@@ -1,9 +1,9 @@
-Datei-Version: 1.08 (2026-11-21) - RELEASE_Hinweise_4.67.md
-Gilt für webMobaLedLib 4.67
+Datei-Version: 1.11 (2026-11-23) - RELEASE_Hinweise_4.79.md
+Gilt für webMobaLedLib 4.79
 
-# webMobaLedLib 4.67
+# webMobaLedLib 4.79
 
-Anhänge dieses Releases: `webmobaledlib.zip` (Programm, mit `zip_erstellen.bat` Version 1.11 gebaut, `ROOT_IN_ZIP=1`), `START_HIER.txt` (erste Schritte), `ANLEITUNG_Installation.pdf` (Anleitung, Version 4.67) und `BETATEST_Checkliste.pdf` (Checkliste für Betatester, Version 3.49).
+Anhänge dieses Releases: `webmobaledlib.zip` (Programm, mit `zip_erstellen.bat` Version 1.11 gebaut, `ROOT_IN_ZIP=1`), `START_HIER.txt` (erste Schritte), `ANLEITUNG_Installation.pdf` (Anleitung, Version 4.79) und `BETATEST_Checkliste.pdf` (Checkliste für Betatester, Version 3.61).
 Installation: siehe `START_HIER.txt` und den Schnellstart der Anleitung. Aktualisieren: Menü **Hilfe → Update webMobaLedLib …**, danach das Programm **neu starten** und die Seite mit Strg+F5 neu laden.
 
 ## Wichtig beim Aktualisieren
@@ -12,7 +12,25 @@ Installation: siehe `START_HIER.txt` und den Schnellstart der Anleitung. Aktuali
 - **Nach dem Update das Programm neu starten** und die Seite neu laden. Oben darf keine rote Meldung stehen.
 - **Neues Programmsymbol (4.10):** Für die Verknüpfung auf dem Desktop den Installer noch einmal ausführen.
 
-## Neu seit Version 3.93 (3.94 bis 4.67)
+## Neu seit Version 3.93 (3.94 bis 4.79)
+
+**Tabelle und Farben (4.55 bis 4.66, 4.73):**
+- **Farben kopieren und einfügen (4.55):** Strg+C, Strg+X und Strg+V übertragen auch die Feldfarbe, bei Zellen und ganzen Zeilen; ist das Ziel größer, wird das Muster wiederholt. „Nur Text einfügen“ (Strg+Umschalt+V oder Rechtsklick) fügt ohne Farbe ein. Von Hand gesetzte Farben sind vor den Färberegeln geschützt, bleiben mit der Tabelle gespeichert und lassen sich zurücknehmen. Farbe entfernen (4.57): die Zelle wird wieder nach den Färberegeln gefärbt.
+- **Mini-Farbtest für ConstRGB (4.58 bis 4.61, Idee eines Anwenders):** Zelle Beleuchtung anklicken, F3 drücken oder Rechtsklick „Farbe mit Mini-Farbtest ändern …“. Die Farbe leuchtet live an der LED der Tabellenzeile; mit OK ersetzt das Programm die Zahlen im Makrotext, Strg+Z nimmt es zurück. F3 öffnet nicht mehr die Suche des Browsers (4.65, 4.66).
+- **Tabelle drucken (4.62 bis 4.64):** Menü Datei, „Tabelle drucken …“: Spalten wählen (je Tabelle gemerkt), Zeilennummer und Farben ein oder aus, Zeilen: alle, markierte oder ein Zeilenbereich. Druckansicht in Querformat A4 mit Kopfzeile auf jeder Seite, gedruckt wird über den Druckdialog des Browsers (auch „Als PDF speichern“).
+- **Tabelle färben (4.73):** Die Felder „Farbe“ zeigen die Farbe selbst, nicht nur den Farbcode.
+
+**Hardware Optionen und Kopfzeile (4.67 bis 4.79):**
+- Der Dialog heißt **Hardware Optionen**. Im Anfänger Modus sind die Reiter Entwicklungsumgebung und Firmware Installation nicht sichtbar. Boardnamen: „Lichtmaschine Classic, Mini (Nano (neue Version))“, „Lichtmaschine Pro (ESP32)“, „Lichtmaschine Pico Zero, MoLLi (Raspberry Pico)“. **PlatformIO (Standard)** steht zuerst, „ARDUINO-IDE (nur Kompatibilität – nicht mehr nutzen)“; der Knopf „ARDUINO-IDE Einstellungen“ erscheint nur mit ARDUINO-IDE. Die Reiter ESP Einstellungen und WLAN (OTA) erscheinen nur mit ESP32. Die Adresse /ARDUINOEinstellungen entfällt (4.68, 4.69).
+- **ESP32-Konfiguration über WLAN (4.71, Pull Request 54, moosbewohner):** Mit „Schnelles Update“ und PlatformIO wird die Konfiguration auch über WLAN übertragen (gesicherter Kanal mit dem OTA-Passwort, bis zu drei Versuche, Nachprüfung). Die Firmware muss einmal per USB oder OTA aufgespielt sein; der Pico bleibt bei USB.
+- **Speichern unter … (4.72):** Bietet der Browser keine Auswahl des Speicherorts (Zugriff über das Netz per http, Firefox), fehlt der Knopf „Speichern unter …“; ein Hinweis erklärt den Grund, die Datei geht in den Downloads-Ordner.
+- **Kopfzeile (4.74):** Meldung des Programms in der Menüzeile neben „Zwischengespeichert“, Verbindungsstatus neben dem Knopf „Mit Lichtmaschine verbinden“; die Knöpfe oben rechts springen nicht mehr. Textfehler korrigiert (Sound-Datei, Programm Einstellungen, Standardschrift).
+- **Dunkles Farbschema (4.75, Beitrag von moosbewohner, Pull Request 55):** Hellere, abgestufte Flächen für Dialoge, Eingabefelder und die Tabelle bei „Dunkel mit Tabelle“.
+- **Port-Auswahl (4.76, Issue 37):** Nach dem Wechsel des Boards über „Andere Typen“ ändern sich Bild, Beschreibungstext und roter Hinweis.
+- **Startmeldung der Lichtmaschine (4.77, Issue 30):** Das Datum steht als TT.MM.JJ, unabhängig von der Spracheinstellung des Rechners (Setup neu übertragen).
+- **Dialoge und Menüs (4.77, Issue 34):** CSS-Absicherung, damit sie fest über der Seite liegen (Mac; Rückmeldung des Anwenders steht aus).
+- **Simulator (4.78, Issue 45):** Eine gespeicherte Fensterlage außerhalb des Bildschirms (−32000 eines minimierten Fensters) wird nicht mehr gespeichert und beim Öffnen auf 800/400 zurückgesetzt.
+- **ESP32: DHCP oder feste IP-Adresse (4.79, Anregung aus dem Forum):** Im Reiter WLAN (OTA) der Hardware Optionen wählt man „DHCP“ oder „Statische IP-Adresse“ (IP-Adresse, Gateway, Subnetzmaske, DNS-Server). Die Eingaben werden geprüft. Nach der Umstellung das ESP32-Setup einmal neu übertragen und bei „Adresse für WebMLL“ die neue IP-Adresse eintragen. Nicht enthalten: verstecktes WLAN, mehrere WLANs. Noch nicht an Hardware geprüft.
 
 **Menüs neu geordnet (4.51 bis 4.67, Vorschlag von Michael aus dem Forum):**
 - Neues Menü **Einstellungen** zwischen **Tabelle** und **Hilfe**: Allgemein, Programm Generator, Farb Test, Simulator (nur Experten Modus), Netzzugriff, Spezial, Erweiterungen …, Einstellungen sichern …, Einstellungen übernehmen …. Die Seite **Programm Einstellungen** ist kein Reiter mehr, die Einträge springen zur Gruppe.
@@ -85,9 +103,9 @@ Installation: siehe `START_HIER.txt` und den Schnellstart der Anleitung. Aktuali
 - Versteckte Tabellen: das Startblatt erscheint nicht mehr als Reiter (4.07).
 - Optionen: alle Reiter sichtbar (3.99).
 
-**Noch nicht an Hardware oder im Browser geprüft:** (die Funktionen 4.55 bis 4.67 hat der Entwickler im Browser geprüft; Rückmeldungen der Tester stehen aus) Alles ab 4.11 (Einstellungen sichern/übernehmen, Ausgabe und Abbrechen beim ESP32-Build, Verbinden beim Start, inkrementelles Speichern und seine Tastenkombination, Kopfbereich (Abstand in Issue 22 nicht bestätigt), Erweiterungen mit `symlink://`, Name und Beschreibung aus `libraries.json`) wurde nur gebaut und kompiliert, nicht auf Hardware oder im Browser getestet. IRremote 4.x für InfraredMLX ist nicht mit einem Pico geprüft. Die Übersetzungen der neuen Texte (CSV) sind ungeprüft. Die Menüs ab 4.51 sind vom Entwickler im Browser getestet (4.67: Rückmeldung „Funktioniert“); Dunkler Modus und Dateinamen mit Datum (4.44 bis 4.50) ebenfalls.
+**Noch nicht an Hardware oder im Browser geprüft:** (die Funktionen 4.55 bis 4.79 hat der Entwickler im Browser geprüft; Rückmeldungen der Tester stehen aus) Alles ab 4.11 (Einstellungen sichern/übernehmen, Ausgabe und Abbrechen beim ESP32-Build, Verbinden beim Start, inkrementelles Speichern und seine Tastenkombination, Kopfbereich (Abstand in Issue 22 nicht bestätigt), Erweiterungen mit `symlink://`, Name und Beschreibung aus `libraries.json`) wurde nur gebaut und kompiliert, nicht auf Hardware oder im Browser getestet. IRremote 4.x für InfraredMLX ist nicht mit einem Pico geprüft. Die Übersetzungen der neuen Texte (CSV) sind ungeprüft. Die Menüs ab 4.51 sind vom Entwickler im Browser getestet (4.74: Rückmeldung „Funktioniert“); Dunkler Modus und Dateinamen mit Datum (4.44 bis 4.50) ebenfalls.
 
-**Wiki:** Paket `webmobaledlib_Wiki_Gesamt_Stand_4.67.zip` (39 Seiten, an die neuen Menüs angepasst, Hinweise in `LIESMICH_Wiki_Gesamt.md`). Die Bilder (Menüband, Programm Einstellungen, ARDUINO-IDE Einstellungen, Optionen, Datei-Menü, Verbinden) zeigen noch den alten Stand und müssen neu aufgenommen werden.
+**Wiki:** Paket `webmobaledlib_Wiki_Gesamt_Stand_4.79.zip` (41 Dateien, an die neuen Menüs angepasst, Hinweise in `LIESMICH_Wiki_Gesamt.md`). Die Bilder (Menüband, Programm Einstellungen, ARDUINO-IDE Einstellungen, Optionen, Datei-Menü, Verbinden) zeigen noch den alten Stand und müssen neu aufgenommen werden.
 
 **Geplant:** Quell-URL direkt in der `platformio.ini` (Issue 6) ist nicht vorgesehen (Cache und `symlink://` bleiben); Rückfragen dazu stehen im Issue.
 

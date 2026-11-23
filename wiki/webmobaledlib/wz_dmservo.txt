@@ -1,5 +1,5 @@
 ====== webMobaLedLib – DM Servo Einstellungen ======
-//Seitenstand 1.05 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.06 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Der Reiter **DM Servo Einstellungen** (DM = //Direct Mode//) stellt **Servos im Direct Mode** ein. Das sind Servos, die ein **ATtiny** ansteuert statt des WS2811-Bausteins. Für Servos an der normalen Servoplatine gibt es den Reiter [[anleitungen:webmobaledlib:wz_servo|Servo Einstellungen]].
 

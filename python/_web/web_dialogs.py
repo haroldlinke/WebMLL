@@ -1,9 +1,9 @@
-# Datei-Version: 1.11 (2026-11-21) - web_dialogs.py
+# Datei-Version: 1.12 (2026-11-22) - web_dialogs.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_dialogs.py
 # Path:           _web/web_dialogs.py
-# Version:        1.11
-# Last Update:    2026-11-21
+# Version:        1.12
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -13,6 +13,7 @@
 #   1.08  2026-10-28  show_busy und hide_busy: Hinweisfenster mit Drehzeichen fuer lange Aktionen
 #   1.09  2026-11-01  color_input: Farbwahl geht rechts neben dem Pipettenknopf auf, nicht ueber den Knoepfen OK und Abbrechen
 #   1.10  2026-11-14  Beschriftete Knoepfe (web_msgbox_labelled, X02.MsgBoxLabelled): Suchen/Weiter/Abbrechen statt Ja/Nein/Abbrechen; Abbrechen steht immer rechts (CSS in web_layout)
+#   1.12  2026-11-22  color_input: das Eingabefeld zeigt die Farbe als Hintergrund (Tabelle faerben), Schrift schwarz oder weiss je nach Helligkeit
 #   1.11  2026-11-21  Vorschlagsname beim Speichern unter ohne initialfile: fuer .json MobaLedLib_<Jahr.Monat.Tag_Std.Min.Sek> (Datum und Uhrzeit)
 # ----------------------------------------------------------------------------------------------
 """Web-Dialoge fuer MsgBox und InputBox (NiceGUI) mit Bruecke aus dem Worker-Thread.
@@ -124,6 +125,23 @@ def color_input(ui, **kwargs):  # v1.09
     picker = getattr(entry, "picker", None)  # v1.09
     if picker is not None and hasattr(picker, "props"):  # v1.09
         picker.props('anchor="top right" self="top left"')  # v1.09
+
+    def _paint(value):  # v1.12: Feld in der Farbe einfaerben (ungueltiger Wert: Standard)
+        import re as _re  # v1.12
+        text = str(value or "").strip()  # v1.12
+        if _re.fullmatch(r"#[0-9a-fA-F]{3}", text):  # v1.12
+            text = "#" + "".join(c * 2 for c in text[1:])  # v1.12
+        if not _re.fullmatch(r"#[0-9a-fA-F]{6}", text):  # v1.12
+            entry.props('input-style=""')  # v1.12
+            return  # v1.12
+        red, green, blue = (int(text[i:i + 2], 16) for i in (1, 3, 5))  # v1.12
+        fg = "#000000" if (0.299 * red + 0.587 * green + 0.114 * blue) > 150 else "#ffffff"  # v1.12
+        entry.props(f'input-style="background-color: {text}; color: {fg}; padding-left: 6px"')  # v1.12
+    try:  # v1.12
+        _paint(entry.value)  # v1.12
+        entry.on_value_change(lambda e: _paint(e.value))  # v1.12
+    except Exception:                                   # noqa: BLE001  # v1.12
+        logger.debug("color_input: Farbe nicht angezeigt", exc_info=True)  # v1.12
     return entry  # v1.09
 
 

@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Sound Test ======
-//Seitenstand 1.05 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.06 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Mit dem **Sound Test** probierst du das **MobaLedLib-Soundmodul** aus (die Soundplatine mit dem Baustein MP3-TF-16). Du wählst einen Ton aus und lässt ihn von der Lichtmaschine abspielen, ohne vorher ein Programm zu übertragen. So prüfst du, ob Anschluss und Lautsprecher funktionieren, und findest die Nummer des gewünschten Tons.
 

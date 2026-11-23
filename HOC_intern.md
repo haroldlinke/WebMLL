@@ -1,5 +1,5 @@
-Datei-Version: 1.53 (2026-11-22) - HOC_intern.md
-Stand: webMobaLedLib 4.67
+Datei-Version: 1.57 (2026-11-23) - HOC_intern.md
+Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: History of Change (intern, ausführlich)
 
@@ -8,35 +8,6 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
-
-## 4.67 – ESP32-Konfiguration über WLAN (2026-11-22)
-
-Ergänzung 22.11.: WLAN-Konfigurationsübertragungen werden bei Transportfehlern maximal dreimal insgesamt versucht, mit neuer Anmeldung und erneuter Firmware-/CRC-Prüfung je Versuch. Eine neue BEGIN-Sequenz startet die Datenübertragung sauber von vorn. Erst nach drei Fehlern erfolgt der bisherige Firmware-Rückfall; beim Nachsenden nach bereits erfolgtem Flashen wird stattdessen ein Fehler gemeldet. Abweichende Firmware-Signaturen werden nicht wiederholt. USB bleibt bei einem Versuch. M42 1.05, WLAN-Tests 1.05: 18 Tests sowie 179 bestehende Prüfungen erfolgreich. Wiederholungsfall am echten Gerät noch zu prüfen.
-
-
-Branch: `feature/konfiguration-wlan`, Basis `2b27561` (Originalstand 4.67).
-
-Bei aktiviertem „Schnelles Update“ verwendet der zentrale ESP32-Upload die vorhandene dynamische Konfiguration auch über WLAN. Der Empfänger nutzt den bestehenden, per HMAC geschützten Gerätekanal TCP 2323 und das OTA-Passwort. Signatur, Dateiformat, CRC und Empfangsbestätigungen bleiben erhalten. Bei identischer Konfiguration entfällt die Übertragung; bei abweichender Firmware erfolgt der vollständige Build-/Upload-Weg mit anschließendem Nachsenden der Konfiguration.
-
-M06 reicht die dynamischen Optionen bis zur inneren Generatorfunktion weiter und finalisiert vor der HeaderOnly-Rückgabe. Hostname, Passwort und OTA-Aktivierung gehen gehasht in die Firmware-Signatur ein. M42 vermeidet bei PlatformIO die Arduino-IDE-Suche. Nach vollständigem OTA-Upload wartet M42 auf die Erreichbarkeit des Geräts und verwendet das neue Passwort. Fehlende END-Antworten werden nach vollständig bestätigter Datenübertragung nur dann als Erfolg behandelt, wenn erneute Anmeldung, Firmware-Signatur, valid=1 und Datei-CRC den gespeicherten Stand bestätigen. Ansonsten bleibt der Vorgang fehlgeschlagen.
-
-Der ESP32-Konfigurationsempfang läuft im MLLTask auf Core 0. Der Neustart wird nach 750 ms aus der Hauptschleife auf Core 1 ausgelöst; Pico behält seinen bisherigen USB-/Neustartweg. Die ursprüngliche automatische Wiederverbindung übernimmt weiterhin Last_Upload. Keine eigenen Reconnect-Threads oder neuen Upload-Dienste.
-
-| Datei (relativ zu python) | Version | Änderung |
-|---|---|---|
-| headless/headless_dyn_config.py | 1.02 | TCP-Link mit vorhandener HMAC-Anmeldung |
-| proggen/M42_Dyn_Config.py | 1.04 | WLAN, Nachsenden, Signatur-/CRC-Nachprüfung, PlatformIO-Werkzeugsuche |
-| proggen/M06_Write_Header.py | 1.15 | HeaderOnly mit dynamischer Konfiguration und Parameterweitergabe |
-| proggen/M08_ARDUINO.py | 1.29 | Zentralen USB-/OTA-Ablauf anbinden |
-| LEDs_AutoProg/MLLDynConfig.h | 1.04 | Antworten auf Ursprungsstream, verzögerter ESP32-Neustart |
-| LEDs_AutoProg/LEDs_AutoProg.ino | WLAN 1.02 | Empfang auf WLAN-Stream, Neustart aus Hauptschleife |
-| _web/web_form_options.py | 1.44 | Hinweis zu ESP32-WLAN und Pico-USB |
-| csv/Web_Languages.csv | Ergänzung 22.11. | Hinweis in Deutsch und sechs Übersetzungen |
-| test_dyn_config_wlan.py | 1.04 | 14 Prüfungen für TCP, Upload, Fehler und Parameterweitergabe |
-
-Prüfungen: 179 bestehende Prüfungen, 14 neue Tests, Python-Syntax, echter Übersetzer in sieben Sprachen und Backend-Start mit frischem Datenordner erfolgreich. ESP32-PlatformIO-Firmwarebuild mit Neustartkorrektur erfolgreich (21,13 s). Hardwareprotokoll: 2048 Bytes ohne Firmware-Build in 6,3 s übertragen; Neustart und anschließende WLAN-Effektverbindung protokolliert. Weitere Konfigurationsübertragungen samt stabiler Wiederverbindung wurden vom Anwender nach der Neustartkorrektur bestätigt.
-
-Nicht geprüft: macOS/Linux/Raspberry Pi mit echter Hardware, Pico-/Nano-Hardware-Regression, absichtlich herbeigeführter Verlust der END-Antwort am echten Gerät sowie Wechsel des OTA-Passworts am Gerät. Diese Fehlerfälle sind teilweise automatisiert geprüft, ersetzen aber keinen Hardwaretest.
 
 ## 2.12 (2026-10-23) - Release-Stand
 
@@ -53,6 +24,135 @@ Release-Stand 2.12 auf Wunsch des Entwicklers („Release bauen“). **Neu im Ab
 | `archiv/` | frühere Release-Hinweise, Versionslisten und ZIP (nichts gelöscht) |
 
 **Geprüft:** Dateipaket: `testzip` in Ordnung, alle 113 Dateien gleich dem Ordner `headless`, keine `__pycache__`, alle `.py` kompilieren, Versionsprüfung „alles passt“ (50 Einträge), 11 Dateien ausführbar (`.sh`, `.command`). **Nachbau des Entwickler-Ablaufs mit seinem echten Paket (1678 Dateien, Stand 2.05):** meine 113 Dateien darübergelegt, Prüfliste, ZIP gepackt, `release_tools check --previous <sein ZIP>`: **in Ordnung** (Version 2.12, 1678 Dateien, 6 neue, 0 fehlende, ZIP 16,6 MB). Alle 15 Prüfreihen laufen (17, 26, 15, 70, 28, 19, 43, 26, 16, 27, 8, 8, 8, 5, 9 Prüfungen). **Nicht geprüft:** `zip_erstellen.bat` und die Reparaturskripte unter Windows, ein abgebrochenes Update unter Windows, das Verhalten mit Acronis, der Download von GitHub.
+
+## 4.79 (2026-11-23), ESP32: DHCP oder statische IP-Adresse
+
+Anregung aus dem Forum (Netz mit festen Adressen, Pi-hole, MAC-Filter). Neue Einstellungen je Blatt (Attribut `esp32_wlan`, mit der Arbeitsmappe gesichert): `ip_mode` (`dhcp` oder `static`), `ip`, `gateway`, `mask`, `dns1`, `dns2`. `validate_network` prüft IPv4-Adressen, Maske (Präfix 8 bis 30), IP nicht Netz-/Broadcast-Adresse und nicht Gateway, Gateway im selben Netz; leeres DNS 1 = Gateway, leeres DNS 2 = DNS 1. `prepare_ota_sketch` setzt bei statischer IP `MLL_WIFI_STATIC_IP`, `MLL_WIFI_IP`, `_GATEWAY`, `_MASK`, `_DNS1`, `_DNS2` vor den Sketch; `ESP32Extensions.h` ruft vor `WiFi.begin()` `WiFi.config(ip, gateway, mask, dns1, dns2)` auf. Die Netzwerkwerte gehören bei statischer IP zum Firmware-Schlüssel (`DynFirmwareKey`), die Firmware wird also einmal vollständig neu übertragen; bei DHCP bleibt der Schlüssel unverändert (keine unnötige Neuübertragung). Die minimale USB-Firmware wird immer mit DHCP gebaut (die Einrichtung des WLAN über USB meldet die DHCP-Adresse). Ist „Adresse für WebMLL“ leer, wird die feste IP als Ziel eingetragen. Nicht geprüft auf Hardware. Nicht enthalten: verstecktes WLAN, mehrere WLANs, Anzeige der MAC-Adresse.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `headless/headless_esp32_ota.py` | 1.12 | Einstellungen, `validate_network`, `network_of`, Defines im Sketch |
+| `proggen/M08_ARDUINO.py` | 1.30 | `network_settings`, Firmware-Schlüssel |
+| `_web/web_esp32_ota.py` | 1.07 | Auswahl DHCP/Statisch, Felder, Speichern |
+| `LEDs_AutoProg/ESP32Extensions.h` | (4.79) | `WiFi.config` bei `MLL_WIFI_STATIC_IP` |
+| `csv/Web_Languages.csv` | | 15 neue Texte |
+| `webmobaledlib.py` | 4.79 | Version, Aufruf, REQUIRED_FILES |
+
+---
+
+## 4.78 (2026-11-22), Issue 45: Simulatorfenster außerhalb des Bildschirms
+
+Log des Anwenders: `ShowLEDWindow 128 4 24 0 -16383 -16383 True`. `__StorePosition` (beim Öffnen und Schließen) speicherte `GetLEDWindowRect`; für ein minimiertes Fenster liefert Windows −32000/−32000, `Get_Num_Config_Var_Range` begrenzte das auf −16383, das Fenster lag außerhalb. Jetzt: `__StorePosition` speichert Lagen ≤ −10000 oder ≥ 16000 nicht; `OpenSimulator` ersetzt eine solche gespeicherte Lage durch 800/400 und schreibt sie zurück. Hinweis zum Issue: Die Spalte „Autostart“ gibt es seit 3.59 nicht mehr (Knopf „Setup simulieren“, Option „Simulator anzeigen“).
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `proggen/M39_Simulator.py` | 1.12 | Fensterlage prüfen |
+| `webmobaledlib.py` | 4.78 | Version, REQUIRED_FILES |
+
+## 4.77 (2026-11-22), Issue 34 und Issue 30
+
+Issue 30: `P01.Date_str()` liefert `strftime("%x")` (abhängig vom Gebietsschema, im C-Gebietsschema 11/19/26); `Format(..., "dd.mm.yy")` schneidet nur Zeichen ab, daraus wurde 11.19.26. Die Startmeldung (`Start_Msg` in `Create_HeaderFile`) nimmt jetzt `datetime.now().strftime("%d.%m.%y %H:%M")`. Die Kommentarzeile „File creation“ im Header bleibt unverändert. `Date_str` selbst bleibt unverändert (wird auch von Speichern und Pico-Konfiguration benutzt).
+
+Issue 34: Ursache nicht gefunden (keine CSS-Regel von uns ändert `.q-dialog` oder `.q-menu`). Absicherung im CSS: `.q-dialog.fullscreen` und `.q-menu` mit `position: fixed !important`; ohne Wirkung, wenn das Quasar-Stylesheet vollständig geladen ist. Rückmeldung des Anwenders (Browser, Cache, Version) abwarten.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `proggen/M06_Write_Header.py` | 1.16 | Startmeldung TT.MM.JJ |
+| `webmobaledlib.py` | 4.77 | CSS Dialoge/Menüs, Version |
+
+## 4.76 (2026-11-22), Issue 37: Boardwechsel in der Port-Auswahl
+
+Ursache: Bild, Beschreibungstext und roter Hinweis wurden nur beim Öffnen des Dialogs gesetzt (aus den Argumenten von `ShowDialog`); der Wechsel über „Andere Typen“ änderte nur Port-Liste und Build-Optionen. Jetzt legt `_comport_async` Text, roten Hinweis und Bild immer an, und nach dem Wechsel setzt `_board_view()` sie neu (gleiche Regeln wie `M07_COM_Port_New.Show_USB_Port_Dialog`: ESP32, Pico, Pico-WLAN, sonst LED/Nano; blinkender Hinweis nur beim Nano). Gilt nur für den Dialog der Lichtmaschine (`main_col`), nicht für DCC- und Tiny-Anschlüsse. Der Boardname im Text kommt aus `M08.GetArduName()`.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_form_comport.py` | 1.09 | Anzeige nach dem Boardwechsel |
+| `webmobaledlib.py` | 4.76 | Version, REQUIRED_FILES |
+
+## 4.75 (2026-11-22), Pull Request 55: helleres dunkles Farbschema
+
+Pull Request 55 (moosbewohner): nur CSS in `_web/web_layout.py` (1.21) unter `body.body--dark` und `html.mll-grid-dark`: hellere Grundflächen, Dialoge und Menüs, abgestufte Tabellenfarben bei „Dunkel mit Tabelle“. Übernommen mit `patch` (nur diese Datei). Die Dokumenttexte des PR (Version 4.67/4.68) habe ich nicht übernommen und selbst neu geschrieben.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_layout.py` | 1.21 | CSS dunkles Farbschema (PR 55) |
+| `webmobaledlib.py` | 4.75 | Version, REQUIRED_FILES |
+
+## 4.74 (2026-11-22), Statuszeile korrigiert
+
+Rückmeldung zu 4.73: `conn_label` steht wieder in `header_row` direkt vor dem Knopf; `status_label` wird in die Menüzeile (`menu_slot`) vor `autosave_label` verschoben (`move`). `status_row` entfällt (Zeile bleibt als Kommentar). Die Knöpfe verschieben sich nicht mehr, weil die Meldung nicht mehr in der Kopfzeile neben ihnen steht.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `webmobaledlib.py` | 4.74 | `conn_label` im Kopf, `status_label` in der Menüzeile |
+
+## 4.73 (2026-11-22), Statuszeile, Farbfelder, Textfehler
+
+Anwender-Wunsch: (1) Im Fenster Tabelle färben zeigen die Felder Farbe die Farbe selbst: `web_dialogs.color_input` setzt `input-style` (Hintergrund, Schriftfarbe nach Helligkeit), aktualisiert bei Änderung. (2) `status_label` und `conn_label` stehen nicht mehr in `header_row`, sondern in `status_row` (feste Mindesthöhe 20 px) unter der Kopfzeile; die Knöpfe verschieben sich nicht mehr. (3) Textfehler in `MobaLedTest_macrodef.json` (Sound-Datei, Programm Einstellungen) und `MobaLedTest_macroparamdef.json` (Standardschrift), Schlüssel und Übersetzungen in `csv/Web_Languages.csv` angepasst. Die Texte im Dialog der Einstellungen kommen aus den JSON-Dateien.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `webmobaledlib.py` | 4.73 | Statuszeile `status_row`, REQUIRED_FILES |
+| `_web/web_dialogs.py` | 1.12 | `color_input` zeigt die Farbe |
+| `MobaLedTest_macrodef.json`, `MobaLedTest_macroparamdef.json` | – | Textfehler |
+| `csv/Web_Languages.csv` | – | Schlüssel und Übersetzungen der drei Texte |
+
+## 4.72 (2026-11-22), Speichern unter … nur wo der Browser es kann
+
+Anfrage eines Anwenders: Beim Zugriff über das Netz (webMLL auf einem anderen PC, Adresse mit http) kam bei „Speichern unter …“ kein Dialog, die Datei landete im Downloads-Ordner. Ursache: `window.showSaveFilePicker` gibt es nur in Chromium (Edge, Chrome) und nur in einem sicheren Kontext (https oder localhost); sonst fällt `offer_download` auf den normalen Download zurück, der Knopf tut dann dasselbe wie „In den Downloads-Ordner“. Jetzt blendet ein kurzes Skript nach dem Öffnen des Dialogs den Knopf und den alten Hinweis aus und zeigt stattdessen einen Hinweis mit der Ursache. Der Fall ist keine Einschränkung des Webprogramms an sich: Mit https (zum Beispiel über einen Reverse Proxy) oder in Chrome mit der Ausnahme für unsichere Adressen (`chrome://flags`, „Insecure origins treated as secure“) erscheint der Dialog. Nicht im Browser getestet.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `webmobaledlib.py` | 4.72 | `offer_download`: Knopf und Hinweis je nach Browserfähigkeit |
+
+## 4.71 (2026-11-22), Pull Request 54: ESP32-Konfiguration über WLAN (moosbewohner)
+
+Übernommen aus Branch `feature/konfiguration-wlan` (Basis 4.67): Mit „Schnelles Update“ und PlatformIO geht die Konfiguration des ESP32 auch über WLAN. Der Empfänger nutzt den vorhandenen HMAC-gesicherten Gerätekanal (TCP 2323) mit dem OTA-Passwort; Wiederholung bis zu dreimal, Nachprüfung von Signatur und CRC bei verlorener END-Antwort; der ESP32 startet 750 ms später aus der Hauptschleife neu; Hostname, Passwort und OTA-Schalter gehen als Hash in die Firmware-Signatur ein (neue Firmware nötig, einmal vollständig übertragen). Pico bleibt bei USB. Der Code der Dateien M06, M08, M42, `headless_dyn_config`, `MLLDynConfig.h`, `LEDs_AutoProg.ino` und `test_dyn_config_wlan.py` wurde unverändert eingespielt (Patch ohne Konflikte); `web_form_options.py`, CSV, HOC und Doku sind von Hand zusammengeführt (der Branch stand auf 4.67, 4.68 bis 4.70 liefen parallel). Meine roten Warnhinweise aus 4.68 (Reiter WLAN) und 4.70 (Reiter Entwicklungsumgebung) sind entfernt (auskommentiert), der Hinweistext des Hakens stammt aus dem Pull Request. Die Texte in Anleitung und Checkliste habe ich neu formuliert, weil die des Branches doppelt kodierte Umlaute enthielten. Nicht im Browser und nicht an Hardware getestet; der Autor hat nach eigenen Angaben ESP32 mit PlatformIO und mehrere WLAN-Updates geprüft, nicht geprüft sind Pico, Nano, Linux/macOS/Raspberry Pi, Verlust der END-Antwort am Gerät und Passwortwechsel.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `proggen/M06_Write_Header.py` | 1.15 | dynamische Konfiguration bei HeaderOnly |
+| `proggen/M08_ARDUINO.py` | 1.29 | ESP32-Setup mit Konfiguration über WLAN |
+| `proggen/M42_Dyn_Config.py` | 1.05 | WLAN, Wiederholung, Nachprüfung |
+| `headless/headless_dyn_config.py` | 1.02 | TCP-Verbindung mit Anmeldung |
+| `LEDs_AutoProg/MLLDynConfig.h` | 1.04 | Protokoll über USB oder WLAN, verzögerter Neustart |
+| `LEDs_AutoProg/LEDs_AutoProg.ino` | WLAN 1.02 | Empfang über WLAN |
+| `test_dyn_config_wlan.py` | 1.05 | 14 Tests |
+| `_web/web_form_options.py` | 1.46 | Warnhinweise entfernt, Hinweistext |
+| `webmobaledlib.py` | 4.71 | Version |
+| `csv/Web_Languages.csv` | – | 2 Texte aus dem PR, meine Warntexte entfernt |
+
+## 4.70 (2026-11-22), Hinweis Schnelles Update im Reiter Entwicklungsumgebung
+
+Roter Hinweistext unter dem Haken „Schnelles Update“ (`_web/web_form_options.py` 1.45), neuer Text in `Web_Languages.csv` (7 Sprachen). Nicht im Browser getestet.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `webmobaledlib.py` | 4.70 | Version |
+| `_web/web_form_options.py` | 1.45 | Hinweistext |
+| `csv/Web_Languages.csv` | – | neuer Text |
+| Anleitung 4.70, Checkliste 3.52 | – | angepasst |
+
+## 4.69 (2026-11-22), Adresse /ARDUINOEinstellungen entfällt
+
+Eintrag aus `TAB_URLS` (`_web/web_tabs.py` 1.35) auskommentiert; die Übersichtsseite der Adressen und die Anleitung (Tabelle der Adressen) zeigen sie nicht mehr. Der unsichtbare Reiter `arduinocfg` und die Seite bleiben im Code (Entscheidung offen: die drei unsichtbaren Reiter `progcfg`, `config`, `arduinocfg` tragen noch die Seiten der Menüs; Entfernen wäre ein Umbau ohne Nutzen für Anwender).
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `webmobaledlib.py` | 4.69 | Version |
+| `_web/web_tabs.py` | 1.35 | Adresse entfernt |
+| Anleitung 4.69 | – | Adressen-Tabelle |
+
+## 4.68 (2026-11-22), Menü-Umstellung Teil 2, Rest
+
+Dialog Hardware Optionen (`_web/web_form_options.py` 1.44): Titel `tr("Hardware Optionen")`; im Anfänger Modus (`web_tabs.is_beginner_mode`) werden die Reiter Entwicklungsumgebung und Firmware Installation nicht aufgebaut; Boardnamen links über `_radios` (nur Web, die Tk-Datei `UserForm_Options.py` bleibt): Lichtmaschine Classic, Mini (Nano (neue Version)) / Lichtmaschine Pro (ESP32) / Lichtmaschine Pico Zero, MoLLi (Raspberry Pico); Entwicklungsumgebung: Radio mit PlatformIO (Standard) zuerst, ARDUINO-IDE (nur Kompatibilität - nicht mehr nutzen); Knopf ARDUINO-IDE Einstellungen nur sichtbar bei ARDUINO-IDE (beim Umschalten sofort); die Reiter ESP Einstellungen und WLAN (OTA) hingen schon an der Auswahl ESP32 (unverändert); WLAN (OTA): roter Hinweistext oben. Der Hinweis nennt die Einstellung „Schnelles Update“, wie sie in der Oberfläche heißt (im Wunsch stand „Schnelles Hochladen“). Nicht im Browser getestet. Ob WLAN das Schnelle Update tatsächlich ignoriert, wurde im Code nicht geändert oder geprüft.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `webmobaledlib.py` | 4.68 | Version |
+| `_web/web_form_options.py` | 1.44 | Dialog Hardware Optionen |
+| `csv/Web_Languages.csv` | – | 6 neue Texte |
+| Anleitung (4.68), Checkliste (3.50, Punkt 313), Wiki pg_arduino, pg_werkzeugleiste | – | angepasst |
 
 ## 4.67 (2026-11-21), Menü-Umstellung Teil 2
 

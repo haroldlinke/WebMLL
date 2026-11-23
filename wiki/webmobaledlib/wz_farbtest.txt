@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Farb Test ======
-//Seitenstand 1.05 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.06 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Mit dem **Farb Test** suchst du **Farben** aus und siehst sie sofort an einer LED an deiner Anlage. Das ist wichtig, weil LEDs Farben anders zeigen als der Bildschirm. Gefundene Farben kannst du in einer **Palette** sammeln.
 

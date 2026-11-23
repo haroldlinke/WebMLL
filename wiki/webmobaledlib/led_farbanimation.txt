@@ -1,5 +1,5 @@
 ====== webMobaLedLib – LED Farb-Animation ======
-//Seitenstand 1.02 (2026-11-09), gilt für webMobaLedLib 3.04//
+//Seitenstand 1.03 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Mit der **LED Farb-Animation** lässt du die **Farbe einer RGB-LED** sich langsam verändern: ein sanfter Wechsel von Rot nach Blau, ein Sonnenaufgang, ein Flackern oder ein Farbwechsel für ein Aquarium oder eine Disco. Du **zeichnest den Verlauf als Kurven**, und das Programm macht daraus die Einträge für die Lichtmaschine.
 

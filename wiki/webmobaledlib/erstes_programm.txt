@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Dein erstes Programm ======
-//Seitenstand 1.12 (2026-11-19), gilt für webMobaLedLib 4.14//
+//Seitenstand 1.13 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Auf dieser Seite bringst du eine LED zum Leuchten. Das dauert etwa **15 Minuten**, beim ersten Mal etwas länger. Danach weißt du, wie alles zusammenhängt.
 

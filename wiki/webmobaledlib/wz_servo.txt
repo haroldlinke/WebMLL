@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Servo Einstellungen ======
-//Seitenstand 1.07 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.08 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Mit dem Reiter **Servo Einstellungen** testest und stellst du **Servos der MobaLedLib-Servoplatine** ein. Das ist die Platine, an der Servos über **LED-Befehle** angeschlossen sind. Du stellst für jeden Servo die **kleinste und größte Stellung** und die **Geschwindigkeit** ein, damit er nirgends anstößt.
 

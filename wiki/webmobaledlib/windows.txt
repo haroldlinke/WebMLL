@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Installation unter Windows ======
-//Seitenstand 1.02 (2026-11-10), gilt für webMobaLedLib 3.08//
+//Seitenstand 1.03 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Diese Seite gilt für **Windows 10 und Windows 11**. Du brauchst keine Eingabeaufforderung: Die Installation startest du mit einem Doppelklick.
 

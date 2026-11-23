@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Das Programm aktualisieren ======
-//Seitenstand 1.01 (2026-11-12), gilt für webMobaLedLib 3.12//
+//Seitenstand 1.02 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Neue Versionen bringen neue Funktionen und beheben Fehler. Das Programm **aktualisiert sich selbst**: Du musst nichts von Hand kopieren. **Deine Tabellen und Einstellungen bleiben erhalten**, weil sie nicht im Programmordner liegen, sondern im **Datenordner** (siehe unten).
 
@@ -71,6 +71,7 @@ Mit **Hilfe → Update Testversion …** lädst du eine Version von GitHub, **di
   - Danach läuft alles **wie beim normalen Update**: Anzeige der Dateien, **Aktualisieren**, Sicherung, **Neu starten**.
   - Releases, deren Name oder Tag mit **test** beginnt (zum Beispiel //test1//), sind **Tests des Entwicklers**. Sie stehen **am Ende der Liste** (höchstens fünf), sind **nie vorgewählt** und tragen den Zusatz **Entwicklertest**. So installiert kein Tester sie aus Versehen; wer einen solchen Test braucht, wählt ihn gezielt aus.
   - Wählst du eine **ältere** Version, erscheint die rote Warnung (siehe oben) und der Standardknopf bleibt **Abbrechen**. Einstellungen und Dateien können sich beim Zurückgehen ändern; deine Tabellen werden vorher gesichert.
+  * Statt einer Version von GitHub kannst du auch einen **eigenen Link (https) zu einer ZIP-Datei** angeben oder eine **ZIP-Datei auf dem Rechner auswählen** (seit 3.95). Die Datei wird wie webmobaledlib.zip geprüft und installiert. Das geht auch, wenn GitHub nicht erreichbar ist.
   * Ohne Netz, hinter einem Proxy oder bei zu vielen Abfragen (GitHub erlaubt 60 je Stunde) steht eine Meldung im Fenster. Es wird nichts verändert.
 
 ===== Das Programm startet nach einem Update nicht mehr? =====

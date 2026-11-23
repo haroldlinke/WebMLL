@@ -1,12 +1,13 @@
-# Datei-Version: 1.11 (2026-11-19) - headless_esp32_ota.py
+# Datei-Version: 1.12 (2026-11-23) - headless_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_esp32_ota.py
 # Path:           headless/headless_esp32_ota.py
-# Version:        1.11
-# Last Update:    2026-11-19
+# Version:        1.12
+# Last Update:    2026-11-23
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.12  2026-11-23  Statische IP oder DHCP fuer den ESP32: Einstellungen ip_mode/ip/gateway/mask/dns1/dns2 (validate_network, network_of), Defines MLL_WIFI_STATIC_IP im Sketch
 #   1.11  2026-11-19  Zeitstempel-Vergleich der Kopfdatei: auch MLL_P_START_MSG (dynamische Konfiguration) wird ohne Datum verglichen
 #   1.10  2026-11-19  run_streaming: Build (PlatformIO, Arduino Builder) und Flashen geben die Ausgabe zeilenweise ins Protokoll, sobald sie kommt; cancel_running() beendet den laufenden Vorgang (Vorgang abbrechen im Protokoll-Fenster)
 #   1.09  2026-11-18  WLAN ohne OTA: Arduino.h und WiFi.h fuer USB-WLAN-Einrichtung immer einbinden
@@ -190,7 +191,8 @@ def arduino_library_dir(packages, sketchbook):
     return libraries
 
 
-def prepare_ota_sketch(sketch, password, hostname="", ota=True):
+# def prepare_ota_sketch(sketch, password, hostname="", ota=True):  # v1.12 (entfallen)
+def prepare_ota_sketch(sketch, password, hostname="", ota=True, network=None):  # v1.12
     if ota and not re.fullmatch(r"[!-~]{1,64}", password):
         raise ValueError("Das OTA-Passwort muss 1 bis 64 druckbare ASCII-Zeichen haben.")
     source = sketch / "LEDs_AutoProg.ino"
@@ -199,6 +201,10 @@ def prepare_ota_sketch(sketch, password, hostname="", ota=True):
     prefix = "#define USE_WIFI\n#define MLL_OTA_SAVED_WIFI\n#include <Arduino.h>\n#include <WiFi.h>\n"  # v1.09
     if hostname:
         prefix += f'#define MLL_WIFI_HOSTNAME "{hostname}"\n'
+    if network:  # v1.12: feste IP-Adresse statt DHCP
+        prefix += "#define MLL_WIFI_STATIC_IP\n"  # v1.12
+        for key, name in (("ip", "IP"), ("gateway", "GATEWAY"), ("mask", "MASK"), ("dns1", "DNS1"), ("dns2", "DNS2")):  # v1.12
+            prefix += f'#define MLL_WIFI_{name} "{network[key]}"\n'  # v1.12
     if ota:
         prefix += (f'#define USE_OTA\n#define MLL_OTA_PASSWORD "{secret}"\n'
                    # '#include <Arduino.h>\n#include <WiFi.h>\n'  # v1.09 (entfallen)
@@ -209,7 +215,8 @@ def prepare_ota_sketch(sketch, password, hostname="", ota=True):
     return secret
 
 
-def build_project(sketch_dir, ide, sketchbook, fqbn, password, report, *, hostname="", ota=True):
+# def build_project(sketch_dir, ide, sketchbook, fqbn, password, report, *, hostname="", ota=True):  # v1.12 (entfallen)
+def build_project(sketch_dir, ide, sketchbook, fqbn, password, report, *, hostname="", ota=True, network=None):  # v1.12
     """Compile an isolated sketch that uses the device's saved Wi-Fi credentials."""
     if fqbn.split(":", 3)[:3] != ["esp32", "esp32", "esp32"]:
         raise ValueError("Für OTA muss das ESP32-Standardboard gewählt sein.")
@@ -233,7 +240,8 @@ def build_project(sketch_dir, ide, sketchbook, fqbn, password, report, *, hostna
         build = Path(folder) / "build"
         build.mkdir()
         shutil.copytree(sketch_dir, sketch)
-        secret = prepare_ota_sketch(sketch, password, hostname, ota)
+        # secret = prepare_ota_sketch(sketch, password, hostname, ota)  # v1.12 (entfallen)
+        secret = prepare_ota_sketch(sketch, password, hostname, ota, network)  # v1.12
         command = [
             str(builder), "-compile", "-hardware", str(ide / "hardware"),
             "-hardware", str(packages), "-tools", str(ide / "tools-builder"),
@@ -276,7 +284,8 @@ def sync_build_tree(source, target):
             file.unlink()
 
 
-def build_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True):
+# def build_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True):  # v1.12 (entfallen)
+def build_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True, network=None):  # v1.12
     """Compile the WebMLL ESP32 configuration in a reusable build project."""
     if not pio:
         raise ValueError("PlatformIO wurde nicht gefunden.")
@@ -286,7 +295,8 @@ def build_platformio_project(sketch_dir, pio, password, report, write_config, *,
         shutil.copytree(sketch_dir, sketch)
         if not write_config(sketch.as_posix() + "/"):
             raise ValueError("Die PlatformIO-Konfiguration konnte nicht erzeugt werden.")
-        secret = prepare_ota_sketch(sketch, password, hostname, ota)
+        # secret = prepare_ota_sketch(sketch, password, hostname, ota)  # v1.12 (entfallen)
+        secret = prepare_ota_sketch(sketch, password, hostname, ota, network)  # v1.12
         project = platformio_ota_project()
         # A fresh generator timestamp alone does not change the project configuration.
         generated = sketch / "LEDs_AutoProg.h"
@@ -411,11 +421,59 @@ def _read_store():
     return data if isinstance(data, dict) else {}
 
 
+NET_KEYS = ("ip_mode", "ip", "gateway", "mask", "dns1", "dns2")  # v1.12
+
+
+def validate_network(settings):  # v1.12
+    """Statische IP: prueft die Eingaben; liefert dict(ip, gateway, mask, dns1, dns2) oder None bei DHCP. Fehler: ValueError (deutscher Text, uebersetzbar)."""
+    import ipaddress
+    if settings.get("ip_mode") != "static":
+        return None
+
+    def address(key, message, required=True):
+        text = str(settings.get(key, "") or "").strip()
+        if not text:
+            if required:
+                raise ValueError(message)
+            return None
+        try:
+            return ipaddress.IPv4Address(text)
+        except ValueError:
+            raise ValueError(message) from None
+
+    ip = address("ip", "IP-Adresse des ESP32: bitte eine gültige IPv4-Adresse eingeben (z. B. 192.168.1.50).")
+    gateway = address("gateway", "Gateway: bitte eine gültige IPv4-Adresse eingeben (meist die Adresse des Routers).")
+    mask_text = str(settings.get("mask", "") or "").strip()
+    try:
+        net = ipaddress.IPv4Network(f"{ip}/{mask_text}", strict=False)
+        if not 8 <= net.prefixlen <= 30:
+            raise ValueError
+        ipaddress.IPv4Address(mask_text)
+    except ValueError:
+        raise ValueError("Subnetzmaske: bitte eine gültige Maske eingeben (z. B. 255.255.255.0).") from None
+    dns1 = address("dns1", "DNS-Server 1: ungültige IPv4-Adresse.", required=False) or gateway
+    dns2 = address("dns2", "DNS-Server 2: ungültige IPv4-Adresse.", required=False) or dns1
+    if ip in (net.network_address, net.broadcast_address):
+        raise ValueError("Die IP-Adresse darf nicht die Netz- oder Broadcast-Adresse sein.")
+    if gateway not in net:
+        raise ValueError("Gateway und IP-Adresse müssen im selben Netz liegen (Subnetzmaske beachten).")
+    if gateway == ip:
+        raise ValueError("Die IP-Adresse des ESP32 darf nicht die Adresse des Gateways sein.")
+    return {"ip": str(ip), "gateway": str(gateway), "mask": mask_text, "dns1": str(dns1), "dns2": str(dns2)}
+
+
+def network_of(settings):  # v1.12
+    """Netzwerkwerte fuer die Firmware (None = DHCP oder WLAN aus)."""
+    return validate_network(settings) if settings.get("wifi") else None
+
+
 def load_settings(sheet=None):
     store = _read_store()
     sheet = sheet or _sheet()
     own = getattr(sheet, "esp32_wlan", None) if sheet is not None else None
-    base = {"wifi": False, "ota": False, "hostname": "mobaledlib", "address": "", "password": ""}
+    # base = {"wifi": False, "ota": False, "hostname": "mobaledlib", "address": "", "password": ""}  # v1.12 (entfallen)
+    base = {"wifi": False, "ota": False, "hostname": "mobaledlib", "address": "", "password": "",
+            "ip_mode": "dhcp", "ip": "", "gateway": "", "mask": "255.255.255.0", "dns1": "", "dns2": ""}  # v1.12
     # Vorgabe fuer Blaetter ohne eigene Werte: die alten Einstellungen der Installation (bis 3.39)
     legacy = {k: store[k] for k in ("wifi", "ota", "hostname", "address") if k in store}
     values = base | legacy | (own if isinstance(own, dict) else {})
@@ -434,8 +492,17 @@ def save_settings(settings, sheet=None):
         raise ValueError("Hostname: 1 bis 63 Buchstaben, Ziffern oder Bindestriche.")
     if settings["ota"] and not re.fullmatch(r"[!-~]{1,64}", settings["password"]):
         raise ValueError("Für OTA bitte ein Passwort mit 1 bis 64 druckbaren ASCII-Zeichen eingeben.")
+    net = {}  # v1.12
+    if settings.get("wifi") and settings.get("ip_mode") == "static":  # v1.12: Eingaben pruefen und bereinigt speichern
+        net = validate_network(settings)  # v1.12
+    # settings = dict(settings, hostname=hostname, address=settings["address"].strip(),
+    #                 ota=bool(settings["wifi"] and settings["ota"]))  # v1.12 (entfallen)
     settings = dict(settings, hostname=hostname, address=settings["address"].strip(),
-                    ota=bool(settings["wifi"] and settings["ota"]))
+                    ota=bool(settings["wifi"] and settings["ota"]))  # v1.12
+    for key in NET_KEYS:  # v1.12
+        settings[key] = str(settings.get(key, "")).strip() if key not in net else net[key]  # v1.12
+    if settings.get("ip_mode") != "static":  # v1.12
+        settings["ip_mode"] = "dhcp"  # v1.12
     sheet = sheet or _sheet()
     store = _read_store()
     passwords = dict(store.get("passwords") if isinstance(store.get("passwords"), dict) else {})
@@ -446,7 +513,8 @@ def save_settings(settings, sheet=None):
         passwords.setdefault(str(store["hostname"]).lower(), store["password"])
         store["passwords"] = passwords
     store.pop("password", None)  # altes Einzelpasswort: jetzt je Geraet
-    own = {k: settings[k] for k in ("wifi", "ota", "hostname", "address")}
+    # own = {k: settings[k] for k in ("wifi", "ota", "hostname", "address")}  # v1.12 (entfallen)
+    own = {k: settings[k] for k in ("wifi", "ota", "hostname", "address") + NET_KEYS}  # v1.12
     if sheet is not None:
         sheet.esp32_wlan = own
         for key in ("wifi", "ota", "hostname", "address"):   # Vorgabe fuer neue Blaetter (ohne Adresse)

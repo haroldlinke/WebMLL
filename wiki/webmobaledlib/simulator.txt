@@ -1,5 +1,5 @@
 ====== webMobaLedLib – LED Simulator ======
-//Seitenstand 1.01 (2026-11-16), gilt für webMobaLedLib 3.59//
+//Seitenstand 1.02 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Der **LED Simulator** zeigt auf dem Bildschirm, **wie deine LEDs leuchten würden**, ohne dass eine Lichtmaschine angeschlossen ist. Du siehst Effekte, Farben und Blinkmuster **sofort** und kannst die **Testtasten** der Tabelle benutzen, als wäre die Anlage da.
 
@@ -40,6 +40,7 @@ Der Knopf ändert **keine Einstellung**: Das nächste **Setup übertragen** geht
   - Klicke auf **Setup simulieren**. Das Programm erzeugt die Konfiguration und übersetzt sie (beim ersten Mal dauert das einige Sekunden bis Minuten). Der Simulator öffnet sich.
   - Klicke in der Tabelle auf die **Testtasten**: Die LEDs im Simulator reagieren wie die Anlage. Schalter und Taster werden mit ihren DCC-Adressen angesprochen.
   - Änderst du die Tabelle, klicke wieder auf **Setup simulieren**: Der **offene Simulator wird aktualisiert**.
+  - Liegt das Fenster nach einem Minimieren außerhalb des Bildschirms (Windows meldet dafür die Lage −32000), speichert das Programm diese Lage seit 4.78 nicht mehr und setzt eine ungültige gespeicherte Lage beim Öffnen auf 800/400 zurück. **Setup simulieren** holt das Fenster wieder nach vorn.
   - Schließe ihn unter Windows mit dem Fenster, unter Linux mit dem **X** im Feld. Beim **Beenden des Programms** schließt er sich selbst.
 
 ==== Die Anzeige ====

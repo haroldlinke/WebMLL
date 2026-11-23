@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Installation auf dem Raspberry Pi ======
-//Seitenstand 1.03 (2026-11-16), gilt für webMobaLedLib 3.57//
+//Seitenstand 1.04 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Auf dem Raspberry Pi läuft die webMobaLedLib als **Dauerdienst**: Sie startet beim Hochfahren des Pi von selbst. Du kannst sie am Pi selbst bedienen oder von jedem anderen Computer, Tablet oder Smartphone im Heimnetz aus, auch ohne Bildschirm am Pi. Das ist ideal, wenn der Pi mit der Lichtmaschine fest an der Modellbahn bleibt.
 

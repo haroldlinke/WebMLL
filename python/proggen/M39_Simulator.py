@@ -1,9 +1,9 @@
-# Datei-Version: 1.11 (2026-11-16) - M39_Simulator.py
+# Datei-Version: 1.12 (2026-11-22) - M39_Simulator.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M39_Simulator.py
 # Path:           proggen/M39_Simulator.py
-# Version:        1.11
-# Last Update:    2026-11-16
+# Version:        1.12
+# Last Update:    2026-11-22
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -21,6 +21,7 @@
 #   1.09  2026-11-16  Fenster 'Kompilieren und Hochladen' bei Setup simulieren: Fortschritt und Ergebnis (OK schliesst es nach einigen Sekunden, Fehler bleibt stehen) - _Log
 #   1.10  2026-11-16  Linux: Grund nennen, wenn der Simulator nicht verfuegbar ist (Bibliothek MobaLedLib fehlt, g++ fehlt, Bauen fehlgeschlagen)
 #   1.11  2026-11-16  Linux: eigene Configuration_linux.cpp mit Schraegstrichen statt der Windows-Pfade der mitgelieferten Configuration.cpp (Meldung 'The FastLED library must be installed')
+#   1.12  2026-11-22  Issue 45: Fensterlage des Simulators: ein minimiertes Fenster meldet Windows als -32000/-32000; diese Lage wird nicht mehr gespeichert, und ungueltige gespeicherte Werte werden beim Oeffnen durch 800/400 ersetzt (Fenster lag ausserhalb des Bildschirms)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -410,6 +411,10 @@ def OpenSimulator():
     SimPosX=M28.Get_Num_Config_Var_Range('SimPosX', - 16383, 16383, 800)
     SimPosY=M28.Get_Num_Config_Var_Range('SimPosY', - 16383, 16383, 400)
     SimOnTop=M28.Get_Num_Config_Var_Range('SimOnTop', 0, 1, 1)==1
+    if SimPosX <= -10000 or SimPosY <= -10000 or SimPosX >= 16000 or SimPosY >= 16000:  # v1.12: gespeicherte Lage ungueltig (zum Beispiel -32000 eines minimierten Fensters): Vorgabe, auch in den Einstellungen
+        SimPosX, SimPosY = 800, 400  # v1.12
+        M28.Set_String_Config_Var('SimPosX', Str(SimPosX))  # v1.12
+        M28.Set_String_Config_Var('SimPosY', Str(SimPosY))  # v1.12
     
     Debug.Print("ShowLEDWindow",SimLedsX,SimLedsY,SimLedSize,SimOffset,SimPosX,SimPosY,SimOnTop)
     sim_params.update({'x': int(SimLedsX), 'y': int(SimLedsY), 'size': int(SimLedSize), 'offset': int(SimOffset)})  # v1.06
@@ -739,6 +744,9 @@ def __StorePosition():
     Debug.Print("StorePosition")
     currentPos = RECT()
     if GetLEDWindowRect(currentPos) == 1:
+        if currentPos.left <= -10000 or currentPos.top <= -10000 or currentPos.left >= 16000 or currentPos.top >= 16000:  # v1.12: minimiertes Fenster (Windows: -32000), Lage nicht speichern
+            Debug.Print("StorePosition: Fenster minimiert oder ausserhalb, Lage nicht gespeichert", currentPos.left, currentPos.top)  # v1.12
+            return  # v1.12
         M28.Set_String_Config_Var('SimPosX', Str(currentPos.left))
         M28.Set_String_Config_Var('SimPosY', Str(currentPos.top))
 

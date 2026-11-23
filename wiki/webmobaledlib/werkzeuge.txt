@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Die Werkzeug-Reiter ======
-//Seitenstand 1.09 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.10 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Neben dem [[anleitungen:webmobaledlib:programmgenerator|Programmgenerator]] hat die webMobaLedLib weitere **Reiter** mit Werkzeugen. Mit ihnen **testest du Farben, Servos und Sound**, stellst Geräte ein und siehst, was die Lichtmaschine sendet. Du brauchst sie nicht für ein erstes Programm. Sie helfen aber, wenn du Farben aussuchen oder ein Gerät in Betrieb nehmen willst.
 

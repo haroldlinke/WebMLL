@@ -206,6 +206,14 @@ void setupESP32Extensions() {
 #endif
 
 #ifdef MLL_OTA_SAVED_WIFI
+#ifdef MLL_WIFI_STATIC_IP   // v4.79: feste IP-Adresse statt DHCP (Defines kommen von der Oberflaeche, Reiter OTA)
+    {
+      IPAddress staticIp, staticGateway, staticMask, staticDns1, staticDns2;
+      if (staticIp.fromString(MLL_WIFI_IP) && staticGateway.fromString(MLL_WIFI_GATEWAY) && staticMask.fromString(MLL_WIFI_MASK) &&
+          staticDns1.fromString(MLL_WIFI_DNS1) && staticDns2.fromString(MLL_WIFI_DNS2))
+        WiFi.config(staticIp, staticGateway, staticMask, staticDns1, staticDns2); // muss vor WiFi.begin() stehen
+    }
+#endif
     WiFi.setAutoReconnect(true);
     WiFi.begin();
 #else

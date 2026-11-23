@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Zusätzlich: Arduino IDE ======
-//Seitenstand 1.02 (2026-11-09), gilt für webMobaLedLib 3.04//
+//Seitenstand 1.03 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Die webMobaLedLib überträgt das Programm normalerweise mit **PlatformIO**. Es wird bei der Installation automatisch mitinstalliert. **Du brauchst die Arduino IDE also nicht.**
 

@@ -1,12 +1,13 @@
-# Datei-Version: 1.06 (2026-11-18) - web_esp32_ota.py
+# Datei-Version: 1.07 (2026-11-23) - web_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_esp32_ota.py
 # Path:           _web/web_esp32_ota.py
-# Version:        1.06
-# Last Update:    2026-11-18
+# Version:        1.07
+# Last Update:    2026-11-23
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.07  2026-11-23  Reiter OTA: DHCP oder statische IP-Adresse (IP, Gateway, Subnetzmaske, DNS), Pruefung der Eingaben, Zieladresse = feste IP
 #   1.00  2026-11-14  Neu: Dialoge fuer ESP32-WLAN und OTA (Firmware hochladen, Ziel waehlen, Reiter OTA, WLAN ueber USB einrichten)
 #   1.01  2026-11-14  Firewall-Hinweis bei "No response from device" (Port 32323)
 #   1.02  2026-11-14  Reiter OTA: Knopf "Minimale Firmware per USB hochladen" (schaltet WLAN und OTA ein, ruft minimal_firmware_handler)
@@ -31,7 +32,10 @@ HINT_FIREWALL = 'Der ESP32 hat sich nicht zurückgemeldet. Meist blockiert eine 
 
 
 def target_address(settings):
-    return settings["address"] or (settings["hostname"] + ".local" if settings["hostname"] else "")
+    # return settings["address"] or (settings["hostname"] + ".local" if settings["hostname"] else "")  # v1.07 (entfallen)
+    if not settings["address"] and settings.get("wifi") and settings.get("ip_mode") == "static" and settings.get("ip"):  # v1.07: feste IP als Ziel
+        return settings["ip"]  # v1.07
+    return settings["address"] or (settings["hostname"] + ".local" if settings["hostname"] else "")  # v1.07
 
 
 def remember_target(host):
@@ -163,19 +167,37 @@ def settings_panel():
     wifi = ui.checkbox("WLAN am ESP32 aktivieren", value=settings["wifi"])
     ota = ui.checkbox("OTA-Updates erlauben", value=settings["ota"]).bind_enabled_from(wifi, "value")
     hostname = ui.input("Hostname des ESP32", value=settings["hostname"]).classes("w-full")
+    # v1.07: DHCP oder statische IP-Adresse
+    ip_mode = ui.radio({"dhcp": tr("DHCP (IP-Adresse automatisch vom Router)"), "static": tr("Statische IP-Adresse")},
+                       value=settings.get("ip_mode", "dhcp")).props("inline").bind_enabled_from(wifi, "value")  # v1.07
+    with ui.column().classes("w-full gap-0").bind_visibility_from(ip_mode, "value", backward=lambda value: value == "static"):  # v1.07
+        net_ip = ui.input("IP-Adresse des ESP32", value=settings.get("ip", ""), placeholder="192.168.1.50").classes("w-full")  # v1.07
+        net_gateway = ui.input("Gateway (Router)", value=settings.get("gateway", ""), placeholder="192.168.1.1").classes("w-full")  # v1.07
+        net_mask = ui.input("Subnetzmaske", value=settings.get("mask", "255.255.255.0"), placeholder="255.255.255.0").classes("w-full")  # v1.07
+        net_dns1 = ui.input("DNS-Server 1 (leer: Gateway)", value=settings.get("dns1", "")).classes("w-full")  # v1.07
+        net_dns2 = ui.input("DNS-Server 2 (leer: wie DNS-Server 1)", value=settings.get("dns2", "")).classes("w-full")  # v1.07
+        ui.label("Nach einer Änderung der Netzwerkeinstellungen muss die Firmware einmal neu übertragen werden (ESP32-Setup übertragen). Danach unter „Adresse für WebMLL“ die neue IP-Adresse eintragen.").classes("text-caption")  # v1.07
     address = ui.input("Adresse für WebMLL", value=settings["address"], placeholder="IP-Adresse oder Name").classes("w-full")
     password = ui.input("OTA-Passwort", password=True, placeholder="Leer lassen, um das gespeicherte Passwort zu behalten").classes("w-full")
     ui.label("Die Firmware verwendet das im ESP32 gespeicherte WLAN.").classes("text-caption")
 
     def save():
         nonlocal settings
+        # values = dict(wifi=wifi.value, ota=wifi.value and ota.value, hostname=hostname.value,
+        #               address=address.value, password=password.value or settings["password"])  # v1.07 (entfallen)
         values = dict(wifi=wifi.value, ota=wifi.value and ota.value, hostname=hostname.value,
-                      address=address.value, password=password.value or settings["password"])
+                      address=address.value, password=password.value or settings["password"],
+                      ip_mode=ip_mode.value, ip=net_ip.value or "", gateway=net_gateway.value or "", mask=net_mask.value or "",
+                      dns1=net_dns1.value or "", dns2=net_dns2.value or "")  # v1.07
+        if wifi.value and ip_mode.value == "static" and not (address.value or "").strip():  # v1.07: leere Adresse: feste IP als Ziel
+            values["address"] = (net_ip.value or "").strip()  # v1.07
         try:
             headless_esp32_ota.save_settings(values)
         except (ValueError, OSError) as error:
-            ui.notify(str(error), type="negative")
+            # ui.notify(str(error), type="negative")  # v1.07 (entfallen)
+            ui.notify(tr(str(error)), type="negative")  # v1.07
             return
+        address.set_value(values["address"])  # v1.07
         settings = values
         password.set_value("")
         ui.notify("OTA-Einstellungen gespeichert.", type="positive")

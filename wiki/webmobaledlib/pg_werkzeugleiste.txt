@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Die Werkzeugleiste ======
-//Seitenstand 1.11 (2026-11-18), gilt für webMobaLedLib 3.98//
+//Seitenstand 1.12 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Über der Tabelle des [[anleitungen:webmobaledlib:programmgenerator|Programmgenerators]] liegt die **Werkzeugleiste**. Jeder Knopf hat ein Symbol und einen Titel in zwei Zeilen. Wenn du mit der Maus auf einem Knopf stehen bleibst, erscheint ein kurzer Hilfetext. Solange ein Befehl läuft, bleibt der Knopf **eingedrückt**.
 
@@ -32,29 +32,20 @@ Ganz rechts steht die **Version der MobaLedLib-Bibliothek**, zum Beispiel //Ver.
 
 ===== Das Fenster Optionen und spezielle Funktionen =====
 
+(Bis 4.66 hieß der Knopf **Optionen Werkzeuge**, seit 4.67 heißt er **Hardware Optionen**.)
+
 Du öffnest es mit dem Knopf **Hardware Optionen**. Oben stehen die **Reiter**, unten **Hilfe im Forum** und **Schließen**.
 
 ^ Reiter ^ Wofür ^
 | **Lichtmaschine** | **Board** deiner Lichtmaschine wählen und den **USB-Anschluss** erkennen lassen. Der Knopf **Board und USB Port erkennen** (seit 3.82, oben im Reiter) sucht selbst an allen USB-Anschlüssen nach einer Lichtmaschine, stellt das erste gefundene Board ein und öffnet das Fenster **USB Port erkennen** mit dem gefundenen Board, dem Anschluss und den anderen gefundenen Boards. Das ist der wichtigste Reiter, siehe [[anleitungen:webmobaledlib:pg_arduino|Verbinden und Übertragen]]. Der Knopf **Firmware installieren** (Firmware auf einen Pico schreiben und herunterladen) steht seit 4.67 im Reiter **Firmware Installation**. |
-| **WLAN (OTA)** | Nur bei der Zentrale **ESP32**: WLAN und OTA einschalten, Hostname, Adresse und Passwort, WLAN über USB einrichten, siehe [[anleitungen:webmobaledlib:ota|ESP32 per WLAN und OTA]]. Bis 3.82 hieß der Reiter **OTA**. |
-| **Erweiterungen** | Die **MobaLedLib Extensions (MLX)** ein- und ausschalten, optionale laden und **eigene** hinzufügen, siehe [[anleitungen:webmobaledlib:erweiterungen|Erweiterungen (MLX)]]. |
+| **ESP Einstellungen** (seit 3.94) | Nur bei der Zentrale **ESP32**: OLED-Anzeige, Fotowiderstand und Zustandsspeicherung **für das aktive Blatt**, siehe [[anleitungen:webmobaledlib:ota#der_reiter_esp_einstellungen|ESP32 per WLAN und OTA]]. |
+| **WLAN (OTA)** | Nur bei der Zentrale **ESP32**: WLAN und OTA einschalten, Hostname, **DHCP oder feste IP-Adresse** (seit 4.79), Adresse und Passwort, WLAN über USB einrichten, siehe [[anleitungen:webmobaledlib:ota|ESP32 per WLAN und OTA]]. Der Knopf **ESP32-Firmware über WLAN hochladen …** (seit 4.52) steht ebenfalls hier. Bis 3.82 hieß der Reiter **OTA**. |
 | **DCC ARDUINO** | Dasselbe für den **zweiten ARDUINO**, der die Zentrale anbindet (Blatt **DCC**, **Selectrix** oder **LNet**; beim Blatt **CAN** gibt es den Reiter nicht). Er erscheint nur bei einer **Nano**-Lichtmaschine. Die Überschrift trägt den Namen des Blatts. |
-| **DATEIEN** | Tabelle als Datei **speichern** und wieder **laden** (siehe unten). |
-| **ENTWICKLUNGSUMGEBUNG** | Womit die Programme **übersetzt und hochgeladen** werden: **PlatformIO** oder die **ARDUINO-IDE** (siehe unten). |
+| **ENTWICKLUNGSUMGEBUNG** (im **Anfänger Modus** nicht sichtbar) | Womit die Programme **übersetzt und hochgeladen** werden: **PlatformIO (Standard)** oder die **ARDUINO-IDE** (nur Kompatibilität). Dazu der Haken **Schnelles Update** (siehe unten). |
 | **UPDATE** | Nur mit der **ARDUINO IDE**: Bibliotheken und Boards der IDE aktualisieren. Mit PlatformIO fehlt der Reiter. |
-| **BOOTLOADER** | Den **schnellen Bootloader** auf dem linken ARDUINO installieren (siehe unten). |
+| **FIRMWARE INSTALLATION** (bis 4.66 **BOOTLOADER**; im **Anfänger Modus** nicht sichtbar) | Firmware für den Pico installieren, den **schnellen Bootloader** auf dem linken ARDUINO installieren (siehe unten). |
 
-==== Der Reiter DATEIEN ====
-
-Hier sicherst du deine Tabelle als **Datei** und lädst sie wieder. Das Ergebnis ist dieselbe **PGF-Datei** (Endung **.MLL_pgf**) wie im Menü **Datei**, siehe [[anleitungen:webmobaledlib:pg_speichern|Speichern und Laden]].
-
-^ Knopf ^ Wirkung ^
-| **Speichern in Datei** | Speichert deine Daten als Datei. Der Name beginnt mit //Prog_Gen_Data_// und dem Datum, zum Beispiel //Prog_Gen_Data_09_11_2026.MLL_pgf//. Die Datei wird über den **Browser heruntergeladen** und liegt danach im Download-Ordner des Rechners, an dem du sitzt. |
-| **Laden aus Datei** | Öffnet einen **Upload-Dialog**. Du wählst eine **.MLL_pgf**-Datei, und das Programm lädt sie in die Tabelle. |
-| **Importieren v. altem Prog.** | Steht seit 4.54 im Menü **Datei** als **Importieren v. altem Programm …** (der Reiter Dateien entfällt). Es gibt keinen direkten Import, die Anleitung zeigt den Weg über eine PGF-Datei. |
-| **Kopiere von Seite zu Seite** | Ausgegraut: Diese Funktion gibt es in der Webversion **nicht**. Im Excel-Programm sollte sie ausgewählte Daten von einem Blatt in ein anderes kopieren. Ein ganzes Blatt kannst du über das **Duplizieren** kopieren (siehe [[anleitungen:webmobaledlib:pg_tabelle|Die Tabelle bedienen]]). |
-
-**Tipp:** Speichere vor einem größeren Umbau eine Datei. So kommst du jederzeit zum alten Stand zurück.
+**Nicht mehr als Reiter** gibt es seit 4.53 die **Erweiterungen** (Menü **Einstellungen, Erweiterungen …**, siehe [[anleitungen:webmobaledlib:erweiterungen|Erweiterungen (MLX)]]) und seit 4.54 den Reiter **DATEIEN**: Tabelle als Datei speichern und laden geht im Menü **Datei** (siehe [[anleitungen:webmobaledlib:pg_speichern|Speichern und Laden]]). Dort steht auch **Importieren v. altem Programm …**; eine Funktion „Kopiere von Seite zu Seite“ gibt es in der Webversion nicht (ein ganzes Blatt kopierst du über **Duplizieren** am Blattreiter, die Spaltenbreiten überträgst du mit **Spaltenbreiten übertragen …**, siehe [[anleitungen:webmobaledlib:pg_tabelle|Die Tabelle bedienen]]).
 
 ==== Der Reiter ENTWICKLUNGSUMGEBUNG ====
 
@@ -66,6 +57,7 @@ Hier wählst du, **womit** das Programm für die Lichtmaschine übersetzt und ho
   * **PlatformIO-Zwischenspeicher löschen:** Löscht den Zwischenspeicher von PlatformIO und erzwingt beim nächsten Übersetzen einen **vollständigen Neuaufbau**. Das kann helfen, wenn Übersetzen oder Hochladen mit unerklärlichen Fehlern abbricht. Seit 3.16 **verknüpft** PlatformIO die Bibliothek MobaLedLib (wo dein Rechner Verknüpfungen erlaubt), statt sie zu kopieren: Eine geänderte Datei der Bibliothek gilt dann sofort, und du brauchst den Knopf dafür nicht mehr.
   * **USB-Zugriff für den Pico einrichten** (nur **Linux**, einmalig): Richtet die Regel ein, mit der PlatformIO den Pico ansprechen darf. Das Programm fragt nach dem Passwort. Ohne sie meldet das Hochladen //picotool was unable to connect//.
   * **Git installieren** (nur, wenn Git fehlt): PlatformIO braucht Git für den Raspberry Pico.
+  * **Schnelles Update: nur geänderte Konfiguration übertragen** (seit 4.36, nur ESP32 und Pico): Mit dem Haken lädt das Programm die Firmware **nur noch hoch, wenn es nötig ist**. Sonst geht nur die **Konfiguration** in wenigen Sekunden zur Lichtmaschine. Bei jeder Unsicherheit wird komplett hochgeladen. Beim **ESP32 über WLAN** gilt das seit 4.71 mit PlatformIO ebenfalls (siehe [[anleitungen:webmobaledlib:pg_arduino#schnelles_update_nur_die_konfiguration_uebertragen|Verbinden und Übertragen]]). Nano und Uno ändern sich nicht.
 
 Das Programm **webMobaLedLib** selbst aktualisierst du **nicht hier**, sondern im Menü **Hilfe → Update webMobaLedLib …**.
 

@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Verbinden und Übertragen ======
-//Seitenstand 1.14 (2026-11-19), gilt für webMobaLedLib 4.14//
+//Seitenstand 1.15 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Wenn deine Tabelle fertig ist, überträgst du sie auf die **Lichtmaschine**. Auf dieser Seite steht, wie du die Lichtmaschine **einstellst**, **verbindest**, das Programm **überträgst** und was bei Problemen hilft.
 
@@ -14,9 +14,9 @@ Das Programm muss wissen, **welche Lichtmaschine** du hast und **an welchem USB-
   - Danach öffnet sich das Fenster **USB Port erkennen**. Es zeigt das **gefundene Board mit seinem Anschluss** und, wie bisher, die **anderen gefundenen Boards**. **Übernimm** das gefundene Board mit dem Anschluss oder wähle einen **anderen Typ**.
   - Findet das Programm kein Board, kommt ein Hinweis (USB-Kabel prüfen, noch einmal klicken).
   - **Von Hand** geht es auch: Wähle das **Board** deiner Lichtmaschine und klicke auf **USB Port erkennen**:
-    * **Lichtmaschine Classic** (mit ARDUINO Nano): **Nano (neue Version)** (Nano mit neuem Bootloader). Bei vielen **Nachbauten** (China-Nano) und wenn das Hochladen mit einer Fehlermeldung abbricht, hilft **Nano Normal (old Bootloader)**. **Nano (Full memory)** und **Uno** gibt es für andere Platinen (im Fenster unter „Für andere Hauptplatine“).
-    * **Lichtmaschine Pro** (mit ESP32): **ESP32 Wroom**.
-    * **Lichtmaschine Pico Zero** und **Lichtmaschine Molli** (mit Raspberry Pico): **Raspberry Pico**.
+    * **Lichtmaschine Classic** (mit ARDUINO Nano): **Lichtmaschine Classic, Mini (Nano (neue Version))** (Nano mit neuem Bootloader). Bei vielen **Nachbauten** (China-Nano) und wenn das Hochladen mit einer Fehlermeldung abbricht, hilft **Nano Normal (old Bootloader)**. **Nano (Full memory)** und **Uno** gibt es für andere Platinen (im Fenster unter „Für andere Hauptplatine“).
+    * **Lichtmaschine Pro** (mit ESP32): **Lichtmaschine Pro (ESP32)** (bis 4.67 „ESP32 Wroom“).
+    * **Lichtmaschine Pico Zero** und **Lichtmaschine Molli** (mit Raspberry Pico): **Lichtmaschine Pico Zero, MoLLi (Raspberry Pico)** (bis 4.67 „Raspberry Pico“).
   - **Zur Erkennung:** Der Knopf **Board und USB Port erkennen** ersetzt seit **3.82** den Haken **Automatisch erkennen**. Er sucht selbst an **allen USB-Anschlüssen** (es muss vorher weder ein Board noch ein Anschluss eingestellt sein) und erkennt **Nano**, **ESP32** und **Raspberry Pico**. Bei einem Nano spricht das Programm den **Bootloader** an und erkennt **alt (57600 Baud)** und **neu (115200 Baud)**; es stellt **Nano Normal (old Bootloader)** oder **Nano (neue Version)** passend ein. Findet es mehrere Boards, nimmt es das **erste** und zeigt die anderen im Fenster von **USB Port erkennen** mit an. Das Fenster sagt dir also, was gefunden wurde; du kannst es übernehmen oder einen anderen Typ wählen. Eine Datei, in der noch das alte Merkmal „AutoDet“ gespeichert ist, stellt das Board beim Hochladen **nicht mehr** selbst um. Wer die Abfrage des Bootloaders **nicht** möchte, nimmt den Haken **Bootloader des Nano beim Prüfen erkennen** in den [[anleitungen:webmobaledlib:wz_programm_einstellungen|Programm Einstellungen]] (Spezialeinstellungen) weg.
   - Schließe das Fenster mit **Schließen**.
 
@@ -27,7 +27,7 @@ Das Fenster **ARDUINO-IDE Einstellungen** (Optionen, Reiter Entwicklungsumgebung
 **Wichtig:** **Mit Lichtmaschine verbinden** funktioniert **nur**, wenn auf der Lichtmaschine **schon ein MobaLedLib-Programm** läuft. Bei **neuen** Boards klappt das **nicht**: Stelle erst Board und Anschluss ein (siehe oben) und **übertrage** das Programm (siehe unten). Danach lässt sich die Lichtmaschine verbinden.
 
   - Klicke oben rechts auf **Mit Lichtmaschine verbinden**. Der Pfeil neben dem Knopf enthält auch den Eintrag **Verbinden**.
-  - Das Programm sucht die Lichtmaschine. Der Knopf wird **grün** und heißt **Mit Lichtmaschine verbunden**. Daneben steht der Anschluss (zum Beispiel //COM5// unter Windows oder //ttyUSB0// unter Linux).
+  - Das Programm sucht die Lichtmaschine. Der Knopf wird **grün** und heißt **Mit Lichtmaschine verbunden**. Direkt daneben steht der **Verbindungsstatus** mit dem Anschluss (zum Beispiel //COM5// unter Windows oder //ttyUSB0// unter Linux). Meldungen des Programms stehen seit 4.74 in der Menüzeile neben „Zwischengespeichert“; die Knöpfe oben rechts springen dabei nicht mehr.
 
 {{:bilder:anleitungen:webmobaledlib:pg_09_verbinden.png?500|Oben rechts: der Status und der Knopf Mit Lichtmaschine verbinden}}
 
@@ -68,7 +68,20 @@ Die **Umschaltung** zwischen Effekt- und Direktmodus erfolgt **automatisch**: Du
   - Das **erste Mal dauert es 5 bis 10 Minuten**, weil PlatformIO noch Werkzeuge nachlädt. Danach geht es in etwa einer Minute.
   - Am Ende meldet das Fenster, dass das Hochladen geklappt hat. Die Lichtmaschine startet neu und führt dein Programm aus.
 
+  * Das Fenster zeigt die Ausgabe des Übersetzens **sofort** (seit 4.33). **Vorgang abbrechen** beendet das Übersetzen oder Hochladen, **Schließen** gibt es erst nach dem Ende (seit 4.25). Das Fenster schließt sich nach Erfolg und nach einem Fehler **von selbst** (Vorgabe 5 und 30 Sekunden, einstellbar in den [[anleitungen:webmobaledlib:wz_programm_einstellungen|Programm Einstellungen]], seit 4.40).
+  * Ist in der Tabelle noch **kein USB-Anschluss** eingetragen, aber die Lichtmaschine verbunden, nimmt das Programm den Anschluss der aktiven Verbindung (seit 4.42).
+  * Das **Datum der Startmeldung** der Lichtmaschine (Serial Monitor) steht als TT.MM.JJ (seit 4.77, dazu das Setup neu übertragen).
+
 Die Lichtmaschine **behält** das Programm, auch wenn du ihn vom Computer trennst oder ausschaltest. Nach dem Übertragen verbindet sich das Programm **von selbst** mit dieser Lichtmaschine (siehe **Automatisch verbinden**). Ist das in den Programm Einstellungen ausgeschaltet, ist **keine Verbindung** offen: Das Programm verbindet sich dann **erst wieder, wenn ein Werkzeug sie braucht** (zum Beispiel eine Testtaste, siehe oben).
+
+===== Schnelles Update: nur die Konfiguration übertragen =====
+
+Bei einer **ESP32**- oder **Pico**-Lichtmaschine kann das Programm die **Firmware** (den festen Teil) und die **Konfiguration** (deine Tabelle: Makros, LEDs, Adressen) getrennt behandeln (seit 4.36). Schalte dazu in **Hardware Optionen**, Reiter **Entwicklungsumgebung**, **PlatformIO** und den Haken **Schnelles Update: nur geänderte Konfiguration übertragen** ein.
+
+  * Das Programm lädt die Firmware **nur hoch, wenn sie sich geändert hat**. Sonst geht nur die Konfiguration zur Lichtmaschine, das dauert wenige Sekunden. Ändert sich nichts, wird nichts übertragen.
+  * Auch die Zahl der LEDs, die Zuordnung der LED-Pins und LED-Gruppen, der Starttext und die Send-Inputs gehören zur Konfiguration (4.36, 4.37). Das Hinzufügen oder Abschalten einer Makrozeile löst deshalb keinen vollständigen Upload mehr aus. Ein **neuer oder entfallener LED-Kanal** und andere **Pins** ändern weiterhin die Firmware.
+  * **ESP32 über WLAN** (seit 4.71, Beitrag von moosbewohner): Das Programm prüft bei jeder Übertragung die Firmware im Gerät. Passt sie, wird nur die Konfiguration gesendet und der ESP32 startet neu. Bei einem Übertragungsfehler gibt es bis zu drei Versuche, danach wird das ganze Programm hochgeladen. Ändern sich **Hostname, OTA-Passwort, OTA-Schalter oder die Netzwerkeinstellungen (feste IP)**, wird die Firmware ebenfalls neu übertragen. Einmalig muss die Firmware mit der Empfangsfunktion auf den ESP32 (USB oder WLAN).
+  * Bei **Unsicherheit** lädt das Programm immer **alles** hoch. **Nano** und **Uno** ändern sich nicht.
 
 ===== Entwicklungsumgebung: PlatformIO =====
 

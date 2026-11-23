@@ -1,5 +1,5 @@
 ====== webMobaLedLib – Z21 Simulator ======
-//Seitenstand 1.05 (2026-11-17), gilt für webMobaLedLib 3.85//
+//Seitenstand 1.06 (2026-11-23), gilt für webMobaLedLib 4.79//
 
 Der **Z21 Simulator** gibt sich gegenüber **Modellbahn-Steuerprogrammen** als **Roco Z21** aus. Programme wie **Rocrail**, **iTrain**, **TrainController** oder **WinDigiPet** und die **Z21-Apps** schicken ihre Weichen- und Lokbefehle dann an die webMobaLedLib. Sie gibt sie als Schaltbefehl an die Lichtmaschine weiter. So bedienst du die **Schalter der MobaLedLib direkt aus deinem Steuerprogramm**.
 
