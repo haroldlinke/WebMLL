@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.79-build1 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 4.79-m08 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1797,3 +1797,7 @@ Im Reiter „WLAN (OTA)“ der Hardware Optionen wählst du, ob der ESP32 seine 
 ## ESP32: Build erfolgreich, aber kein Upload (Korrektur 4.79-build1)
 
 Ein angepasstes PlatformIO-Build-Verzeichnis wird beim Übertragen der ESP32-Startfirmware und beim ESP32-Setup berücksichtigt. Ein erfolgreicher Build muss nicht im Unterordner .pio liegen. Fehlen die erzeugten Dateien, wird dies ausdrücklich gemeldet. Der tatsächliche Build-Pfad steht im Protokoll. Nach Installation der Korrektur das Programm neu starten.
+
+## Gemeinsamer M08-Uploadweg (Feature-Test)
+
+Nano, Pico und ESP32 behalten ihre Boardeinstellungen. PlatformIO-Build und Upload laufen gemeinsam über M08. Für ESP32 kannst du beim Übertragen USB-Anschluss oder WLAN-Ziel auswählen. Bei Nano/Pico gilt die vorhandene USB-Erkennung. Nutze für den Feature-Test eine getrennte Datenkopie. Einzelheiten und Testgrenzen: [M08-Upload](../../M08_UPLOAD.md).

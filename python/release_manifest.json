@@ -1,6 +1,6 @@
 {
-"created": "2026-11-23 13:15:33",
-"file_count": 2335,
+"created": "2026-11-23 18:50:56",
+"file_count": 2337,
 "files": {
 "Boards/Heartbeat.uf2": {
 "sha256": "e984b97a7858984be7a8fc6e8cf0bf594128d32c4c517c3f3b696e5ef4dfdb50",
@@ -903,8 +903,8 @@
 "size": 38292
 },
 "_web/web_esp32_ota.py": {
-"sha256": "8afacf7387b0b694528ede222bc5d75799b3054b73b6c2fb3b72d3e2224e542a",
-"size": 17709
+"sha256": "d7e2af3ce2c075f4e329d9d7e60e71fe56350c4dae9e908e2c2d76d4a3b64176",
+"size": 18918
 },
 "_web/web_firewall.py": {
 "sha256": "e518e852a976e518bc120a22548868cd79d328db236ccfa23f00235850a2862c",
@@ -1167,8 +1167,8 @@
 "size": 4169848
 },
 "csv/Web_Languages.csv": {
-"sha256": "9930ecc501fe4fab4d269e311d0b73e3c4b308335410088b1157124ff2bfb474",
-"size": 678580
+"sha256": "6cb941f5e9f7cc2162b4c968346584fbc7c6d4fe1203ab2f6b8426396351ffa6",
+"size": 680303
 },
 "csv/xLibraries.csv": {
 "sha256": "a737fc50e763b84683b77c46c5f9a4b338362e0587400daea97f0ed0e89e2b81",
@@ -1211,8 +1211,8 @@
 "size": 28383
 },
 "headless/headless_esp32_ota.py": {
-"sha256": "26bfcbe4a41fb0c4927c62f56f0d011eca8c02f9c310e4a9141c7388beac3ff0",
-"size": 39858
+"sha256": "fd8035e2faf1453f11e68f2b435837324e7b5d276aaf3faa1bfae51254699a7f",
+"size": 36976
 },
 "headless/headless_extensions.py": {
 "sha256": "32100a2fbadaf5a8a85a5fe6584adef9001782821085b1dfb8896bc9e55e212d",
@@ -1305,6 +1305,10 @@
 "headless/headless_startup.py": {
 "sha256": "68aeb2df758e76d56df543d229c43216f8ed327775a56456797e71420541cd50",
 "size": 4473
+},
+"headless/headless_upload.py": {
+"sha256": "3f670252d120cecdcffb5b9b2d46ce16279630a146c1637cad0169abffd15b25",
+"size": 12701
 },
 "hex-files/400_bootloader.hex": {
 "sha256": "30ced5d5dd07cf93371e24132294e9a11bc19e4d2f7c22d6fc40d5aee4460146",
@@ -7527,8 +7531,8 @@
 "size": 2829
 },
 "install/ANLEITUNG_Installation.md": {
-"sha256": "95aac63d7dd7c45caad901c49e01daded2381b77b5e8c581c101bd3d056415bb",
-"size": 243102
+"sha256": "c4187d217e2e7b55b37298b16bcfec43f6952c953cce16723d49846f72282101",
+"size": 243508
 },
 "install/ANLEITUNG_Linux_Desktop.pdf": {
 "sha256": "ed3bf81790dab00eb36917e8a5bbc212fbf1d70682682223210bec33bb12efec",
@@ -7543,8 +7547,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "32b88c1d943a67b003e76699af1bf4786daed02f3a60c16214280f60e2c9a258",
-"size": 164770
+"sha256": "dd1f1f190ade7607efa10c7f388d3693c0b7842b86dbf599403f97ec4b42721e",
+"size": 165906
 },
 "install/UEBERSETZEN.md": {
 "sha256": "2a5b4bf59358e3c0e82fabb6e88b0f4605de0bfa334c777f0822b1765b4c4107",
@@ -8095,8 +8099,8 @@
 "size": 11115
 },
 "mlpyproggen/Prog_Generator.py": {
-"sha256": "2be579577a127ea7683aa235d73be283e621786768beed4ea0f8bff519016133",
-"size": 97754
+"sha256": "25cb075e9a3a30cadb5ff24d4d16d9785a8a84bed2ba6064adda2c85d9110614",
+"size": 99786
 },
 "mlpyproggen/SerialMonitorPage.py": {
 "sha256": "4ecef7e40cfd025318571d005ad328bdd988d8ff979725689b759d660a0b6995",
@@ -8687,16 +8691,16 @@
 "size": 67860
 },
 "proggen/M07_COM_Port.py": {
-"sha256": "14002441f1020c5a89be08a1eac2fe7dd1db71a5de5ec24537b47fbe88e652b8",
-"size": 85308
+"sha256": "b904b0f912b00dc6ffda8176b01e573a4452500b53331f6eb415fd8d94f30187",
+"size": 85768
 },
 "proggen/M07_COM_Port_New.py": {
 "sha256": "6063a6b33c7a3425582a6cf6c01f890a6d247fa8670ea92f91c166b9652bc430",
 "size": 25772
 },
 "proggen/M08_ARDUINO.py": {
-"sha256": "6a8d7b1fe93e962c7f4b030020ab40d141b7c21db9bbbc3b45249323b00236e2",
-"size": 198997
+"sha256": "7a505a19cef75dcc53a3ba61f3ff8585fa5689402c384b3a006cdc6558469173",
+"size": 209797
 },
 "proggen/M08_Fast_ARDUINO.py": {
 "sha256": "e2feb5fda33f949f406f1a6b6cebb389b67ea61ccbfb54114e05b365333fa4e3",
@@ -8807,8 +8811,8 @@
 "size": 11799
 },
 "proggen/M42_Dyn_Config.py": {
-"sha256": "de7f1cc9f91f8249448a1fa0da70ba51552ab6ba42bbaa6dee85edcba5fbd8e8",
-"size": 23767
+"sha256": "f6ef5fd023121adb65123ba679ef30145b5f1bd286aba9dcfd84332085e11f64",
+"size": 24373
 },
 "proggen/M45_Clipboard.py": {
 "sha256": "335352f045f6263f8b6308ef7de5304bcecd733ff211ad1f60c7f2517aa10694",
@@ -9111,16 +9115,20 @@
 "size": 22795
 },
 "test_dyn_config_wlan.py": {
-"sha256": "d5a7f6040a50c6ecd45a4f59494140f939a6b156e5f6b81c2f9e339807ebe55c",
-"size": 15551
+"sha256": "10f7253906f139bc7ad74c38ee63269b8ddd7f9fe9c48947886e90a47e3fd1b8",
+"size": 16575
 },
 "test_esp32_build_directory.py": {
-"sha256": "376a2b8310b4d521849ee8ac27d647f3b20142861d47d29651df039fd37150a1",
-"size": 3963
+"sha256": "aadea29a33ca4a6dcfd3bfb3ff15f67169ba9f902d954af58ae62d5eb2af5ee8",
+"size": 6543
 },
 "test_headless_contract.py": {
 "sha256": "551232114ef7aa07113672785dcbeaba5decaa26e8315c93ec89c8e81ab76e31",
 "size": 6984
+},
+"test_m08_upload.py": {
+"sha256": "157c3436349ec341d5db510a4d581c2696375dcf8ccdd204aab336522bd5f986",
+"size": 11221
 },
 "test_macro_edit.py": {
 "sha256": "8a92a09b45beea4d4a9f82ae9aef8448e75b565f23aa4c3f701aff63d8bb1460",
@@ -9339,8 +9347,8 @@
 "size": 33
 },
 "webmobaledlib.py": {
-"sha256": "97a84c35a08905a30b0a466a8984428b6af97f167b68583b96f0963935a43f4c",
-"size": 716991
+"sha256": "79b2d06bee400d3a5a8a1e33d439dbb115f95aa9e3d876019c692172e0369571",
+"size": 719246
 }
 },
 "format": 1,

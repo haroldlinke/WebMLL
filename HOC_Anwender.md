@@ -1,9 +1,18 @@
-Datei-Version: 1.64 (2026-11-23) - HOC_Anwender.md
+Datei-Version: 1.65 (2026-11-23) - HOC_Anwender.md
 Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Feature: gemeinsamer M08-Uploadweg (2026-11-23)
+
+**Neue Funktionen:** Die ESP32-Verbindungsauswahl zeigt USB-Anschlüsse und das gespeicherte WLAN-Ziel gemeinsam. Der Anschluss wird vor dem USB-Upload weiterhin geprüft.
+
+**Korrekturen:** Programm-, ESP32-Setup- und Startfirmware-Übertragung verwenden den gemeinsamen M08-/PlatformIO-Weg. Alternative Build- und Werkzeugverzeichnisse werden berücksichtigt. Nano-Bootloader-Varianten und Pico behalten ihre ursprünglichen Boardprüfungen und Übertragungsverfahren. Ausgabe und Abbruch werden gemeinsam ausgeführt; reines Kompilieren löst keinen Upload aus. Die schnelle Konfigurationsübertragung bleibt erhalten.
+
+Teststand und Grenzen: [M08-Upload](M08_UPLOAD.md). Die Änderung liegt zum Testen in einem eigenen Feature-Branch.
+
 
 ## ESP32-Startfirmware: externe PlatformIO-Build-Pfade (2026-11-23)
 

@@ -1,12 +1,13 @@
-# Datei-Version: 1.07 (2026-11-23) - web_esp32_ota.py
+# Datei-Version: 1.08 (2026-11-23) - web_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_esp32_ota.py
 # Path:           _web/web_esp32_ota.py
-# Version:        1.07
+# Version:        1.08
 # Last Update:    2026-11-23
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.08 2026-11-23 USB-Anschluesse und WLAN-Ziel gemeinsam auswaehlen, fertige Firmware ueber M08.
 #   1.07  2026-11-23  Reiter OTA: DHCP oder statische IP-Adresse (IP, Gateway, Subnetzmaske, DNS), Pruefung der Eingaben, Zieladresse = feste IP
 #   1.00  2026-11-14  Neu: Dialoge fuer ESP32-WLAN und OTA (Firmware hochladen, Ziel waehlen, Reiter OTA, WLAN ueber USB einrichten)
 #   1.01  2026-11-14  Firewall-Hinweis bei "No response from device" (Port 32323)
@@ -75,8 +76,9 @@ def open_dialog(*, pio=None):
         status.set_text(tr("WLAN-Übertragung läuft …"))
         output.set_text("")
         try:
+            from proggen import M08_ARDUINO as M08  # v1.08
             code, log = await run.io_bound(
-                headless_esp32_ota.upload, host.value, password.value or "", *image, pio=pio,
+                M08.Upload_ESP32_File, host.value, password.value or "", *image, pio=pio,
             )
             status.set_text(tr("Firmware übertragen.") if code == 0 else tr("OTA-Upload fehlgeschlagen."))
             output.set_text(log + ((chr(10) + tr(HINT_FIREWALL, port=headless_esp32_ota.HOST_PORT)) if code and headless_esp32_ota.NO_RESPONSE in log else ""))
@@ -109,10 +111,15 @@ def open_dialog(*, pio=None):
     dialog.open()
 
 
-async def ask_target(address="", *, allow_usb=False, connect=False, saved_password=""):
+async def ask_target(address="", *, allow_usb=False, connect=False, saved_password="", usb_targets=None, on_usb=None):  # v1.08
     title = "ESP32 verbinden" if connect else "ESP32-Setup übertragen"
     with ui.dialog() as dialog, ui.card().classes("w-[480px] max-w-full"):
         ui.label(title).classes("text-h6")
+        selection = None  # v1.08
+        if allow_usb and usb_targets:  # v1.08
+            options = dict(usb_targets)  # v1.08
+            options["wlan"] = "WLAN – " + (address or tr("IP-Adresse oder Hostname"))  # v1.08
+            selection = ui.select(options, value="wlan" if address else "usb", label=tr("Gerät und Verbindung")).classes("w-full")  # v1.08
         host = ui.input("IP-Adresse oder Hostname", value=address).classes("w-full")
         password = ui.input("OTA-Passwort", password=True).classes("w-full")
         if not connect:
@@ -125,9 +132,21 @@ async def ask_target(address="", *, allow_usb=False, connect=False, saved_passwo
             if remember_target(host.value.strip()):
                 dialog.submit((host.value.strip(), password.value or saved_password))
 
+        def select_target():  # v1.08
+            key = selection.value if selection is not None else "wlan"  # v1.08
+            if key.startswith("usb"):  # v1.08
+                if key.startswith("usb:") and on_usb is not None:  # v1.08
+                    on_usb(key[4:])  # v1.08
+                dialog.submit("usb")  # v1.08
+            else:  # v1.08
+                select_wifi()  # v1.08
+
         with ui.row():
-            ui.button("WLAN" if connect else "WLAN (OTA)", on_click=select_wifi)
-            if allow_usb:
+            if selection is not None:  # v1.08
+                ui.button(tr("Verbinden") if connect else tr("Übertragen"), on_click=select_target)  # v1.08
+            else:  # v1.08
+                ui.button("WLAN" if connect else "WLAN (OTA)", on_click=select_wifi)  # v1.08
+            if allow_usb and selection is None:  # v1.08
                 ui.button("USB", on_click=lambda: dialog.submit("usb"))
             ui.button("Abbrechen", on_click=lambda: dialog.submit(None)).props("flat")
     answer = await dialog

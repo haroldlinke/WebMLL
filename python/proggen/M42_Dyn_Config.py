@@ -1,12 +1,13 @@
-# Datei-Version: 1.05 (2026-11-22) - M42_Dyn_Config.py
+# Datei-Version: 1.06 (2026-11-22) - M42_Dyn_Config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M42_Dyn_Config.py
 # Path:           proggen/M42_Dyn_Config.py
-# Version:        1.05
-# Last Update:    2026-11-22
+# Version:        1.06
+# Last Update:    2026-11-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.06 2026-11-23 AVR-Werkzeugpfade auch fuer schnelle Pico/ESP32-Konfiguration ueber M08 ermitteln.
 #   1.05  2026-11-22  WLAN-Konfiguration bei Transportfehlern hoechstens dreimal mit neuer Sitzung versuchen
 #   1.04  2026-11-22  Bei fehlender END-Antwort ueber WLAN gespeicherte Konfiguration nach Neustart verifizieren
 #   1.03  2026-11-22  PlatformIO: AVR-Werkzeuge ohne Arduino-IDE-Suche ermitteln
@@ -91,6 +92,14 @@ def _tools():
                     extra_plat.append(os.path.join(ide, "hardware", "arduino", "avr"))
             except BaseException:                              # noqa: BLE001
                 pass
+        if M28.Is_PlatformIO():  # v1.06
+            try:  # v1.06
+                import proggen.M08_ARDUINO as M08  # v1.06
+                pio_bin, pio_platform = M08.PIO_AVR_Paths()  # v1.06
+                extra_bin.extend(pio_bin)  # v1.06
+                extra_plat.extend(pio_platform)  # v1.06
+            except Exception as error:  # v1.06: bestehende Suchorte bleiben als Rueckfall erhalten
+                log.debug("PlatformIO-Werkzeugpfade nicht verfuegbar: %s", error)  # v1.06
         tools = DC.find_avr_tools(extra_bin, extra_plat)
         if tools is None:
             try:

@@ -1,17 +1,20 @@
-# Datei-Version: 1.05 (2026-11-22) - test_dyn_config_wlan.py
+# Datei-Version: 1.06 (2026-11-22) - test_dyn_config_wlan.py
 # Name: test_dyn_config_wlan.py
 # Path: test_dyn_config_wlan.py
-# Version: 1.05
-# Last Update: 2026-11-22
+# Version: 1.06
+# Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.06 2026-11-23 M08-Transportadapter in den Konfigurations-Regressionstests verwenden.
 #   1.05 2026-11-22 Drei WLAN-Versuche, Erfolg im dritten Versuch, Abbruch nach drei Fehlern.
 #   1.04 2026-11-22 Verzoegerten Firmware-Neustart absichern; insgesamt 14 Tests.
 #   1.03 2026-11-22 Abschlusspruefung bei verlorener END-Antwort.
 #   1.02 2026-11-22 PlatformIO-Werkzeugsuche ohne IDE und isolierte Uploadtests.
 #   1.01 2026-11-22 Header-Parameteruebergabe bis zur inneren Generatorfunktion pruefen.
 #   1.00 2026-11-22 TCP-Protokoll mit echtem lokalen Socket, HMAC und fragmentierten Antworten.
+import no_tk  # headless Teststart auch ohne installiertes tkinter  # v1.06
+no_tk.install(force=True)  # v1.06
 from pathlib import Path
 import hashlib
 import hmac
@@ -224,10 +227,10 @@ class ToolDiscoveryTests(unittest.TestCase):
         platform.Is_PlatformIO.return_value = True
         env = {"_state": {"tools_checked": False}, "DC": backend, "M28": platform, "log": MagicMock()}
         exec(compile(ast.Module(body=[node], type_ignores=[]), str(source), "exec"), env)
-        with patch("proggen.M08_ARDUINO.Find_ArduinoExe", side_effect=AssertionError("IDE must not be searched")) as ide:
+        with patch("proggen.M08_ARDUINO.Find_ArduinoExe", side_effect=AssertionError("IDE must not be searched")) as ide, patch("proggen.M08_ARDUINO.PIO_AVR_Paths", return_value=(["external/bin"], ["external/core"])):  # v1.06
             self.assertEqual(env["_tools"](), {"bin": "pio-tools"})
             ide.assert_not_called()
-        backend.find_avr_tools.assert_called_once_with([], [])
+        backend.find_avr_tools.assert_called_once_with(["external/bin"], ["external/core"])  # v1.06
 
 
 class HeaderForwardingTests(unittest.TestCase):
@@ -253,7 +256,7 @@ class HeaderForwardingTests(unittest.TestCase):
 
 
 class UploadFlowTests(unittest.TestCase):
-    def run_upload(self, matched=True, flash_result=0, config_result=True):
+    def run_upload(self, matched=True, flash_result=0, config_result=True, compile_only=False):  # v1.06
         import ast
         from types import SimpleNamespace
         from unittest.mock import MagicMock
@@ -271,14 +274,21 @@ class UploadFlowTests(unittest.TestCase):
         header = MagicMock()
         header.Create_HeaderFile.return_value = True
         ctrl = MagicMock()
-        ctrl.execute_upload = True
+        ctrl.execute_upload = not compile_only  # v1.06
         env = dict(M42=dyn, Last_Upload={}, M07=MagicMock(), M25=MagicMock(), M02=SimpleNamespace(Ino_Dir_LED="LEDs_AutoProg"),
-                   M28=MagicMock(), os=__import__("os"), GetWorkbookPath=lambda: ".", Find_PIO=lambda: "pio", Write_PIO_Project=MagicMock())
+                   M28=MagicMock(), os=__import__("os"), GetWorkbookPath=lambda: ".", Find_PIO=lambda: "pio", Write_PIO_Project=MagicMock(), Upload_ESP32_Project=lambda *args, **kwargs: events.append("ota") or flash_result, Upload_ESP32_File=backend.upload, Build_ESP32_Project=backend.build_platformio_project, subprocess=__import__("subprocess"))  # v1.06
         code = compile(ast.Module(body=[node], type_ignores=[]), str(source), "exec")
         with patch("proggen.M06_Write_Header.Create_HeaderFile", header.Create_HeaderFile), patch("headless.headless_esp32_ota.build_platformio_project", backend.build_platformio_project), patch("headless.headless_esp32_ota.upload", backend.upload):
             exec(code, env)
             env[node.name](ctrl, "esp32", "", host="192.0.2.1", upload_password="old", password="new", hostname="mobaledlib", ota=True, firewall_hint="hint")
         return events, env, dyn, header
+
+    def test_compile_only_never_flashes_or_sends_configuration(self):  # v1.06
+        events, env, dyn, header = self.run_upload(matched=False, compile_only=True)  # v1.06
+        self.assertEqual(events, ["build"])  # v1.06
+        dyn.Try_Config_Only.assert_not_called()  # v1.06
+        dyn.After_Full_Flash.assert_not_called()  # v1.06
+        self.assertFalse(env["Last_Upload"]["ok"])  # v1.06
 
     def test_matching_skips_build(self):
         events, env, dyn, header = self.run_upload()

@@ -1,5 +1,5 @@
 # webMobaLedLib – Checkliste für Betatester
-*Datei-Version: 3.62 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 3.63 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -438,3 +438,14 @@ Rückmeldungen an den Entwickler (Kontakt siehe GitHub-Seite des Projekts: <http
 - Startfirmware und Setup mit Standardpfad, eigenem build_dir und PLATFORMIO_BUILD_DIR testen. Startet nach erfolgreicher Kompilierung die Übertragung?
 - Workspace-Override, Benutzerpfad mit Umlaut und Leerzeichen prüfen. Wird die aktuelle Firmware übertragen?
 - Fehlende Binärdateien: erscheint die konkrete Fehlermeldung? Bleiben WLAN-/OTA-Passwörter aus der Pfadermittlung im Log verborgen?
+
+## Gemeinsamer M08-Weg (Feature-Test)
+
+- Nano alt/neu/Full und rechter Arduino: werden Board, Port, Bootloader und fertige HEX-Datei korrekt verwendet?
+- Pico: funktioniert der erste vollständige Upload, der USB-Port nach Neustart und danach der schnelle Konfigurationslauf? Bleibt die Linux-udev-Hilfe vorhanden?
+- ESP32: funktionieren normales Setup und Startfirmware über USB sowie Setup über OTA? Wird beim ersten USB-Upload die Partitionierung korrekt eingerichtet?
+- Zeigt die ESP32-Auswahl USB-Anschlüsse sowie Hostname/IP des WLAN-Geräts? Funktioniert Wechseln zwischen beiden Transporten?
+- Startet Compile-only niemals eine Übertragung? Funktionieren Abbruch, anschließender neuer Versuch und Wiederverbinden?
+- Windows/Linux/macOS/Raspberry Pi: Standard- und externe Buildpfade, Leerzeichen/Umlaute, serielle Gerätenamen und fehlende Werkzeuge prüfen.
+- Timeline-/ATTiny-Spezialmodule: bleiben Programmer-Einstellungen, Ausgabe und Rückgabewerte korrekt?
+- Neue Meldungen und Geräteauswahl in DE/EN/NL/FR/IT/ES/DA prüfen. Keine Passwörter im Protokoll oder in der temporären Protokollkonfiguration?

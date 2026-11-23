@@ -1,4 +1,4 @@
-Datei-Version: 1.58 (2026-11-23) - HOC_intern.md
+Datei-Version: 1.59 (2026-11-23) - HOC_intern.md
 Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,29 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## Gemeinsamer M08-Build-/Uploadweg (2026-11-23, Feature-Branch)
+
+Ursache: Der ESP32-/OTA-Weg teilte zwar den platformio.ini-Generator mit M08, führte Build, Pfadannahmen und Uploader jedoch separat aus. Das verursachte die Fehler nach erfolgreichem Build beziehungsweise beim Suchen von esptool. M08 besitzt nun auch ESP32-Build, Minimalfirmware und Übertragung. ProgGen und die über dessen Seite laufenden Timeline-/Spezialmodule nutzen denselben Prozessunterbau. Eine strukturierte, stringkompatible PlatformIOJob-Klasse erhält argv und Projektpfad bis zur Ausführung; die bisherige type(...)=str-Verzweigung wurde dafür auf isinstance umgestellt. Boardzuordnung wird nur noch über PIO_Environment bestimmt.
+
+Nano alt/neu/Full, Pico und ESP32 sind berücksichtigt. M42 bleibt vorgeschaltet; Nano wird nicht in die dynamische Konfiguration aufgenommen. Die bisherige Pico-USB-/udev-Prüfung bleibt bestehen. ESP32-USB/OTA verwenden PlatformIO selbst als Uploader. Vorgefertigte Binärdateien und Arduino-IDE/Spezialskripte bleiben eigene Eingänge mit gemeinsamer Prozessausführung. M08_UPLOAD.md erläutert diese fachlich nötigen Unterschiede und die Testgrenzen.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| proggen/M42_Dyn_Config.py | 1.06 | Gemeinsame Paketauflösung auch für schnelle Pico/ESP32-Konfiguration |
+| proggen/M07_COM_Port.py | 1.14 | Bestehende Erkennung mit optionaler expliziter Transportwahl |
+| proggen/M08_ARDUINO.py | 1.31 | Zentrale API, Boardzuordnung, Minimalfirmware, Compile-only, PlatformIO-Upload |
+| headless/headless_upload.py | 1.00 | Argumentlisten, Protokollkonfiguration, Ausgabe/Abbruch, Pfadermittlung |
+| headless/headless_esp32_ota.py | 1.15 | Quellen-/Protokolladapter und Kompatibilitätsdelegation |
+| mlpyproggen/Prog_Generator.py | 1.11 | Gemeinsame Ausführung für vorhandene ProgGen-/PattGen-Befehle |
+| _web/web_esp32_ota.py | 1.08 | Gemeinsame USB/WLAN-Auswahl und M08-Einstieg für Binärdateien |
+| webmobaledlib.py | 4.79-m08 | UI ohne eigenen Minimalfirmware-Build; Original-Programmversion 4.79 |
+| test_m08_upload.py | 1.00 | Befehle, Plattformpfade, Ausgabe, Geheimnisse, Abbruch, Verdrahtung |
+| test_dyn_config_wlan.py | 1.06 | M08-Adapter und Tk-freier Teststart |
+| test_esp32_build_directory.py | 1.02 | Gemeinsame Pfade und Paketauflösung |
+
+Prüfung: 39 Tests unter Windows und nativ auf der Linux-VM bestanden; auch beide Backendstarts erfolgreich. Echte Compile-only-Läufe Nano alt/neu/Full, Pico (200 s) und ESP32 bestanden. Backendstart erfolgreich. Neue Meldungen mit echtem Übersetzer in sieben Sprachen geprüft. Nicht geprüft: Hardware-USB/OTA, Pico-Portwechsel und native macOS-/Raspberry-Pi-Ausführung. Oberfläche im Browser geprüft: gemeinsame USB/WLAN-Auswahl sichtbar, danach abgebrochen; keine Hardwareübertragung. PlatformIO-envdump bestätigt das tatsächliche espota-Protokoll und Passwortmaskierung, ohne Upload.
+
 
 ## ESP32-Startfirmware: externe PlatformIO-Build-Pfade (2026-11-23)
 

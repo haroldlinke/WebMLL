@@ -1,12 +1,13 @@
-# Datei-Version: 1.13 (2026-11-20) - M07_COM_Port.py
+# Datei-Version: 1.14 (2026-11-20) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.13
-# Last Update:    2026-11-20
+# Version:        1.14
+# Last Update:    2026-11-23
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.14 2026-11-23 Explizite Transportwahl fuer gemeinsame M08-Anschlussliste, bisherige Aufrufer unveraendert.
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.13  2026-11-20  Issue 50: Ist kein Anschluss eingetragen, aber eine Verbindung zur Lichtmaschine aktiv, wird deren Anschluss (und Board) vor dem Hochladen in die Tabelle uebernommen (Fill_Port_From_Active_Connection, Einstellung UploadPortMode)
 #   1.01  2026-10-20  EnumComPorts: FTDI-Adapter (VID 0403, Beschreibung FT232 ...) werden erkannt, sonst meldete die Pruefung beim Hochladen 'kein Arduino angeschlossen'; DetectArduino: kein Absturz, wenn die Verbindung inzwischen getrennt wurde
@@ -654,12 +655,14 @@ def find_devices():
 
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: ResNames - ByRef 
-def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True, BoardType=None):  # v1.09: BoardType (Excel 3.5.0L3): der Board-Typ, fuer den die Anschluesse gesucht werden; ohne Angabe der Board-Typ des Blatts
+# def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True, BoardType=None):  # v1.14 (entfallen)
+def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True, BoardType=None, Transport=None):  # v1.09: BoardType (Excel 3.5.0L3): der Board-Typ, fuer den die Anschluesse gesucht werden; ohne Angabe der Board-Typ des Blatts  # v1.14
     Ports = vbObjectInitialize((50,), Byte)
     BoardType = BoardType or M02a.Get_BoardTyp()  # v1.09
     ESP_Inst = ( BoardType == M02.HT_ESP32 )  # v1.09 (vorher M02a.Get_BoardTyp())
     PICO_Inst = ( BoardType == M02.HT_PICO )  # v1.09 (vorher M02a.Get_BoardTyp())
-    WLAN_inst =  InStr(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL), 'WLAN') > 0
+    # WLAN_inst = InStr(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL), 'WLAN') > 0  # v1.14 (entfallen)
+    WLAN_inst = (Transport == 'wlan') if Transport is not None else InStr(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL), 'WLAN') > 0  # v1.14: dieselbe Erkennung auch fuer kombinierte USB/WLAN-Auswahl
     if WLAN_inst:
         # check for Railmail mDNS
         if import_zeroconfok:
