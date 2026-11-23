@@ -1,5 +1,5 @@
 {
-"created": "2026-11-23 09:49:17",
+"created": "2026-11-23 10:40:14",
 "file_count": 2337,
 "files": {
 "Boards/Heartbeat.uf2": {
@@ -1043,8 +1043,8 @@
 "size": 18289
 },
 "_web/web_table_sync.py": {
-"sha256": "96a095ed5340d12f2d5dc70f95a1a4ce250a7361de51ff68defcf206d04de7d6",
-"size": 27622
+"sha256": "b7c793dc43a38cbe78c9b1248d2ef471889ee237af1ea28346c9bebdfb7332b3",
+"size": 29708
 },
 "_web/web_tabs.py": {
 "sha256": "a3f6d20324f734bdc7a2dbf46c8116288d2a8ccda18a9b367db1180bc6913028",
@@ -1171,8 +1171,8 @@
 "size": 4169848
 },
 "csv/Web_Languages.csv": {
-"sha256": "91b3dc2a08073151adf0f408019240f757fa8345a724e29e4204acc87b82bbc3",
-"size": 699016
+"sha256": "886e18df1560f04f61bdf197211d058a677679a8b40c83fe8d09b6fbec309a47",
+"size": 700582
 },
 "csv/xLibraries.csv": {
 "sha256": "a737fc50e763b84683b77c46c5f9a4b338362e0587400daea97f0ed0e89e2b81",
@@ -1311,8 +1311,8 @@
 "size": 4473
 },
 "headless/headless_table_sync.py": {
-"sha256": "4a0776b87aeb8028f3ecee74bcafe0fadd742fb2559bfa83c88512e806f61d04",
-"size": 24251
+"sha256": "b4a862dddfd1cf1359ddc5cc02f33ba6cd124d41e0161cc5009ff95f81b92d1f",
+"size": 25205
 },
 "hex-files/400_bootloader.hex": {
 "sha256": "30ced5d5dd07cf93371e24132294e9a11bc19e4d2f7c22d6fc40d5aee4460146",
@@ -7535,8 +7535,8 @@
 "size": 2829
 },
 "install/ANLEITUNG_Installation.md": {
-"sha256": "ea34373e43b18b05eb11b91e06e9198111cebc341be38f1e32d60ba4bf0c064b",
-"size": 243017
+"sha256": "3f5275c3e47944e1e899ec8c5921fc4c1896ca8801dfa1b9fdca76c577d844e4",
+"size": 243185
 },
 "install/ANLEITUNG_Linux_Desktop.pdf": {
 "sha256": "ed3bf81790dab00eb36917e8a5bbc212fbf1d70682682223210bec33bb12efec",
@@ -7551,8 +7551,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "20f9802f3aa1cb0224815bc6f64e7200e27dff2158e973c2f3731c84983a7298",
-"size": 165424
+"sha256": "751a351eb211cbedd1353d84f842547c160f8d96e1d98a752e4b49c513d03783",
+"size": 165644
 },
 "install/UEBERSETZEN.md": {
 "sha256": "2a5b4bf59358e3c0e82fabb6e88b0f4605de0bfa334c777f0822b1765b4c4107",
@@ -9131,8 +9131,8 @@
 "size": 15553
 },
 "test_table_sync.py": {
-"sha256": "b3486bee9ec66971a49778dd28a02bc954e7394a614ba8f7d4c598a3a40cd956",
-"size": 16870
+"sha256": "6df25e1f1866e2531f707fac93e12f47bea4cc119a0f42cc9205ed27dd29dc1b",
+"size": 18548
 },
 "tkcolorpicker/__init__.py": {
 "sha256": "35a6dc62073355376fef8f28fd26583552ccaaf6a0b7798e47f348fdb84f623a",

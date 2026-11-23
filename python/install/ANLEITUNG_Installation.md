@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.79-daten1 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 4.79-daten2 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1797,3 +1797,5 @@ Im Reiter „WLAN (OTA)“ der Hardware Optionen wählst du, ob der ESP32 seine 
 ## Datenübertragung zwischen PCs (Feature-Branch 4.79-daten1)
 
 Unter **Einstellungen → Datenübertragung** kannst du Tabellen übernehmen oder ausgewählte Zeilen in bestehende Tabellen einfügen. Die Quellfreigabe ist nach jedem Start ausgeschaltet. Anleitung, Rückgängig und Netzwerkhinweise: [Datenübertragung](../../DATENUEBERTRAGUNG.md).
+
+Beim Einfügen ausgewählter Zeilen kannst du den LED-Kanal wählen (Standard 0) oder die Quellkanäle beibehalten. Die vorhandenen Zielzeilen behalten ihren Kanal.

@@ -1,11 +1,12 @@
-# Datei-Version: 1.06 (2026-11-23) - web_table_sync.py
+# Datei-Version: 1.07 (2026-11-23) - web_table_sync.py
 # Name: web_table_sync.py
 # Path: _web/web_table_sync.py
-# Version: 1.06
+# Version: 1.07
 # Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.07 2026-11-23 Kanalauswahl wie bei neuer Zeile, Standard 0, Quellkanaele optional erhalten.
 #   1.06 2026-11-23 Feature-Branch auf Basis 4.79; Sprachen und Startvorgaben dokumentiert.
 #   1.05 2026-11-23 Quellfreigabe nach jedem Start ausgeschaltet; Aktivierung nur im Dialog.
 #   1.04 2026-11-23 Dialogmodus Zeilen einfuegen mit Bereich, Zielposition und bestaetigten Konflikthinweisen.
@@ -269,6 +270,14 @@ def install(app, ctrl, workbook, version):  # v1.06
                                     active = getattr(workbook(), "ActiveSheet", None)  # v1.06
                                     default = active.Name if active and active.Name in targets else (targets[0] if targets else None)  # v1.06
                                     target_sheet = ui.select(targets, value=default, label=tr("Zieltabelle")).props("outlined dense").classes("w-full")  # v1.06
+                                    import proggen.M02_Public as public  # v1.07
+                                    channel_options = {"keep": tr("LED-Kanäle der Quelle beibehalten")}  # v1.07
+                                    for channel_index in range(public.LED_CHANNELS):  # v1.07
+                                        channel_options[channel_index] = str(channel_index)  # v1.07
+                                    channel_options[0] = "0 – " + tr("Standard LEDs")  # v1.07
+                                    channel_options[1] = "1 – " + tr("Taster LEDs")  # v1.07
+                                    led_channel = ui.select(channel_options, value=0, label=tr("LED-Kanal für eingefügte Zeilen")).props("outlined dense").classes("w-full")  # v1.07
+                                    ui.label(tr("Der gewählte Kanal gilt für alle eingefügten Zeilen. Vorhandene Zeilen bleiben unverändert.")).classes("text-caption")  # v1.07
                                     with ui.row().classes("w-full items-start"):  # v1.06
                                         position = ui.select({"end":tr("Am Ende"), "before":tr("Vor Zeile"), "after":tr("Nach Zeile")}, value="end", label=tr("Einfügeposition")).props("outlined dense").classes("grow")  # v1.06
                                         target_row = ui.number(tr("Zielzeile"), value=3, min=3, step=1, format="%d").props("outlined dense").classes("w-32").bind_visibility_from(position,"value",backward=lambda value:value!="end")  # v1.06
@@ -282,7 +291,15 @@ def install(app, ctrl, workbook, version):  # v1.06
                                         accepted.value = False  # v1.06
 
                                     def selection():  # v1.06
-                                        return dict(source_name=source_sheet.value, rows=source_rows.value, target_name=target_sheet.value, where=position.value, target_row=target_row.value)  # v1.06
+                                        # return dict(source_name=source_sheet.value, rows=source_rows.value, target_name=target_sheet.value, where=position.value, target_row=target_row.value)  # v1.06 (entfallen v1.07)
+                                        import proggen.M25_Columns as columns  # v1.07
+                                        target = next(sheet for sheet in workbook().sheets if sheet.Name == target_sheet.value)  # v1.07
+                                        try:  # v1.07
+                                            columns.Make_sure_that_Col_Variables_match(target)  # v1.07
+                                            channel_column = columns.LED_Cha_Col - 1  # v1.07
+                                        finally:  # v1.07
+                                            columns.Make_sure_that_Col_Variables_match(workbook().ActiveSheet)  # v1.07
+                                        return dict(source_name=source_sheet.value, rows=source_rows.value, target_name=target_sheet.value, where=position.value, target_row=target_row.value, led_channel=None if led_channel.value == "keep" else led_channel.value, channel_column=channel_column, channel_limit=public.LED_CHANNELS)  # v1.07
 
                                     def check_insert():  # v1.06
                                         options = selection()  # v1.06
@@ -311,7 +328,7 @@ def install(app, ctrl, workbook, version):  # v1.06
                                         reset_acceptance()  # v1.06
 
                                     source_sheet.on_value_change(source_changed)  # v1.06
-                                    for field in [source_rows,target_sheet,position,target_row]:  # v1.06
+                                    for field in [source_rows,target_sheet,position,target_row,led_channel]:  # v1.06
                                         field.on_value_change(reset_acceptance)  # v1.06
                                     ui.button(tr("Einfügen prüfen"),icon="fact_check",on_click=preview_insert).props("outline")  # v1.06
 

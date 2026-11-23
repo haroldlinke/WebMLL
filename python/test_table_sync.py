@@ -1,11 +1,12 @@
-# Datei-Version: 1.03 (2026-11-23) - test_table_sync.py
+# Datei-Version: 1.04 (2026-11-23) - test_table_sync.py
 # Name: test_table_sync.py
 # Path: test_table_sync.py
-# Version: 1.03
+# Version: 1.04
 # Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.04 2026-11-23 Kanalauswahl beim Zeilenimport pruefen.
 #   1.03 2026-11-23 Feature-Branch auf Basis 4.79; Sprachen und Startvorgaben dokumentiert.
 #   1.02 2026-11-23 Zeilenauswahl, Einfuegeposition, Metadaten, Konflikte, Backup und Protokollschutz.
 #   1.01 2026-11-23 Originalberechnung nach Import und Wiederherstellung pruefen.
@@ -101,6 +102,28 @@ class RowInsertTests(unittest.TestCase):  # v1.03
         sheet = d["Workbookdata"]["DCC"]  # v1.03
         sheet["TKSHEET_data"] = [["", "DCC", "", "", "COM-local"], ["", "Aktiv", "", "Adresse", "Typ"], ["", "*", "", address, value]]  # v1.03
         return d  # v1.03
+
+    def test_selected_channel_changes_only_inserted_rows(self):  # v1.04
+        current, source = self.data(), self.data("neu", "20")  # v1.04
+        for data in (current, source):  # v1.04
+            data["Workbookdata"]["DCC"]["TKSHEET_data"][1].extend(["", "LED Kanal"])  # v1.04
+            data["Workbookdata"]["DCC"]["TKSHEET_data"][2].extend(["", 7])  # v1.04
+        before = copy.deepcopy(current)  # v1.04
+        source_before = copy.deepcopy(source)  # v1.04
+        raw = s.make_package(source, ["DCC"])  # v1.04
+        for channel in (0, 1, 9):  # v1.04
+            result, _, _ = s.plan_row_insert(current, raw, "DCC", "3", "DCC", led_channel=channel, channel_column=6)  # v1.04
+            self.assertEqual(result["Workbookdata"]["DCC"]["TKSHEET_data"][3][6], channel)  # v1.04
+            self.assertEqual(result["Workbookdata"]["DCC"]["TKSHEET_data"][:3], before["Workbookdata"]["DCC"]["TKSHEET_data"])  # v1.04
+        kept, _, _ = s.plan_row_insert(current, raw, "DCC", "3", "DCC")  # v1.04
+        self.assertEqual(kept["Workbookdata"]["DCC"]["TKSHEET_data"][3][6], 7)  # v1.04
+        self.assertEqual(current, before)  # v1.04
+        self.assertEqual(source, source_before)  # v1.04
+        for channel in (-1, 10, 1.5, "x"):  # v1.04
+            with self.assertRaises(ValueError):  # v1.04
+                s.plan_row_insert(current, raw, "DCC", "3", "DCC", led_channel=channel, channel_column=6)  # v1.04
+        with self.assertRaises(ValueError):  # v1.04
+            s.plan_row_insert(current, raw, "DCC", "3", "DCC", led_channel=1, channel_column=99)  # v1.04
 
     def test_range_selection(self):  # v1.03
         self.assertEqual(s.row_selection("3-5, 7, 4", 8), [2, 3, 4, 6])  # v1.03

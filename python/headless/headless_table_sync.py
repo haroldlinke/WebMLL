@@ -1,11 +1,12 @@
-# Datei-Version: 1.02 (2026-11-23) - headless_table_sync.py
+# Datei-Version: 1.03 (2026-11-23) - headless_table_sync.py
 # Name: headless_table_sync.py
 # Path: headless/headless_table_sync.py
-# Version: 1.02
+# Version: 1.03
 # Last Update: 2026-11-23
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.03 2026-11-23 LED-Kanal nur fuer eingefuegte Zeilen setzen und validieren.
 #   1.02 2026-11-23 Feature-Branch auf Basis 4.79; Sprachen und Startvorgaben dokumentiert.
 #   1.01 2026-11-23 Ausgewaehlte Zeilen mit Konfliktpruefung und Backup in bestehende Tabellen einfuegen.
 #   1.00 2026-11-22 Isolierter Tabellenabgleich: LAN-Suche, geschuetzte Freigabe und ein Importbackup.
@@ -200,7 +201,7 @@ def _row_insert_metadata(target, source, indices, at):  # v1.01
     target["row_pos"] = positions  # v1.02
 
 
-def plan_row_insert(current, raw, source_name, rows, target_name, where="end", target_row=3):  # v1.01
+def plan_row_insert(current, raw, source_name, rows, target_name, where="end", target_row=3, led_channel=None, channel_column=None, channel_limit=10):  # v1.03
     package = validate(raw)  # v1.02
     if str(package.get("DataVersion")) != str(current.get("DataVersion")):  # v1.02
         raise ValueError("Die Datenversionen passen nicht zusammen. Bitte beide Programme aktualisieren.")  # v1.02
@@ -256,7 +257,20 @@ def plan_row_insert(current, raw, source_name, rows, target_name, where="end", t
     # Derselbe Dateneinfuegeweg wie beim originalen „Als Zeilen einfuegen“.
     from ExcelAPI.headless_sheet import HeadlessSheet  # v1.02
     model = HeadlessSheet(data=target["TKSHEET_data"])  # v1.02
-    model.insert_rows(rows=[copy.deepcopy(src_rows[i]) for i in indices], idx=at)  # v1.02
+    inserted = [copy.deepcopy(src_rows[i]) for i in indices]  # v1.03
+    if led_channel is not None:  # v1.03
+        try:  # v1.03
+            channel = int(led_channel)  # v1.03
+            valid = float(led_channel) == channel and 0 <= channel < channel_limit and isinstance(channel_column, int) and 0 <= channel_column < len(dst_rows[1])  # v1.03
+        except (ValueError, TypeError, OverflowError):  # v1.03
+            valid = False  # v1.03
+        if not valid:  # v1.03
+            raise ValueError("Bitte einen gültigen LED-Kanal auswählen.")  # v1.03
+        for row in inserted:  # v1.03
+            row.extend([""] * max(0, channel_column + 1 - len(row)))  # v1.03
+            row[channel_column] = channel  # v1.03
+    # model.insert_rows(rows=[copy.deepcopy(src_rows[i]) for i in indices], idx=at)  # v1.03 (entfallen)
+    model.insert_rows(rows=inserted, idx=at)  # v1.03
     target["TKSHEET_data"] = model.data  # v1.02
     _row_insert_metadata(target, source, indices, at)  # v1.02
     return result, warnings, {"count": len(indices), "at": at + 1, "target": target_name}  # v1.02

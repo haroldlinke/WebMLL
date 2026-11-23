@@ -1,6 +1,6 @@
 # Datenübertragung zwischen PCs
 
-Datei-Version: 1.00 (2026-11-23), gilt für webMobaLedLib 4.79, Branch `feature/datenuebertragung`.
+Datei-Version: 1.01 (2026-11-23), gilt für webMobaLedLib 4.79, Branch `feature/datenuebertragung`.
 
 Öffne **Einstellungen → Datenübertragung**. Beide PCs arbeiten unabhängig mit ihren eigenen Daten. Die Funktion überträgt ausgewählte Programmgenerator-Tabellen oder ausgewählte Zeilen über das lokale Netzwerk. Sie benötigt weder ein Konto noch einen VPN-Tunnel.
 
@@ -19,8 +19,9 @@ Datei-Version: 1.00 (2026-11-23), gilt für webMobaLedLib 4.79, Branch `feature/
 2. Trage den Verbindungscode des Quell-PCs ein und klicke **Verbindung prüfen und übernehmen**.
 3. Wähle die Übernahmeart. **Tabellen ersetzen** ersetzt die aufgelisteten gleichnamigen Tabellen; fehlende Tabellen werden angelegt.
 4. **Zeilen in bestehende Tabelle einfügen** erlaubt eine Quelltabelle und Zeilen wie `3-8, 12`, eine Zieltabelle sowie **Am Ende**, **Vor Zeile** oder **Nach Zeile**. Zeile 1 und 2 bleiben ausgeschlossen. Protokoll und Spaltenstruktur müssen passen.
-5. Mit **Einfügen prüfen** siehst du die Zielposition und Hinweise zu direkten numerischen Adressüberschneidungen, bereits definierten Namen und fehlenden include-Tabellen. Prüfe die Hinweise; bei Konflikten ist eine ausdrückliche Bestätigung nötig. Eigene Makros und symbolische Adressen werden nicht vollständig semantisch geprüft. Adressen werden nicht automatisch geändert.
-6. Klicke **Übernehmen und sichern** und lade die Programmseite anschließend neu.
+5. Wähle den **LED-Kanal für eingefügte Zeilen** (Standard 0, Taster-LEDs 1, weitere unterstützte Kanäle). Die Auswahl gilt für alle eingefügten Zeilen. Mit **LED-Kanäle der Quelle beibehalten** bleiben die bisherigen Kanalwerte erhalten. Bestehende Zielzeilen werden nicht umgestellt.
+6. Mit **Einfügen prüfen** siehst du die Zielposition und Hinweise zu direkten numerischen Adressüberschneidungen, bereits definierten Namen und fehlenden include-Tabellen. Prüfe die Hinweise; bei Konflikten ist eine ausdrückliche Bestätigung nötig. Eigene Makros und symbolische Adressen werden nicht vollständig semantisch geprüft. Adressen werden nicht automatisch geändert.
+7. Klicke **Übernehmen und sichern** und lade die Programmseite anschließend neu.
 
 Vorhandene Zeilen bleiben beim Einfügen erhalten. Zeilenfarben, Höhen und Sichtbarkeit werden übertragen, vorhandene Bildanker verschoben. Handgezeichnete Formen der Quellzeilen und externe Bilddateien werden nicht mitkopiert. Tabellen, Icons und Testtasten werden über die ursprünglichen Programmfunktionen neu berechnet.
 
@@ -42,4 +43,4 @@ Dialog und Validierungsmeldungen sind auf Deutsch, Englisch, Niederländisch, Fr
 
 ## Prüfung und Grenzen
 
-22 automatisierte Tests prüfen Paketgrenzen, lokale Einstellungen, Backup/Restore, Schreibfehler, Zeilenauswahl, Metadaten, Konflikte, Neuberechnung, deaktivierte Startfreigabe, alle sieben Sprachen sowie echte HTTP- und UDP-Kommunikation auf Loopback. Der Prototyp wurde auf Windows und der Linux-VM betrieben; Hardware-Upload, macOS, Raspberry Pi und iPad sind für diesen Branch nicht geprüft.
+23 automatisierte Tests prüfen Paketgrenzen, lokale Einstellungen, Backup/Restore, Schreibfehler, Zeilenauswahl, Metadaten, Konflikte, Neuberechnung, deaktivierte Startfreigabe, alle sieben Sprachen sowie echte HTTP- und UDP-Kommunikation auf Loopback. Der Prototyp wurde auf Windows und der Linux-VM betrieben; Hardware-Upload, macOS, Raspberry Pi und iPad sind für diesen Branch nicht geprüft.

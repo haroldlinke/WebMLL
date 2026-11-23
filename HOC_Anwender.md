@@ -1,9 +1,15 @@
-Datei-Version: 1.64 (2026-11-23) - HOC_Anwender.md
+Datei-Version: 1.65 (2026-11-23) - HOC_Anwender.md
 Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## LED-Kanal beim Zeileneinfügen (2026-11-23)
+
+Vor dem Einfügen wird der LED-Kanal ausgewählt: Standard 0 (Standard-LEDs), 1 für Taster-LEDs und weitere vom Original unterstützte Kanäle. Die Auswahl gilt nur für eingefügte Zeilen. Alternativ können die Quellkanäle beibehalten werden. Kanalgrenze und Zielspalte werden aus M02/M25 des Originalprogramms gelesen. Ganze Tabellen werden unverändert wie bisher übernommen.
+
+Dateien: `_web/web_table_sync.py` 1.07, `headless/headless_table_sync.py` 1.03, `test_table_sync.py` 1.04; Sprachkatalog mit allen sieben Sprachen ergänzt. 23 automatisierte Tests bestanden, einschließlich Erhalt bestehender Zeilen, Kanal 0/1/9, ungültiger Kanäle und Übersetzung.
 
 ## Feature Datenübertragung (2026-11-23, Basis 4.79)
 
