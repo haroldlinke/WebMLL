@@ -1,5 +1,5 @@
 # webMobaLedLib – Installation und Betrieb
-*Datei-Version: 4.79 (2026-11-23), gilt für webMobaLedLib 4.79*
+*Datei-Version: 4.79-build1 (2026-11-23), gilt für webMobaLedLib 4.79*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1793,3 +1793,7 @@ In Hardware Optionen, Reiter Entwicklungsumgebung, **PlatformIO** wählen und �
 ## ESP32: feste IP-Adresse statt DHCP (ab 4.79)
 
 Im Reiter „WLAN (OTA)“ der Hardware Optionen wählst du, ob der ESP32 seine Adresse per **DHCP** vom Router bekommt oder eine **feste IP-Adresse** verwendet. Bei „Statische IP-Adresse“ trägst du IP-Adresse, Gateway (meist der Router), Subnetzmaske (meist 255.255.255.0) und DNS-Server ein (leer: Gateway). Das Programm prüft die Eingaben. Danach das ESP32-Setup einmal neu übertragen und bei „Adresse für WebMLL“ die neue IP-Adresse eintragen (bleibt das Feld leer, nimmt das Programm die feste IP). Die feste Adresse darf nicht im DHCP-Bereich des Routers liegen. Verstecktes WLAN und mehrere WLANs werden nicht unterstützt.
+
+## ESP32: Build erfolgreich, aber kein Upload (Korrektur 4.79-build1)
+
+Ein angepasstes PlatformIO-Build-Verzeichnis wird beim Übertragen der ESP32-Startfirmware und beim ESP32-Setup berücksichtigt. Ein erfolgreicher Build muss nicht im Unterordner .pio liegen. Fehlen die erzeugten Dateien, wird dies ausdrücklich gemeldet. Der tatsächliche Build-Pfad steht im Protokoll. Nach Installation der Korrektur das Programm neu starten.

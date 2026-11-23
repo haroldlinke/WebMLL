@@ -1,12 +1,13 @@
-# Datei-Version: 1.12 (2026-11-23) - headless_esp32_ota.py
+# Datei-Version: 1.13 (2026-11-23) - headless_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_esp32_ota.py
 # Path:           headless/headless_esp32_ota.py
-# Version:        1.12
+# Version:        1.13
 # Last Update:    2026-11-23
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.13 2026-11-23 ESP32-Firmware aus dem von PlatformIO berechneten Build-Verzeichnis lesen, auch externe Pfade.
 #   1.12  2026-11-23  Statische IP oder DHCP fuer den ESP32: Einstellungen ip_mode/ip/gateway/mask/dns1/dns2 (validate_network, network_of), Defines MLL_WIFI_STATIC_IP im Sketch
 #   1.11  2026-11-19  Zeitstempel-Vergleich der Kopfdatei: auch MLL_P_START_MSG (dynamische Konfiguration) wird ohne Datum verglichen
 #   1.10  2026-11-19  run_streaming: Build (PlatformIO, Arduino Builder) und Flashen geben die Ausgabe zeilenweise ins Protokoll, sobald sie kommt; cancel_running() beendet den laufenden Vorgang (Vorgang abbrechen im Protokoll-Fenster)
@@ -285,6 +286,26 @@ def sync_build_tree(source, target):
 
 
 # def build_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True):  # v1.12 (entfallen)
+def platformio_build_directory(pio, project, environment="esp32"):  # v1.13
+    """PlatformIO resolves ini interpolation and PLATFORMIO_* directory overrides."""  # v1.13
+    import json  # v1.13
+    project = Path(project).resolve()  # v1.13
+    result = subprocess.run([str(pio), "project", "config", "--project-dir", str(project), "--json-output"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)  # v1.13
+    try:  # v1.13
+        if result.returncode:  # v1.13
+            raise ValueError()  # v1.13
+        sections = dict(json.loads(result.stdout))  # v1.13
+        options = dict(sections.get("platformio", []))  # v1.13
+        workspace = Path(options.get("workspace_dir") or os.getenv("PLATFORMIO_WORKSPACE_DIR") or project / ".pio").expanduser()  # v1.13
+        build = Path(options.get("build_dir") or os.getenv("PLATFORMIO_BUILD_DIR") or workspace / "build").expanduser()  # v1.13
+        if not build.is_absolute():  # v1.13
+            build = project / build  # v1.13
+        return build / environment  # v1.13
+    except (ValueError, TypeError, KeyError):  # v1.13
+        # Never log config JSON: it may contain WLAN or OTA credentials.  # v1.13
+        raise ValueError("Die PlatformIO-Build-Pfade konnten nicht ermittelt werden.") from None  # v1.13
+
+
 def build_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True, network=None):  # v1.12
     """Compile the WebMLL ESP32 configuration in a reusable build project."""
     if not pio:
@@ -324,8 +345,13 @@ def build_platformio_project(sketch_dir, pio, password, report, write_config, *,
         returncode = run_streaming([str(pio), "run", "--project-dir", str(project), "-e", "esp32"], report, 900, (password, secret) if password else ())  # v1.10
         if returncode:  # v1.10
             raise ValueError("ESP32-Kompilierung mit PlatformIO fehlgeschlagen.")
-        build = project / ".pio/build/esp32"
-        return (build / "firmware.bin").read_bytes(), (build / "partitions.bin").read_bytes()
+        # build = project / ".pio/build/esp32"  # v1.13 (entfallen)
+        build = platformio_build_directory(pio, project)  # v1.13
+        logging.getLogger(__name__).info("ESP32 PlatformIO build directory: %s", build)  # v1.13
+        try:  # v1.13
+            return (build / "firmware.bin").read_bytes(), (build / "partitions.bin").read_bytes()  # v1.13
+        except FileNotFoundError:  # v1.13
+            raise ValueError("Die kompilierten ESP32-Dateien wurden im PlatformIO-Build-Verzeichnis nicht gefunden.") from None  # v1.13
 
 
 def ota_partitions(table):

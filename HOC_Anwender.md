@@ -1,9 +1,16 @@
-Datei-Version: 1.63 (2026-11-23) - HOC_Anwender.md
+Datei-Version: 1.64 (2026-11-23) - HOC_Anwender.md
 Stand: webMobaLedLib 4.79
 
 # webMobaLedLib: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## ESP32-Startfirmware: externe PlatformIO-Build-Pfade (2026-11-23)
+
+Nach erfolgreicher Kompilierung konnte der Upload ohne Übertragungsversuch abbrechen: headless_esp32_ota suchte firmware.bin und partitions.bin fest unter .pio/build/esp32. Beim Tester lag das Ergebnis dagegen in einem externen Benutzerverzeichnis. Die berechnete PlatformIO-Konfiguration wird nun über dessen CLI abgefragt; build_dir, workspace_dir, Umgebungsvariablen und interpolierte Pfade werden berücksichtigt. Bei fehlenden Artefakten erscheint eine konkrete Meldung. Konfigurations-JSON wird wegen möglicher Zugangsdaten nicht protokolliert.
+
+Dateien: headless/headless_esp32_ota.py 1.13, test_esp32_build_directory.py 1.00; zwei Meldungen im Sprachkatalog DE/EN/NL/FR/IT/ES/DA. Drei automatisierte Tests mit mehreren Pfadfällen bestanden; echte PlatformIO-Abfragen mit externem Build-Verzeichnis, Workspace, Variablenersetzung, Leerzeichen und Umlauten bestanden. Tatsächliche Übersetzung in sieben Sprachen geprüft. Kein Pico-Code geändert. Nicht geprüft: USB-Flashen am Testergerät sowie Hardware-OTA.
+
 
 ## Version 4.79 (2026-11-23)
 
