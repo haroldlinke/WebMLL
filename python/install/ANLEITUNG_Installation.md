@@ -1,5 +1,5 @@
 # MobaLedLib Studio – Installation und Betrieb
-*Datei-Version: 5.12 (2026-11-24), gilt für Version 5.12*
+*Datei-Version: 5.12-m08.1 (2026-11-24), gilt für Version 5.12*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1825,3 +1825,9 @@ Beim Laden einer MLL_PGF-Datei mit mehreren Tabellenblättern fragt das Programm
 ## ESP32 startet nach dem Hochladen endlos neu (Korrektur 4.97)
 
 Steht im seriellen Monitor `assert failed: lfs_fs_grow_` und blinkt die Platine dauernd, liegt im Flash ein altes Dateisystem eines früheren Projekts. Ab 4.97 löscht das Programm nach dem Hochladen per USB das Dateisystem des ESP32 selbst; die WLAN-Zugangsdaten bleiben erhalten, die Konfiguration wird danach neu übertragen. Ein Gerät, das schon abstürzt, wird durch **erneutes Hochladen per USB** repariert (nicht über WLAN).
+
+## M08-Upload (Ergänzung 5.12-m08.1)
+
+WLAN und USB werden weiterhin über getrennte Knöpfe ausgewählt. Der gemeinsame Uploadweg bleibt im Modul M08; am Bedienablauf ändert sich nichts. Nach einem Update der Programmversion ist einmal eine vollständige Firmwareübertragung zu erwarten; danach kann die schnelle Konfigurationsübertragung wieder verwendet werden.
+
+Zu prüfen: Funktioniert vollständiges USB- und WLAN-Upload am ESP32? Wird die Verbindung nach dem Neustart bei eingeschaltetem AutoConnect wiederhergestellt? Bleiben statische Netzwerkeinstellungen auch in der minimalen Firmware erhalten? Wird ein Pico nach einem geänderten Portnamen anhand seiner Seriennummer wiedergefunden? Funktionieren Nano mit altem/neuem Bootloader, Nano Full sowie Pico weiterhin? Bitte Betriebssystem und Board angeben.

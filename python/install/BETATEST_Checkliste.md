@@ -1,5 +1,5 @@
 # MobaLedLib Studio – Checkliste für Betatester
-*Datei-Version: 3.93 (2026-11-24), gilt für Version 5.12*
+*Datei-Version: 3.94 (2026-11-24), gilt für Version 5.12*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -462,3 +462,9 @@ Rückmeldungen an den Entwickler (Kontakt siehe GitHub-Seite des Projekts: <http
 354. **Firewall-Text (5.10):** Einstellungen, Zugriff aus dem Netz (nur Windows): Der Hinweis zum Knopf nennt die Regel „webMLL Server <Port>“; in der Windows-Firewall heißt die angelegte Regel genauso.
 355. **Niederländisch (5.11):** Sprache Nederlands: Das Menü „Instellingen“ zeigt „Uitbreidingen …“ (nicht „Erweiterungen“). In den Fenstern aus den Menüs Bestand, Tabel, Instellingen und Help (zum Beispiel Simulator-Einstellungen) zeigt die Maus über einem Feld den Hinweis auf Niederländisch. **Nicht im Browser getestet.**
 356. **Hilfe-Adressen (5.12):** Hilfe → Hilfe öffnen öffnet im Browser die Seite „MobaLedLib Studio“ (`wiki.mobaledlib.de/anleitungen/mobaledlibstudio/einfuehrung`). Ebenso der Hilfe-Knopf im Reiter OTA, in der Servo-Animation und im Timeline Editor (Seiten ota, servo_animation, patterngenerator im Kapitel mobaledlibstudio). Die Seiten müssen sich öffnen, nicht „Seite nicht gefunden“.
+
+## M08-Upload (Ergänzung 5.12-m08.1)
+
+WLAN und USB werden weiterhin über getrennte Knöpfe ausgewählt. Der gemeinsame Uploadweg bleibt im Modul M08; am Bedienablauf ändert sich nichts. Nach einem Update der Programmversion ist einmal eine vollständige Firmwareübertragung zu erwarten; danach kann die schnelle Konfigurationsübertragung wieder verwendet werden.
+
+Zu prüfen: Funktioniert vollständiges USB- und WLAN-Upload am ESP32? Wird die Verbindung nach dem Neustart bei eingeschaltetem AutoConnect wiederhergestellt? Bleiben statische Netzwerkeinstellungen auch in der minimalen Firmware erhalten? Wird ein Pico nach einem geänderten Portnamen anhand seiner Seriennummer wiedergefunden? Funktionieren Nano mit altem/neuem Bootloader, Nano Full sowie Pico weiterhin? Bitte Betriebssystem und Board angeben.

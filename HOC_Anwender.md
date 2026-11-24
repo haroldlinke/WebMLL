@@ -1,9 +1,20 @@
-Datei-Version: 1.96 (2026-11-24) - HOC_Anwender.md
+Datei-Version: 1.97 (2026-11-24) - HOC_Anwender.md
 Stand: Version 5.12
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 5.12-m08.1 (2026-11-24)
+
+Neue Funktionen:
+- Gemeinsamer M08-Uploadweg auf Basis 5.12 für Programm-, Pattern- und ESP32-Übertragung.
+
+Korrekturen:
+- Pico-Portwechsel, Firmware-Versionssignatur und neue USB-Korrekturen des Originals bleiben erhalten.
+- ESP32 versucht die gespeicherte WLAN-Verbindung bei Bedarf erneut.
+- Getrennte Auswahlknöpfe für WLAN und USB bleiben erhalten.
+
 
 ## Version 5.12 (2026-11-24)
 

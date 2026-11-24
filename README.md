@@ -9,3 +9,7 @@ Details findest Du im Wiki: https://wiki.mobaledlib.de/anleitungen/mobaledlibstu
 ## Datenübertragung
 
 Optionale Übernahme von Tabellen oder ausgewählten Zeilen zwischen PCs im lokalen Netzwerk (ab 4.89, Beitrag von moosbewohner). Die Quellfreigabe bleibt beim Start ausgeschaltet. Bedienung, Sicherung und Grenzen: [Datenübertragung](DATENUEBERTRAGUNG.md).
+
+## M08-Upload auf Basis 5.12
+
+Dieser Featurestand vereinheitlicht die Upload-Ausführung über M08. Die aktuellen Pico- und Signaturkorrekturen des Originals bleiben erhalten. Details und Testgrenzen: [M08-Upload](M08_UPLOAD.md), [geänderte Dateien](M08_DATEIEN.md).
