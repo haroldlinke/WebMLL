@@ -33,7 +33,7 @@ Auftrag: getestete M08-Anpassungen nach dem Update auf Original 5.12 erneut übe
 | `headless/headless_upload.py` | 1.02 | Ein Unterbau für Prozessausgabe, Abbruch, Pfade und PlatformIO-Protokoll. |
 | `test_m08_upload.py` | 1.02 | M08-Anbindung bzw. zugehörige Regressionstests. |
 
-**Prüfungen:** 43 gezielte Tests unter Windows erfolgreich (M08-Prozessausführung, Abbruch/Timeout, Buildpfade, Nano/Pico/ESP32-Befehle, WLAN-Konfiguration, minimaler ESP32-Build mit statischer IP und Wiederherstellung der Kopfdatei, Pico-Identitätsübergabe); echte Übersetzerprüfung für DE/EN/NL/FR/IT/ES/DA enthalten. Zusätzlich: 180 ursprüngliche Dynamik-/Protokoll-/Übersetzungsprüfungen ohne Fehler, Backend-Start mit frischem Datenordner erfolgreich, release_tools full meldet „in Ordnung“ (2343 Dateien), git diff --check ohne Fehler.
+**Prüfungen:** 43 gezielte Tests unter Windows erfolgreich (M08-Prozessausführung, Abbruch/Timeout, Buildpfade, Nano/Pico/ESP32-Befehle, WLAN-Konfiguration, minimaler ESP32-Build mit statischer IP und Wiederherstellung der Kopfdatei, Pico-Identitätsübergabe); echte Übersetzerprüfung für DE/EN/NL/FR/IT/ES/DA enthalten. Zusätzlich: 180 ursprüngliche Dynamik-/Protokoll-/Übersetzungsprüfungen und 14 ursprüngliche Identify-Prüfungen ohne Fehler, Backend-Start mit frischem Datenordner erfolgreich, release_tools full meldet „in Ordnung“ (2343 Dateien), git diff --check ohne Fehler.
 
 **Nicht geprüft:** reale Uploads mit Basis 5.12, Hardware-Neustart und erneute WLAN-Verbindung, Browserbedienung dieses neuen Stands, native Ausführung unter Linux/macOS/Raspberry Pi. Die Anwenderbestätigung des älteren 4.79-Hardwarestands ist kein Hardwaretest für 5.12.
 
