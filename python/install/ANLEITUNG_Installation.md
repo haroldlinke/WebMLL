@@ -1,5 +1,5 @@
 # MobaLedLib Studio – Installation und Betrieb
-*Datei-Version: 5.39 (2026-11-26), gilt für Version 5.39*
+*Datei-Version: 5.41-data.1 (2026-11-26), gilt für Version 5.41*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1837,3 +1837,13 @@ Beim Laden einer MLL_PGF-Datei mit mehreren Tabellenblättern fragt das Programm
 ## ESP32 startet nach dem Hochladen endlos neu (Korrektur 4.97)
 
 Steht im seriellen Monitor `assert failed: lfs_fs_grow_` und blinkt die Platine dauernd, liegt im Flash ein altes Dateisystem eines früheren Projekts. Ab 4.97 löscht das Programm nach dem Hochladen per USB das Dateisystem des ESP32 selbst; die WLAN-Zugangsdaten bleiben erhalten, die Konfiguration wird danach neu übertragen. Ein Gerät, das schon abstürzt, wird durch **erneutes Hochladen per USB** repariert (nicht über WLAN).
+
+## 5.41 – Datenübertragung: Quelladresse und Port
+
+Neue Funktionen:
+- Quelladresse und Port stehen getrennt nebeneinander, Vorgabeport 45875.
+
+Korrekturen:
+- Gespeicherte Adressen und Suchergebnisse befüllen beide Felder; das HTTP-Präfix entfällt nur in der Anzeige.
+
+Zu prüfen: Werden gespeicherte IP-Adresse und Port getrennt angezeigt? Füllt ein Suchergebnis beide Felder? Funktionieren eigener Port und gespeichertes HTTPS weiterhin? Bleiben die Felder auf schmalen Bildschirmen nebeneinander nutzbar?

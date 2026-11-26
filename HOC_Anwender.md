@@ -1,9 +1,18 @@
-Datei-Version: 1.126 (2026-11-26) - HOC_Anwender.md
+Datei-Version: 1.127 (2026-11-26) - HOC_Anwender.md
 Stand: Version 5.41
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 5.41 – Datenübertragung: Quelladresse und Port (2026-11-26)
+
+Neue Funktionen:
+- Quelladresse und Port stehen getrennt nebeneinander, Vorgabeport 45875.
+
+Korrekturen:
+- Gespeicherte Adressen und Suchergebnisse befüllen beide Felder; das HTTP-Präfix entfällt nur in der Anzeige.
+
 
 ## Version 5.41 (2026-11-26)
 

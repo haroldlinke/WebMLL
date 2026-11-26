@@ -1,4 +1,4 @@
-Datei-Version: 1.120 (2026-11-26) - HOC_intern.md
+Datei-Version: 1.121 (2026-11-26) - HOC_intern.md
 Stand: Version 5.41
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,20 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 5.41 – Datenübertragung: Quelladresse und Port (2026-11-26)
+
+Nur optische Anpassung: Quelladresse ohne http:// und schmales separates Portfeld mit Vorgabe 45875. Gespeicherte URLs und Suchergebnisse werden automatisch aufgeteilt; intern wird die bisherige URL wieder zusammengesetzt. Eigene Ports, Hostnamen, IPv6 und vorhandenes HTTPS bleiben möglich. Ungültige Ports erhalten eine verständliche übersetzte Meldung. Datenübertragungsprotokoll und M08 bleiben unverändert. Dieser Git-Branch basiert direkt auf Original 5.41 und enthält keine M08-Vereinheitlichung.
+
+Geprüft: 24 ursprüngliche Datenübertragungstests unter Windows; Aufteilung/Zusammensetzen und Portprüfung zusätzlich geprüft. Auf der Linux-VM bestehen dieselben 24 Tests im kombinierten Installationsstand; Backend startet. Neue Beschriftung und Portmeldung werden in DE/EN/NL/FR/IT/ES/DA mit dem echten Übersetzer geprüft.
+
+Nicht geprüft: visuelle Browserbedienung des neuen 5.41-Stands und Datenübertragung zwischen zwei realen PCs mit dieser UI; native Ausführung unter macOS/Raspberry Pi. Keine Tabellen wurden zur Prüfung importiert.
+
+| Datei (python/) | Version | Änderung |
+|---|---|---|
+| `_web/web_table_sync.py` | 1.09 | Getrennte Quelladress-/Portanzeige und Übersetzungen. |
+| `csv/Web_Languages.csv` | Katalogergänzung 2026-11-26 | Getrennte Quelladress-/Portanzeige und Übersetzungen. |
+
 
 ## 2.12 (2026-10-23) - Release-Stand
 

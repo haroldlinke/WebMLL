@@ -2769,3 +2769,5 @@ Lichtmaschine Pico Zero;Light machine Pico Zero;;;;;
 Lichtmaschine MoLLi;Light machine MoLLi;;;;;
 Flags auswählen;Select flags;;;;;
 Farb Test beenden;Close Color Test;;;;;
+
+Bitte einen Port zwischen 1 und 65535 eingeben.;Please enter a port between 1 and 65535.;Voer een poort tussen 1 en 65535 in.;Veuillez saisir un port entre 1 et 65535.;Inserire una porta tra 1 e 65535.;Introduzca un puerto entre 1 y 65535.;Indtast en port mellem 1 og 65535.

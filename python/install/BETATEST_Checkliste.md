@@ -1,5 +1,5 @@
 # MobaLedLib Studio – Checkliste für Betatester
-*Datei-Version: 4.19 (2026-11-26), gilt für Version 5.40*
+*Datei-Version: 4.20-data (2026-11-26), gilt für Version 5.41*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -509,3 +509,13 @@ Rückmeldungen an den Entwickler (Kontakt siehe GitHub-Seite des Projekts: <http
 401. **Meldung nur einmal (5.38):** **Ohne angeschlossene Lichtmaschine** zwischen den Reitern **Programm Generator**, **Farb Test**, **Servo Test** und **Sound Test** hin und her wechseln: Kommt „Fehler beim Öffnen der Verbindung“ nur **einmal**? Danach auf eine **Testtaste** in der Tabelle klicken: Kommt jetzt wieder ein Verbindungsversuch mit der Meldung? Lichtmaschine anschließen und im Menü **Verbinden** wählen: Verbindet das Programm, und funktionieren die Reiter wie bisher?
 402. **Makro Button (5.39):** In der Makroauswahl das Makro **Button** (Timer mit Abbruch) wählen: Öffnet sich das Eingabefenster ohne Fehlermeldung „Der Parameter Name … wurde nicht im Sheet Par_Description gefunden“? Stehen die Felder Dauer, Helligkeit wenn deaktiviert und Helligkeit wenn aktiv da? Das Makro in der Zelle erscheint richtig, und der Code lässt sich erzeugen und übertragen.
 403. **Release 3.6.0 (5.40):** Oben im Programm und in der Meldung beim Übertragen steht „Ver. 3.6.0“. Ein Programm für einen Nano, einen ESP32 oder einen Pico lässt sich erzeugen und übertragen (die platformio.ini nennt MobaLedLib@3.6.0). Das Beispiel AddressLearn lässt sich laden (Erweiterung AddressLearnMLX nötig).
+
+## 5.41 – Datenübertragung: Quelladresse und Port
+
+Neue Funktionen:
+- Quelladresse und Port stehen getrennt nebeneinander, Vorgabeport 45875.
+
+Korrekturen:
+- Gespeicherte Adressen und Suchergebnisse befüllen beide Felder; das HTTP-Präfix entfällt nur in der Anzeige.
+
+Zu prüfen: Werden gespeicherte IP-Adresse und Port getrennt angezeigt? Füllt ein Suchergebnis beide Felder? Funktionieren eigener Port und gespeichertes HTTPS weiterhin? Bleiben die Felder auf schmalen Bildschirmen nebeneinander nutzbar?
