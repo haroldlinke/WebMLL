@@ -1,3 +1,4 @@
+// Datei-Version: 1.03 (2026-11-26), WLAN-Wiederverbindung nach Neustart.
 /*
  MobaLedLib: LED library for model railways
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -244,6 +245,16 @@ void setupESP32Extensions() {
 
 void loopESP32Extensions() {
 #ifdef USE_WIFI
+#ifdef MLL_OTA_SAVED_WIFI
+    // v1.01 (2026-11-23): retry saved WLAN after a failed startup/restart.
+    // AutoReconnect alone does not cover every initial connection failure.
+    static uint32_t lastWifiRetry = 0;
+    if (WiFi.status() != WL_CONNECTED && millis() - lastWifiRetry >= 15000UL)
+    {
+        lastWifiRetry = millis();
+        WiFi.reconnect(); // keep credentials and the configured IP/hostname
+    }
+#endif
 #ifndef MLL_OTA_SAVED_WIFI
 	wm.process();
 #endif

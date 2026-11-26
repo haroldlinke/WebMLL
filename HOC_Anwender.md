@@ -1,9 +1,19 @@
-Datei-Version: 1.126 (2026-11-26) - HOC_Anwender.md
+Datei-Version: 1.127 (2026-11-26) - HOC_Anwender.md
 Stand: Version 5.41
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## 5.41-m08.1 – gemeinsamer Uploadweg (2026-11-26)
+
+Neue Funktionen:
+- Gemeinsamer M08-Uploadweg auf Basis 5.41 und MobaLedLib 3.6.0 aktualisiert.
+
+Korrekturen:
+- Neue Originalkorrekturen für Pico-Portwechsel, Bibliothekscache und schnelles Update je Blatt bleiben erhalten.
+- Getrennte WLAN-/USB-Auswahl und WLAN-Wiederholungsversuch bleiben erhalten.
+
 
 ## Version 5.41 (2026-11-26)
 

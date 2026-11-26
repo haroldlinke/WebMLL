@@ -1,5 +1,5 @@
 # MobaLedLib Studio – Installation und Betrieb
-*Datei-Version: 5.39 (2026-11-26), gilt für Version 5.39*
+*Datei-Version: 5.41-m08.1 (2026-11-26), gilt für Version 5.41*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1837,3 +1837,14 @@ Beim Laden einer MLL_PGF-Datei mit mehreren Tabellenblättern fragt das Programm
 ## ESP32 startet nach dem Hochladen endlos neu (Korrektur 4.97)
 
 Steht im seriellen Monitor `assert failed: lfs_fs_grow_` und blinkt die Platine dauernd, liegt im Flash ein altes Dateisystem eines früheren Projekts. Ab 4.97 löscht das Programm nach dem Hochladen per USB das Dateisystem des ESP32 selbst; die WLAN-Zugangsdaten bleiben erhalten, die Konfiguration wird danach neu übertragen. Ein Gerät, das schon abstürzt, wird durch **erneutes Hochladen per USB** repariert (nicht über WLAN).
+
+## 5.41-m08.1 – gemeinsamer Uploadweg
+
+Neue Funktionen:
+- Gemeinsamer M08-Uploadweg auf Basis 5.41 und MobaLedLib 3.6.0 aktualisiert.
+
+Korrekturen:
+- Neue Originalkorrekturen für Pico-Portwechsel, Bibliothekscache und schnelles Update je Blatt bleiben erhalten.
+- Getrennte WLAN-/USB-Auswahl und WLAN-Wiederholungsversuch bleiben erhalten.
+
+Zu prüfen: Vollständiges und schnelles Upload für Nano alt/neu/Full, Pico und ESP32 prüfen; Pico-Portwechsel im Blatt prüfen; ESP32 USB/WLAN und automatisches Wiederverbinden prüfen. Werden Änderungen der Bibliothek im file://-Cache übernommen?

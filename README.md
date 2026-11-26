@@ -8,3 +8,7 @@ Details findest Du im Wiki: https://wiki.mobaledlib.de/anleitungen/mobaledlibstu
 
 ## 
 
+
+## Gemeinsamer M08-Upload (5.41)
+
+Architektur, geänderte Dateien, Prüfungen und Grenzen: [M08_UPLOAD.md](M08_UPLOAD.md).
