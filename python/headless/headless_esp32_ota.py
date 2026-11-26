@@ -1,13 +1,20 @@
-# Datei-Version: 1.14 (2026-11-24) - headless_esp32_ota.py
+# Datei-Version: 1.18 (2026-11-26) - headless_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_esp32_ota.py
 # Path:           headless/headless_esp32_ota.py
-# Version:        1.14
-# Last Update:    2026-11-24
+# Version:        1.18
+# Last Update:    2026-11-26
 # Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.18 2026-11-26 M08-Abgleich auf Original-Release 5.54; Programm-VERSION unveraendert 5.54.
+#   1.17 2026-11-26 M08-Upload auf 5.41/MobaLedLib 3.6.0 aktualisiert; neue Originalkorrekturen erhalten.
+#   1.16 2026-11-24 M08-Upload auf Original 5.12 aktualisiert, Pico-Identifikation und Firmware-Signatur erhalten.
+#   1.16-m08 2026-11-24 M08-Vereinheitlichung mit Basis 4.98 zusammengefuehrt; neue Originalkorrekturen erhalten.
 #   1.14  2026-11-24  erase_filesystem: Dateisystem-Partition (LittleFS) des ESP32 nach vollstaendigem USB-Upload loeschen (Absturzschleife 'lfs_fs_grow_ assert failed', wenn dort ein altes Dateisystem anderer Groesse liegt); esptool-Suche als _esptool_tools
+
+#   1.15 2026-11-23 Nur Quellen und Protokolladapter; Build und Prozessausfuehrung an M08/gemeinsamen Unterbau delegieren.
+#   1.14 2026-11-23 Paketpfade fuer esptool/espota aus verwendeter PlatformIO-Laufzeit statt ~/.platformio ermitteln.
 #   1.13 2026-11-23 ESP32-Firmware aus dem von PlatformIO berechneten Build-Verzeichnis lesen, auch externe Pfade.
 #   1.12  2026-11-23  Statische IP oder DHCP fuer den ESP32: Einstellungen ip_mode/ip/gateway/mask/dns1/dns2 (validate_network, network_of), Defines MLL_WIFI_STATIC_IP im Sketch
 #   1.11  2026-11-19  Zeitstempel-Vergleich der Kopfdatei: auch MLL_P_START_MSG (dynamische Konfiguration) wird ohne Datum verglichen
@@ -35,74 +42,67 @@ import subprocess
 import struct
 import sys
 import tempfile
-from threading import Lock, Timer  # v1.10
+# from threading import Lock, Timer  # v1.10  # v1.16 (entfallen)
+from threading import RLock, Timer  # v1.10  # v1.15  # v1.16  # v1.17  # v1.18
 
 MAX_IMAGE_SIZE = 16 * 1024 * 1024
 
 
 # ------------------------------------------------------------------ v1.10: Ausgabe sofort ins Protokoll, Abbrechen
-_current = {"proc": None, "cancelled": False}  # v1.10
-
-
-def _kill_tree(proc):  # v1.10
-    """Prozess samt Kindprozessen beenden (PlatformIO startet scons und die Compiler als eigene Prozesse)."""
-    try:
-        if os.name == "nt":
-            subprocess.run(["taskkill", "/PID", str(proc.pid), "/T", "/F"], capture_output=True, timeout=15)
-        else:
-            proc.terminate()
-    except Exception:  # noqa: BLE001
-        try:
-            proc.kill()
-        except Exception:  # noqa: BLE001
-            pass
-
-
-def cancel_running():  # v1.10
-    """Beendet den gerade laufenden Build- oder Flash-Vorgang. True, wenn einer lief."""
-    proc = _current.get("proc")
-    if proc is None or proc.poll() is not None:
-        return False
-    _current["cancelled"] = True
-    _kill_tree(proc)
-    return True
-
-
-def run_streaming(command, report, timeout, secrets=()):  # v1.10
-    """Wie subprocess.run mit Ausgabe, aber zeilenweise: jede Zeile geht sofort an report (Geheimnisse maskiert).
-    Rueckgabe: Rueckgabewert des Programms. Bei Abbruch ValueError, bei Zeitueberschreitung ebenfalls."""
-    _current["cancelled"] = False
-    secrets = [s for s in secrets if s]
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", bufsize=1)
-    _current["proc"] = proc
-    timed_out = []
-
-    def on_timeout():
-        timed_out.append(True)
-        _kill_tree(proc)
-    timer = Timer(timeout, on_timeout)
-    timer.daemon = True
-    timer.start()
-    try:
-        for line in proc.stdout:
-            line = line.rstrip("\r\n")
-            for secret in secrets:
-                line = line.replace(secret, "********")
-            if line.strip():
-                report(line)
-        proc.wait()
-    finally:
-        timer.cancel()
-        _current["proc"] = None
-        try:
-            proc.stdout.close()
-        except Exception:  # noqa: BLE001
-            pass
-    if _current["cancelled"]:
-        raise ValueError("Der Vorgang wurde abgebrochen.")
-    if timed_out:
-        raise ValueError("Der Vorgang hat zu lange gedauert und wurde beendet.")
-    return proc.returncode
+# _current = {"proc": None, "cancelled": False}  # v1.10  # v1.16 (entfallen)
+# def _kill_tree(proc):  # v1.10  # v1.16 (entfallen)
+    # """Prozess samt Kindprozessen beenden (PlatformIO startet scons und die Compiler als eigene Prozesse)."""  # v1.16 (entfallen)
+    # try:  # v1.16 (entfallen)
+        # if os.name == "nt":  # v1.16 (entfallen)
+            # subprocess.run(["taskkill", "/PID", str(proc.pid), "/T", "/F"], capture_output=True, timeout=15)  # v1.16 (entfallen)
+            # proc.terminate()  # v1.16 (entfallen)
+    # except Exception:  # noqa: BLE001  # v1.16 (entfallen)
+        # try:  # v1.16 (entfallen)
+            # proc.kill()  # v1.16 (entfallen)
+        # except Exception:  # noqa: BLE001  # v1.16 (entfallen)
+# def cancel_running():  # v1.10  # v1.16 (entfallen)
+    # """Beendet den gerade laufenden Build- oder Flash-Vorgang. True, wenn einer lief."""  # v1.16 (entfallen)
+    # proc = _current.get("proc")  # v1.16 (entfallen)
+    # if proc is None or proc.poll() is not None:  # v1.16 (entfallen)
+        # return False  # v1.16 (entfallen)
+    # _current["cancelled"] = True  # v1.16 (entfallen)
+    # _kill_tree(proc)  # v1.16 (entfallen)
+    # return True  # v1.16 (entfallen)
+# def run_streaming(command, report, timeout, secrets=()):  # v1.10  # v1.16 (entfallen)
+    # """Wie subprocess.run mit Ausgabe, aber zeilenweise: jede Zeile geht sofort an report (Geheimnisse maskiert).  # v1.16 (entfallen)
+    # Rueckgabe: Rueckgabewert des Programms. Bei Abbruch ValueError, bei Zeitueberschreitung ebenfalls."""  # v1.16 (entfallen)
+    # _current["cancelled"] = False  # v1.16 (entfallen)
+    # secrets = [s for s in secrets if s]  # v1.16 (entfallen)
+    # proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", bufsize=1)  # v1.16 (entfallen)
+    # _current["proc"] = proc  # v1.16 (entfallen)
+    # timed_out = []  # v1.16 (entfallen)
+    # def on_timeout():  # v1.16 (entfallen)
+        # timed_out.append(True)  # v1.16 (entfallen)
+        # _kill_tree(proc)  # v1.16 (entfallen)
+    # timer = Timer(timeout, on_timeout)  # v1.16 (entfallen)
+    # timer.daemon = True  # v1.16 (entfallen)
+    # timer.start()  # v1.16 (entfallen)
+    # try:  # v1.16 (entfallen)
+        # for line in proc.stdout:  # v1.16 (entfallen)
+            # line = line.rstrip("\r\n")  # v1.16 (entfallen)
+            # for secret in secrets:  # v1.16 (entfallen)
+                # line = line.replace(secret, "********")  # v1.16 (entfallen)
+            # if line.strip():  # v1.16 (entfallen)
+                # report(line)  # v1.16 (entfallen)
+        # proc.wait()  # v1.16 (entfallen)
+    # finally:  # v1.16 (entfallen)
+        # timer.cancel()  # v1.16 (entfallen)
+        # _current["proc"] = None  # v1.16 (entfallen)
+        # try:  # v1.16 (entfallen)
+            # proc.stdout.close()  # v1.16 (entfallen)
+        # except Exception:  # noqa: BLE001  # v1.16 (entfallen)
+    # if _current["cancelled"]:  # v1.16 (entfallen)
+        # raise ValueError("Der Vorgang wurde abgebrochen.")  # v1.16 (entfallen)
+    # if timed_out:  # v1.16 (entfallen)
+        # raise ValueError("Der Vorgang hat zu lange gedauert und wurde beendet.")  # v1.16 (entfallen)
+    # return proc.returncode  # v1.16 (entfallen)
+# v1.15: Prozessausfuehrung gehoert zum gemeinsamen M08-Unterbau.
+from headless.headless_upload import run_streaming, cancel_running, _kill_tree  # v1.15  # v1.16  # v1.17  # v1.18
 
 
 def find_uploader():
@@ -127,8 +127,11 @@ def find_uploader():
     raise ValueError("espota fehlt. Bitte den Arduino-ESP32-Board-Core installieren.")
 
 
-def platformio_packages():
-    return Path(os.environ.get("PLATFORMIO_CORE_DIR") or Path.home() / ".platformio") / "packages"
+# def platformio_packages():  # v1.14 (entfallen)
+#     return Path(os.environ.get("PLATFORMIO_CORE_DIR") or Path.home() / ".platformio") / "packages"  # v1.14 (entfallen)
+def platformio_packages(pio=None):  # v1.15  # v1.16  # v1.17  # v1.18
+    from headless.headless_upload import platformio_packages as packages  # v1.15  # v1.16  # v1.17  # v1.18
+    return packages(pio, project=platformio_ota_project())  # v1.15  # v1.16  # v1.17  # v1.18
 
 
 # Minimale Konfiguration fuer die Erst-Firmware: eine DCC-Adresse (100) und die Heartbeat-LED des Mainboards (WS2812 an Pin 27)  # v1.07
@@ -159,7 +162,8 @@ def upload(host, password, filename, image, *, pio=None):
     if address is None:
         raise ValueError("IP-Adresse oder Hostname des ESP32 ist ungültig oder nicht erreichbar.")
     if pio:
-        script = platformio_packages() / "framework-arduinoespressif32/tools/espota.py"
+        # script = platformio_packages() / "framework-arduinoespressif32/tools/espota.py"  # v1.16 (entfallen)
+        script = platformio_packages(pio) / "framework-arduinoespressif32/tools/espota.py"  # v1.14  # v1.15  # v1.16  # v1.17  # v1.18
         if not script.is_file():
             raise ValueError("espota.py fehlt im PlatformIO-ESP32-Framework.")
         uploader = [sys.executable, str(script)]
@@ -168,15 +172,20 @@ def upload(host, password, filename, image, *, pio=None):
     with tempfile.TemporaryDirectory(prefix="webmll-ota-") as folder:
         firmware = Path(folder) / "firmware.bin"
         firmware.write_bytes(image)
-        result = subprocess.run(
-            [*uploader, "-i", address, "-p", "3232", "-P", str(HOST_PORT), "-d", "--auth=" + password,
-             "-f", str(firmware)],
-            capture_output=True, text=True, errors="replace", timeout=180,
-        )
-    output = (result.stdout + result.stderr).strip()
-    if password:
-        output = output.replace(password, "********")
-    return result.returncode, output
+        # v1.15 (entfallen) result = subprocess.run(
+        # v1.15 (entfallen) [*uploader, "-i", address, "-p", "3232", "-P", str(HOST_PORT), "-d", "--auth=" + password,
+        # v1.15 (entfallen) "-f", str(firmware)],
+        # v1.15 (entfallen) capture_output=True, text=True, errors="replace", timeout=180,
+        # v1.15 (entfallen) )
+        # v1.15 (entfallen) output = (result.stdout + result.stderr).strip()
+        # v1.15 (entfallen) if password:
+        # v1.15 (entfallen) output = output.replace(password, "********")
+        # v1.15 (entfallen) return result.returncode, output
+        command = [*uploader, "-i", address, "-p", "3232", "-P", str(HOST_PORT), "-d", "--auth=" + password, "-f", str(firmware)]  # v1.15  # v1.16  # v1.17  # v1.18
+        lines = []  # v1.15  # v1.16  # v1.17  # v1.18
+        from proggen import M08_ARDUINO as M08  # v1.15  # v1.16  # v1.17  # v1.18
+        returncode = M08.Execute_Upload_Command(command, lines.append, 180, secrets=(password,))  # v1.15  # v1.16  # v1.17  # v1.18
+    return returncode, "\n".join(lines)  # v1.15  # v1.16  # v1.17  # v1.18
 
 def arduino_library_dir(packages, sketchbook):
     # The Arduino Builder uses the IDE sketchbook, even in a PlatformIO project.
@@ -263,7 +272,8 @@ def build_project(sketch_dir, ide, sketchbook, fqbn, password, report, *, hostna
         )
 
 
-_platformio_build_lock = Lock()
+# _platformio_build_lock = Lock()  # v1.16 (entfallen)
+_platformio_build_lock = RLock()  # v1.15  # v1.16  # v1.17  # v1.18
 
 
 def platformio_ota_project():
@@ -286,28 +296,30 @@ def sync_build_tree(source, target):
             file.unlink()
 
 
-# def build_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True):  # v1.12 (entfallen)
-def platformio_build_directory(pio, project, environment="esp32"):  # v1.13
-    """PlatformIO resolves ini interpolation and PLATFORMIO_* directory overrides."""  # v1.13
-    import json  # v1.13
-    project = Path(project).resolve()  # v1.13
-    result = subprocess.run([str(pio), "project", "config", "--project-dir", str(project), "--json-output"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)  # v1.13
-    try:  # v1.13
-        if result.returncode:  # v1.13
-            raise ValueError()  # v1.13
-        sections = dict(json.loads(result.stdout))  # v1.13
-        options = dict(sections.get("platformio", []))  # v1.13
-        workspace = Path(options.get("workspace_dir") or os.getenv("PLATFORMIO_WORKSPACE_DIR") or project / ".pio").expanduser()  # v1.13
-        build = Path(options.get("build_dir") or os.getenv("PLATFORMIO_BUILD_DIR") or workspace / "build").expanduser()  # v1.13
-        if not build.is_absolute():  # v1.13
-            build = project / build  # v1.13
-        return build / environment  # v1.13
-    except (ValueError, TypeError, KeyError):  # v1.13
-        # Never log config JSON: it may contain WLAN or OTA credentials.  # v1.13
-        raise ValueError("Die PlatformIO-Build-Pfade konnten nicht ermittelt werden.") from None  # v1.13
+# def platformio_build_directory(pio, project, environment="esp32"):  # v1.13  # v1.16 (entfallen)
+    # """PlatformIO resolves ini interpolation and PLATFORMIO_* directory overrides."""  # v1.13  # v1.16 (entfallen)
+    # import json  # v1.13  # v1.16 (entfallen)
+    # project = Path(project).resolve()  # v1.13  # v1.16 (entfallen)
+    # result = subprocess.run([str(pio), "project", "config", "--project-dir", str(project), "--json-output"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)  # v1.13  # v1.16 (entfallen)
+    # try:  # v1.13  # v1.16 (entfallen)
+        # if result.returncode:  # v1.13  # v1.16 (entfallen)
+            # raise ValueError()  # v1.13  # v1.16 (entfallen)
+        # sections = dict(json.loads(result.stdout))  # v1.13  # v1.16 (entfallen)
+        # options = dict(sections.get("platformio", []))  # v1.13  # v1.16 (entfallen)
+        # workspace = Path(options.get("workspace_dir") or os.getenv("PLATFORMIO_WORKSPACE_DIR") or project / ".pio").expanduser()  # v1.13  # v1.16 (entfallen)
+        # build = Path(options.get("build_dir") or os.getenv("PLATFORMIO_BUILD_DIR") or workspace / "build").expanduser()  # v1.13  # v1.16 (entfallen)
+        # if not build.is_absolute():  # v1.13  # v1.16 (entfallen)
+            # build = project / build  # v1.13  # v1.16 (entfallen)
+        # return build / environment  # v1.13  # v1.16 (entfallen)
+    # except (ValueError, TypeError, KeyError):  # v1.13  # v1.16 (entfallen)
+        # raise ValueError("Die PlatformIO-Build-Pfade konnten nicht ermittelt werden.") from None  # v1.13  # v1.16 (entfallen)
+# def prepare_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True):  # v1.12 (entfallen)
+# v1.15: Pfadermittlung nur noch an einer Stelle, keine eigene OTA-Variante.
+from headless.headless_upload import platformio_project_options, platformio_build_directory  # v1.15  # v1.16  # v1.17  # v1.18
 
 
-def build_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True, network=None):  # v1.12
+# def build_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True, network=None):  # v1.12  # v1.16 (entfallen)
+def prepare_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True, network=None):  # v1.15  # v1.16  # v1.17  # v1.18
     """Compile the WebMLL ESP32 configuration in a reusable build project."""
     if not pio:
         raise ValueError("PlatformIO wurde nicht gefunden.")
@@ -338,21 +350,22 @@ def build_platformio_project(sketch_dir, pio, password, report, write_config, *,
         if not ini.is_file() or ini.read_bytes() != config:
             ini.write_bytes(config)
         sync_build_tree(Path(sketch_dir).parent / "libraries", project / "libraries")
-        # result = subprocess.run(  # v1.10 (entfallen)
-        #     [str(pio), "run", "--project-dir", str(project), "-e", "esp32"],  # v1.10 (entfallen)
-        #     capture_output=True, text=True, errors="replace", timeout=900,  # v1.10 (entfallen)
-        # )  # v1.10 (entfallen)
-        # report((result.stdout + result.stderr).replace(password, "********").replace(secret, "********") if password else result.stdout + result.stderr)  # v1.10 (entfallen)
-        returncode = run_streaming([str(pio), "run", "--project-dir", str(project), "-e", "esp32"], report, 900, (password, secret) if password else ())  # v1.10
-        if returncode:  # v1.10
-            raise ValueError("ESP32-Kompilierung mit PlatformIO fehlgeschlagen.")
-        # build = project / ".pio/build/esp32"  # v1.13 (entfallen)
-        build = platformio_build_directory(pio, project)  # v1.13
-        logging.getLogger(__name__).info("ESP32 PlatformIO build directory: %s", build)  # v1.13
-        try:  # v1.13
-            return (build / "firmware.bin").read_bytes(), (build / "partitions.bin").read_bytes()  # v1.13
-        except FileNotFoundError:  # v1.13
-            raise ValueError("Die kompilierten ESP32-Dateien wurden im PlatformIO-Build-Verzeichnis nicht gefunden.") from None  # v1.13
+        # returncode = run_streaming([str(pio), "run", "--project-dir", str(project), "-e", "esp32"], report, 900, (password, secret) if password else ())  # v1.10  # v1.16 (entfallen)
+        # if returncode:  # v1.10  # v1.16 (entfallen)
+            # raise ValueError("ESP32-Kompilierung mit PlatformIO fehlgeschlagen.")  # v1.16 (entfallen)
+        # build = platformio_build_directory(pio, project)  # v1.13  # v1.16 (entfallen)
+        # logging.getLogger(__name__).info("ESP32 PlatformIO build directory: %s", build)  # v1.13  # v1.16 (entfallen)
+        # try:  # v1.13  # v1.16 (entfallen)
+            # return (build / "firmware.bin").read_bytes(), (build / "partitions.bin").read_bytes()  # v1.13  # v1.16 (entfallen)
+        # except FileNotFoundError:  # v1.13  # v1.16 (entfallen)
+            # raise ValueError("Die kompilierten ESP32-Dateien wurden im PlatformIO-Build-Verzeichnis nicht gefunden.") from None  # v1.13  # v1.16 (entfallen)
+        return project, secret  # v1.15: nur Quellen vorbereiten, nicht bauen  # v1.16  # v1.17  # v1.18
+
+
+def build_platformio_project(sketch_dir, pio, password, report, write_config, *, hostname="", ota=True, network=None):  # v1.15  # v1.16  # v1.17  # v1.18
+    """Kompatibilitaet fuer bestehende Aufrufer; M08 besitzt den Buildablauf."""  # v1.15  # v1.16  # v1.17  # v1.18
+    from proggen import M08_ARDUINO as M08  # v1.15  # v1.16  # v1.17  # v1.18
+    return M08.Build_ESP32_Project(sketch_dir, pio, password, report, write_config, hostname=hostname, ota=ota, network=network)  # v1.15  # v1.16  # v1.17  # v1.18
 
 
 def ota_partitions(table):
@@ -371,7 +384,8 @@ def ota_partitions(table):
 def _esptool_tools(pio=None):  # v1.14
     """Kern des ESP32-Boardpakets und Aufruf von esptool (PlatformIO-Paket oder Arduino-Boardpaket)."""  # v1.14
     if pio:  # v1.14
-        packages = platformio_packages()  # v1.14
+        # packages = platformio_packages()  # v1.14  # v1.16 (entfallen)
+        packages = platformio_packages(pio)  # v1.14  # v1.16  # v1.17  # v1.18
         core = packages / "framework-arduinoespressif32"  # v1.14
         script = packages / "tool-esptoolpy/esptool.py"  # v1.14
         python = Path(pio).with_name("python.exe" if os.name == "nt" else "python")  # v1.14
@@ -424,7 +438,7 @@ def flash_usb(port, image, partition_table, report, *, pio=None):
         raise ValueError("Bitte in den ARDUINO-Einstellungen zuerst einen ESP32-COM-Port wählen.")
     port = port.upper() if port[:3].upper() == "COM" else port
     # if pio:  # v1.14 (entfallen)
-    #     packages = platformio_packages()  # v1.14 (entfallen)
+    #     packages = platformio_packages(pio)  # v1.14 (entfallen)
     #     core = packages / "framework-arduinoespressif32"  # v1.14 (entfallen)
     #     script = packages / "tool-esptoolpy/esptool.py"  # v1.14 (entfallen)
     #     python = Path(pio).with_name("python.exe" if os.name == "nt" else "python")  # v1.14 (entfallen)

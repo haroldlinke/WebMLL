@@ -1,14 +1,18 @@
-# Datei-Version: 1.10 (2026-11-25) - web_esp32_ota.py
+# Datei-Version: 1.12 (2026-11-26) - web_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_esp32_ota.py
 # Path:           _web/web_esp32_ota.py
-# Version:        1.10
-# Last Update:    2026-11-25
+# Version:        1.12
+# Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.12 2026-11-26 M08-Abgleich auf Original-Release 5.54; Programm-VERSION unveraendert 5.54.
+#   1.11 2026-11-26 M08-Upload auf 5.41/MobaLedLib 3.6.0 aktualisiert; neue Originalkorrekturen erhalten.
 #   1.10  2026-11-25  settings_panel() gibt den Haken 'WLAN am ESP32 aktivieren' zurueck (Optionen: WLAN-Anzeigen auf dem Display nur mit WLAN). Zeilen mit '# v1.10'
+#   1.10 2026-11-24 M08-Upload auf Original 5.12 aktualisiert, Pico-Identifikation und Firmware-Signatur erhalten.
 #   1.09  2026-11-24  Hilfe-Adresse im neuen Namensraum des Wikis
+#   1.09-m08 2026-11-24 M08-Vereinheitlichung mit Basis 4.98 zusammengefuehrt; neue Originalkorrekturen erhalten.
 #   1.08  2026-11-23  Adresse fuer WebMLL: die Adresse dieses Rechners wird abgelehnt (Verwechslung mit der IP des ESP32), bei fester IP gilt dann die IP des ESP32; Hinweistext
 #   1.07  2026-11-23  Reiter OTA: DHCP oder statische IP-Adresse (IP, Gateway, Subnetzmaske, DNS), Pruefung der Eingaben, Zieladresse = feste IP
 #   1.00  2026-11-14  Neu: Dialoge fuer ESP32-WLAN und OTA (Firmware hochladen, Ziel waehlen, Reiter OTA, WLAN ueber USB einrichten)
@@ -98,8 +102,10 @@ def open_dialog(*, pio=None):
         status.set_text(tr("WLAN-Übertragung läuft …"))
         output.set_text("")
         try:
+            from proggen import M08_ARDUINO as M08  # v1.09-m08  # v1.10  # v1.11  # v1.12
             code, log = await run.io_bound(
-                headless_esp32_ota.upload, host.value, password.value or "", *image, pio=pio,
+                # headless_esp32_ota.upload, host.value, password.value or "", *image, pio=pio,  # v1.10 (entfallen)
+                M08.Upload_ESP32_File, host.value, password.value or "", *image, pio=pio,  # v1.10  # v1.11  # v1.12
             )
             status.set_text(tr("Firmware übertragen.") if code == 0 else tr("OTA-Upload fehlgeschlagen."))
             output.set_text(log + ((chr(10) + tr(HINT_FIREWALL, port=headless_esp32_ota.HOST_PORT)) if code and headless_esp32_ota.NO_RESPONSE in log else ""))
@@ -132,7 +138,8 @@ def open_dialog(*, pio=None):
     dialog.open()
 
 
-async def ask_target(address="", *, allow_usb=False, connect=False, saved_password=""):
+# async def ask_target(address="", *, allow_usb=False, connect=False, saved_password=""):  # v1.10 (entfallen)
+async def ask_target(address="", *, allow_usb=False, connect=False, saved_password="", usb_targets=None, on_usb=None):  # v1.09-m08  # v1.10  # v1.11  # v1.12
     title = "ESP32 verbinden" if connect else "ESP32-Setup übertragen"
     with ui.dialog() as dialog, ui.card().classes("w-[480px] max-w-full"):
         ui.label(title).classes("text-h6")

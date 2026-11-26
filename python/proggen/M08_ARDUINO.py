@@ -1,21 +1,27 @@
-# Datei-Version: 1.39 (2026-11-26) - M08_ARDUINO.py
+# Datei-Version: 1.40 (2026-11-26) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.39
+# Version:        1.40
 # Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.40 2026-11-26 M08-Abgleich auf Original-Release 5.54; Programm-VERSION unveraendert 5.54.
 #   1.39  2026-11-26  Kompilieren und Hochladen: Abbrechen in der Geraeteauswahl schliesst auch das Fenster Kompilieren und Hochladen sofort. Zeilen mit '# v1.39'
 #   1.38  2026-11-26  Setup uebertragen per USB: Abbrechen in der Geraeteauswahl schliesst auch das Fenster der Uebertragung sofort (kein Fehlertext 'kein USB-Anschluss gewaehlt'). Zeilen mit '# v1.38'
+#   1.38 2026-11-26 M08-Upload auf 5.41/MobaLedLib 3.6.0 aktualisiert; neue Originalkorrekturen erhalten.
 #   1.37  2026-11-26  Release MobaLedLib 3.6.0: platformio.ini nennt die Bibliothek mit M02.Lib_Version_Nr (3.6.0) statt fest 3.5.0, passend zur library.properties
 #   1.36  2026-11-25  Pull Request 71 (Juergen, Issue 70): Pico: Hat sich der COM Port nach dem Hochladen geaendert (Neustart), wird der neue Port ins Blatt eingetragen (__Write_Back_New_ComPort; Markierung '*' bleibt). Zeilen mit '# v1.36'
 #   1.35  2026-11-25  Bibliothek MobaLedLib bei file://: veraltete Kopie in .pio/libdeps (PlatformIO nimmt sie bei gleicher Version 3.5.0 weiter) wird geloescht, wenn die src-Dateien von libraries/MobaLedLib abweichen (Refresh_Lib_Copy; Pico: showColor fehlte, Log von Harold)
+#   1.35 2026-11-24 M08-Upload auf Original 5.12 aktualisiert, Pico-Identifikation und Firmware-Signatur erhalten.
 #   1.34  2026-11-24  Identify (Jürgen Winkler, Pull Request 61): Pico: Seriennummer und Location des Anschlusses vor dem Hochladen ermitteln und an M42.After_Full_Flash geben (der Anschluss kann nach dem Neustart einen anderen Namen haben). Zeilen mit '# v1.34'
+#   1.34-m08 2026-11-24 M08-Vereinheitlichung mit Basis 4.98 zusammengefuehrt; neue Originalkorrekturen erhalten.
 #   1.33  2026-11-24  Ensure_Git: fehlt git beim Uebersetzen fuer ESP32 oder Pico, bietet das Programm die Installation an (auch im Anfaenger Modus)
 #   1.32  2026-11-24  ESP32: Nach dem vollstaendigen Hochladen per USB wird die Dateisystem-Partition (LittleFS) geloescht, bevor die Konfiguration kommt (Absturzschleife 'lfs_fs_grow_ assert failed' bei altem Dateisystem anderer Groesse)
 #   1.31  2026-11-23  ESP32-Setup per USB: Der eingetragene Anschluss wird vor dem langen Build geprueft (M07.Ensure_Existing_USB_Port), sonst Meldung statt 'port doesn't exist' nach dem Build
+
+#   1.31 2026-11-23 Gemeinsame M08-API fuer Build/USB/OTA, Minimalfirmware, Boardzuordnung und vorberechnete Nano-Firmware.
 #   1.30  2026-11-23  ESP32-Setup: statische IP-Adresse statt DHCP (network_settings), die Netzwerkwerte gehoeren zum Firmware-Schluessel
 #   1.29  2026-11-22  ESP32-Setup nutzt dynamische Konfiguration auch ueber WLAN; nach OTA Konfiguration nachsenden
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
@@ -454,19 +460,20 @@ def Create_Start_Sub(BoardName, ResultName, ComPort, BuildOptions, InoName, SrcD
         return fn_return_value
 
 def Create_PIO_Build_cmd(ResultName, ComPort, BuildOptions, InoName, Mode, SrcDir, CPUType):
-    __Environment = 'nano_new'
-    OptParts = Split(BuildOptions, ' ')
-    if UBound(OptParts) >= 1:
-        if OptParts(0) == '--board':
-            BuildOptOnly = OptParts(1)
-            if InStr(BuildOptions, M02.BOARD_NANO_OLD):
-                __Environment = 'nano_old'
-            elif InStr(BuildOptions, M02.BOARD_NANO_FULL):
-                __Environment = 'nano_full'
-            elif InStr(BuildOptions, M02.BOARD_PICO):
-                __Environment = "pico"
-            elif InStr(BuildOptions, M02.BOARD_ESP32):
-                __Environment = "esp32"                
+    # v1.31 (ersetzt durch PIO_Environment) __Environment = 'nano_new'
+    # v1.31 (ersetzt durch PIO_Environment) OptParts = Split(BuildOptions, ' ')
+    # v1.31 (ersetzt durch PIO_Environment) if UBound(OptParts) >= 1:
+    # v1.31 (ersetzt durch PIO_Environment) if OptParts(0) == '--board':
+    # v1.31 (ersetzt durch PIO_Environment) BuildOptOnly = OptParts(1)
+    # v1.31 (ersetzt durch PIO_Environment) if InStr(BuildOptions, M02.BOARD_NANO_OLD):
+    # v1.31 (ersetzt durch PIO_Environment) __Environment = 'nano_old'
+    # v1.31 (ersetzt durch PIO_Environment) elif InStr(BuildOptions, M02.BOARD_NANO_FULL):
+    # v1.31 (ersetzt durch PIO_Environment) __Environment = 'nano_full'
+    # v1.31 (ersetzt durch PIO_Environment) elif InStr(BuildOptions, M02.BOARD_PICO):
+    # v1.31 (ersetzt durch PIO_Environment) __Environment = "pico"
+    # v1.31 (ersetzt durch PIO_Environment) elif InStr(BuildOptions, M02.BOARD_ESP32):
+    # v1.31 (ersetzt durch PIO_Environment) __Environment = "esp32"
+    __Environment = PIO_Environment(BuildOptions)  # v1.31  # v1.35  # v1.38  # v1.40
     if __Environment == 'pico' and not Pico_Udev_Ok():  # v1.03
         if P01.MsgBox(__Pico_Udev_Message(), vbQuestion + vbYesNo + vbDefaultButton2, 'PlatformIO') != vbYes:  # v1.03
             return ''  # v1.03
@@ -529,7 +536,9 @@ def Create_PIO_Hex_cmd(ResultName, ComPort, BuildOptions, HexFile):  # v1.09
     if Environment == 'nano_full':                                                        # die eigene Platine Boards/nanoatmega328full.json im Python-Ordner  # v1.09
         BoardsDir = HX._ci_child(M02a.Get_Project_Dir(), 'Boards') or None  # v1.09
     Root = HX.prepare_project(HexFile, Environment, BoardsDir)  # v1.09
-    return HX.command(Environment, Root, ComPort)  # v1.09
+    # return HX.command(Environment, Root, ComPort)  # v1.09  # v1.35 (entfallen)
+    # return HX.command(Environment, Root, ComPort)  # v1.31 (entfallen)
+    return PIO_Command(Root, Environment, port=str(ComPort), nobuild=True, pio=pio)  # v1.31  # v1.35  # v1.38  # v1.40
 
 
 def PIO_Scripts_Dir():  # v1.02
@@ -722,6 +731,77 @@ def Setup_Pico_Udev():  # v1.03
     return res.returncode == 0, text  # v1.03
 
 
+def PIO_AVR_Paths():  # v1.31  # v1.35  # v1.38  # v1.40
+    """Auch die schnelle Pico/ESP32-Konfiguration benutzt dieselbe PlatformIO-Paketaufloesung."""  # v1.31  # v1.35  # v1.38  # v1.40
+    from headless.headless_upload import platformio_packages  # v1.31  # v1.35  # v1.38  # v1.40
+    pio = Find_PIO()  # v1.31  # v1.35  # v1.38  # v1.40
+    if not pio:  # v1.31  # v1.35  # v1.38  # v1.40
+        return [], []  # v1.31  # v1.35  # v1.38  # v1.40
+    packages = platformio_packages(pio, project=GetWorkbookPath())  # v1.31  # v1.35  # v1.38  # v1.40
+    return [str(packages / "toolchain-atmelavr/bin")], [str(packages / "framework-arduino-avr")]  # v1.31  # v1.35  # v1.38  # v1.40
+
+
+def Upload_Targets(*, wlan_host="", board=None):  # v1.31  # v1.35  # v1.38  # v1.40
+    """Gemeinsame Anschlussliste; Boardpruefung folgt unveraendert vor dem Upload."""  # v1.31  # v1.35  # v1.38  # v1.40
+    options = {"usb": "USB"}  # v1.31  # v1.35  # v1.38  # v1.40
+    ports, labels = M07.EnumComPorts(True, [], PrintDebug=False, BoardType=board or M02a.Get_BoardTyp(), Transport="usb")  # v1.31  # v1.35  # v1.38  # v1.40
+    for port, label in zip(ports, labels):  # v1.31  # v1.35  # v1.38  # v1.40
+        options["usb:" + str(port)] = "USB – " + str(port) + " – " + str(label or "")  # v1.31  # v1.35  # v1.38  # v1.40
+    if wlan_host and (board or M02a.Get_BoardTyp()) == M02.HT_ESP32:  # v1.31  # v1.35  # v1.38  # v1.40
+        options["wlan"] = "WLAN – " + wlan_host  # v1.31  # v1.35  # v1.38  # v1.40
+    return options  # v1.31  # v1.35  # v1.38  # v1.40
+
+
+def PIO_Command(project, environment, *, port="", upload=True, nobuild=False, pio=None, transport="usb", password=""):  # v1.31  # v1.35  # v1.38  # v1.40
+    """Ein Befehlsaufbau fuer Nano alt/neu, Uno, Pico und ESP32, ohne Shell."""  # v1.31  # v1.35  # v1.38  # v1.40
+    from headless.headless_upload import PlatformIOJob  # v1.31  # v1.35  # v1.38  # v1.40
+    return PlatformIOJob(pio or Find_PIO(), project, environment, port=port, upload=upload, nobuild=nobuild, transport=transport, password=password)  # v1.31  # v1.35  # v1.38  # v1.40
+
+
+def Build_ESP32_Project(sketch_dir, pio, password, report, write_config=None, *, hostname="", ota=True, network=None):  # v1.31  # v1.35  # v1.38  # v1.40
+    """Quellenadapter -> originaler M08-Projektgenerator -> gemeinsamer PlatformIO-Build."""  # v1.31  # v1.35  # v1.38  # v1.40
+    from headless import headless_esp32_ota as source_adapter  # v1.31  # v1.35  # v1.38  # v1.40
+    from headless.headless_upload import platformio_build_directory  # v1.31  # v1.35  # v1.38  # v1.40
+    if write_config is None:  # v1.31  # v1.35  # v1.38  # v1.40
+        write_config = lambda path: Write_PIO_Project("esp32", path)  # v1.31  # v1.35  # v1.38  # v1.40
+    with source_adapter._platformio_build_lock:  # v1.31  # v1.35  # v1.38  # v1.40
+        project, secret = source_adapter.prepare_platformio_project(sketch_dir, pio, password, report, write_config, hostname=hostname, ota=ota, network=network)  # v1.31  # v1.35  # v1.38  # v1.40
+        if Run_PlatformIO(project, "esp32", report, pio=pio, upload=False, secrets=(password, secret)):  # v1.31  # v1.35  # v1.38  # v1.40
+            raise ValueError("ESP32-Kompilierung mit PlatformIO fehlgeschlagen.")  # v1.31  # v1.35  # v1.38  # v1.40
+        build = platformio_build_directory(pio, project)  # v1.31  # v1.35  # v1.38  # v1.40
+        logging.getLogger(__name__).info("ESP32 PlatformIO build directory: %s", build)  # v1.31  # v1.35  # v1.38  # v1.40
+        try:  # v1.31  # v1.35  # v1.38  # v1.40
+            return (build / "firmware.bin").read_bytes(), (build / "partitions.bin").read_bytes()  # v1.31  # v1.35  # v1.38  # v1.40
+        except FileNotFoundError:  # v1.31  # v1.35  # v1.38  # v1.40
+            raise ValueError("Die kompilierten ESP32-Dateien wurden im PlatformIO-Build-Verzeichnis nicht gefunden.") from None  # v1.31  # v1.35  # v1.38  # v1.40
+
+
+def Upload_ESP32_Project(port, report, *, pio=None, host="", password="", image=None):  # v1.31  # v1.35  # v1.38  # v1.40
+    from headless import headless_esp32_ota as ota  # v1.31  # v1.35  # v1.38  # v1.40
+    from headless.headless_upload import platformio_build_directory  # v1.31  # v1.35  # v1.38  # v1.40
+    project = ota.platformio_ota_project()  # v1.31  # v1.35  # v1.38  # v1.40
+    pio = pio or Find_PIO()  # v1.31  # v1.35  # v1.38  # v1.40
+    if image is not None and (platformio_build_directory(pio, project) / "firmware.bin").read_bytes() != image:  # v1.31  # v1.35  # v1.38  # v1.40
+        raise ValueError("Das Build-Ergebnis wurde zwischenzeitlich geändert. Bitte erneut übertragen.")  # v1.31  # v1.35  # v1.38  # v1.40
+    return Run_PlatformIO(project, "esp32", report, pio=pio, port=host or port, nobuild=True, transport="wlan" if host else "usb", password=password)  # v1.31  # v1.35  # v1.38  # v1.40
+
+
+def Upload_ESP32_File(host, password, filename, image, *, pio=None):  # v1.31  # v1.35  # v1.38  # v1.40
+    """Fertige Firmware ist ein eigener Eingang, kein zweiter Buildweg."""  # v1.31  # v1.35  # v1.38  # v1.40
+    from headless import headless_esp32_ota as ota  # v1.31  # v1.35  # v1.38  # v1.40
+    return ota.upload(host, password, filename, image, pio=pio)  # v1.31  # v1.35  # v1.38  # v1.40
+
+
+def Execute_Upload_Command(command, report, timeout=900, *, secrets=(), on_process=None):  # v1.31  # v1.35  # v1.38  # v1.40
+    from headless.headless_upload import run_streaming  # v1.31  # v1.35  # v1.38  # v1.40
+    return run_streaming(command, report, timeout, secrets, on_process=on_process)  # v1.31  # v1.35  # v1.38  # v1.40
+
+
+def Run_PlatformIO(project, environment, report, *, pio=None, port="", upload=True, nobuild=False, transport="usb", password="", secrets=()):  # v1.31  # v1.35  # v1.38  # v1.40
+    job = PIO_Command(project, environment, pio=pio, port=port, upload=upload, nobuild=nobuild, transport=transport, password=password)  # v1.31  # v1.35  # v1.38  # v1.40
+    return Execute_Upload_Command(job, report, secrets=secrets)  # v1.31  # v1.35  # v1.38  # v1.40
+
+
 def __Create_PIO_Build_cmd(Environment, ResultName, ComPort, SrcDir):
     # new_dir = Path(GetShortPath(Environ(M02.Env_USERPROFILE)) + '/.platformio/penv/Scripts')  # v1.02 (entfallen)
     # os.environ["PATH"] += os.pathsep + str(new_dir)  # v1.02 (entfallen)
@@ -737,8 +817,9 @@ def __Create_PIO_Build_cmd(Environment, ResultName, ComPort, SrcDir):
         os.environ[M02.Env_USERPROFILE] = GetShortPath(Environ(M02.Env_USERPROFILE))  # v1.02
     if not __Create_PIO_Build(None, Environment, ResultName, ComPort, SrcDir):               # die Datei platformio.ini mit den aktuellen Einstellungen schreiben  # v1.02
         return ''  # v1.02
-    cmd = 'cd .. && pio run -t upload -e ' + Environment + ' --upload-port ' + ComPort
-    return cmd
+    # return cmd  # v1.35 (entfallen)
+    # cmd = 'cd .. && pio run -t upload -e ' + Environment + ' --upload-port ' + ComPort  # v1.31 (entfallen)
+    return PIO_Command(os.path.dirname(os.path.abspath(SrcDir.rstrip("/\\"))), Environment, port=str(ComPort), upload=getattr(PG.global_controller, "execute_upload", True), pio=pio)  # v1.31  # v1.35  # v1.38  # v1.40
     
 _LIB_LINK_SCHEME = [None]  # v1.16
 
@@ -2551,7 +2632,8 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
                         break  # v1.34
             PG.global_controller.disconnect()
             #Res = M40.ShellAndWait(CommandStr, 0, vbNormalFocus, PromptUser)
-            if type(CommandStr) == str:
+            # if type(CommandStr) == str:  # v1.31 (entfallen)
+            if isinstance(CommandStr, str):  # v1.31: strukturierter PlatformIOJob ist stringkompatibel  # v1.35  # v1.38  # v1.40
                 # Res = PG.dialog_parent.start_ARDUINO_program_cmd(CommandStr,arduino_type=Mode)  # v1.12 (entfallen)
                 Title = StepTitle  # v1.12
                 if Title == '' and HexFile != '':                                              # fertige Datei: nichts wird kompiliert, es dauert nur Sekunden  # v1.12
@@ -2575,7 +2657,8 @@ def Compile_and_Upload_Prog_to_Arduino(InoName, ComPortColumn, BuildOptColumn, S
         # But it brings up excel again after the upload to the Arduino
         # Without this funchion an other program was activated after the upload for some reasons
         #Bring_to_front(hwnd)
-        if (Res == M40.Success) or (Res == M40.Timeout) or (Res == M40.UserBreak):
+        # if (Res == M40.Success) or (Res == M40.Timeout) or (Res == M40.UserBreak):  # v1.31 (entfallen: Abbruch/Timeout sind kein Upload-Erfolg)
+        if Res == M40.Success:  # v1.31  # v1.35  # v1.38  # v1.40
             pass
         else:
             Failed = True
@@ -2669,6 +2752,77 @@ def GetCPUTypeFromSignature(DeviceSignature, DefaultType='ATMega328P'):
         _fn_return_value = DefaultType
     return _fn_return_value
 
+def Compile_and_Upload_Minimal_ESP32(ctrl, board, port, password, settings):  # v1.31  # v1.35  # v1.38  # v1.40
+    from headless import headless_esp32_ota  # v1.31  # v1.35  # v1.38  # v1.40
+    from _web.web_i18n import tr  # v1.31  # v1.35  # v1.38  # v1.40
+    if not M07.Ensure_Existing_USB_Port(M25.COMPort_COL):  # v1.34: preserve 4.98 port validation  # v1.35  # v1.38  # v1.40
+        return False  # v1.35  # v1.38  # v1.40
+    if not M07.Check_USB_Port_with_Dialog(M25.COMPort_COL):  # v1.31  # v1.35  # v1.38  # v1.40
+        return False  # v1.31  # v1.35  # v1.38  # v1.40
+    raw = str(P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL)).strip().lstrip("*")  # v1.31  # v1.35  # v1.38  # v1.40
+    port = ("COM" + raw) if raw.isdigit() and os.name == "nt" else raw  # v1.31  # v1.35  # v1.38  # v1.40
+    log = ctrl.weblog  # v1.31  # v1.35  # v1.38  # v1.40
+    log.set_title(tr("Minimale ESP32-Firmware über USB übertragen"))  # v1.31  # v1.35  # v1.38  # v1.40
+    log.delete_text_from_textwindow()  # v1.31  # v1.35  # v1.38  # v1.40
+    log.show()  # v1.31  # v1.35  # v1.38  # v1.40
+    header = None  # v1.31  # v1.35  # v1.38  # v1.40
+    saved = None  # v1.31  # v1.35  # v1.38  # v1.40
+    try:  # v1.31  # v1.35  # v1.38  # v1.40
+        network = headless_esp32_ota.validate_network(settings)  # v1.34  # v1.35  # v1.38  # v1.40
+        # if not ota_header.Create_HeaderFile(HeaderOnly=True):  # v4.29 (entfallen: die Minimale Firmware nimmt keine Daten aus der Tabelle)
+            # raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))  # v4.29 (entfallen)
+        sketch = os.path.join(GetWorkbookPath(), M02.Ino_Dir_LED)  # v1.31  # v1.35  # v1.38  # v1.40
+        header = os.path.join(sketch, "LEDs_AutoProg.h")  # v1.31  # v1.35  # v1.38  # v1.40
+        if os.path.isfile(header):  # v1.31  # v1.35  # v1.38  # v1.40
+            with open(header, "rb") as handle:  # v1.31  # v1.35  # v1.38  # v1.40
+                saved = handle.read()  # v1.31  # v1.35  # v1.38  # v1.40
+        with open(header, "w", encoding="utf-8", newline="\n") as handle:  # nur fuer diesen Build; danach wird die eigene Konfiguration wiederhergestellt  # v1.31  # v1.35  # v1.38  # v1.40
+            handle.write(headless_esp32_ota.minimal_header())  # v1.31  # v1.35  # v1.38  # v1.40
+        log.add_text_to_textwindow(tr("ESP32-Firmware wird kompiliert …"))  # v1.31  # v1.35  # v1.38  # v1.40
+        pio = None  # v1.31  # v1.35  # v1.38  # v1.40
+        if M28.Is_PlatformIO():  # v1.31  # v1.35  # v1.38  # v1.40
+            pio = Find_PIO()  # v1.31  # v1.35  # v1.38  # v1.40
+            if not Ensure_Git("esp32"):  # v1.34: preserve 4.98 Git installation  # v1.35  # v1.38  # v1.40
+                raise ValueError(tr("git fehlt. Bitte git installieren und den Vorgang wiederholen."))  # v1.35  # v1.38  # v1.40
+            log.add_text_to_textwindow(tr("Build-Umgebung: PlatformIO"))  # v1.31  # v1.35  # v1.38  # v1.40
+            image, partitions = Build_ESP32_Project(  # v1.35  # v1.38  # v1.40
+                sketch, pio, password, log.add_text_to_textwindow,  # v1.35  # v1.38  # v1.40
+                lambda path: Write_PIO_Project("esp32", path),  # v1.35  # v1.38  # v1.40
+                hostname=settings["hostname"], ota=True, network=network,  # v1.35  # v1.38  # v1.40
+            )  # v1.31  # v1.35  # v1.38  # v1.40
+        else:  # v1.31  # v1.35  # v1.38  # v1.40
+            log.add_text_to_textwindow(tr("Build-Umgebung: Arduino Builder"))  # v1.31  # v1.35  # v1.38  # v1.40
+            image, partitions = headless_esp32_ota.build_project(  # v1.35  # v1.38  # v1.40
+                sketch, Find_ArduinoExe(), M02a.Get_Sketchbook_Path(),  # v1.35  # v1.38  # v1.40
+                board, password, log.add_text_to_textwindow,  # v1.35  # v1.38  # v1.40
+                hostname=settings["hostname"], ota=True, network=network,  # v1.35  # v1.38  # v1.40
+            )  # v1.31  # v1.35  # v1.38  # v1.40
+        if ctrl.is_connection_open():  # v1.31  # v1.35  # v1.38  # v1.40
+            ctrl.disconnect()  # v1.31  # v1.35  # v1.38  # v1.40
+        log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))  # v1.31  # v1.35  # v1.38  # v1.40
+        if pio:  # v1.31  # v1.35  # v1.38  # v1.40
+            if Upload_ESP32_Project(port, log.add_text_to_textwindow, pio=pio, image=image):  # v1.31  # v1.35  # v1.38  # v1.40
+                raise ValueError(tr("ESP32-Upload über USB fehlgeschlagen."))  # v1.31  # v1.35  # v1.38  # v1.40
+        else:  # v1.31  # v1.35  # v1.38  # v1.40
+            headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow)  # v1.31  # v1.35  # v1.38  # v1.40
+        log.add_text_to_textwindow(tr("Minimale Firmware übertragen. Als Nächstes im Reiter OTA „WLAN über USB einrichten“."), highlight="OK")  # v1.31  # v1.35  # v1.38  # v1.40
+    except ValueError as error:  # v1.31  # v1.35  # v1.38  # v1.40
+        log.add_text_to_textwindow(tr(str(error)), highlight="Error")  # v1.31  # v1.35  # v1.38  # v1.40
+    except (OSError, subprocess.TimeoutExpired):  # v1.31  # v1.35  # v1.38  # v1.40
+        log.add_text_to_textwindow(tr("Build oder Upload konnte nicht abgeschlossen werden."), highlight="Error")  # v1.31  # v1.35  # v1.38  # v1.40
+    finally:  # v1.31  # v1.35  # v1.38  # v1.40
+        if header:  # v1.31  # v1.35  # v1.38  # v1.40
+            try:  # v1.31  # v1.35  # v1.38  # v1.40
+                if saved is not None:  # v1.31  # v1.35  # v1.38  # v1.40
+                    with open(header, "wb") as handle:  # v1.31  # v1.35  # v1.38  # v1.40
+                        handle.write(saved)  # v1.31  # v1.35  # v1.38  # v1.40
+                elif os.path.isfile(header):  # v1.31  # v1.35  # v1.38  # v1.40
+                    os.remove(header)  # v1.31  # v1.35  # v1.38  # v1.40
+            except OSError:  # v1.31  # v1.35  # v1.38  # v1.40
+                pass  # v1.31  # v1.35  # v1.38  # v1.40
+
+
+
 # def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, password, hostname, ota, firewall_hint):  # v1.22  # v1.30 (entfallen)
 def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, password, hostname, ota, firewall_hint, network_settings=None):  # v1.22  # v1.30
     """Build the active ESP32 project and transfer it using the selected transport."""  # v1.22
@@ -2713,7 +2867,8 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
             if not Ensure_Git('esp32'):  # v1.33
                 raise RuntimeError(tr("git fehlt. Bitte git installieren und den Vorgang wiederholen."))  # v1.33
             log.add_text_to_textwindow(tr("Build-Umgebung: PlatformIO"))  # v1.22
-            image, partitions = headless_esp32_ota.build_platformio_project(  # v1.22
+            # image, partitions = headless_esp32_ota.build_platformio_project(  # v1.22  # v1.35 (entfallen)
+            image, partitions = Build_ESP32_Project(  # v1.22  # v1.35  # v1.38  # v1.40
                 sketch, pio, password, log.add_text_to_textwindow,  # v1.22
                 lambda path: Write_PIO_Project("esp32", path),  # v1.22
                 hostname=hostname, ota=ota, network=network,  # v1.22  # v1.30
@@ -2725,18 +2880,37 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
                 board, password, log.add_text_to_textwindow,  # v1.22
                 hostname=hostname, ota=ota, network=network,  # v1.22  # v1.30
             )  # v1.22
+        if not getattr(ctrl, "execute_upload", True):  # v1.31  # v1.35  # v1.38  # v1.40
+            log.add_text_to_textwindow(tr("Es wird nur kompiliert, nicht hochgeladen."))  # v1.31  # v1.35  # v1.38  # v1.40
+            return  # v1.31  # v1.35  # v1.38  # v1.40
         if ctrl.is_connection_open():  # v1.22
             ctrl.disconnect()  # v1.22
         if not host:  # v1.22
             log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))  # v1.22
-            headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)  # v1.22
+            # headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)  # v1.22 (entfallen v1.31)
+            if pio:  # v1.31  # v1.35  # v1.38  # v1.40
+                if Upload_ESP32_Project(port, log.add_text_to_textwindow, pio=pio, image=image):  # v1.31  # v1.35  # v1.38  # v1.40
+                    raise ValueError(tr("ESP32-Upload über USB fehlgeschlagen."))  # v1.31  # v1.35  # v1.38  # v1.40
+            else:  # v1.31: Arduino-Builder bleibt optional  # v1.35  # v1.38  # v1.40
+                headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow)  # v1.31  # v1.35  # v1.38  # v1.40
             log.add_text_to_textwindow(tr("USB-Upload erfolgreich."), highlight="OK")  # v1.22
             # Last_Upload.update(ok=True, host='')  # v1.24  # v1.29 (entfallen)
+            if M42.Active():  # v1.34: preserve 4.98 LittleFS correction in central ESP32 path  # v1.35  # v1.38  # v1.40
+                __Erase_ESP32_Filesystem(port)  # v1.35  # v1.38  # v1.40
             config_ok = not M42.Active() or M42.After_Full_Flash(port)  # v1.29
             Last_Upload.update(ok=config_ok, host='')  # v1.29
             return  # v1.22
         log.add_text_to_textwindow(tr("Firmware wird per WLAN übertragen …"))  # v1.22
-        result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)  # v1.22
+        # result, output = headless_esp32_ota.upload(host, upload_password, "LEDs_AutoProg.ino.bin", image, pio=pio)  # v1.22 (entfallen v1.31)
+        if pio:  # v1.31  # v1.35  # v1.38  # v1.40
+            lines = []  # v1.31  # v1.35  # v1.38  # v1.40
+            def report_upload(line):  # v1.31  # v1.35  # v1.38  # v1.40
+                lines.append(line)  # v1.31  # v1.35  # v1.38  # v1.40
+                log.add_text_to_textwindow(line)  # v1.31  # v1.35  # v1.38  # v1.40
+            result = Upload_ESP32_Project("", report_upload, pio=pio, host=host, password=upload_password, image=image)  # v1.31  # v1.35  # v1.38  # v1.40
+            output = "\n".join(lines)  # v1.31  # v1.35  # v1.38  # v1.40
+        else:  # v1.31  # v1.35  # v1.38  # v1.40
+            result, output = Upload_ESP32_File(host, upload_password, "LEDs_AutoProg.ino.bin", image)  # v1.31  # v1.35  # v1.38  # v1.40
         log.add_text_to_textwindow(output)  # v1.22
         if result and headless_esp32_ota.NO_RESPONSE in output:  # v3.38  # v1.22
             log.add_text_to_textwindow(tr(firewall_hint, port=headless_esp32_ota.HOST_PORT), highlight="Error")  # v1.22

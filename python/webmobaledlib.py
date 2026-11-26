@@ -1,12 +1,17 @@
-# Datei-Version: 5.54 (2026-11-26) - webmobaledlib.py
+# Datei-Version: 5.55 (2026-11-26) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        5.54
+# Version:        5.55
 # Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   5.55 2026-11-26 M08-Abgleich auf Original-Release 5.54; Programm-VERSION unveraendert 5.54.
+#   5.41-m08.1 2026-11-26 M08-Upload auf 5.41/MobaLedLib 3.6.0 aktualisiert; neue Originalkorrekturen erhalten.
+#   5.12-m08.1 2026-11-24 M08-Upload auf Original 5.12 aktualisiert, Pico-Identifikation und Firmware-Signatur erhalten.
+#   4.98-m08 2026-11-24 M08-Vereinheitlichung mit Basis 4.98 zusammengefuehrt; neue Originalkorrekturen erhalten.
+#   4.79-m08 2026-11-23 Minimalfirmware nach M08 verschieben und gemeinsame Anschlussliste verwenden.
 #   1.39  2026-10-17  Reiter Patterngenerator (Runde 1): Anzeige der Tabelle, Aufbau erst beim ersten Oeffnen (build_patt, _PATT); Kopf eingefuegt; davor bis 1.38 nicht erfasst
 #   1.40  2026-10-17  Patterngenerator Runde 2: Bearbeiten, Werkzeugleiste, Beschreibung, Balken (Module web_pattgen, headless_pattgen)
 #   1.41  2026-10-17  Patterngenerator: lesbare Spalten, Textueberlauf, Balken bei jedem Start (web_pattgen 1.02, headless_pattgen 1.02)
@@ -6881,6 +6886,16 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     _connect_command = run_command(lambda: ctrl.connect(), "Verbinden")
     _connect_usb_command = run_command(lambda: ctrl.connect(wlan=False), "Verbinden")   # v3.42: Antwort USB im Dialog WLAN oder USB: nicht erneut WLAN versuchen
 
+    async def ask_upload_target(address="", **kwargs):  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+        def select_usb(port):  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+            wb.Activate()  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+            state["ws"].Select()  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+            M25.Make_sure_that_Col_Variables_match()  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+            state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL).Value = port  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+            ctrl.setConfigData("serportname", port)  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+        choices = ota_arduino.Upload_Targets(wlan_host=address, board=M02.HT_ESP32) if kwargs.get("allow_usb") else None  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+        return await web_esp32_ota.ask_target(address, usb_targets=choices, on_usb=select_usb, **kwargs)  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+
     def wifi_target():  # v3.42
         """(Adresse, Passwort) der eingetragenen ESP32-WLAN-Verbindung des aktiven Blatts, sonst None -> USB"""
         if not esp32_board():
@@ -6937,7 +6952,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             await run_command(lambda: M20.Option_Dialog(), "Optionen")()  # v4.04
             return  # v4.04
         if esp32_board() and settings["wifi"] and settings["ota"]:
-            target = await web_esp32_ota.ask_target(web_esp32_ota.target_address(settings), allow_usb=True, connect=True, saved_password=settings["password"])
+            # target = await web_esp32_ota.ask_target(web_esp32_ota.target_address(settings), allow_usb=True, connect=True, saved_password=settings["password"])  # v5.12-m08.1 (entfallen)
+            target = await ask_upload_target(web_esp32_ota.target_address(settings), allow_usb=True, connect=True, saved_password=settings["password"])  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
             if target is None:
                 return
             if target != "usb":
@@ -7317,7 +7333,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             return
         target = "usb"
         if settings["ota"]:
-            target = await web_esp32_ota.ask_target(web_esp32_ota.target_address(settings), allow_usb=True, saved_password=settings["password"])
+            # target = await web_esp32_ota.ask_target(web_esp32_ota.target_address(settings), allow_usb=True, saved_password=settings["password"])  # v5.12-m08.1 (entfallen)
+            target = await ask_upload_target(web_esp32_ota.target_address(settings), allow_usb=True, saved_password=settings["password"])  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
             if target is None:
                 return
         host, upload_password = ("", "") if target == "usb" else target
@@ -7406,70 +7423,73 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         password = settings["password"]
         used_port = [port]  # v4.95: der gepruefte Anschluss
 
-        def transfer():
-            log = ctrl.weblog
-            log.set_title(tr("Minimale ESP32-Firmware über USB übertragen"))
-            log.delete_text_from_textwindow()
-            log.show()
-            header = None
-            saved = None
-            try:
-                import proggen.M07_COM_Port as _M07p  # v4.95
-                _found = _M07p.Ensure_Existing_USB_Port(M25.COMPort_COL)  # v4.95: der Anschluss muss am Rechner existieren
-                if not _found:  # v4.95
-                    raise ValueError(tr("Der USB-Anschluss {port} ist nicht vorhanden. Bitte „Board und USB Port erkennen“ ausführen.").replace("{port}", port))  # v4.95
-                used_port[0] = _found  # v4.95
-                network = headless_esp32_ota.validate_network(settings)  # v4.95: feste IP-Adresse auch in der minimalen Firmware (None = DHCP)
-                # if not ota_header.Create_HeaderFile(HeaderOnly=True):  # v4.29 (entfallen: die Minimale Firmware nimmt keine Daten aus der Tabelle)
-                    # raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))  # v4.29 (entfallen)
-                sketch = os.path.join(ota_arduino.GetWorkbookPath(), M02.Ino_Dir_LED)
-                header = os.path.join(sketch, "LEDs_AutoProg.h")
-                if os.path.isfile(header):
-                    with open(header, "rb") as handle:
-                        saved = handle.read()
-                with open(header, "w", encoding="utf-8", newline="\n") as handle:  # nur fuer diesen Build; danach wird die eigene Konfiguration wiederhergestellt
-                    handle.write(headless_esp32_ota.minimal_header())
-                log.add_text_to_textwindow(tr("ESP32-Firmware wird kompiliert …"))
-                pio = None
-                if ota_options.Is_PlatformIO():
-                    pio = ota_arduino.Find_PIO()
-                    if not ota_arduino.Ensure_Git('esp32'):  # v4.98
-                        raise ValueError(tr("git fehlt. Bitte git installieren und den Vorgang wiederholen."))  # v4.98
-                    log.add_text_to_textwindow(tr("Build-Umgebung: PlatformIO"))
-                    image, partitions = headless_esp32_ota.build_platformio_project(
-                        sketch, pio, password, log.add_text_to_textwindow,
-                        lambda path: ota_arduino.Write_PIO_Project("esp32", path),
-                        # hostname=settings["hostname"], ota=True,  # v4.95 (entfallen)
-                        hostname=settings["hostname"], ota=True, network=network,  # v4.95
-                    )
-                else:
-                    log.add_text_to_textwindow(tr("Build-Umgebung: Arduino Builder"))
-                    image, partitions = headless_esp32_ota.build_project(
-                        sketch, ota_arduino.Find_ArduinoExe(), ota_boards.Get_Sketchbook_Path(),
-                        board, password, log.add_text_to_textwindow,
-                        # hostname=settings["hostname"], ota=True,  # v4.95 (entfallen)
-                        hostname=settings["hostname"], ota=True, network=network,  # v4.95
-                    )
-                if ctrl.is_connection_open():
-                    ctrl.disconnect()
-                log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))
-                # headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)  # v4.95 (entfallen)
-                headless_esp32_ota.flash_usb(used_port[0], image, partitions, log.add_text_to_textwindow, pio=pio)  # v4.95
-                log.add_text_to_textwindow(tr("Minimale Firmware übertragen. Als Nächstes im Reiter OTA „WLAN über USB einrichten“."), highlight="OK")
-            except ValueError as error:
-                log.add_text_to_textwindow(tr(str(error)), highlight="Error")
-            except (OSError, subprocess.TimeoutExpired):
-                log.add_text_to_textwindow(tr("Build oder Upload konnte nicht abgeschlossen werden."), highlight="Error")
-            finally:
-                if header:
-                    try:
-                        if saved is not None:
-                            with open(header, "wb") as handle:
-                                handle.write(saved)
-                        elif os.path.isfile(header):
-                            os.remove(header)
-                    except OSError:
-                        pass
+                # import proggen.M07_COM_Port as _M07p  # v4.95  # v5.12-m08.1 (entfallen)
+                # _found = _M07p.Ensure_Existing_USB_Port(M25.COMPort_COL)  # v4.95: der Anschluss muss am Rechner existieren  # v5.12-m08.1 (entfallen)
+                # if not _found:  # v4.95  # v5.12-m08.1 (entfallen)
+                    # raise ValueError(tr("Der USB-Anschluss {port} ist nicht vorhanden. Bitte „Board und USB Port erkennen“ ausführen.").replace("{port}", port))  # v4.95  # v5.12-m08.1 (entfallen)
+                # used_port[0] = _found  # v4.95  # v5.12-m08.1 (entfallen)
+                # network = headless_esp32_ota.validate_network(settings)  # v4.95: feste IP-Adresse auch in der minimalen Firmware (None = DHCP)  # v5.12-m08.1 (entfallen)
+                    # if not ota_arduino.Ensure_Git('esp32'):  # v4.98  # v5.12-m08.1 (entfallen)
+                        # raise ValueError(tr("git fehlt. Bitte git installieren und den Vorgang wiederholen."))  # v4.98  # v5.12-m08.1 (entfallen)
+                        # hostname=settings["hostname"], ota=True, network=network,  # v4.95  # v5.12-m08.1 (entfallen)
+                        # hostname=settings["hostname"], ota=True, network=network,  # v4.95  # v5.12-m08.1 (entfallen)
+                # headless_esp32_ota.flash_usb(used_port[0], image, partitions, log.add_text_to_textwindow, pio=pio)  # v4.95  # v5.12-m08.1 (entfallen)
+        # v4.79-m08 (verschoben nach M08) def transfer():
+        # v4.79-m08 (verschoben nach M08) log = ctrl.weblog
+        # v4.79-m08 (verschoben nach M08) log.set_title(tr("Minimale ESP32-Firmware über USB übertragen"))
+        # v4.79-m08 (verschoben nach M08) log.delete_text_from_textwindow()
+        # v4.79-m08 (verschoben nach M08) log.show()
+        # v4.79-m08 (verschoben nach M08) header = None
+        # v4.79-m08 (verschoben nach M08) saved = None
+        # v4.79-m08 (verschoben nach M08) try:
+        # v4.79-m08 (verschoben nach M08) # if not ota_header.Create_HeaderFile(HeaderOnly=True):  # v4.29 (entfallen: die Minimale Firmware nimmt keine Daten aus der Tabelle)
+        # v4.79-m08 (verschoben nach M08) # raise ValueError(tr("Die Projektkonfiguration konnte nicht erzeugt werden."))  # v4.29 (entfallen)
+        # v4.79-m08 (verschoben nach M08) sketch = os.path.join(ota_arduino.GetWorkbookPath(), M02.Ino_Dir_LED)
+        # v4.79-m08 (verschoben nach M08) header = os.path.join(sketch, "LEDs_AutoProg.h")
+        # v4.79-m08 (verschoben nach M08) if os.path.isfile(header):
+        # v4.79-m08 (verschoben nach M08) with open(header, "rb") as handle:
+        # v4.79-m08 (verschoben nach M08) saved = handle.read()
+        # v4.79-m08 (verschoben nach M08) with open(header, "w", encoding="utf-8", newline="\n") as handle:  # nur fuer diesen Build; danach wird die eigene Konfiguration wiederhergestellt
+        # v4.79-m08 (verschoben nach M08) handle.write(headless_esp32_ota.minimal_header())
+        # v4.79-m08 (verschoben nach M08) log.add_text_to_textwindow(tr("ESP32-Firmware wird kompiliert …"))
+        # v4.79-m08 (verschoben nach M08) pio = None
+        # v4.79-m08 (verschoben nach M08) if ota_options.Is_PlatformIO():
+        # v4.79-m08 (verschoben nach M08) pio = ota_arduino.Find_PIO()
+        # v4.79-m08 (verschoben nach M08) log.add_text_to_textwindow(tr("Build-Umgebung: PlatformIO"))
+        # v4.79-m08 (verschoben nach M08) image, partitions = headless_esp32_ota.build_platformio_project(
+        # v4.79-m08 (verschoben nach M08) sketch, pio, password, log.add_text_to_textwindow,
+        # v4.79-m08 (verschoben nach M08) lambda path: ota_arduino.Write_PIO_Project("esp32", path),
+        # v4.79-m08 (verschoben nach M08) hostname=settings["hostname"], ota=True,
+        # v4.79-m08 (verschoben nach M08) )
+        # v4.79-m08 (verschoben nach M08) else:
+        # v4.79-m08 (verschoben nach M08) log.add_text_to_textwindow(tr("Build-Umgebung: Arduino Builder"))
+        # v4.79-m08 (verschoben nach M08) image, partitions = headless_esp32_ota.build_project(
+        # v4.79-m08 (verschoben nach M08) sketch, ota_arduino.Find_ArduinoExe(), ota_boards.Get_Sketchbook_Path(),
+        # v4.79-m08 (verschoben nach M08) board, password, log.add_text_to_textwindow,
+        # v4.79-m08 (verschoben nach M08) hostname=settings["hostname"], ota=True,
+        # v4.79-m08 (verschoben nach M08) )
+        # v4.79-m08 (verschoben nach M08) if ctrl.is_connection_open():
+        # v4.79-m08 (verschoben nach M08) ctrl.disconnect()
+        # v4.79-m08 (verschoben nach M08) log.add_text_to_textwindow(tr("Firmware wird per USB übertragen …"))
+        # v4.79-m08 (verschoben nach M08) headless_esp32_ota.flash_usb(port, image, partitions, log.add_text_to_textwindow, pio=pio)
+        # v4.79-m08 (verschoben nach M08) log.add_text_to_textwindow(tr("Minimale Firmware übertragen. Als Nächstes im Reiter OTA „WLAN über USB einrichten“."), highlight="OK")
+        # v4.79-m08 (verschoben nach M08) except ValueError as error:
+        # v4.79-m08 (verschoben nach M08) log.add_text_to_textwindow(tr(str(error)), highlight="Error")
+        # v4.79-m08 (verschoben nach M08) except (OSError, subprocess.TimeoutExpired):
+        # v4.79-m08 (verschoben nach M08) log.add_text_to_textwindow(tr("Build oder Upload konnte nicht abgeschlossen werden."), highlight="Error")
+        # v4.79-m08 (verschoben nach M08) finally:
+        # v4.79-m08 (verschoben nach M08) if header:
+        # v4.79-m08 (verschoben nach M08) try:
+        # v4.79-m08 (verschoben nach M08) if saved is not None:
+        # v4.79-m08 (verschoben nach M08) with open(header, "wb") as handle:
+        # v4.79-m08 (verschoben nach M08) handle.write(saved)
+        # v4.79-m08 (verschoben nach M08) elif os.path.isfile(header):
+        # v4.79-m08 (verschoben nach M08) os.remove(header)
+        # v4.79-m08 (verschoben nach M08) except OSError:
+        # v4.79-m08 (verschoben nach M08) pass
+        # v4.79-m08 (verschoben nach M08)
+        def transfer():  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
+            return ota_arduino.Compile_and_Upload_Minimal_ESP32(ctrl, board, port, password, settings)  # v4.79-m08  # v5.12-m08.1  # v5.41-m08.1  # v5.55
 
         # nicht ueber run_command: Das Formular ARDUINO Einstellungen laeuft selbst als Befehl und haelt state["busy"] (sonst kam immer "Es laeuft noch ein Vorgang")  # v3.40a
         if minimal_state["running"]:

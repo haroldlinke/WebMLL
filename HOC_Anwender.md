@@ -5,6 +5,16 @@ Stand: Version 5.54
 
 Gilt ab Version 1.39. Neueste Version oben.
 
+## M08-Beitrag auf Basis 5.54 (2026-11-26)
+
+Neue Funktionen:
+- Gemeinsame Uploadausführung für Nano, Pico und ESP32 auf Original-Release 5.54 aktualisiert.
+
+Korrekturen:
+- Neue Geräteauswahl, Anschluss-Hinweis und Schließen beim Abbrechen bleiben erhalten.
+- Abbruch und Timeout werden nicht als erfolgreicher Upload behandelt.
+
+
 ## Version 5.54 (2026-11-26)
 
 Neue Funktionen:

@@ -1,17 +1,23 @@
-# Datei-Version: 1.05 (2026-11-22) - test_dyn_config_wlan.py
+# Datei-Version: 1.10 (2026-11-26) - test_dyn_config_wlan.py
 # Name: test_dyn_config_wlan.py
 # Path: test_dyn_config_wlan.py
-# Version: 1.05
-# Last Update: 2026-11-22
+# Version: 1.10
+# Last Update: 2026-11-26
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.10 2026-11-26 M08-Abgleich auf Original-Release 5.54; Programm-VERSION unveraendert 5.54.
+#   1.09 2026-11-26 M08-Upload auf 5.41/MobaLedLib 3.6.0 aktualisiert; neue Originalkorrekturen erhalten.
+#   1.08 2026-11-24 M08-Upload auf Original 5.12 aktualisiert, Pico-Identifikation und Firmware-Signatur erhalten.
+#   1.06 2026-11-23 M08-Transportadapter in den Konfigurations-Regressionstests verwenden.
 #   1.05 2026-11-22 Drei WLAN-Versuche, Erfolg im dritten Versuch, Abbruch nach drei Fehlern.
 #   1.04 2026-11-22 Verzoegerten Firmware-Neustart absichern; insgesamt 14 Tests.
 #   1.03 2026-11-22 Abschlusspruefung bei verlorener END-Antwort.
 #   1.02 2026-11-22 PlatformIO-Werkzeugsuche ohne IDE und isolierte Uploadtests.
 #   1.01 2026-11-22 Header-Parameteruebergabe bis zur inneren Generatorfunktion pruefen.
 #   1.00 2026-11-22 TCP-Protokoll mit echtem lokalen Socket, HMAC und fragmentierten Antworten.
+import no_tk  # headless Teststart auch ohne installiertes tkinter  # v1.06  # v1.08  # v1.09  # v1.10
+no_tk.install(force=True)  # v1.06  # v1.08  # v1.09  # v1.10
 from pathlib import Path
 import hashlib
 import hmac
@@ -161,6 +167,14 @@ class RetryTests(unittest.TestCase):
 
 
 class FirmwareRestartTests(unittest.TestCase):
+    def test_saved_wifi_retries_without_erasing_credentials(self):  # v1.08  # v1.09  # v1.10
+        source = (Path(__file__).parent / "LEDs_AutoProg" / "ESP32Extensions.h").read_text(encoding="utf-8")  # v1.08  # v1.09  # v1.10
+        loop = source.split("void loopESP32Extensions() {", 1)[1]  # v1.08  # v1.09  # v1.10
+        retry = loop.split("#ifdef MLL_OTA_SAVED_WIFI", 1)[1].split("#endif", 1)[0]  # v1.08  # v1.09  # v1.10
+        self.assertIn("15000UL", retry)  # v1.08  # v1.09  # v1.10
+        self.assertIn("WiFi.reconnect()", retry)  # v1.08  # v1.09  # v1.10
+        self.assertNotIn("WiFi.disconnect", retry)  # v1.08  # v1.09  # v1.10
+
     def test_restart_is_deferred_to_main_loop(self):
         root = Path(__file__).parent / "LEDs_AutoProg"
         firmware = (root / "MLLDynConfig.h").read_text(encoding="utf-8")
@@ -224,10 +238,12 @@ class ToolDiscoveryTests(unittest.TestCase):
         platform.Is_PlatformIO.return_value = True
         env = {"_state": {"tools_checked": False}, "DC": backend, "M28": platform, "log": MagicMock()}
         exec(compile(ast.Module(body=[node], type_ignores=[]), str(source), "exec"), env)
-        with patch("proggen.M08_ARDUINO.Find_ArduinoExe", side_effect=AssertionError("IDE must not be searched")) as ide:
+        # with patch("proggen.M08_ARDUINO.Find_ArduinoExe", side_effect=AssertionError("IDE must not be searched")) as ide:  # v1.08 (entfallen)
+        with patch("proggen.M08_ARDUINO.Find_ArduinoExe", side_effect=AssertionError("IDE must not be searched")) as ide, patch("proggen.M08_ARDUINO.PIO_AVR_Paths", return_value=(["external/bin"], ["external/core"])):  # v1.06  # v1.08  # v1.09  # v1.10
             self.assertEqual(env["_tools"](), {"bin": "pio-tools"})
             ide.assert_not_called()
-        backend.find_avr_tools.assert_called_once_with([], [])
+        # backend.find_avr_tools.assert_called_once_with([], [])  # v1.08 (entfallen)
+        backend.find_avr_tools.assert_called_once_with(["external/bin"], ["external/core"])  # v1.06  # v1.08  # v1.09  # v1.10
 
 
 class HeaderForwardingTests(unittest.TestCase):
@@ -253,7 +269,8 @@ class HeaderForwardingTests(unittest.TestCase):
 
 
 class UploadFlowTests(unittest.TestCase):
-    def run_upload(self, matched=True, flash_result=0, config_result=True):
+    # def run_upload(self, matched=True, flash_result=0, config_result=True):  # v1.08 (entfallen)
+    def run_upload(self, matched=True, flash_result=0, config_result=True, compile_only=False):  # v1.06  # v1.08  # v1.09  # v1.10
         import ast
         from types import SimpleNamespace
         from unittest.mock import MagicMock
@@ -271,14 +288,24 @@ class UploadFlowTests(unittest.TestCase):
         header = MagicMock()
         header.Create_HeaderFile.return_value = True
         ctrl = MagicMock()
-        ctrl.execute_upload = True
-        env = dict(M42=dyn, Last_Upload={}, M07=MagicMock(), M25=MagicMock(), M02=SimpleNamespace(Ino_Dir_LED="LEDs_AutoProg"),
-                   M28=MagicMock(), os=__import__("os"), GetWorkbookPath=lambda: ".", Find_PIO=lambda: "pio", Write_PIO_Project=MagicMock())
+        # ctrl.execute_upload = True  # v1.08 (entfallen)
+        # env = dict(M42=dyn, Last_Upload={}, M07=MagicMock(), M25=MagicMock(), M02=SimpleNamespace(Ino_Dir_LED="LEDs_AutoProg"),  # v1.08 (entfallen)
+                   # M28=MagicMock(), os=__import__("os"), GetWorkbookPath=lambda: ".", Find_PIO=lambda: "pio", Write_PIO_Project=MagicMock())  # v1.08 (entfallen)
+        ctrl.execute_upload = not compile_only  # v1.06  # v1.08  # v1.09  # v1.10
+        env = dict(Ensure_Git=lambda *args: True, M42=dyn, Last_Upload={}, M07=MagicMock(), M25=MagicMock(), M02=SimpleNamespace(Ino_Dir_LED="LEDs_AutoProg"),  # v1.08  # v1.09  # v1.10
+                   M28=MagicMock(), os=__import__("os"), GetWorkbookPath=lambda: ".", Find_PIO=lambda: "pio", Write_PIO_Project=MagicMock(), Upload_ESP32_Project=lambda *args, **kwargs: events.append("ota") or flash_result, Upload_ESP32_File=backend.upload, Build_ESP32_Project=backend.build_platformio_project, subprocess=__import__("subprocess"))  # v1.06  # v1.08  # v1.09  # v1.10
         code = compile(ast.Module(body=[node], type_ignores=[]), str(source), "exec")
         with patch("proggen.M06_Write_Header.Create_HeaderFile", header.Create_HeaderFile), patch("headless.headless_esp32_ota.build_platformio_project", backend.build_platformio_project), patch("headless.headless_esp32_ota.upload", backend.upload):
             exec(code, env)
             env[node.name](ctrl, "esp32", "", host="192.0.2.1", upload_password="old", password="new", hostname="mobaledlib", ota=True, firewall_hint="hint")
         return events, env, dyn, header
+
+    def test_compile_only_never_flashes_or_sends_configuration(self):  # v1.06  # v1.08  # v1.09  # v1.10
+        events, env, dyn, header = self.run_upload(matched=False, compile_only=True)  # v1.06  # v1.08  # v1.09  # v1.10
+        self.assertEqual(events, ["build"])  # v1.06  # v1.08  # v1.09  # v1.10
+        dyn.Try_Config_Only.assert_not_called()  # v1.06  # v1.08  # v1.09  # v1.10
+        dyn.After_Full_Flash.assert_not_called()  # v1.06  # v1.08  # v1.09  # v1.10
+        self.assertFalse(env["Last_Upload"]["ok"])  # v1.06  # v1.08  # v1.09  # v1.10
 
     def test_matching_skips_build(self):
         events, env, dyn, header = self.run_upload()

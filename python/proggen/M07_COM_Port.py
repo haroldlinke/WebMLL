@@ -1,19 +1,24 @@
-# Datei-Version: 1.20 (2026-11-26) - M07_COM_Port.py
+# Datei-Version: 1.21 (2026-11-26) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.20
+# Version:        1.21
 # Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.21 2026-11-26 M08-Abgleich auf Original-Release 5.54; Programm-VERSION unveraendert 5.54.
 #   1.20  2026-11-26  Negative Zahl im Anschluss (-3: Hinweis fuer den Auto-Reconnect) beim Hochladen und beim Setup uebertragen: Resolve_Port_Hint prueft, ob COM3 am Rechner vorhanden ist und zum Typ des Blatts passt, und traegt dann COM3 ins Blatt ein; sonst bleibt der Anschluss ungueltig und der Dialog Board und USB Port erkennen oeffnet sich (Check_USB_Port_with_Dialog), Ensure_Existing_USB_Port sucht dann kein anderes Board. Zeilen mit '# v1.20'
 #   1.19  2026-11-26  Fill_Port_From_Active_Connection: Anschluss der aktiven Verbindung (ARDUINO_current_portname) hat Vorrang vor der Einstellung serportname (Upload mit -7 in der Tabelle: Fehler 'kein PICO an COM-7')
 #   1.18  2026-11-26  Fehler behoben: 'module vb2py.logger has no attribute warning' (Upload ohne Anschluss in der Tabelle): der Name logger wurde durch from vb2py.vbdebug import * ueberschrieben, jetzt nach den Importen neu gesetzt
 #   1.17  2026-11-26  Eine Verbindung pro Geraet: Get_Arduino_Baudrate und DetectArduino laufen unter derselben Anschluss-Sperre wie das Verbinden und die Abfragen der Geraeteauswahl (web_serial.PORT_ACCESS_LOCK, Reihenfolge: Anschluss-Sperre vor _DETECT_LOCK). Zeilen mit '# v1.17'
+#   1.17 2026-11-26 M08-Upload auf 5.41/MobaLedLib 3.6.0 aktualisiert; neue Originalkorrekturen erhalten.
 #   1.1.16  2026-11-26  BOOTLOADER_CACHE: Ergebnis der Bootloader-Abfrage der Geraeteauswahl (Nano) wird von Get_Arduino_Baudrate einmal innerhalb von 90 s wiederverwendet (die zweite Pruefung direkt nach OK schlug fehl). Zeilen mit '# v1.16'
 #   1.15  2026-11-25  SERVO_PORTS: Anschluesse mit einem PicoServo-Tiny (Servo-Modul); Classify_Port liefert dafuer 'Servo' (nicht Pico). Zeilen mit '# v1.15'
+#   1.15 2026-11-24 M08-Upload auf Original 5.12 aktualisiert, Pico-Identifikation und Firmware-Signatur erhalten.
+#   1.15-m08 2026-11-24 M08-Vereinheitlichung mit Basis 4.98 zusammengefuehrt; neue Originalkorrekturen erhalten.
 #   1.14  2026-11-23  Ensure_Existing_USB_Port: Existiert der in der Tabelle eingetragene USB-Anschluss am Rechner nicht, wird (bei genau einem passenden Board) der vorhandene eingetragen, sonst gemeldet - vor dem langen Build des ESP32-Setups
+#   1.14 2026-11-23 Explizite Transportwahl fuer gemeinsame M08-Anschlussliste, bisherige Aufrufer unveraendert.
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.13  2026-11-20  Issue 50: Ist kein Anschluss eingetragen, aber eine Verbindung zur Lichtmaschine aktiv, wird deren Anschluss (und Board) vor dem Hochladen in die Tabelle uebernommen (Fill_Port_From_Active_Connection, Einstellung UploadPortMode)
 #   1.01  2026-10-20  EnumComPorts: FTDI-Adapter (VID 0403, Beschreibung FT232 ...) werden erkannt, sonst meldete die Pruefung beim Hochladen 'kein Arduino angeschlossen'; DetectArduino: kein Absturz, wenn die Verbindung inzwischen getrennt wurde
@@ -725,12 +730,16 @@ def find_devices():
 
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: ResNames - ByRef 
-def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True, BoardType=None):  # v1.09: BoardType (Excel 3.5.0L3): der Board-Typ, fuer den die Anschluesse gesucht werden; ohne Angabe der Board-Typ des Blatts
+# def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True, BoardType=None):  # v1.09: BoardType (Excel 3.5.0L3): der Board-Typ, fuer den die Anschluesse gesucht werden; ohne Angabe der Board-Typ des Blatts  # v1.15 (entfallen)
+# def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True, BoardType=None):  # v1.14 (entfallen)
+def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True, BoardType=None, Transport=None):  # v1.09: BoardType (Excel 3.5.0L3): der Board-Typ, fuer den die Anschluesse gesucht werden; ohne Angabe der Board-Typ des Blatts  # v1.14  # v1.15  # v1.17  # v1.21
     Ports = vbObjectInitialize((50,), Byte)
     BoardType = BoardType or M02a.Get_BoardTyp()  # v1.09
     ESP_Inst = ( BoardType == M02.HT_ESP32 )  # v1.09 (vorher M02a.Get_BoardTyp())
     PICO_Inst = ( BoardType == M02.HT_PICO )  # v1.09 (vorher M02a.Get_BoardTyp())
-    WLAN_inst =  InStr(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL), 'WLAN') > 0
+    # WLAN_inst =  InStr(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL), 'WLAN') > 0  # v1.15 (entfallen)
+    # WLAN_inst = InStr(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL), 'WLAN') > 0  # v1.14 (entfallen)
+    WLAN_inst = (Transport == 'wlan') if Transport is not None else InStr(P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL), 'WLAN') > 0  # v1.14: dieselbe Erkennung auch fuer kombinierte USB/WLAN-Auswahl  # v1.15  # v1.17  # v1.21
     if WLAN_inst:
         # check for Railmail mDNS
         if import_zeroconfok:

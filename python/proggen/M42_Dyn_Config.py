@@ -1,20 +1,25 @@
-# Datei-Version: 1.12 (2026-11-25) - M42_Dyn_Config.py
+# Datei-Version: 1.14 (2026-11-26) - M42_Dyn_Config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M42_Dyn_Config.py
 # Path:           proggen/M42_Dyn_Config.py
-# Version:        1.12
-# Last Update:    2026-11-25
+# Version:        1.14
+# Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.14 2026-11-26 M08-Abgleich auf Original-Release 5.54; Programm-VERSION unveraendert 5.54.
+#   1.13 2026-11-26 M08-Upload auf 5.41/MobaLedLib 3.6.0 aktualisiert; neue Originalkorrekturen erhalten.
 #   1.12  2026-11-25  Schnelles Update (serial_cfg) je Blatt: Option_Enabled liest zuerst esp32_options des aktiven Blattes, Set_Sheet_Option schreibt dorthin. Zeilen mit '# v1.12'
 #   1.11  2026-11-25  Clear_Found_Port: der gefundene Anschluss eines frueheren Uploads wird vor jedem Upload geloescht (sonst haette ein anderes Board den Anschluss eines frueheren Pico ins Blatt bekommen koennen). Zeilen mit '# v1.11'
 #   1.10  2026-11-24  Nach dem Upload merkt sich After_Full_Flash den gefundenen Anschluss (Funktion Found_Port), M08 traegt ihn ins Blatt ein. Zeilen mit '# v1.10'
 #   1.09  2026-11-24  Timeout fuer die Suche nach dem Pico nach dem Upload von 25 s auf 10 s verkuerzt. Zeile mit '# v1.09'
 #   1.08  2026-11-24  Bereitschaftspruefung: Antwort ~MLLERR (Firmware nicht geeignet) bricht sofort ab, ohne weitere Versuche. Zeilen mit '# v1.08'
+#   1.08 2026-11-24 M08-Upload auf Original 5.12 aktualisiert, Pico-Identifikation und Firmware-Signatur erhalten.
 #   1.07  2026-11-24  Pull Request 66 (Juergen, Issue 64): Die Programmversion (VERSION in webmobaledlib.py) gehoert zur Firmware-Signatur: nach jedem Softwareupdate wird einmal die ganze Firmware geflasht (_program_version). Zeilen mit '# v1.07'
 #   1.06  2026-11-23  Identify (Juergen Winkler): After_Full_Flash: Pico nach dem Neustart an Seriennummer und Location erkennen (expected_serial, expected_location aus M08); bis zu 5
 #                     Versuche, bis die Firmware auf '~MLLCFG INFO' antwortet (der Anschluss wird zwischen den Versuchen geschlossen). Zeilen mit '# v1.06'
+#   1.07-m08 2026-11-24 M08-Vereinheitlichung mit Basis 4.98 zusammengefuehrt; neue Originalkorrekturen erhalten.
+#   1.06 2026-11-23 AVR-Werkzeugpfade auch fuer schnelle Pico/ESP32-Konfiguration ueber M08 ermitteln.
 #   1.05  2026-11-22  WLAN-Konfiguration bei Transportfehlern hoechstens dreimal mit neuer Sitzung versuchen
 #   1.04  2026-11-22  Bei fehlender END-Antwort ueber WLAN gespeicherte Konfiguration nach Neustart verifizieren
 #   1.03  2026-11-22  PlatformIO: AVR-Werkzeuge ohne Arduino-IDE-Suche ermitteln
@@ -112,6 +117,14 @@ def _tools():
                     extra_plat.append(os.path.join(ide, "hardware", "arduino", "avr"))
             except BaseException:                              # noqa: BLE001
                 pass
+        if M28.Is_PlatformIO():  # v1.06  # v1.08  # v1.13  # v1.14
+            try:  # v1.06  # v1.08  # v1.13  # v1.14
+                import proggen.M08_ARDUINO as M08  # v1.06  # v1.08  # v1.13  # v1.14
+                pio_bin, pio_platform = M08.PIO_AVR_Paths()  # v1.06  # v1.08  # v1.13  # v1.14
+                extra_bin.extend(pio_bin)  # v1.06  # v1.08  # v1.13  # v1.14
+                extra_plat.extend(pio_platform)  # v1.06  # v1.08  # v1.13  # v1.14
+            except Exception as error:  # v1.06: bestehende Suchorte bleiben als Rueckfall erhalten  # v1.08  # v1.13  # v1.14
+                log.debug("PlatformIO-Werkzeugpfade nicht verfuegbar: %s", error)  # v1.06  # v1.08  # v1.13  # v1.14
         tools = DC.find_avr_tools(extra_bin, extra_plat)
         if tools is None:
             try:

@@ -1,12 +1,17 @@
-# Datei-Version: 1.10 (2026-11-19) - Prog_Generator.py
+# Datei-Version: 1.14 (2026-11-26) - Prog_Generator.py
 # ----------------------------------------------------------------------------------------------
 # Name:           Prog_Generator.py
 # Path:           mlpyproggen/Prog_Generator.py
-# Version:        1.10
-# Last Update:    2026-11-19
+# Version:        1.14
+# Last Update:    2026-11-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.14 2026-11-26 M08-Abgleich auf Original-Release 5.54; Programm-VERSION unveraendert 5.54.
+#   1.13 2026-11-26 M08-Upload auf 5.41/MobaLedLib 3.6.0 aktualisiert; neue Originalkorrekturen erhalten.
+#   1.12 2026-11-24 M08-Upload auf Original 5.12 aktualisiert, Pico-Identifikation und Firmware-Signatur erhalten.
+#   1.12-m08 2026-11-24 M08-Vereinheitlichung mit Basis 4.98 zusammengefuehrt; neue Originalkorrekturen erhalten.
+#   1.11 2026-11-23 Originale ProgGen-/PattGen-Befehle mit Ausgabe/Abbruch ueber M08 ausfuehren.
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-20  ESP32: Hinweis auf die Taste BOOT in der Meldung vor dem Hochladen (start_ARDUINO_program_cmd)
 #   1.02  2026-10-21  execute_shell_cmd: Ausgabe vollstaendig lesen (der Rest nach dem Ende des Prozesses ging verloren, zum Beispiel der Traceback von esptool); Zeichen, die nicht UTF-8 sind, ersetzen statt die Zeile zu verlieren
@@ -393,30 +398,34 @@ def _spawn_kwargs():  # v1.10
     return {} if platform.system() == "Windows" else {"start_new_session": True}  # v1.10
 
 
-def _kill_tree(proc):  # v1.10
-    """Beendet den Prozess UND alle seine Kindprozesse. proc.terminate() traf nur die Shell (cmd/bash), arduino-cli bzw. avrdude liefen weiter und hielten den COM-Port bis zum Ende der Timeouts."""  # v1.10
-    if proc is None or proc.poll() is not None:  # v1.10
-        return  # v1.10
-    try:  # v1.10
-        if platform.system() == "Windows":  # v1.10
-            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True, timeout=15,  # v1.10
-                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))  # v1.10
-        else:  # v1.10
-            import signal  # v1.10
-            try:  # v1.10
-                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)  # v1.10
-            except ProcessLookupError:  # v1.10
-                return  # v1.10
-            try:  # v1.10
-                proc.wait(timeout=3)  # v1.10
-            except subprocess.TimeoutExpired:  # v1.10
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)  # v1.10
-    except Exception:  # noqa: BLE001  # v1.10
-        logging.exception("Prozessbaum nicht beendet")  # v1.10
-        try:  # v1.10
-            proc.kill()  # v1.10
-        except Exception:  # noqa: BLE001  # v1.10
-            pass  # v1.10
+# v1.11 (gemeinsam ersetzt) def _kill_tree(proc):  # v1.10
+# v1.11 (gemeinsam ersetzt)     """Beendet den Prozess UND alle seine Kindprozesse. proc.terminate() traf nur die Shell (cmd/bash), arduino-cli bzw. avrdude liefen weiter und hielten den COM-Port bis zum Ende der Timeouts."""  # v1.10
+# v1.11 (gemeinsam ersetzt)     if proc is None or proc.poll() is not None:  # v1.10
+# v1.11 (gemeinsam ersetzt)         return  # v1.10
+# v1.11 (gemeinsam ersetzt)     try:  # v1.10
+# v1.11 (gemeinsam ersetzt)         if platform.system() == "Windows":  # v1.10
+# v1.11 (gemeinsam ersetzt)             subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True, timeout=15,  # v1.10
+# v1.11 (gemeinsam ersetzt)                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))  # v1.10
+# v1.11 (gemeinsam ersetzt)         else:  # v1.10
+# v1.11 (gemeinsam ersetzt)             import signal  # v1.10
+# v1.11 (gemeinsam ersetzt)             try:  # v1.10
+# v1.11 (gemeinsam ersetzt)                 os.killpg(os.getpgid(proc.pid), signal.SIGTERM)  # v1.10
+# v1.11 (gemeinsam ersetzt)             except ProcessLookupError:  # v1.10
+# v1.11 (gemeinsam ersetzt)                 return  # v1.10
+# v1.11 (gemeinsam ersetzt)             try:  # v1.10
+# v1.11 (gemeinsam ersetzt)                 proc.wait(timeout=3)  # v1.10
+# v1.11 (gemeinsam ersetzt)             except subprocess.TimeoutExpired:  # v1.10
+# v1.11 (gemeinsam ersetzt)                 os.killpg(os.getpgid(proc.pid), signal.SIGKILL)  # v1.10
+# v1.11 (gemeinsam ersetzt)     except Exception:  # noqa: BLE001  # v1.10
+# v1.11 (gemeinsam ersetzt)         logging.exception("Prozessbaum nicht beendet")  # v1.10
+# v1.11 (gemeinsam ersetzt)         try:  # v1.10
+# v1.11 (gemeinsam ersetzt)             proc.kill()  # v1.10
+# v1.11 (gemeinsam ersetzt)         except Exception:  # noqa: BLE001  # v1.10
+# v1.11 (gemeinsam ersetzt)             pass  # v1.10
+def _kill_tree(proc):  # v1.11  # v1.12  # v1.13  # v1.14
+    from headless.headless_upload import _kill_tree as kill  # v1.11  # v1.12  # v1.13  # v1.14
+    return kill(proc)  # v1.11  # v1.12  # v1.13  # v1.14
+
 
 
 
@@ -1160,31 +1169,38 @@ class Prog_GeneratorPage(tk.Frame):
             collected = []                                                 # Ausgabezeilen (fuer die Erkennung von UnknownPackageError)  # v1.03
             for attempt in (1, 2):  # v1.03
                 # self.process = subprocess.Popen(cmd_str, stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin = subprocess.DEVNULL,shell=True)  # v1.03 (entfallen v1.10)
-                self.process = subprocess.Popen(cmd_str, stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin = subprocess.DEVNULL,shell=True, **_spawn_kwargs())  # v1.10
-                self.continue_loop=True  # v1.03
-                collected.clear()  # v1.03
-                # Poll process.stdout to show stdout live
-                while True:  # v1.03
-                    output = self.process.stdout.readline()  # v1.03
-                    if output:  # v1.03
-                        try:  # v1.03
-                            text_line = output.decode('utf-8', errors='replace')  # v1.03
-                            collected.append(text_line)  # v1.03
-                            self.arduinoMonitorPage.add_text_to_textwindow(text_line+"\n")  # v1.03
-                        except BaseException as e:  # v1.03
-                            logging.debug("ProgGenerator - execute_shell_cmd-output:"+str(e))  # v1.03
-                        self.arduinoMonitorPage.update()  # v1.03
-                    if self.process.poll() is not None:  # v1.03
-                        logging.debug("shell ended")  # v1.03
-                        # _drain_output(self.process, self.arduinoMonitorPage)  # v1.04 (entfallen)
-                        _drain_output(self.process, self.arduinoMonitorPage, collector=collected)  # v1.04
-                        break  # v1.03
-                    if not output:  # v1.03
-                        time.sleep(0.01)  # v1.03
-                rc = self.process.returncode  # v1.03
+                # v1.11 (entfallen) self.process = subprocess.Popen(cmd_str, stdout=subprocess.PIPE,stderr=subprocess.STDOUT,stdin = subprocess.DEVNULL,shell=True, **_spawn_kwargs())  # v1.10
+                # v1.11 (entfallen) self.continue_loop=True  # v1.03
+                # v1.11 (entfallen) collected.clear()  # v1.03
+                # v1.11 (entfallen) # Poll process.stdout to show stdout live
+                # v1.11 (entfallen) while True:  # v1.03
+                # v1.11 (entfallen) output = self.process.stdout.readline()  # v1.03
+                # v1.11 (entfallen) if output:  # v1.03
+                # v1.11 (entfallen) try:  # v1.03
+                # v1.11 (entfallen) text_line = output.decode('utf-8', errors='replace')  # v1.03
+                # v1.11 (entfallen) collected.append(text_line)  # v1.03
+                # v1.11 (entfallen) self.arduinoMonitorPage.add_text_to_textwindow(text_line+"\n")  # v1.03
+                # v1.11 (entfallen) except BaseException as e:  # v1.03
+                # v1.11 (entfallen) logging.debug("ProgGenerator - execute_shell_cmd-output:"+str(e))  # v1.03
+                # v1.11 (entfallen) self.arduinoMonitorPage.update()  # v1.03
+                # v1.11 (entfallen) if self.process.poll() is not None:  # v1.03
+                # v1.11 (entfallen) logging.debug("shell ended")  # v1.03
+                # v1.11 (entfallen) # _drain_output(self.process, self.arduinoMonitorPage)  # v1.04 (entfallen)
+                # v1.11 (entfallen) _drain_output(self.process, self.arduinoMonitorPage, collector=collected)  # v1.04
+                # v1.11 (entfallen) break  # v1.03
+                # v1.11 (entfallen) if not output:  # v1.03
+                # v1.11 (entfallen) time.sleep(0.01)  # v1.03
+                # v1.11 (entfallen) rc = self.process.returncode  # v1.03
+                def report_line(text_line):  # v1.11  # v1.12  # v1.13  # v1.14
+                    collected.append(text_line)  # v1.11  # v1.12  # v1.13  # v1.14
+                    self.arduinoMonitorPage.add_text_to_textwindow(text_line + "\n")  # v1.11  # v1.12  # v1.13  # v1.14
+                    self.arduinoMonitorPage.update()  # v1.11  # v1.12  # v1.13  # v1.14
+                collected.clear()  # v1.11  # v1.12  # v1.13  # v1.14
+                rc = M08.Execute_Upload_Command(cmd_str, report_line, on_process=lambda proc: setattr(self, "process", proc))  # v1.11  # v1.12  # v1.13  # v1.14
                 # PlatformIO: Die Paketverwaltung (Registry im Netz) meldet manchmal fuer ein Paket UnknownPackageError, das es gibt. Dann einmal wiederholen:
                 # die schon geladenen Pakete bleiben, es wird nur noch das Fehlende geholt.
-                if rc != 0 and attempt == 1 and not self.userbreak and "pio " in cmd_str and any("UnknownPackageError" in l for l in collected):  # v1.03
+                # if rc != 0 and attempt == 1 and not self.userbreak and "pio " in cmd_str and any("UnknownPackageError" in l for l in collected):  # v1.03  # v1.12 (entfallen)
+                if rc != 0 and attempt == 1 and not self.userbreak and ("pio " in cmd_str or hasattr(cmd_str, "board_environment")) and any("UnknownPackageError" in l for l in collected):  # v1.03  # v1.11  # v1.12  # v1.13  # v1.14
                     self.arduinoMonitorPage.add_text_to_textwindow("\n" + M09.Get_Language_Str("PlatformIO konnte ein Paket nicht finden (UnknownPackageError). Zweiter Versuch ...") + "\n")  # v1.03
                     logging.info("PlatformIO: UnknownPackageError, zweiter Versuch")  # v1.03
                     time.sleep(3)  # v1.03
@@ -1214,6 +1230,11 @@ class Prog_GeneratorPage(tk.Frame):
             #P01.Unload(F00.StatusMsg_UserForm)
             return M40.Timeout
         except BaseException as e:
+            from headless.headless_upload import UploadCancelled, UploadTimeout  # v1.11  # v1.12  # v1.13  # v1.14
+            if isinstance(e, UploadTimeout):  # v1.11  # v1.12  # v1.13  # v1.14
+                return M40.Timeout  # v1.11  # v1.12  # v1.13  # v1.14
+            if self.userbreak or isinstance(e, UploadCancelled):  # v1.11  # v1.12  # v1.13  # v1.14
+                return M40.UserBreak  # v1.11  # v1.12  # v1.13  # v1.14
             #self.Stop_Compile_Time_Display()
             #P01.Unload(F00.StatusMsg_UserForm)
             logging.debug("ProgGenerator - execute_shell_cmd:"+str(e))

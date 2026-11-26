@@ -1866,3 +1866,7 @@ Auf Wunsch von Jürgen (Issue 75) gibt es zwischen **Einstellungen** und **Hilfe
 - **Wartung …** (vorher Hardware Optionen, Reiter Entwicklungsumgebung und Update): PlatformIO oder ARDUINO-IDE wählen, Schnelles Update, PlatformIO prüfen und Zwischenspeicher löschen, Bibliotheken und Boards der ARDUINO-IDE.
 
 Im **Anfänger Modus** fehlt das ganze Menü Werkzeuge. Die Hardware Optionen enthalten nur noch die Reiter zur Lichtmaschine (Lichtmaschine, ESP und WLAN-Einstellungen, Dateien und weitere).
+
+## M08-Beitrag für Original-Release 5.54
+
+Programmversion bleibt 5.54. Zu prüfen: Nano alt/neu/Full und Pico per USB, ESP32 per USB/WLAN; Anschluss-Hinweis -3; Geräteauswahl abbrechen (Übertragungsfenster schließt); laufenden Upload abbrechen und Timeout (kein Erfolg, keine weitere Konfiguration); Neustart und automatische Verbindung. Hardwareprüfungen sind offen.
