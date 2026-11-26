@@ -14,3 +14,5 @@ Nicht geprüft: visuelle Browserbedienung des neuen 5.41-Stands und Datenübertr
 | `csv/Web_Languages.csv` | Katalogergänzung 2026-11-26 | Getrennte Quelladress-/Portanzeige und Übersetzungen. |
 
 Änderungspakete enthalten nur geänderte Dateien, keine Symbole, Tabellen oder Zugangsdaten. Basis ist das Original-Testrelease V3.6.0-5.41/webmobaledlib.zip. Kleines und kumulatives Paket enthalten deshalb die gleichen Featureänderungen gegen diese Basis. Installationsstände mit beiden Features werden getrennt von den beiden Git-Branches zusammengestellt.
+
+Installationsprüfung 2026-11-26: Windows D:/WebMll mit beiden Features aktualisiert, release_tools full in Ordnung; offenes Windows-Programm muss noch neu gestartet werden. Linux-VM: /home/moosbewohner/WebMLL, WebMLL-TabellenSync-Test und WebMLL-M08-Test über den Original-Updater mit Sicherung auf 5.41 aktualisiert, danach beide Featureanpassungen eingespielt. Hauptdienst und Testinstanz neu gestartet; HTTP 8080 und 8098 jeweils 200. Keine bestehenden Tabellen importiert oder ersetzt.
