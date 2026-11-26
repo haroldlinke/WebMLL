@@ -1,12 +1,14 @@
-# Datei-Version: 1.37 (2026-11-26) - M08_ARDUINO.py
+# Datei-Version: 1.39 (2026-11-26) - M08_ARDUINO.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M08_ARDUINO.py
 # Path:           proggen/M08_ARDUINO.py
-# Version:        1.37
+# Version:        1.39
 # Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.39  2026-11-26  Kompilieren und Hochladen: Abbrechen in der Geraeteauswahl schliesst auch das Fenster Kompilieren und Hochladen sofort. Zeilen mit '# v1.39'
+#   1.38  2026-11-26  Setup uebertragen per USB: Abbrechen in der Geraeteauswahl schliesst auch das Fenster der Uebertragung sofort (kein Fehlertext 'kein USB-Anschluss gewaehlt'). Zeilen mit '# v1.38'
 #   1.37  2026-11-26  Release MobaLedLib 3.6.0: platformio.ini nennt die Bibliothek mit M02.Lib_Version_Nr (3.6.0) statt fest 3.5.0, passend zur library.properties
 #   1.36  2026-11-25  Pull Request 71 (Juergen, Issue 70): Pico: Hat sich der COM Port nach dem Hochladen geaendert (Neustart), wird der neue Port ins Blatt eingetragen (__Write_Back_New_ComPort; Markierung '*' bleibt). Zeilen mit '# v1.36'
 #   1.35  2026-11-25  Bibliothek MobaLedLib bei file://: veraltete Kopie in .pio/libdeps (PlatformIO nimmt sie bei gleicher Version 3.5.0 weiter) wird geloescht, wenn die src-Dateien von libraries/MobaLedLib abweichen (Refresh_Lib_Copy; Pico: showColor fehlte, Log von Harold)
@@ -2175,6 +2177,10 @@ def Check_If_Arduino_could_be_programmed_and_set_Board_type(ComPortColumn, Build
         fn_return_value = False
         if PG.global_controller.execute_upload:
             if M07.Check_USB_Port_with_Dialog(ComPortColumn) == False:
+                try:  # v1.39: Abbrechen in der Geraeteauswahl: das Fenster Kompilieren und Hochladen sofort schliessen
+                    PG.global_controller.weblog.close_later(0)  # v1.39
+                except Exception:                              # noqa: BLE001  # v1.39
+                    upload_logger.debug("Log-Fenster nicht geschlossen", exc_info=True)  # v1.39
                 return fn_return_value, BuildOptions, DeviceSignature
             
             # Display Dialog if the COM Port is negativ and ask the user to correct it
@@ -2678,7 +2684,9 @@ def Compile_and_Upload_ESP32_Setup(ctrl, board, port, *, host, upload_password, 
     try:  # v1.22
         if not host:  # v1.27 (Issue 50): USB: Anschluss vor dem langen Build pruefen; leer: aktive Verbindung uebernehmen oder Dialog Board und USB Port erkennen
             if not M07.Check_USB_Port_with_Dialog(M25.COMPort_COL):  # v1.27
-                raise ValueError(tr("Es ist kein USB-Anschluss gewählt."))  # v1.27
+                # raise ValueError(tr("Es ist kein USB-Anschluss gewählt."))  # v1.27  # v1.38 (entfallen)
+                log.close_later(0)  # v1.38: Abbrechen in der Geraeteauswahl: das Uebertragungsfenster sofort schliessen
+                return  # v1.38
             _raw = str(P01.Cells(M02.SH_VARS_ROW, M25.COMPort_COL)).strip().lstrip("*").strip()  # v1.27
             port = ("COM" + _raw) if (_raw.isdigit() and os.name == "nt") else _raw  # v1.27
             _found = M07.Ensure_Existing_USB_Port(M25.COMPort_COL)  # v1.31: der Anschluss muss am Rechner existieren

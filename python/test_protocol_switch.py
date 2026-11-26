@@ -29,21 +29,24 @@ from headless import headless_protocol_switch as PS  # noqa: E402
 
 class MathTests(unittest.TestCase):
     def test_roundtrip_1_to_800(self):
-        for address in range(1, 801):
+        for address in range(9, 801):
             channel, bit = PS.to_selectrix(address)
             self.assertTrue(0 <= channel <= 99 and 1 <= bit <= 8)
             self.assertEqual(PS.from_selectrix(channel, bit), address)
 
     def test_examples(self):
-        self.assertEqual(PS.to_selectrix(1), (0, 1))
-        self.assertEqual(PS.to_selectrix(8), (0, 8))
-        self.assertEqual(PS.to_selectrix(9), (1, 1))
+        self.assertEqual(PS.to_selectrix(9), (1, 1))                 # Adresse = Channel * 8 + Bitposition
+        self.assertEqual(PS.to_selectrix(16), (1, 8))
+        self.assertEqual(PS.to_selectrix(17), (2, 1))
         self.assertEqual(PS.to_selectrix(800), (99, 8))
-        self.assertIsNone(PS.to_selectrix(0))
-        self.assertIsNone(PS.to_selectrix(801))
+        for address in (0, 1, 8, 801):                               # Channel 0 gibt es nicht: Adressen 1 bis 8 sind nicht umrechenbar
+            self.assertIsNone(PS.to_selectrix(address), address)
+        self.assertEqual(PS.from_selectrix(1, 1), 9)
+        self.assertEqual(PS.from_selectrix(99, 8), 800)
+        self.assertIsNone(PS.from_selectrix(0, 1))
         self.assertIsNone(PS.from_selectrix(100, 1))
-        self.assertIsNone(PS.from_selectrix(0, 0))
-        self.assertIsNone(PS.from_selectrix(0, 9))
+        self.assertIsNone(PS.from_selectrix(1, 0))
+        self.assertIsNone(PS.from_selectrix(1, 9))
 
     def test_first_number(self):
         self.assertEqual(PS._first_number("5 - 8"), 5)
@@ -113,48 +116,153 @@ class SheetTests(unittest.TestCase):
         return [(s.Name, s.TextFrame2.TextRange.Text) for s in self.ws.shapelist if s.OnAction == "DCCSend"]
 
     def test_analyze(self):
-        self.fill([("3", "Rot"), ("17", "AnAus"), ("900", ""), ("SwitchD1", ""), ("8", "Grün")])
+        self.fill([("11", "Rot"), ("17", "AnAus"), ("900", ""), ("SwitchD1", ""), ("16", "Grün")])
         info = PS.analyze(self.ws)
         self.assertEqual((info["addresses"], info["red_green"], info["on_off"], info["unconvertible"]), (4, 2, 1, 1))
+
+    def test_analyze_addresses_below_9_cannot_be_converted(self):
+        self.fill([("1", ""), ("8", ""), ("9", "")])
+        self.assertEqual(PS.analyze(self.ws)["unconvertible"], 2)
 
     def test_no_addresses_counts_zero(self):
         self.fill([("SwitchD1", ""), ("HausA", "")])
         self.assertEqual(PS.analyze(self.ws)["addresses"], 0)
 
     def test_dcc_to_selectrix_and_back(self):
-        self.fill([("3", "Rot"), ("17", "AnAus"), ("900", ""), ("SwitchD1", ""), ("8", "")])
+        self.fill([("11", "Rot"), ("17", "AnAus"), ("900", ""), ("SwitchD1", ""), ("16", "")])
         PS.convert(self.ws, "Selectrix")
         self.assertEqual(self.M25.Page_ID, "Selectrix")
         self.assertEqual((self.M25.SX_Channel_Col, self.M25.SX_Bitposi_Col, self.M25.Inp_Typ_Col), (4, 5, 6))
         sx = self.data()
-        self.assertEqual(sx[0][3:6], ["0", "3", "Tast"])             # Rot -> Taster
+        self.assertEqual(sx[0][3:6], ["1", "3", "Tast"])             # Rot -> Taster
         self.assertEqual(sx[1][3:6], ["2", "1", "AnAus"])            # An/Aus bleibt
         self.assertEqual(sx[2][3:6], ["900", "", ""])                # ausserhalb 1 bis 800: bleibt stehen
         self.assertEqual(sx[3][3:6], ["SwitchD1", "", ""])           # Variable bleibt
-        self.assertEqual(sx[4][3:6], ["0", "8", "Tast"])             # ohne Typ -> Taster
+        self.assertEqual(sx[4][3:6], ["1", "8", "Tast"])             # ohne Typ -> Taster
         self.assertEqual(str(self.ws.tksheet.data[0][1]), "Selectrix")
         self.assertIn("Channel", str(self.ws.tksheet.data[1][3]))
         self.assertIn("Bitposition", str(self.ws.tksheet.data[1][4]))
         PS.convert(self.ws, "DCC")
         back = self.data()
-        self.assertEqual([r[3] for r in back], ["3", "17", "900", "SwitchD1", "8"])
+        self.assertEqual([r[3] for r in back], ["11", "17", "900", "SwitchD1", "16"])
         self.assertEqual([r[4] for r in back], ["", "AnAus", "", "", ""])          # Taster -> leerer Typ
         self.assertEqual(self.M25.Page_ID, "DCC")
         self.assertIn("Adresse", str(self.ws.tksheet.data[1][3]))
 
     def test_selectrix_testbuttons(self):
-        self.fill([("3", "Rot"), ("17", "AnAus")])
+        self.fill([("11", "Rot"), ("17", "AnAus")])
         PS.convert(self.ws, "Selectrix")
         names = dict(self.buttons())
-        self.assertIn("S   2- 1- 2-3", names)                        # Taster: Adresse 0*8+3-1, gelb (2), Text = Bitposition
+        self.assertIn("S  10- 1- 2-3", names)                        # Taster: Adresse 1*8+3-1, gelb (2), Text = Bitposition
         self.assertIn("B  16- 1- 1-1", names)                        # An/Aus: Adresse 2*8+1-1, Text = Bitposition
         self.assertEqual(names["B  16- 1- 1-1"], "1")
 
-    def test_channel_zero_keeps_type_and_buttons(self):
-        self.fill([("1", "AnAus")])
+    def test_first_channel_keeps_type_and_buttons(self):
+        self.fill([("9", "AnAus")])
         PS.convert(self.ws, "Selectrix")
-        self.assertEqual(self.data()[0][3:6], ["0", "1", "AnAus"])
+        self.assertEqual(self.data()[0][3:6], ["1", "1", "AnAus"])
         self.assertEqual(len(self.buttons()), 1)
+
+    def header_config(self):
+        """Code-Generator (M06) auf das aktive Blatt: Konfigurationszeilen und die Defines der Eingangskanaele"""
+        import proggen.M06_Write_Header as M06
+        from vb2py.vbfunctions import vbObjectInitialize
+        self.ws.Activate()
+        self.M25.Col_from_Sheet = ""
+        self.M25.Make_sure_that_Col_Variables_match(self.ws)
+        M06.Init_HeaderFile_Generation()
+        original = self.P01.MsgBox
+        self.P01.MsgBox = lambda *a, **k: 1
+        try:
+            ok = M06.ProcessSheet(self.ws.Name, True, 0, vbObjectInitialize((self.M02.LED_CHANNELS - 1,), int), vbObjectInitialize((self.M02.LED_CHANNELS - 1,), int))
+        finally:
+            self.P01.MsgBox = original
+        self.assertTrue(ok)
+        self.errors = M06.ErrorText
+        lines = [l.split("/*")[0].strip().rstrip(")") for l in M06.ConfigTxt.splitlines() if "AndreaskrRGB" in l]
+        return lines, M06.InChTxt
+
+    def test_selectrix_generator_same_input_channels_as_dcc(self):
+        """Nach dem Wechsel vergibt der Code-Generator dieselben Eingangskanaele wie beim DCC-Blatt (kein leeres #InCh)."""
+        self.fill([("9", "AnAus"), ("10", "AnAus"), ("17", "AnAus")])
+        dcc, _ = self.header_config()
+        PS.convert(self.ws, "Selectrix")
+        sx, defines = self.header_config()
+        channel = lambda lines: [l.split(",")[1].strip() for l in lines]
+        self.assertEqual(channel(sx), channel(dcc))                  # 0, 1, 2 wie bei DCC
+        self.assertNotIn("", channel(sx))
+        self.assertEqual(self.errors, "")
+
+    def test_selectrix_same_address_in_several_rows(self):
+        self.fill([("9", "AnAus")] * 3)
+        PS.convert(self.ws, "Selectrix")
+        sx, defines = self.header_config()
+        self.assertEqual([l.split(",")[1].strip() for l in sx], ["0", "INCH_SX_1_1_ONOFF", "INCH_SX_1_1_ONOFF"])
+        self.assertEqual(defines.count("#define INCH_SX_1_1_ONOFF"), 1)
+
+    def test_generator_refuses_invalid_selectrix_entries(self):
+        """Channel nicht 1 bis 99 oder Bitposition nicht 1 bis 8 (auch fehlend): Fehler, das Header file wird nicht erzeugt."""
+        self.fill([("9", "AnAus")])
+        PS.convert(self.ws, "Selectrix")
+        row = self.ws.tksheet.data[3]
+        for channel, bit, ok in (("1", "1", True), ("99", "8", True), ("0", "1", False), ("100", "1", False), ("1", "0", False), ("1", "9", False), ("1", "", False)):
+            row[3], row[4] = channel, bit
+            self.header_config()
+            self.assertEqual(self.errors == "", ok, (channel, bit, self.errors))
+
+    def type_address(self, text):
+        """Text in die Adresszelle der ersten Datenzeile schreiben und das Aenderungsereignis ausloesen; Rueckgabe: (Zelle danach, Meldungen)"""
+        self.fill([("", "")])
+        messages = []
+        original = self.P01.MsgBox
+        self.P01.MsgBox = lambda text_, kind=0, title="": messages.append(text_) or 1
+        try:
+            col = self.M25.Get_Address_Col()
+            self.ws.tksheet.data[3][col - 1] = text
+            self.M20.Global_Worksheet_Change(self.P01.Cells(4, col))
+        finally:
+            self.P01.MsgBox = original
+        return str(self.ws.tksheet.data[3][col - 1]), messages
+
+    def test_address_zero_not_allowed_in_dcc(self):
+        for text in ("0", "0 - 3", "-1"):
+            cell, messages = self.type_address(text)
+            self.assertEqual(cell, "", text)
+            self.assertEqual(len(messages), 1, text)
+        for text in ("1", "5 - 8", "SwitchD1", "RM 1"):
+            cell, messages = self.type_address(text)
+            self.assertEqual(messages, [], text)
+            self.assertNotEqual(cell, "", text)
+
+    def test_channel_zero_not_allowed_in_selectrix(self):
+        PS.convert(self.ws, "Selectrix")
+        cell, messages = self.type_address("0")
+        self.assertEqual((cell, len(messages)), ("", 1))
+        cell, messages = self.type_address("1")
+        self.assertEqual((cell, messages), ("1", []))
+
+    def test_generator_refuses_address_zero_in_dcc(self):
+        self.fill([("0", "AnAus")])
+        self.header_config()
+        self.assertIn("0", self.errors)
+        self.assertNotEqual(self.errors, "")
+
+    def test_import_into_hidden_sheet_shows_it(self):
+        """Die Startseite versteckt Blaetter anderer Zentralen: ein Import in so ein Blatt blendet es wieder ein (sonst landeten die Daten unsichtbar im versteckten Blatt)."""
+        hidden = next(s for s in self.wb.sheets if s.Name == "Selectrix")
+        hidden.user_hidden = True
+        path = os.path.join(tempfile.mkdtemp(prefix="mll_pgf_"), "sx.MLL_pgf")
+        with open(path, "w", encoding="utf-8", newline="") as fh:
+            fh.write("Head:\tProgram_Generator configuration file\tV1.0\nSheet:\tSelectrix\tSelectrix\n"
+                     "Line:\tAct" + "\t" * 9 + "RGB_Heartbeat(#LED)\t1\t1\t0\t0\t0\n"
+                     "Line:\tAct\t\t22\t1\tTast" + "\t" * 5 + "Const(#LED, C_ALL, #InCh, 0, 127)\t3\t1\t1\t0\t0\n")
+        try:
+            self.assertTrue(self.M18.Read_PGF(path, False))
+            self.assertFalse(getattr(hidden, "user_hidden", False))
+            self.assertTrue(any("Const(" in str(c) for r in hidden.tksheet.data for c in r))
+        finally:
+            hidden.user_hidden = False
+            self.ws.Activate()
 
     def test_widths_and_columns_shift(self):
         before = self.ws.tksheet.get_total_columns()
@@ -176,7 +284,7 @@ class SheetTests(unittest.TestCase):
             PS.convert(self.ws, "CAN")
 
     def test_pgf_export_selectrix_and_cross_import(self):
-        self.fill([("3", "Rot"), ("17", "AnAus"), ("SwitchD1", "")])
+        self.fill([("11", "Rot"), ("17", "AnAus"), ("SwitchD1", "")])
         PS.convert(self.ws, "Selectrix")
         path = os.path.join(tempfile.mkdtemp(prefix="mll_pgf_"), "sx.MLL_pgf")
         self.assertTrue(getattr(self.M18, "__Save_SingleSheet_to_pgf")(path, self.ws, False))
@@ -184,14 +292,14 @@ class SheetTests(unittest.TestCase):
         self.assertTrue(lines[0].startswith("Head:\tProgram_Generator configuration file"))
         self.assertTrue(lines[1].startswith("Sheet:\tSelectrix\t"))
         rows = [l.split("\t") for l in lines if l.startswith("Line:") and "AndreaskrRGB" in l]
-        self.assertEqual([r[3:6] for r in rows], [["0", "3", "Tast"], ["2", "1", "AnAus"], ["SwitchD1", "", ""]])
+        self.assertEqual([r[3:6] for r in rows], [["1", "3", "Tast"], ["2", "1", "AnAus"], ["SwitchD1", "", ""]])
         # in das DCC-Blatt laden: Adressen werden zurueckgerechnet
         PS.convert(self.ws, "DCC")
         del self.ws.tksheet.data[3:]
         self.ws.Activate()
         self.assertTrue(self.M18.Read_PGF(path, True))
         got = [r[3] for r in self.data() if r[3]]
-        self.assertEqual(got, ["3", "17", "SwitchD1"])
+        self.assertEqual(got, ["11", "17", "SwitchD1"])
 
     def test_selectrix_pgf_from_excel_into_selectrix_sheet(self):
         """Selectrix-Block der Beispieldatei des Excel-Programms in ein Selectrix-Blatt laden und wieder speichern: die aktiven Zeilen bleiben gleich."""
@@ -227,7 +335,7 @@ class SheetTests(unittest.TestCase):
             row = ts.data[r0]
             row[1], row[11 + 1], row[15] = chr(self.M02.Hook_CHAR), "AndreaskrRGB(#LED, #InCh)", "1"
             P01 = self.P01
-            ts.data[r0][3] = "0"                                                       # Channel 0
+            ts.data[r0][3] = "1"                                                       # Channel 1
             self.M20.Global_Worksheet_Change(P01.Cells(r0 + 1, self.M25.SX_Channel_Col))
             self.assertEqual(calls, [], "ohne Bitposition noch kein Dialog")
             ts.data[r0][4] = "3"                                                       # Bitposition
@@ -265,10 +373,10 @@ class SheetTests(unittest.TestCase):
                 del messages[:]
                 self.M20.Global_Worksheet_Change(self.P01.Cells(r0 + 1, col))
                 return ts.data[r0][col - 1], list(messages)
-            for value in ("100", "-1", "1.5", "99.5", "150 - 160"):
+            for value in ("0", "100", "-1", "1.5", "99.5", "150 - 160", "0 - 3"):
                 got, msg = enter(self.M25.SX_Channel_Col, value)
                 self.assertEqual((got, len(msg)), ("", 1), "Channel " + value)
-            for value in ("0", "99", "SwitchD1", "1 - 2", "Haus A", "7"):
+            for value in ("1", "99", "SwitchD1", "1 - 2", "Haus A", "7"):
                 got, msg = enter(self.M25.SX_Channel_Col, value)
                 self.assertEqual((got, msg), (value, []), "Channel " + value)
             for value in ("0", "9", "1.5", "a", "-1", "10"):
@@ -289,11 +397,11 @@ class SheetTests(unittest.TestCase):
         self.assertEqual(ts.data[5][3], "5000")
 
     def test_warning_text(self):
-        self.fill([("3", "Rot"), ("900", "")])
+        self.fill([("11", "Rot"), ("900", "")])
         text = PS.warning_text(PS.analyze(self.ws), "DCC", "Selectrix")
         self.assertIn("2 Zeilen", text)
         self.assertIn("Rot oder Grün", text)
-        self.assertIn("außerhalb von 1 bis 800", text)
+        self.assertIn("außerhalb von 9 bis 800", text)
 
 
 if __name__ == "__main__":

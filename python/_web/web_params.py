@@ -1,9 +1,9 @@
-# Datei-Version: 1.18 (2026-11-24) - web_params.py
+# Datei-Version: 1.20 (2026-11-26) - web_params.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_params.py
 # Path:           _web/web_params.py
-# Version:        1.18
-# Last Update:    2026-11-24
+# Version:        1.19
+# Last Update:    2026-11-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -20,6 +20,8 @@
 #   1.16  2026-11-21  Version 4.52: Seite Tabelle faerben: Titel Tabelle faerben, erste Zeile der Beschreibung entfaellt (TITLE_OVERRIDES, DESCRIPTION_OVERRIDES); build_settings_page(embedded=True) baut den Inhalt ohne Karte und Knoepfe fuer ein Fenster (ARDUINO-IDE Einstellungen)
 #   1.17  2026-11-21  Version 4.56: Einstellungsgruppe einzeln als Fenster (ParamPanel.only_group, build_settings_page(group=...)); eingebettete Seite mit Gruppen und Zusatzkarten (slots)
 #   1.18  2026-11-24  Hinweise (Tooltips) der Einstellungsfelder werden ausdruecklich uebersetzt (niederlaendischer Tester: Tooltips der Einstellungsfenster blieben deutsch). Zeilen mit '# v5.11'
+#   1.19  2026-11-26  Version 5.45: Einstellung ShowStartPage (Startseite beim Programmstart anzeigen) steht in den Allgemeinen Einstellungen (war unter Spezial)
+#   1.20  2026-11-26  Version 5.51: neue Einstellung LedChannelEditable (Spalte LED/Sound Kanal aenderbar) in der Gruppe Programm Generator
 # ----------------------------------------------------------------------------------------------
 """Web-Version von create_macroparam_frame/create_macroparam_content (pyMobaLedLib.py) fuer die Einstellungsseiten.
 
@@ -62,10 +64,12 @@ SETTINGS_GROUPS = {  # v1.06
         # ("Allgemeine Einstellungen", ["BeginnerMode", "Language", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.07  # v1.11 (entfallen)
         # ("Allgemeine Einstellungen", ["BeginnerMode", "AutoConnect", "IncrSaveKey", "Language", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.11  # v1.13 (entfallen)
         # ("Allgemeine Einstellungen", ["BeginnerMode", "AutoConnect", "IncrSaveKey", "Language", "ThemeMode", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.13  # v1.14 (entfallen)
-        ("Allgemeine Einstellungen", ["BeginnerMode", "AutoConnect", "LedOffOnDisconnect", "IncrSaveKey", "Language", "ThemeMode", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.14
+        # ("Allgemeine Einstellungen", ["BeginnerMode", "AutoConnect", "LedOffOnDisconnect", "IncrSaveKey", "Language", "ThemeMode", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.14  # v1.19 (entfallen)
+        ("Allgemeine Einstellungen", ["BeginnerMode", "ShowStartPage", "AutoConnect", "LedOffOnDisconnect", "IncrSaveKey", "Language", "ThemeMode", "@layout", "FontConfig", "FontConfig_PattGen", "PGIconSize"]),  # v1.19
         # ("Programm Generator", ["GraphDefaultView", "ShowHiddentables", "@table"]),  # v1.06 (entfallen v1.08)
         # ("Programm Generator", ["GraphDefaultView", "ColoredRowsBold", "ShowHiddentables", "@table"]),  # v1.08  # v1.10 (entfallen)
-        ("Programm Generator", ["GraphDefaultView", "ColoredRowsBold", "ShowHiddentables", "MinTime_House", "MaxTime_House", "DCC_Offset", "@table"]),  # v1.10
+        # ("Programm Generator", ["GraphDefaultView", "ColoredRowsBold", "ShowHiddentables", "MinTime_House", "MaxTime_House", "DCC_Offset", "@table"]),  # v1.10  # v1.20 (entfallen)
+        ("Programm Generator", ["GraphDefaultView", "ColoredRowsBold", "ShowHiddentables", "LedChannelEditable", "MinTime_House", "MaxTime_House", "DCC_Offset", "@table"]),  # v1.20
         ("Farb Test Einstellungen", ["Farbauswahl", "LEDColourCorrection"]),  # v1.06
         ("Simulatoreinstellungen", ["ShowSimulator", "SimLedsX", "SimLedsY", "SimLedSize", "SimPosX", "SimPosY", "SimOffset"]),  # v1.10
         ("Zugriff aus dem Netz", ["@network"]),  # v1.06

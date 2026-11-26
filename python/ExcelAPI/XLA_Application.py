@@ -1,9 +1,9 @@
-# Datei-Version: 1.24 (2026-11-21) - XLA_Application.py
+# Datei-Version: 1.25 (2026-11-26) - XLA_Application.py
 # ----------------------------------------------------------------------------------------------
 # Name:           XLA_Application.py
 # Path:           ExcelAPI/XLA_Application.py
-# Version:        1.24
-# Last Update:    2026-11-21
+# Version:        1.25
+# Last Update:    2026-11-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -31,6 +31,7 @@
 #   1.22  2026-11-17  Vom Anwender versteckte Blaetter (user_hidden): mit der Arbeitsmappe sichern (HiddenSheets) und laden
 #   1.23  2026-11-18  ESP-Einstellungen je Blatt sichern und laden (Beitrag von moosbewohner, Pull Request 11)
 #   1.24  2026-11-21  Manuell gesetzte Feldfarben werden mit dem Blatt gesichert und geladen (TKSHEET_manual_cells/rows) und von apply_formatting (Tabelle faerben) nicht geloescht
+#   1.25  2026-11-26  Issue 77 (Juergen): die Zeilen 1 und 2 der Datenblaetter sind gegen Zeile einfuegen, Zeilen loeschen und Zeilen verschieben (Quelle und Ziel) geschuetzt (_first_data_row0)
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -2185,10 +2186,23 @@ class CWorksheet(object):
         if row==self.getRowCount():
             self.addrow_before_current_row()
         
+    def _first_data_row0(self):  # v1.25: erste veraenderbare Zeile (0-basiert): bei Datenblaettern ab FirstDat_Row, die Zeilen 1 und 2 sind geschuetzt
+        try:  # v1.25
+            import proggen.M02_Public as M02_  # v1.25
+            import proggen.M28_Diverse as M28_  # v1.25
+            if M28_.Is_Data_Sheet(self):  # v1.25
+                return int(M02_.FirstDat_Row) - 1  # v1.25
+        except Exception:  # v1.25
+            logger.debug("_first_data_row0 fehlgeschlagen", exc_info=True)  # v1.25
+        return 0  # v1.25
+
     def addrow_before_current_row(self,copy=False):
         try:
             cur_row = self.getSelectedRow()
             rows = self.tksheet.get_selected_rows(get_cells_as_rows=True)
+            if cur_row is None or cur_row < self._first_data_row0() or any(int(self.displayed_row_to_data(r_)) < self._first_data_row0() for r_ in rows):  # v1.25 (Issue 77): Zeilen 1 und 2 nicht veraendern
+                logger.warning("Zeile einfuegen abgelehnt: die Zeilen 1 und 2 sind geschuetzt (aktuelle Zeile %s)", cur_row)  # v1.25
+                return  # v1.25
             copyfromrow=None
             if copy:
                 copyfromrow = cur_row
@@ -2203,6 +2217,9 @@ class CWorksheet(object):
         try:
             cur_row = self.getSelectedRow()
             rows = self.tksheet.get_selected_rows(get_cells_as_rows=True, return_tuple=True)
+            if cur_row is None or cur_row < self._first_data_row0() or any(int(self.displayed_row_to_data(r_)) < self._first_data_row0() for r_ in rows):  # v1.25 (Issue 77): Zeilen 1 und 2 nicht loeschen
+                logger.warning("Zeilen loeschen abgelehnt: die Zeilen 1 und 2 sind geschuetzt (aktuelle Zeile %s)", cur_row)  # v1.25
+                return  # v1.25
             if len(rows) == 1:
                 self.tksheet.del_rows(cur_row)
             else:
@@ -2219,6 +2236,9 @@ class CWorksheet(object):
             logger.debug("deleterows:", e, exc_info=True)
         
     def int_moveRows(self, sc_rowlist, destrow):
+        if destrow is None or int(destrow) < self._first_data_row0() or any(int(self.displayed_row_to_data(r_)) < self._first_data_row0() for r_ in sc_rowlist):  # v1.25 (Issue 77): Zeilen 1 und 2 weder verschieben noch als Ziel
+            logger.warning("Zeilen verschieben abgelehnt: die Zeilen 1 und 2 sind geschuetzt (Ziel %s)", destrow)  # v1.25
+            return  # v1.25
         self.tksheet.move_rows(move_to=destrow, to_move=sc_rowlist, move_data=True, create_selections=False)
         destrow_x1, destrow_y1, destrow_x2, destrow_y2 = self.getCellCoords(destrow, 0)
         scrow_x1, scrow_y1, scrow_x2, scrow_y2 = self.getCellCoords(sc_rowlist[0], 0)

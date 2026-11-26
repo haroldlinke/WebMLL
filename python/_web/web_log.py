@@ -1,12 +1,14 @@
-# Datei-Version: 1.13 (2026-11-25) - web_log.py
+# Datei-Version: 1.15 (2026-11-26) - web_log.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_log.py
 # Path:           _web/web_log.py
-# Version:        1.13
-# Last Update:    2026-11-25
+# Version:        1.15
+# Last Update:    2026-11-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.15  2026-11-26  Beim Verschieben des Fensters hakte es, wenn gleichzeitig Meldungen kamen: die Zeilen werden gesammelt und alle 0,1 s auf einmal angezeigt; waehrend des Ziehens (Ereignis mll_log_drag) werden sie zurueckgehalten und nach dem Loslassen angezeigt; das Ziehen selbst ist leichter (ein Schritt je Bild, keine Layout-Abfrage je Mausbewegung, Zeiger-Ereignisse am Fenster). Test: test_log_drag.py. Zeilen mit '# v1.15'
+#   1.14  2026-11-26  (Fassung mit Wiederholung, bis der Browser das Fenster aufgebaut hat) Das Fenster Kompilieren und Hochladen schwebt und laesst sich an der Titelzeile verschieben (die Seite dahinter bleibt bedienbar); die Position bleibt beim erneuten Oeffnen erhalten, Doppelklick auf die Titelzeile setzt sie zurueck. Zeilen mit '# v1.14'
 #   1.13  2026-11-25  Issue 60 (Rueckmeldung zu 5.12): Knoepfe Vorgang abbrechen und Schliessen flackerten weiter beim Setup uebertragen: Zaehler der ruhigen Abfragen wird bei neuem Lauf und show() zurueckgesetzt; solange in den letzten 3 s Ausgabe kam, gilt der Vorgang als laufend
 #   1.12  2026-11-23  Issue 60: Knoepfe Vorgang abbrechen und Schliessen flackerten waehrend Kompilieren/Hochladen: das Ende des Vorgangs wird erst nach 3 Abfragen (1,5 s) gemeldet
 #   1.11  2026-11-20  Erfolgsfenster schliesst sich nach konfigurierbarer Verzögerung automatisch (MLL_WEBLOG_CLOSE_DELAY, 0 = sofort)
@@ -62,6 +64,59 @@ DEFAULT_TITLE = "Kompilieren und Hochladen"
 INSTALL_TITLE = "Installation der Boards und Bibliotheken"
 
 
+# Verschieben des schwebenden Fensters (v1.14): Titelzeile ziehen; die Verschiebung merkt sich der Browser (window.__mllLogPos), Doppelklick setzt sie zurueck
+_DRAG_JS = """
+(function setup(cardId, headId, tries){
+  const find = id => document.getElementById('ng-' + id) || document.getElementById('c' + id);  // NiceGUI 4: ng-<Nr>, aeltere Versionen: c<Nr>
+  const card = find(cardId), head = find(headId);
+  if (!card || !head) {  // das Fenster wird nach dem Oeffnen erst vom Browser aufgebaut: kurz warten
+    if (tries < 100) setTimeout(() => setup(cardId, headId, tries + 1), 50);
+    return;
+  }
+  const st = window.__mllLogPos || (window.__mllLogPos = {x: 0, y: 0});
+  const place = () => { card.style.transform = 'translate(' + st.x + 'px,' + st.y + 'px)'; };
+  place();
+  if (head.__mllDrag) return;
+  head.__mllDrag = true;
+  head.style.cursor = 'move';
+  head.style.userSelect = 'none';
+  head.style.touchAction = 'none';
+  head.title = 'Zum Verschieben ziehen, Doppelklick: Ausgangsposition';
+  const notify = on => { try { emitEvent('mll_log_drag', {on: on}); } catch (err) {} };  // der Server haelt waehrend des Ziehens die Meldungen zurueck
+  head.addEventListener('dblclick', e => { if (e.target.closest('button')) return; st.x = 0; st.y = 0; place(); });
+  head.addEventListener('pointerdown', e => {
+    if (e.target.closest('button') || e.button > 0) return;
+    const sx = e.clientX, sy = e.clientY, ox = st.x, oy = st.y;
+    const r0 = card.getBoundingClientRect();  // einmal messen (Ausgangslage), nicht bei jeder Mausbewegung
+    const W = window.innerWidth, H = window.innerHeight;
+    let nx = ox, ny = oy, queued = false;
+    const frame = () => { queued = false; st.x = nx; st.y = ny; place(); };
+    const mv = ev => {
+      let dx = ox + ev.clientX - sx, dy = oy + ev.clientY - sy;
+      const top = r0.top + (dy - oy), left = r0.left + (dx - ox);
+      if (top < 0) dy -= top;                                  // die Titelzeile bleibt im sichtbaren Bereich
+      if (top > H - 40) dy -= top - (H - 40);
+      if (left + r0.width < 80) dx += 80 - (left + r0.width);
+      if (left > W - 80) dx -= left - (W - 80);
+      nx = dx; ny = dy;
+      if (!queued) { queued = true; requestAnimationFrame(frame); }  // hoechstens eine Aenderung je Bild
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', mv);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      st.x = nx; st.y = ny; place();
+      notify(false);
+    };
+    window.addEventListener('pointermove', mv);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+    notify(true);
+  });
+})(%d, %d, 0);
+"""
+
+
 class WebLog:
     def __init__(self, controller):
         self.ctrl = controller
@@ -79,6 +134,10 @@ class WebLog:
         self._btn_cancel = None  # v1.08
         self._btn_close = None  # v1.08
         self.run_id = 0  # v1.09: wird mit jedem neuen Lauf (delete_text_from_textwindow) hochgezaehlt
+        self._pending = []  # v1.15: Zeilen, die noch nicht im Fenster stehen (nur im Ereignis-Thread benutzt)
+        self._flush_scheduled = False  # v1.15
+        self._dragging = False  # v1.15: der Anwender verschiebt gerade das Fenster
+        self._drag_since = 0.0  # v1.15
 
     # ------------------------------------------------------------------ Schnittstelle der Tk-Seite
     def delete_text_from_textwindow(self):
@@ -91,6 +150,7 @@ class WebLog:
         self.run_id += 1  # v1.09
         self._on_loop(self._apply_running)  # v1.08
         self._on_loop(self._cancel_close)
+        self._on_loop(self._pending.clear)  # v1.15
         self._on_loop(lambda: self._log.clear() if self._log is not None else None)
 
     def add_text_to_textwindow(self, text="", nl="", highlight=None):
@@ -114,7 +174,8 @@ class WebLog:
             self._last_activity = time.monotonic()  # v1.13: Ausgabe im Gang = Vorgang laeuft
             if line.strip():
                 arduino_log.log(logging.WARNING if highlight == "Error" else logging.INFO, "%s", line)
-            self._on_loop(lambda l=line, c=classes: self._push(l, c))
+            # self._on_loop(lambda l=line, c=classes: self._push(l, c))  # v1.15 (entfallen: eine Aenderung je Zeile belastete den Browser)
+            self._on_loop(lambda l=line, c=classes: self._enqueue(l, c))  # v1.15
 
     def update(self):
         pass
@@ -148,8 +209,9 @@ class WebLog:
         if self._dialog is None or self._log is None:
             with client:
                 self._dialog = ui.dialog().props("seamless position=bottom")
-                with self._dialog, ui.card().classes("w-[1100px] max-w-[96vw] mll-bottom-card").style(wd.BOTTOM_LIFT):
-                    with ui.row().classes("items-center w-full"):
+                ui.on("mll_log_drag", self._on_drag)  # v1.15
+                with self._dialog, ui.card().classes("w-[1100px] max-w-[96vw] mll-bottom-card").style(wd.BOTTOM_LIFT) as self._card:  # v1.14
+                    with ui.row().classes("items-center w-full") as self._head:  # v1.14: Titelzeile = Griff zum Verschieben
                         self._title_label = ui.label(self.title).classes("text-h6")
                         ui.space()
                         # ui.button("Vorgang abbrechen", on_click=self._terminate).props("color=negative outline dense")  # v1.08 (entfallen)
@@ -160,9 +222,14 @@ class WebLog:
                         "height: 36vh; min-height: 8rem; max-height: calc(100vh - 16rem); font-family: monospace; font-size: 12px; white-space: pre")
                 for line, classes in self.lines:
                     self._log.push(line, classes=classes or None)
+                self._pending.clear()  # v1.15: alles Bisherige steht jetzt im Fenster
         self._apply_running()  # v1.08
         self._cancel_close()
         self._dialog.open()
+        try:  # v1.14: schwebend und verschiebbar
+            client.run_javascript(_DRAG_JS % (self._card.id, self._head.id))  # v1.14
+        except Exception:                              # noqa: BLE001  # v1.14
+            logger.debug("Log-Fenster nicht verschiebbar", exc_info=True)  # v1.14
 
     def set_running(self, running):  # v1.08
         """Laeuft ein Vorgang? Dann ist nur Vorgang abbrechen aktiv, sonst nur Schliessen (Aufruf aus dem Zeitgeber der Seite, im Ereignis-Thread)."""
@@ -283,6 +350,39 @@ class WebLog:
             self._close_handle.cancel()
             self._close_handle = None
         self._close_note = None
+
+    FLUSH_INTERVAL = 0.1  # v1.15: Sekunden zwischen zwei Aktualisierungen des Fensters
+    DRAG_HOLD_MAX = 8.0  # v1.15: laenger werden Meldungen beim Ziehen nicht zurueckgehalten (falls das Loslassen nie ankommt)
+
+    def _enqueue(self, line, classes):  # v1.15: im Ereignis-Thread
+        self._pending.append((line, classes))
+        if not self._flush_scheduled:
+            self._flush_scheduled = True
+            loop = self._loop or wd._bridge.get("loop")
+            if loop is None:
+                self._flush_scheduled = False
+                return
+            loop.call_later(self.FLUSH_INTERVAL, self._flush)
+
+    def _flush(self):  # v1.15: alle gesammelten Zeilen auf einmal anzeigen, nicht waehrend das Fenster gezogen wird
+        self._flush_scheduled = False
+        if self._dragging:
+            if time.monotonic() - self._drag_since < self.DRAG_HOLD_MAX:
+                return                                  # nach dem Loslassen (_on_drag) wird nachgeholt
+            self._dragging = False
+        pending, self._pending = self._pending, []
+        for line, classes in pending:
+            self._push(line, classes)
+
+    def _on_drag(self, e):  # v1.15: Ereignis mll_log_drag des Browsers: Ziehen beginnt (on) oder endet
+        try:
+            on = bool((e.args or {}).get("on"))
+        except Exception:                              # noqa: BLE001
+            on = False
+        self._dragging = on
+        self._drag_since = time.monotonic()
+        if not on:
+            self._flush()
 
     def _push(self, line, classes):
         if self._log is not None:

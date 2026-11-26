@@ -1,9 +1,9 @@
-# Datei-Version: 1.18 (2026-11-25) - web_serial.py
+# Datei-Version: 1.20 (2026-11-26) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.18
-# Last Update:    2026-11-25
+# Version:        1.20
+# Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
@@ -25,6 +25,8 @@
 #   1.13  2026-11-21  Option LedOffOnDisconnect (Programm Einstellungen): Beim Trennen werden die LEDs nur noch ausgeschaltet, wenn die Option gesetzt ist (Vorgabe aus; vorher immer)
 #   1.16  2026-11-25  Texte: Gerät statt ARDUINO (Verbindungsstatus, Meldung bei falscher oder fehlender Antwort). Zeilen mit '# v1.16'
 #   1.17  2026-11-25  Stilles Verbinden waehrend des offenen Dialogs Geraeteauswahl wird uebersprungen; Trennung der Verbindung waehrend des Verbindens (self.arduino None) ergibt keinen Traceback mehr. Zeilen mit '# v1.17'
+#   1.20  2026-11-26  Eine Verbindung pro Geraet: PORT_ACCESS_LOCK (Oeffnen und Handshake eines Anschlusses sind exklusiv, auch gegenueber den Abfragen der Geraeteauswahl), Reihenfolge der Sperren _conn_lock vor PORT_ACCESS_LOCK; eine offene Verbindung zum selben Anschluss oder ESP32 wird wiederverwendet (USB, WLAN, connect, connect_esp32, connectIP); connect_if_not_connected wartet auf einen laufenden Verbindungsaufbau; connect_silent (quiet und dtr_override nur unter der Sperre, eine offene Verbindung bleibt); close_arduino_connection_after_write_error unter _conn_lock. Zeilen mit '# v1.20'
+#   1.19  2026-11-26  Startmeldung wird pro Verbindung nur einmal ausgewertet; die zweite Auswertung protokolliert den Aufrufer (Zeilen mit '# v1.19')
 #   1.18  2026-11-25  ARDUINO_startmessage: Startmeldung ('LEDs_AutoProg Ver 3: ...') der aktiven Verbindung, die Geraeteauswahl wertet sie fuer die Versionsanzeige des Nano aus. Zeilen mit '# v1.18'
 # ----------------------------------------------------------------------------------------------
 """Serielle Verbindung zum Arduino/Pico ohne Tk (Mixin fuer HeadlessAppController).
@@ -60,6 +62,10 @@ except ImportError:                                   # aeltere Installation ohn
         return text.format(**values) if values else text  # v1.04
 
 logger = logging.getLogger(__name__)
+
+# v1.20: Ein Zugriff auf einen seriellen Anschluss gleichzeitig: Verbinden (Oeffnen und Handshake), Abfragen der Geraeteauswahl (Typ, Version, MLLIDENT, Bootloader) und die Erkennung
+# (DetectArduino, Get_Arduino_Baudrate). Reihenfolge der Sperren immer: SerialMixin._conn_lock, dann PORT_ACCESS_LOCK, dann M07._DETECT_LOCK. Wiedereintrittsfaehig (RLock).
+PORT_ACCESS_LOCK = threading.RLock()  # v1.20
 
 
 def _const(name: str, default):
@@ -416,6 +422,10 @@ class SerialMixin:
     # ------------------------------------------------------------------ Eigenschaften des Arduinos
     def determine_ARDUINO_Properties_from_Startmessage(self, startmessage):
         """Startmeldung z. B.: LEDs_AutoProg Ver 4: Type-3.3.2F5 FastLED 3.9.12 25.03.25 11:39,<LEDs je Kanal>"""
+        key = str(startmessage or "").strip()  # v1.19
+        if key and key == getattr(self, "_evaluated_startmsg", None):  # v1.19: dieselbe Meldung noch einmal (zweiter Aufruf in dieser Verbindung)
+            return  # v1.19, v1.20: Ursache: der Handshake legt die Meldung in self.queue (RxLog.on_line -> _on_rx_line wertet sie schon aus, SerialIF_teststring3 = 'LEDs_AutoProg') und ruft danach selbst auf
+        self._evaluated_startmsg = key  # v1.19
         self.ARDUINO_version = 0
         self.ARDUINO_startmessage = str(startmessage or "")  # v1.18: fuer die Geraeteauswahl (Version der MobaLedLib-Bibliothek)
         m = re.search(r"Ver (\d+):", startmessage)
@@ -547,9 +557,10 @@ class SerialMixin:
         return ser  # v1.06
 
     def connect_if_not_connected(self, port=None):
-        if self.is_connection_open():
-            return True
-        return self.connect(port=port, wlan=True)  # v1.10: auch mit Anschlussangabe (Testtasten) zuerst die eingetragene WLAN-Verbindung
+        with self._conn_lock:  # v1.20: ein laufender Verbindungsaufbau (self.arduino ist schon gesetzt, der Handshake laeuft noch) wird abgewartet, nicht mitbenutzt
+            if self.is_connection_open():
+                return True
+            return self.connect(port=port, wlan=True)  # v1.10: auch mit Anschlussangabe (Testtasten) zuerst die eingetragene WLAN-Verbindung
 
     def _set_connect_status(self, text, fg="black"):
         text = tr(text)  # v1.05: feste Texte wie 'Nicht Verbunden' in der eingestellten Sprache (zusammengesetzte Texte sind schon uebersetzt oder bleiben)
@@ -577,6 +588,9 @@ class SerialMixin:
                     logger.debug("wifi_target_provider fehlgeschlagen", exc_info=True)
                     target = None
                 if target:
+                    if self._is_connected_to(target[0], via_ip=True):  # v1.20: schon mit diesem ESP32 verbunden: nicht trennen und neu verbinden
+                        logger.info("Verbindung zu %s besteht schon, sie wird wiederverwendet", target[0])  # v1.20
+                        return True  # v1.20
                     if self.arduino:
                         self.disconnect()
                     logger.info("connect: zuerst WLAN %s", target[0])
@@ -586,7 +600,7 @@ class SerialMixin:
             return self._connect(port)
 
     def _connect(self, port=None):
-        self.ARDUINO_IP = False
+        # self.ARDUINO_IP = False  # v1.20 (entfallen: erst nach der Pruefung auf eine bestehende Verbindung, sonst erkennt _is_connected_to eine offene WLAN-Verbindung nicht)
         if port is None and self.sheet_port_provider is not None:  # v1.14 (Issue 59): Anschluss des aktiven Blatts
             try:  # v1.14
                 port = self.sheet_port_provider() or None  # v1.14
@@ -599,8 +613,16 @@ class SerialMixin:
         if port.isdigit():
             port = "COM" + port                        # wie F00.port_check_format
         if port.startswith("IP:"):
-            return self.connectIP(IPAdresse=port[3:])
-        logger.info("connect %s", port)
+            ok = self.connectIP(IPAdresse=port[3:])  # v1.20
+            if not ok:  # v1.20: wie bisher bleibt ARDUINO_IP nach einem Fehlschlag aus
+                self.ARDUINO_IP = False  # v1.20
+            return ok  # v1.20
+        try:  # v1.20: wer verbindet (Aufrufer von connect)
+            import sys as _sys  # v1.19
+            _c = _sys._getframe(2)  # v1.20
+            logger.info("connect %s (von %s:%s %s)", port, _c.f_code.co_filename.split("\\")[-1].split("/")[-1], _c.f_lineno, _c.f_code.co_name)  # v1.19, v1.20
+        except ValueError:  # v1.20
+            logger.info("connect %s", port)  # v1.20
         try:  # v1.17: der Dialog Geraeteauswahl belegt die Anschluesse (Ident, Abfrage von Typ und Version): stilles Verbinden jetzt nicht
             import proggen.M07_COM_Port_New as _M07Dlg
             if getattr(self, "quiet", False) and getattr(_M07Dlg, "Device_Dialog_Open", False):
@@ -608,6 +630,10 @@ class SerialMixin:
                 return False
         except Exception:                                  # noqa: BLE001
             logger.debug("Dialog-Zustand nicht lesbar", exc_info=True)
+        if self._is_connected_to(port):  # v1.19, v1.20: schon offen am selben Anschluss: wiederverwenden, nicht neu oeffnen (Reset)
+            logger.info("Verbindung zu %s besteht schon, sie wird wiederverwendet", port)  # v1.19
+            return True  # v1.19
+        self.ARDUINO_IP = False  # v1.20 (stand vorher am Anfang von _connect)
         if self.is_connection_open():
             self.disconnect()
         if port == "" or port.upper() == "NO DEVICE":
@@ -616,15 +642,10 @@ class SerialMixin:
         # self._set_connect_status("Versuch sich mit dem ARDUINO am Port " + port + " zu verbinden ...", "red")  # v1.04 (entfallen)
         # self._set_connect_status(tr('Versuch sich mit dem ARDUINO am Port ') + port + " zu verbinden ...", "red")  # v1.04  # v1.16 (entfallen)
         self._set_connect_status(tr('Versuch sich mit dem Gerät am Port ') + port + " zu verbinden ...", "red")  # v1.16: Gerät statt ARDUINO
-        try:
-            import serial
-            self.ARDUINO_status = "Connecting"
-            # self.arduino = serial.Serial(port, baudrate=115200, timeout=2, parity=serial.PARITY_NONE,  # v1.06 (entfallen: oeffnete mit DTR an: Reset des Nano)
-            #                              stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)  # v1.06 (entfallen)
-            self.arduino = self._open_serial(serial, port)  # v1.06
-            self.ARDUINO_startmessage = ""  # v1.18: Startmeldung des vorherigen Geraets verwerfen
-        except BaseException as e:                        # noqa: BLE001
-            logger.info("Port %s nicht zu oeffnen: %s", port, e)
+        status, err = self._open_and_handshake(port)  # v1.20: Oeffnen und Handshake exklusiv (PORT_ACCESS_LOCK)
+        if status == "ok":  # v1.20
+            return True  # v1.20
+        if status == "open_error":  # v1.20: Fehlerdialog AUSSERHALB der Sperre (der Dialog Geraeteauswahl braucht sie fuer seine Abfragen)
             macro = self.MacroDef.data.get("StartPage", {}) if getattr(self, "MacroDef", None) else {}
             # title = macro.get("connect_open_error_title", "Fehler beim Öffnen des Ports")  # v1.15 (entfallen)
             title = macro.get("connect_open_error_title", tr("Fehler beim Öffnen der Verbindung"))  # v1.15
@@ -641,67 +662,96 @@ class SerialMixin:
                 except Exception:                         # noqa: BLE001
                     logger.info("Portauswahl nicht moeglich", exc_info=True)
             return False
+        if status == "dropped":  # v1.20
+            return self._fail_connect()  # v1.20
+        # status == "read_error"  # v1.20
+        self._fail_connect()  # v1.20: erst Status und Anschluss freigeben, dann der Dialog
+        # self._msg("Falsche oder keine Antwort vom ARDUINO.\n\nPrüfe, ob das richtige MobaLedLib-Programm auf den "  # v1.16 (entfallen)
+        # "Arduino geladen ist. Es muss mit dem Compilerschalter\n  #define RECEIVE_LED_COLOR_PER_RS232\n"  # v1.16 (entfallen)
+        # "übersetzt sein. Das Programm kann mit dem Knopf 'Z. Arduino schicken' geladen werden.",  # v1.16 (entfallen)
+        # "Fehler beim Lesen der Antwort des ARDUINO")  # v1.16 (entfallen)
+        self._msg("Falsche oder keine Antwort vom Gerät.\n\nPrüfe, ob das richtige MobaLedLib-Programm auf das "  # v1.16: Gerät statt Arduino
+                  "Gerät geladen ist. Es muss mit dem Compilerschalter\n  #define RECEIVE_LED_COLOR_PER_RS232\n"  # v1.16
+                  "übersetzt sein. Das Programm kann mit dem Knopf 'Z. Arduino schicken' geladen werden.",  # v1.16
+                  "Fehler beim Lesen der Antwort des Geräts")  # v1.16
+        return False  # v1.20
 
-        time.sleep(1)
-        self.send_to_ARDUINO_init_buffer(immediatly=True)
-        try:
-            self.arduino.flush()
-        except Exception:                                 # noqa: BLE001
-            pass
-        self.send_to_ARDUINO("#?\r\n")
-        self._wait_sent(2.0)
-        txt, read_error = "", False
-        t1 = _const("SerialIF_teststring1", "#?LEDs_AutoProg")
-        trials, start = 0, time.time()
-        try:  # v1.17: wird die Verbindung waehrend des Verbindens von aussen getrennt (self.arduino ist dann None), kein Traceback
-            while True:                                       # wie im Original: bis zu 3 neue Anfragen im Sekundentakt
-                if self.arduino.in_waiting > 0:
-                    while "\n" in txt:
-                        txt = txt.split("\n")[-1]
-                    txt += self.arduino.read(self.arduino.in_waiting).decode(errors="ignore")
-                    pos = txt.find(t1)
-                    if pos != -1:
-                        pos2 = txt.find("\r\n", pos)
-                        if pos2 != -1:
-                            txt = txt[pos + 2:pos2]
-                            self.queue.put(txt)
-                            self.determine_ARDUINO_Properties_from_Startmessage(txt)
-                            break
-                if time.time() - start >= 1:
-                    trials += 1
-                    if trials > 3:
-                        read_error = True
-                        break
-                    start = time.time()
-                    self.arduino.write(b"#?\n")
-                time.sleep(0.01)
-        except (AttributeError, OSError):  # v1.17
-            logger.info("Verbindung zu %s wurde waehrend des Verbindens getrennt", port)
-            return self._fail_connect()
-        self.send_to_ARDUINO("#X\r\n")
-        if read_error:
-            # self._msg("Falsche oder keine Antwort vom ARDUINO.\n\nPrüfe, ob das richtige MobaLedLib-Programm auf den "  # v1.16 (entfallen)
-            # "Arduino geladen ist. Es muss mit dem Compilerschalter\n  #define RECEIVE_LED_COLOR_PER_RS232\n"  # v1.16 (entfallen)
-            # "übersetzt sein. Das Programm kann mit dem Knopf 'Z. Arduino schicken' geladen werden.",  # v1.16 (entfallen)
-            # "Fehler beim Lesen der Antwort des ARDUINO")  # v1.16 (entfallen)
-            self._msg("Falsche oder keine Antwort vom Gerät.\n\nPrüfe, ob das richtige MobaLedLib-Programm auf das "  # v1.16: Gerät statt Arduino
-                      "Gerät geladen ist. Es muss mit dem Compilerschalter\n  #define RECEIVE_LED_COLOR_PER_RS232\n"  # v1.16
-                      "übersetzt sein. Das Programm kann mit dem Knopf 'Z. Arduino schicken' geladen werden.",  # v1.16
-                      "Fehler beim Lesen der Antwort des Geräts")  # v1.16
+    def _is_connected_to(self, target, via_ip=False):  # v1.20
+        """Ist schon eine fertig aufgebaute Verbindung zu diesem Anschluss (COM7, /dev/ttyUSB0) bzw. dieser IP-Adresse offen? ARDUINO_current_portname wird erst nach dem Handshake gesetzt."""  # v1.20
+        return (self.is_connection_open() and bool(self.ARDUINO_IP) == bool(via_ip)  # v1.20
+                and str(getattr(self, "ARDUINO_current_portname", "") or "").upper() == str(target or "").upper())  # v1.20
+
+    def _open_and_handshake(self, port):  # v1.20: aus _connect verschoben; Ergebnis (Status, Fehler), Status: ok, open_error, dropped, read_error
+        """Oeffnet den Anschluss und liest die Startmeldung ('#?'). Alles unter PORT_ACCESS_LOCK: Die Abfragen der Geraeteauswahl und die Erkennung greifen nicht dazwischen
+        und oeffnen den Anschluss nicht ein zweites Mal. Keine Dialoge hier (sonst blockiert die Sperre die Geraeteauswahl)."""  # v1.20
+        with PORT_ACCESS_LOCK:  # v1.20
             try:
-                self.arduino.close()
+                import serial
+                self.ARDUINO_status = "Connecting"
+                # self.arduino = serial.Serial(port, baudrate=115200, timeout=2, parity=serial.PARITY_NONE,  # v1.06 (entfallen: oeffnete mit DTR an: Reset des Nano)
+                #                              stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)  # v1.06 (entfallen)
+                self.arduino = self._open_serial(serial, port)  # v1.06
+                self.ARDUINO_startmessage = ""  # v1.18: Startmeldung des vorherigen Geraets verwerfen
+                self._evaluated_startmsg = None  # v1.19: neue Verbindung, neue Auswertung
+            except BaseException as e:                    # noqa: BLE001
+                logger.info("Port %s nicht zu oeffnen: %s", port, e)
+                return "open_error", e  # v1.20
+
+            time.sleep(1)
+            self.send_to_ARDUINO_init_buffer(immediatly=True)
+            try:
+                self.arduino.flush()
             except Exception:                             # noqa: BLE001
                 pass
-            return self._fail_connect()
-        self.ARDUINO_current_portname = port
-        self.ARDUINO_status = "Connected"
-        # self._set_connect_status("Verbunden mit " + port + " - EFFECT Mode", "green")  # v1.04 (entfallen)
-        self._set_connect_status(tr('Verbunden mit ') + port + " - EFFECT Mode", "green")  # v1.04
-        self._start_reader()
-        return True
+            self.send_to_ARDUINO("#?\r\n")
+            self._wait_sent(2.0)
+            txt, read_error = "", False
+            t1 = _const("SerialIF_teststring1", "#?LEDs_AutoProg")
+            trials, start = 0, time.time()
+            try:  # v1.17: wird die Verbindung waehrend des Verbindens von aussen getrennt (self.arduino ist dann None), kein Traceback
+                while True:                                   # wie im Original: bis zu 3 neue Anfragen im Sekundentakt
+                    if self.arduino.in_waiting > 0:
+                        while "\n" in txt:
+                            txt = txt.split("\n")[-1]
+                        txt += self.arduino.read(self.arduino.in_waiting).decode(errors="ignore")
+                        pos = txt.find(t1)
+                        if pos != -1:
+                            pos2 = txt.find("\r\n", pos)
+                            if pos2 != -1:
+                                txt = txt[pos + 2:pos2]
+                                self.queue.put(txt)
+                                self.determine_ARDUINO_Properties_from_Startmessage(txt)
+                                break
+                    if time.time() - start >= 1:
+                        trials += 1
+                        if trials > 3:
+                            read_error = True
+                            break
+                        start = time.time()
+                        self.arduino.write(b"#?\n")
+                    time.sleep(0.01)
+            except (AttributeError, OSError):  # v1.17
+                logger.info("Verbindung zu %s wurde waehrend des Verbindens getrennt", port)
+                return "dropped", None  # v1.20
+            self.send_to_ARDUINO("#X\r\n")
+            if read_error:
+                try:
+                    self.arduino.close()
+                except Exception:                         # noqa: BLE001
+                    pass
+                return "read_error", None  # v1.20
+            self.ARDUINO_current_portname = port
+            self.ARDUINO_status = "Connected"
+            # self._set_connect_status("Verbunden mit " + port + " - EFFECT Mode", "green")  # v1.04 (entfallen)
+            self._set_connect_status(tr('Verbunden mit ') + port + " - EFFECT Mode", "green")  # v1.04
+            self._start_reader()
+            return "ok", None  # v1.20
 
     def connect_esp32(self, host, password):
         with self._conn_lock:
+            if self._is_connected_to(host, via_ip=True):  # v1.20: schon mit diesem ESP32 verbunden
+                logger.info("Verbindung zu %s besteht schon, sie wird wiederverwendet", host)  # v1.20
+                return True  # v1.20
             if self.arduino:
                 self.disconnect()
             return self.connectIP(host, esp32_password=password)
@@ -710,6 +760,12 @@ class SerialMixin:
         """Connect to a WLAN Pico or authenticate to an ESP32 device session."""
         if not IPAdresse:
             return False
+        with self._conn_lock:  # v1.20: auch direkte Aufrufe (Zeitgeber des Dialogs: jede Sekunde) sind serialisiert und verbinden nicht neu, wenn die Verbindung steht
+            if self._is_connected_to(IPAdresse, via_ip=True):  # v1.20
+                return True  # v1.20
+            return self._connectIP_impl(IPAdresse, esp32_password=esp32_password)  # v1.20
+
+    def _connectIP_impl(self, IPAdresse, *, esp32_password=None):  # v1.20: Rumpf von connectIP
         # self._set_connect_status("Versuch sich mit dem PICO- IP: " + IPAdresse + " zu verbinden ...", "red")  # v1.04 (entfallen)
         if esp32_password is None:
             self._set_connect_status(tr('Versuch sich mit dem PICO- IP: ') + IPAdresse + " zu verbinden ...", "red")
@@ -744,6 +800,7 @@ class SerialMixin:
                 raise ConnectionError("keine gueltige Antwort: " + txt[:60])
             txt = txt[pos:pos2]
             self.ARDUINO_IP = True
+            self._evaluated_startmsg = None  # v1.19
             self.queue.put(txt)
             self.determine_ARDUINO_Properties_from_Startmessage(txt)
             self.ARDUINO_current_portname = IPAdresse
@@ -786,17 +843,45 @@ class SerialMixin:
                 self.send_active = False
             self._set_connect_status("Nicht Verbunden", "black")
 
-    def close_arduino_connection_after_write_error(self, expected_port=None):
-        if expected_port is not None and self.arduino is not expected_port:
-            return
-        self._stop_reader()
-        try:
-            if self.arduino:
-                self.arduino.close()
-        except Exception:                                 # noqa: BLE001
-            pass
-        self.arduino = None
-        self.ARDUINO_current_portname = ""
-        self.ARDUINO_status = ""
-        self.send_active = False
-        self._set_connect_status("Nicht Verbunden", "black")
+    def close_arduino_connection_after_write_error(self, expected_port=None, lock_timeout=1.0):
+        """Schliesst die Verbindung nach einem Schreibfehler (Sendethread) oder fuer eine Abfrage (expected_port). Unter _conn_lock, damit nicht zugleich verbunden oder getrennt wird;
+        kommt die Sperre nicht binnen lock_timeout (0 = nicht warten), wird wie bisher ohne sie geschlossen (kein Stillstand: der Sendethread wird von disconnect abgewartet)."""  # v1.20
+        got = self._conn_lock.acquire(timeout=lock_timeout) if lock_timeout and lock_timeout > 0 else self._conn_lock.acquire(blocking=False)  # v1.20
+        try:  # v1.20
+            if expected_port is not None and self.arduino is not expected_port:
+                return
+            self._stop_reader()
+            try:
+                if self.arduino:
+                    self.arduino.close()
+            except Exception:                             # noqa: BLE001
+                pass
+            self.arduino = None
+            self.ARDUINO_current_portname = ""
+            self.ARDUINO_status = ""
+            self.send_active = False
+            self._set_connect_status("Nicht Verbunden", "black")
+        finally:  # v1.20
+            if got:  # v1.20
+                self._conn_lock.release()  # v1.20
+
+    def connect_silent(self, port=None, wlan=None, dtr=None, esp32=None, verify=None):  # v1.20
+        """Verbinden ohne Dialoge (Autoconnect beim Start, nach dem Hochladen, Blattwechsel). quiet und dtr_override gelten nur fuer diesen Aufruf und werden unter _conn_lock gesetzt
+        und zurueckgenommen (vorher setzte der Aufrufer sie ungeschuetzt: zwei gleichzeitige Aufrufe stoerten sich). Eine schon offene Verbindung bleibt unberuehrt (Rueckgabe True,
+        kein Trennen, kein erneutes Oeffnen); zum Wechseln erst disconnect() unter derselben Sperre aufrufen. verify: Funktion ohne Argument; liefert sie False, wird wieder getrennt."""
+        with self._conn_lock:  # v1.20
+            if self.is_connection_open():  # v1.20
+                return True  # v1.20
+            self.quiet, self.dtr_override = True, dtr  # v1.20
+            try:  # v1.20
+                if esp32:  # v1.20
+                    self.connect_esp32(esp32[0], esp32[1])  # v1.20
+                else:  # v1.20
+                    self.connect(port=port, wlan=wlan)  # v1.20
+                ok = bool(self.is_connection_open())  # v1.20
+                if ok and verify is not None and not verify():  # v1.20
+                    self.disconnect()  # v1.20
+                    return False  # v1.20
+                return ok  # v1.20
+            finally:  # v1.20
+                self.quiet, self.dtr_override = False, None  # v1.20

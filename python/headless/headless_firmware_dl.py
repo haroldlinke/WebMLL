@@ -1,12 +1,13 @@
-# Datei-Version: 1.00 (2026-11-12) - headless_firmware_dl.py
+# Datei-Version: 1.01 (2026-11-26) - headless_firmware_dl.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_firmware_dl.py
 # Path:           headless/headless_firmware_dl.py
-# Version:        1.00
-# Last Update:    2026-11-12
-# Author:         Harold Linke
+# Version:        1.01
+# Last Update:    2026-11-26
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.01  2026-11-26  Firmware aus einer lokalen ZIP-Datei installieren (check_local_zip, install_local_zip, entry_from_file): die ZIP-Datei muss mindestens eine *.uf2 enthalten, entpackt wird mit unzip_safe. Zeilen mit '# v1.01'
 #   1.00  2026-11-12  Neu: Firmware-Download aus dem Internet (M34_FirmwareDownload des Excel-Programms 3.5.0L3): Liste index.json lesen und ordnen, Firmware-ZIP laden, sicher entpacken
 # ----------------------------------------------------------------------------------------------
 
@@ -19,9 +20,11 @@ Die Liste der Firmware steht in der Datei index.json im Ordner firmware des GitH
 Aufbau wie im Original: Plattform -> Name -> Versionen (die hoechste zuerst). Der Download geht in eine temporaere Datei, dann in den Firmware-Ordner, die ZIP-Datei
 wird dort entpackt und geloescht (bei einem Fehler beim Entpacken bleibt sie fuer ein Entpacken von Hand liegen). Das Entpacken lehnt Pfade ausserhalb des Ordners,
 Verknuepfungen und zu grosse Archive ab."""
+import io  # v1.01
 import json
 import logging
 import os
+import re  # v1.01
 import shutil
 import socket
 import stat
@@ -255,6 +258,40 @@ def unzip_safe(zip_file: str, dest_dir: str, max_total: int = MAX_UNPACKED_BYTES
         except (OSError, zipfile.BadZipFile, RuntimeError) as ex:
             raise FirmwareError("unzip", str(ex), zip_file) from ex
     return extracted
+
+
+def check_local_zip(data: bytes) -> list:  # v1.01
+    """Eine vom Anwender gewaehlte ZIP-Datei (Inhalt als Bytes) pruefen: Rueckgabe die Namen der Eintraege. FirmwareError('zip') wenn es kein ZIP oder zu gross ist,
+    FirmwareError('nofirmware') wenn keine *.uf2 darin liegt (es wird nichts entpackt, was keine Firmware ist)."""
+    if len(data) > MAX_ZIP_BYTES:
+        raise FirmwareError("zip", "zu gross")
+    try:
+        names = zipfile.ZipFile(io.BytesIO(data)).namelist()
+    except (zipfile.BadZipFile, OSError) as ex:
+        raise FirmwareError("zip", str(ex)) from ex
+    if not any(n.lower().endswith(".uf2") for n in names):
+        raise FirmwareError("nofirmware", ", ".join(names[:5]))
+    return names
+
+
+def install_local_zip(data: bytes, dest_dir: str) -> dict:  # v1.01
+    """Firmware aus einer lokalen ZIP-Datei (Inhalt als Bytes) in den Firmware-Ordner entpacken (wie install_entry, nur ohne Download).
+    Rueckgabe {'extracted': [Namen], 'firmware': [Namen der *.uf2]}. FirmwareError: zip, nofirmware, nodir, unzip."""
+    check_local_zip(data)
+    if not os.path.isdir(dest_dir):
+        raise FirmwareError("nodir", dest_dir)
+    with tempfile.TemporaryDirectory(prefix="MLL_fw_") as tmp:
+        tmp_file = os.path.join(tmp, "MLL_fw_local.zip")
+        with open(tmp_file, "wb") as out:
+            out.write(data)
+        extracted = unzip_safe(tmp_file, dest_dir)
+    return {"extracted": extracted, "firmware": [n for n in extracted if n.lower().endswith(".uf2")]}
+
+
+def entry_from_file(name: str) -> dict:  # v1.01
+    """Name und Version aus dem Dateinamen einer Firmware ('PicoServo-Tiny-V1.1.uf2'), damit die Auswahl sie vorwaehlen kann; sonst leere Angaben"""
+    m = re.match(r"(?i)^(?:.*/)?(.+)-V([0-9][0-9.]*)\.uf2$", str(name or ""))
+    return {"name": m.group(1), "version": m.group(2), "local": True} if m else {"name": "", "version": "", "local": True}
 
 
 def install_entry(entry: dict, dest_dir: str, urlopen=None, timeout: float = DOWNLOAD_TIMEOUT_S) -> dict:

@@ -1,12 +1,13 @@
-# Datei-Version: 1.08 (2026-11-19) - web_form_house.py
+# Datei-Version: 1.09 (2026-11-26) - web_form_house.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_house.py
 # Path:           _web/web_form_house.py
 # Version:        1.08
-# Last Update:    2026-11-19
+# Last Update:    2026-11-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.09  2026-11-26  Version 5.51 (Wuensche von Tester): der LED Kanal steht oben unter der Beschreibung (wie in den anderen Makro-Dialogen, das nachtraegliche Aendern in der Tabelle ist nicht mehr moeglich); der Haken Individuelle Zeiten steht ueber den Reglern fuer die Zeiten
 #   1.08  2026-11-24  Zahlenfelder wie im Parameterformular der Makros: Regler mit Zahlenfeld, minus/plus und Mausrad bei Min./Max. Anzahl und Zeiten, LED Kanal als Zahlenfeld mit minus/plus und Mausrad (Klasse _NumRow). Zeilen mit '# v1.08'
 #   1.07  2026-11-19  Tooltips wie im Excel-Programm: an den Knoepfen der Raumeffekte (House, GasLights) und an den Feldern des Dialogs (Texte in web_house_tips.py, uebersetzt ueber die Tabelle Languages)
 #   1.06  2026-11-10  Der Schalter Einfuegen/Ersetzen (ui.toggle) wird uebersetzt: 'Einfuegen' mit dem Kontext Raum (nicht 'aus der Zwischenablage einfuegen'), der Wert bleibt der deutsche Text (fruehere Versionen ohne Eintrag)
@@ -341,6 +342,11 @@ async def _house_async(spec: dict, st: dict):
                 "max-height: 94vh; overflow: auto"):
             ui.label(spec["title"]).classes("text-h6")
             ui.label(spec["description"]).classes("mll-desc").style("white-space: pre-line; border: 1px solid #ccc; padding: 6px")
+            w = {}  # v1.09: Felder des Dialogs (der LED Kanal steht oben)
+            # w["led_channel"] steht seit v1.09 hier oben, nicht mehr unten  # v1.09
+            with ui.column().classes("w-full").style("max-width: 420px"):  # v1.09
+                w["led_channel"] = _NumRow(ui, T.get("Label9_LED_Channel_txt", "LED Kanal"), st["led_channel"], 0,  # v1.09
+                                           max(int(spec.get("led_channels", 256)) - 1, parse_int_safe(st["led_channel"])), slider=False)  # v1.09
             with ui.row().classes("items-center gap-4"):
                 _tip(ui, ui.label(T.get("Label_Beleuchtungstypen_txt", "")).classes("text-bold"), TIP_F.get("on_limit"))  # v1.07
                 # ui.label(T.get("Label_Beleuchtungstypen_txt", "")).classes("text-bold")  # v1.07 (entfallen)
@@ -372,8 +378,10 @@ async def _house_async(spec: dict, st: dict):
                 rgb_lbl = _tip(ui, ui.label("").classes("text-caption"), TIP_F.get("on_limit"))  # v1.07
                 # rgb_lbl = ui.label("").classes("text-caption")  # v1.07 (entfallen)
             with ui.grid(columns=2).classes("w-full gap-x-8"):
-                w = {}
+                # w = {}  # v1.09 (entfallen: steht oben)
                 if mode == "House":
+                    w["indiv"] = ui.checkbox(T.get("IndividualTimes_CheckBox_txt", ""), value=st["indiv"])  # v1.09: der Haken steht ueber den Zeit-Reglern
+                    ui.label("")  # v1.09
                     # w["min_cnt"] = ui.input(label=T.get("Label1_MinCnt_txt", ""), value=str(st["min_cnt"])).props("outlined dense")  # v1.08 (entfallen)
                     # w["min_time"] = ui.input(label=T.get("MinTime_Label_txt", ""), value=str(st["min_time"])).props("outlined dense")  # v1.08 (entfallen)
                     # w["max_cnt"] = ui.input(label=T.get("Label2_MaxCnt_txt", ""), value=str(st["max_cnt"])).props("outlined dense")  # v1.08 (entfallen)
@@ -382,11 +390,11 @@ async def _house_async(spec: dict, st: dict):
                     w["min_time"] = _NumRow(ui, T.get("MinTime_Label_txt", ""), st["min_time"], 0, 254)  # v1.08
                     w["max_cnt"] = _NumRow(ui, T.get("Label2_MaxCnt_txt", ""), st["max_cnt"], 1, 255)  # v1.08
                     w["max_time"] = _NumRow(ui, T.get("MaxTime_Label_txt", ""), st["max_time"], 0, 254)  # v1.08
-                    w["indiv"] = ui.checkbox(T.get("IndividualTimes_CheckBox_txt", ""), value=st["indiv"])
-                    ui.label("")
+                    # w["indiv"] = ui.checkbox(T.get("IndividualTimes_CheckBox_txt", ""), value=st["indiv"])  # v1.09 (entfallen: steht jetzt vor den Reglern)
+                    # ui.label("")  # v1.09 (entfallen)
                 # w["led_channel"] = ui.input(label=T.get("Label9_LED_Channel_txt", "LED Kanal"), value=str(st["led_channel"])).props("outlined dense")  # v1.08 (entfallen)
-                w["led_channel"] = _NumRow(ui, T.get("Label9_LED_Channel_txt", "LED Kanal"), st["led_channel"], 0,  # v1.08
-                                           max(int(spec.get("led_channels", 256)) - 1, parse_int_safe(st["led_channel"])), slider=False)  # v1.08
+                # w["led_channel"] = _NumRow(ui, T.get("Label9_LED_Channel_txt", "LED Kanal"), st["led_channel"], 0,  # v1.08  # v1.09 (entfallen: steht oben)
+                #                            max(int(spec.get("led_channels", 256)) - 1, parse_int_safe(st["led_channel"])), slider=False)  # v1.08  # v1.09 (entfallen)
                 w["inv"] = ui.checkbox(T.get("InpInversBox_txt", ""), value=st["inv"])
             for _k, _tk in (("min_cnt", "min_cnt"), ("max_cnt", "max_cnt"), ("min_time", "min_time"), ("max_time", "max_time"),  # v1.07: Tooltips der Felder
                             ("indiv", "indiv"), ("led_channel", "led_channel"), ("inv", "inv")):  # v1.07

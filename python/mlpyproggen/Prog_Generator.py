@@ -212,7 +212,7 @@ def build_workbook_dict(default_font, default_smallfont, default_boldfont):
                "Selectrix":
                 {"Name":"Selectrix",
                  "Filenamex"  : "csv/Selectrix.csv",
-                 "Fieldnames": "A;Aktiv;Filter;Channel oder\nName[0..99];Bitposition\n[1..8];Typ;Start-\nwert;Beschreibung;Verteiler-\nNummer;Stecker\nNummer;Icon;Name;Beleuchtung, Sound, oder andere Effekte;Start LedNr;LEDs;InCnt;Loc InCh;LED\nSound\nKanal;Comment",
+                 "Fieldnames": "A;Aktiv;Filter;Channel oder\nName[1..99];Bitposition\n[1..8];Typ;Start-\nwert;Beschreibung;Verteiler-\nNummer;Stecker\nNummer;Icon;Name;Beleuchtung, Sound, oder andere Effekte;Start LedNr;LEDs;InCnt;Loc InCh;LED\nSound\nKanal;Comment",
                  "Formating" : datasheet_formating,
                  "SheetType" : "Datasheet",
                  "Events" : sheetdict_sheetevents,

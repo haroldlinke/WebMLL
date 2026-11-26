@@ -1,14 +1,15 @@
-# Datei-Version: 1.02 (2026-11-14) - web_form_firmware_download.py
+# Datei-Version: 1.03 (2026-11-26) - web_form_firmware_download.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_firmware_download.py
 # Path:           _web/web_form_firmware_download.py
-# Version:        1.02
-# Last Update:    2026-11-14
-# Author:         Harold Linke
+# Version:        1.03
+# Last Update:    2026-11-26
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-11-12  Neu: Dialog Firmware Herunterladen (UserForm_FirmwareDownload, M34_FirmwareDownload und UserForm_Worker des Excel-Programms 3.5.0L3)
 #   1.01  2026-11-12  Der ausgewaehlte Eintrag im Baum ist gelb hinterlegt (vorher wechselte nur die Schriftfarbe von Schwarz nach Grau)
+#   1.03  2026-11-26  Firmware aus einer lokalen ZIP-Datei installieren: unter der Liste das Auswahlfeld fuer ZIP-Dateien (wie bei Hilfe, Update Testversion); die ZIP-Datei muss eine *.uf2 enthalten und wird in den Firmware-Ordner entpackt. Zeilen mit '# v1.03'
 #   1.02  2026-11-14  Dialog Firmware herunterladen: Herunterladen links, Abbrechen rechts
 # ----------------------------------------------------------------------------------------------
 
@@ -50,12 +51,17 @@ T_DONE = "Firmware heruntergeladen nach:"
 T_EMPTY = "Die heruntergeladene Datei ist leer."
 T_HINT = "Wählen sie die gewünsche Firmwaredatei aus, die aus der zentralen Firmwarebibliothek heruntergeladen werden soll:"
 T_DOWNLOAD = "Herunterladen"
+T_LOCAL_HINT = "Oder eine ZIP-Datei mit Firmware von diesem Rechner installieren:"  # v1.03
+T_LOCAL_LABEL = "ZIP-Datei hierher ziehen oder zum Auswählen klicken"  # v1.03
+T_NOT_ZIP = "Die gewählte Datei ist kein ZIP."  # v1.03
+T_NOT_FW = "Die ZIP-Datei enthält keine Firmware (*.uf2)."  # v1.03
+T_OVERWRITE = "Vorhandene Firmware-Dateien werden überschrieben (#1#). Soll die ZIP-Datei installiert werden?"  # v1.03
 T_CANCEL = "Abbrechen"
 TREE_CSS = (".mll-fwtree .q-tree__node--selected { background: #fff176 !important; color: #000 !important; font-weight: 600; border-left: 4px solid #f9a825; border-radius: 4px; } "  # v1.01
             ".mll-fwtree .q-tree__node--selected * { color: #000 !important; } "  # v1.01
             ".mll-fwtree .q-tree__node-header { padding: 2px 6px; }")  # v1.01: Markierung des ausgewaehlten Eintrags: gelb hinterlegt, schwarze fette Schrift, Balken links
 TEXT_KEYS = (T_TITLE, T_LOADING, T_NOLIST, T_RETRY, T_NONE, T_FORMAT, T_NOFILE, T_NODIR, T_EXISTS, T_DOWNLOADING, T_FAILED, T_NOSAVE, T_UNPACKING, T_NOUNPACK, T_DONE_UNPACKED, T_DONE,
-             T_EMPTY, T_HINT, T_DOWNLOAD, T_CANCEL)
+             T_EMPTY, T_HINT, T_DOWNLOAD, T_CANCEL, T_LOCAL_HINT, T_LOCAL_LABEL, T_NOT_ZIP, T_NOT_FW, T_OVERWRITE)  # v1.03
 
 
 def translated_texts(get_text) -> dict:
@@ -151,6 +157,43 @@ class DownloadFlow:
         return True
 
 
+async def _install_local(self, data, filename):  # v1.03
+    """Firmware aus einer lokalen ZIP-Datei (Inhalt als Bytes) installieren; Rueckgabe: Eintrag (Name, Version) der ersten Firmware oder None (nach einer Meldung)"""
+    try:
+        names = HFD.check_local_zip(data)
+    except HFD.FirmwareError as ex:
+        await self._error(self.t(T_NOT_FW) if ex.kind == "nofirmware" else self.t(T_NOT_ZIP) + ("\n" + ex.detail if ex.detail else ""))
+        return None
+    try:
+        os.makedirs(self.folder, exist_ok=True)
+    except OSError:
+        logger.debug("Firmware-Ordner nicht angelegt", exc_info=True)
+    if not os.path.isdir(self.folder):
+        await self._error(self.t(T_NODIR, self.folder))
+        return None
+    existing = [n for n in names if not n.endswith("/") and os.path.isfile(os.path.join(self.folder, *[p for p in n.replace("\\", "/").split("/") if p]))]
+    if existing:
+        shown = ", ".join(existing[:6]) + (", ..." if len(existing) > 6 else "")
+        if await self.msgbox(self.t(T_OVERWRITE, shown), vbQuestionYesNo, self.t(T_TITLE)) != vbYes:
+            return None
+    self.set_busy(self.t(T_UNPACKING, filename))
+    try:
+        result = await self.run_blocking(HFD.install_local_zip, data, self.folder)
+    except HFD.FirmwareError as ex:
+        self.set_busy(None)
+        if ex.kind == "nodir":
+            await self._error(self.t(T_NODIR, self.folder))
+        else:
+            await self._error(self.t(T_NOUNPACK, filename) + "\n\n" + ex.detail)
+        return None
+    self.set_busy(None)
+    await self.msgbox(self.t(T_DONE_UNPACKED) + "\n" + self.folder, vbInformation, self.t(T_TITLE))
+    return HFD.entry_from_file((result.get("firmware") or [""])[0])
+
+
+DownloadFlow.install_local = _install_local  # v1.03
+
+
 def build_nodes(index, lang: str):
     """Baum fuer ui.tree: Plattform -> Name (mit Kurztext der neuesten Version) -> Versionen; dazu {Knoten-Id: Eintrag} (Namen zeigen die neueste Version, wie im Original)"""
     nodes, entries = [], {}
@@ -241,6 +284,23 @@ async def firmware_download_async(folder: str, texts: dict, lang: str = "EN"):
                     ok_btn.set_enabled(state["entry"] is not None)
                 if done:
                     dlg.submit(entry)
+            ui.separator()  # v1.03
+            ui.label(flow.t(T_LOCAL_HINT)).classes("text-caption text-grey-8")  # v1.03
+
+            async def on_zip(e):  # v1.03: lokale ZIP-Datei (Auswahlfeld wie bei Hilfe, Update Testversion)
+                name, data = await wd._read_upload(e)
+                data = bytes(data) if isinstance(data, (bytes, bytearray)) else str(data).encode("utf-8")
+                ok_btn.set_enabled(False)
+                cancel_btn.set_enabled(False)
+                try:
+                    entry = await flow.install_local(data, name)
+                finally:
+                    cancel_btn.set_enabled(True)
+                    ok_btn.set_enabled(state["entry"] is not None)
+                    upload.reset()
+                if entry:
+                    dlg.submit(entry)
+            upload = ui.upload(on_upload=on_zip, auto_upload=True, max_files=1, label=flow.t(T_LOCAL_LABEL)).classes("w-full").props('accept=".zip"')  # v1.03
             with ui.row().classes("justify-end w-full"):
                 ok_btn = ui.button(flow.t(T_DOWNLOAD), on_click=on_download).props("color=primary").classes("mll-default")  # v1.02
                 cancel_btn = ui.button(flow.t(T_CANCEL), on_click=lambda: dlg.submit(None)).props("flat").classes("mll-cancel")  # v1.02

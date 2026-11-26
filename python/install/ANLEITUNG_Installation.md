@@ -1,5 +1,5 @@
 # MobaLedLib Studio – Installation und Betrieb
-*Datei-Version: 5.39 (2026-11-26), gilt für Version 5.39*
+*Datei-Version: 5.54 (2026-11-26), gilt für Version 5.54*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1805,7 +1805,7 @@ Bei einer Fehlermeldung bitte den Text aus dem Installationsfenster und die Date
 
 ## ESP32: schnelle Konfiguration über WLAN (ab 4.71)
 
-In Hardware Optionen, Reiter Entwicklungsumgebung, **PlatformIO** wählen und „Schnelles Update: nur geänderte Konfiguration übertragen“ einschalten. WLAN und OTA am ESP32 wie bisher einrichten. Beim ersten Mal muss die Firmware mit der neuen Empfangsfunktion übertragen werden. Danach prüft das Programm bei jeder Übertragung über WLAN die Firmware im Gerät: Passt sie, wird nur die Konfiguration gesendet und der ESP32 startet neu. Ist die Konfiguration unverändert, wird nichts gesendet. Bei einem Übertragungsfehler gibt es bis zu drei Versuche, danach wird das ganze Programm hochgeladen. Ändern sich Hostname, OTA-Passwort oder OTA-Schalter, wird die Firmware ebenfalls neu übertragen. Pico und USB bleiben unverändert.
+Im Menü **Werkzeuge → Wartung** (bis 5.48: Hardware Optionen, Reiter Entwicklungsumgebung) **PlatformIO** wählen und „Schnelles Update: nur geänderte Konfiguration übertragen“ einschalten. WLAN und OTA am ESP32 wie bisher einrichten. Beim ersten Mal muss die Firmware mit der neuen Empfangsfunktion übertragen werden. Danach prüft das Programm bei jeder Übertragung über WLAN die Firmware im Gerät: Passt sie, wird nur die Konfiguration gesendet und der ESP32 startet neu. Ist die Konfiguration unverändert, wird nichts gesendet. Bei einem Übertragungsfehler gibt es bis zu drei Versuche, danach wird das ganze Programm hochgeladen. Ändern sich Hostname, OTA-Passwort oder OTA-Schalter, wird die Firmware ebenfalls neu übertragen. Pico und USB bleiben unverändert.
 
 ## ESP32: feste IP-Adresse statt DHCP (ab 4.79)
 
@@ -1820,7 +1820,7 @@ Der Mini-Farbtest funktioniert auch in der **Grafik-Ansicht** (Ketten und Anlage
 
 ## Datenübertragung zwischen PCs (ab 4.89)
 
-Unter **Einstellungen → Datenübertragung** kannst du Tabellen aus einem anderen PC im lokalen Netz übernehmen oder ausgewählte Zeilen in bestehende Tabellen einfügen. Die Freigabe am Quell-PC ist nach jedem Start ausgeschaltet und muss im Dialog bewusst aktiviert werden. Vor jeder Übernahme wird die bisherige Arbeitsmappe gesichert, „Letzten Import rückgängig machen“ stellt sie wieder her. Beim Einfügen ausgewählter Zeilen kannst du den LED-Kanal wählen (Standard 0). Die Tabellenansicht wird danach automatisch aktualisiert. Wird der Verbindungscode nicht akzeptiert, prüfe den im Quell-PC angezeigten Code und versuche es erneut. Die Daten werden im Netz unverschlüsselt übertragen, benutze die Funktion nur in einem vertrauenswürdigen Netz. Anleitung, Ports und Firewall: [Datenübertragung](../../DATENUEBERTRAGUNG.md).
+Unter **Werkzeuge → Datenübertragung** (bis 5.48: Einstellungen → Datenübertragung) kannst du Tabellen aus einem anderen PC im lokalen Netz übernehmen oder ausgewählte Zeilen in bestehende Tabellen einfügen. Die Freigabe am Quell-PC ist nach jedem Start ausgeschaltet und muss im Dialog bewusst aktiviert werden. Vor jeder Übernahme wird die bisherige Arbeitsmappe gesichert, „Letzten Import rückgängig machen“ stellt sie wieder her. Beim Einfügen ausgewählter Zeilen kannst du den LED-Kanal wählen (Standard 0). Die Tabellenansicht wird danach automatisch aktualisiert. Wird der Verbindungscode nicht akzeptiert, prüfe den im Quell-PC angezeigten Code und versuche es erneut. Die Daten werden im Netz unverschlüsselt übertragen, benutze die Funktion nur in einem vertrauenswürdigen Netz. Anleitung, Ports und Firewall: [Datenübertragung](../../DATENUEBERTRAGUNG.md).
 
 ## ESP32: Build erfolgreich, aber kein Upload (Korrektur 4.94)
 
@@ -1837,3 +1837,32 @@ Beim Laden einer MLL_PGF-Datei mit mehreren Tabellenblättern fragt das Programm
 ## ESP32 startet nach dem Hochladen endlos neu (Korrektur 4.97)
 
 Steht im seriellen Monitor `assert failed: lfs_fs_grow_` und blinkt die Platine dauernd, liegt im Flash ein altes Dateisystem eines früheren Projekts. Ab 4.97 löscht das Programm nach dem Hochladen per USB das Dateisystem des ESP32 selbst; die WLAN-Zugangsdaten bleiben erhalten, die Konfiguration wird danach neu übertragen. Ein Gerät, das schon abstürzt, wird durch **erneutes Hochladen per USB** repariert (nicht über WLAN).
+
+## Anschluss-Hinweis, Firmware-Auswahl, Selectrix (ab 5.54)
+
+- **Selectrix:** Channel 1 bis 99, Bitposition 1 bis 8; sonst Meldung und die Zelle wird geleert. Bei DCC, LNet und CAN ist die Adresse 0 nicht erlaubt.
+- **Negativer Anschluss (zum Beispiel -3):** Er gilt als Hinweis, dass das Gerät an COM3 war. Beim Hochladen und bei **Setup übertragen** nutzt das Programm COM3, wenn dort ein passendes Gerät hängt, und trägt es ins Blatt ein. Sonst öffnet sich die Geräteauswahl.
+- **Geräteauswahl:** `COM?` steht nicht mehr in der Liste. **OK** ohne Auswahl ändert das Blatt nicht. **Abbrechen** schließt auch das Fenster Kompilieren und Hochladen.
+- **Firmware installieren (Pico):** nur Pico-Geräte, auch unbekannte und andere MobaLedLib Geräte sind wählbar.
+- **Firmware herunterladen:** Eine lokale ZIP-Datei mit mindestens einer `*.uf2` lässt sich installieren.
+- **Fenster Kompilieren und Hochladen:** an der Titelzeile verschiebbar, Doppelklick setzt die Position zurück.
+- **PGF-Import** in ein verstecktes Blatt blendet es wieder ein.
+
+## Datenübertragung: Quelladresse und Port (ab 5.53)
+
+Im Reiter zum Empfangen steht die **Quelladresse** ohne `http://` (zum Beispiel 192.168.10.171), rechts daneben der **Port** (normalerweise 45875). Gespeicherte Adressen und Suchergebnisse füllen beide Felder. Der **Verbindungscode** muss mindestens sechs Zeichen haben; längere und gespeicherte Codes bleiben gültig.
+
+## LED Kanal oben, Spalte änderbar (ab 5.51)
+
+In den Dialogen der Makros mit LEDs steht der **LED Kanal** oben. Im Raum-Dialog steht der Haken **Individuelle Zeiten** über den Reglern. Wer die Spalte **LED/ Sound Kanal** direkt in der Tabelle ändern will, schaltet in den Programm Generator Einstellungen **Spalte LED/Sound Kanal in der Tabelle änderbar** ein (Standard Aus). Die Spalte lässt sich dann auch nach unten ausfüllen; die LED-Nummern werden neu berechnet. Du bist selbst für richtige Werte verantwortlich. Die Einstellung gilt ab der nächsten Anzeige der Tabelle.
+
+## Neues Menü Werkzeuge (ab 5.49)
+
+Auf Wunsch von Jürgen (Issue 75) gibt es zwischen **Einstellungen** und **Hilfe** das Menü **Werkzeuge**. Es enthält Dinge, die keine Einstellungen oder Hardware-Optionen sind:
+
+- **Datenübertragung** (vorher Einstellungen → Datenübertragung),
+- **Firmware installieren …** (vorher Hardware Optionen, Reiter Firmware Installation),
+- **ESP32-Firmware über WLAN hochladen …** (gibt es weiterhin auch im Reiter WLAN (OTA) der Hardware Optionen),
+- **Wartung …** (vorher Hardware Optionen, Reiter Entwicklungsumgebung und Update): PlatformIO oder ARDUINO-IDE wählen, Schnelles Update, PlatformIO prüfen und Zwischenspeicher löschen, Bibliotheken und Boards der ARDUINO-IDE.
+
+Im **Anfänger Modus** fehlt das ganze Menü Werkzeuge. Die Hardware Optionen enthalten nur noch die Reiter zur Lichtmaschine (Lichtmaschine, ESP und WLAN-Einstellungen, Dateien und weitere).

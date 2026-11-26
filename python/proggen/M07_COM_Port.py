@@ -1,12 +1,16 @@
-# Datei-Version: 1.16 (2026-11-25) - M07_COM_Port.py
+# Datei-Version: 1.20 (2026-11-26) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.16
-# Last Update:    2026-11-23
-# Author:         Harold Linke
+# Version:        1.20
+# Last Update:    2026-11-26
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.20  2026-11-26  Negative Zahl im Anschluss (-3: Hinweis fuer den Auto-Reconnect) beim Hochladen und beim Setup uebertragen: Resolve_Port_Hint prueft, ob COM3 am Rechner vorhanden ist und zum Typ des Blatts passt, und traegt dann COM3 ins Blatt ein; sonst bleibt der Anschluss ungueltig und der Dialog Board und USB Port erkennen oeffnet sich (Check_USB_Port_with_Dialog), Ensure_Existing_USB_Port sucht dann kein anderes Board. Zeilen mit '# v1.20'
+#   1.19  2026-11-26  Fill_Port_From_Active_Connection: Anschluss der aktiven Verbindung (ARDUINO_current_portname) hat Vorrang vor der Einstellung serportname (Upload mit -7 in der Tabelle: Fehler 'kein PICO an COM-7')
+#   1.18  2026-11-26  Fehler behoben: 'module vb2py.logger has no attribute warning' (Upload ohne Anschluss in der Tabelle): der Name logger wurde durch from vb2py.vbdebug import * ueberschrieben, jetzt nach den Importen neu gesetzt
+#   1.17  2026-11-26  Eine Verbindung pro Geraet: Get_Arduino_Baudrate und DetectArduino laufen unter derselben Anschluss-Sperre wie das Verbinden und die Abfragen der Geraeteauswahl (web_serial.PORT_ACCESS_LOCK, Reihenfolge: Anschluss-Sperre vor _DETECT_LOCK). Zeilen mit '# v1.17'
 #   1.1.16  2026-11-26  BOOTLOADER_CACHE: Ergebnis der Bootloader-Abfrage der Geraeteauswahl (Nano) wird von Get_Arduino_Baudrate einmal innerhalb von 90 s wiederverwendet (die zweite Pruefung direkt nach OK schlug fehl). Zeilen mit '# v1.16'
 #   1.15  2026-11-25  SERVO_PORTS: Anschluesse mit einem PicoServo-Tiny (Servo-Modul); Classify_Port liefert dafuer 'Servo' (nicht Pico). Zeilen mit '# v1.15'
 #   1.14  2026-11-23  Ensure_Existing_USB_Port: Existiert der in der Tabelle eingetragene USB-Anschluss am Rechner nicht, wird (bei genau einem passenden Board) der vorhandene eingetragen, sonst gemeldet - vor dem langen Build des ESP32-Setups
@@ -78,6 +82,7 @@ import socket, time
 from vb2py.vbfunctions import *
 from vb2py.vbdebug import *
 from vb2py.vbconstants import *
+logger = logging.getLogger(__name__)  # v1.18: vbdebug (import *) ueberschreibt logger mit dem Modul vb2py.logger
 
 
 #import proggen.M02_Public as M02
@@ -313,7 +318,8 @@ def Fill_Port_From_Active_Connection(ComPortColumn):  # v1.13 (Issue 50)
         ctrl = PG.global_controller  # v1.13
         if ComPortColumn != M25.COMPort_COL or not ctrl.is_connection_open():  # v1.13: nur Lichtmaschine mit aktiver Verbindung
             return False  # v1.13
-        port = str(ctrl.getConfigData("serportname") or "").strip()  # v1.13
+        # port = str(ctrl.getConfigData("serportname") or "").strip()  # v1.13  # v1.19 (entfallen)
+        port = str(getattr(ctrl, "ARDUINO_current_portname", "") or ctrl.getConfigData("serportname") or "").strip()  # v1.19
         if port == "" or port.upper() in ("NO DEVICE", "COM?") or port.upper().startswith("IP:"):  # v1.13: WLAN: nicht hier
             return False  # v1.13
         typ = ""  # v1.13: Typ der aktiven Verbindung und Anzahl der angeschlossenen Boards
@@ -349,12 +355,49 @@ def Fill_Port_From_Active_Connection(ComPortColumn):  # v1.13 (Issue 50)
         logger.warning("Anschluss der aktiven Verbindung nicht uebernommen", exc_info=True)  # v1.13
         return False  # v1.13
 
+def Port_Hint_Number(ComPortColumn):  # v1.20
+    """Negative Zahl im Anschluss der Tabelle (zum Beispiel -3 = Hinweis: das Geraet war an COM3): die Nummer 3, sonst 0."""  # v1.20
+    raw = str(ComPortPage().Cells(M02.SH_VARS_ROW, ComPortColumn)).strip().lstrip("*").strip()  # v1.20
+    m = re.fullmatch(r'-(\d+)', raw)  # v1.20
+    return int(m.group(1)) if m else 0  # v1.20
+
+
+def Resolve_Port_Hint(ComPortColumn):  # v1.20
+    """Der Anschluss in der Tabelle ist eine negative Zahl (-3): COM3 ist der Hinweis, an welchem Anschluss das Geraet zuletzt war.
+    Ist COM3 am Rechner vorhanden und passt das Geraet dort zum Typ des Blatts (Lichtmaschine: Nano, ESP32 oder Pico laut Build Optionen; rechter Arduino: Nano), wird COM3 in die Tabelle
+    eingetragen: Rueckgabe True. Sonst False (der Aufrufer laesst den Anwender das Geraet erkennen). Nur unter Windows (dort steht die Zahl fuer COM<n>)."""  # v1.20
+    number = Port_Hint_Number(ComPortColumn)  # v1.20
+    if number <= 0 or os.name != 'nt':  # v1.20
+        return False  # v1.20
+    port = "COM" + str(number)  # v1.20
+    if ComPortColumn == M25.COMPort_COL:  # v1.20
+        cur = M02a.Get_BoardTyp()  # v1.20
+        wanted = 'Pico' if cur == M02.HT_PICO else ('ESP32' if cur == M02.HT_ESP32 else 'Nano')  # v1.20
+    else:  # v1.20: rechter Arduino
+        wanted = 'Nano'  # v1.20
+    try:  # v1.20
+        for cp in portlist.comports(include_links=False):  # v1.20
+            if str(cp.device).upper() == port:  # v1.20
+                if Classify_Port(cp) != wanted:  # v1.20
+                    logger.info("Anschluss-Hinweis %s: dort haengt ein anderes Geraet (%s statt %s)", port, Classify_Port(cp) or "unbekannt", wanted)  # v1.20
+                    return False  # v1.20
+                ComPortPage().CellDict[M02.SH_VARS_ROW, ComPortColumn] = port  # v1.20
+                logger.info("Anschluss-Hinweis %s: das Geraet (%s) wurde dort gefunden, Anschluss in die Tabelle eingetragen", port, wanted)  # v1.20
+                return True  # v1.20
+    except Exception:                                      # noqa: BLE001  # v1.20
+        logger.warning("Anschluss-Hinweis %s nicht pruefbar", port, exc_info=True)  # v1.20
+    logger.info("Anschluss-Hinweis %s: am Rechner nicht vorhanden", port)  # v1.20
+    return False  # v1.20
+
+
 def Check_USB_Port_with_Dialog(ComPortColumn):
     fn_return_value = False
     #---------------------------------------------------------------------------
     #if P01.val(ComPortPage().Cells(M02.SH_VARS_ROW, ComPortColumn)) <= 0:
     if True: #HL not PG.global_controller.arduino or not PG.global_controller.arduino.is_open:
-        if not F00.port_is_available(ComPortPage().Cells(M02.SH_VARS_ROW, ComPortColumn)) and Fill_Port_From_Active_Connection(ComPortColumn):  # v1.13 (Issue 50)
+        if not F00.port_is_available(ComPortPage().Cells(M02.SH_VARS_ROW, ComPortColumn)) and Resolve_Port_Hint(ComPortColumn):  # v1.20: negative Zahl = Hinweis: das Geraet am selben Anschluss wiederfinden
+            fn_return_value = True  # v1.20
+        elif not F00.port_is_available(ComPortPage().Cells(M02.SH_VARS_ROW, ComPortColumn)) and Port_Hint_Number(ComPortColumn) == 0 and Fill_Port_From_Active_Connection(ComPortColumn):  # v1.13 (Issue 50)  # v1.20: mit Hinweis nicht irgendeine aktive Verbindung eintragen
             fn_return_value = True  # v1.13
         elif not F00.port_is_available(ComPortPage().Cells(M02.SH_VARS_ROW, ComPortColumn)):  # v1.13
             fn_return_value = M07New.USB_Port_Dialog(ComPortColumn)
@@ -369,6 +412,9 @@ def Ensure_Existing_USB_Port(ComPortColumn):  # v1.14
     """Der in der Tabelle eingetragene USB-Anschluss muss am Rechner existieren (sonst scheitert das Hochladen erst nach dem langen Build mit 'port doesn't exist').
     Existiert er nicht und haengt genau ein Board des eingestellten Typs am Rechner, wird dessen Anschluss in die Tabelle eingetragen.
     Rueckgabe: Name des Anschlusses oder '' (kein passender Anschluss; der Aufrufer meldet das)."""  # v1.14
+    if Port_Hint_Number(ComPortColumn):  # v1.20: negative Zahl = Hinweis: nur dieser Anschluss; klappt das nicht, soll der Anwender das Geraet erkennen lassen (kein anderes Board eintragen)
+        if not Resolve_Port_Hint(ComPortColumn):  # v1.20
+            return ""  # v1.20
     port = str(ComPortPage().Cells(M02.SH_VARS_ROW, ComPortColumn)).strip().lstrip("*").strip()  # v1.14
     if port.isdigit() and os.name == "nt":  # v1.14
         port = "COM" + port  # v1.14
@@ -897,7 +943,24 @@ def Get_Last_Detect_Info():  # v1.12
     return _LAST_INFO["firmware"], _LAST_INFO["signature"]  # v1.12
 
 
-def Get_Arduino_Baudrate(ComPort, Start_Baudrate, DeviceSignatur, FirmwareVer, DebugPrint=False):
+_FALLBACK_PORT_LOCK = threading.RLock()  # v1.17: nur wenn web_serial nicht importierbar ist (Tk-Programm)
+
+
+def _port_access_lock():  # v1.17
+    """Gemeinsame Sperre fuer Zugriffe auf serielle Anschluesse (web_serial.PORT_ACCESS_LOCK)."""  # v1.17
+    try:  # v1.17
+        from _web.web_serial import PORT_ACCESS_LOCK  # v1.17
+        return PORT_ACCESS_LOCK  # v1.17
+    except Exception:                                                  # noqa: BLE001  # v1.17
+        return _FALLBACK_PORT_LOCK  # v1.17
+
+
+def Get_Arduino_Baudrate(ComPort, Start_Baudrate, DeviceSignatur, FirmwareVer, DebugPrint=False):  # v1.17: exklusiv am Anschluss
+    with _port_access_lock():  # v1.17
+        return _Get_Arduino_Baudrate_impl(ComPort, Start_Baudrate, DeviceSignatur, FirmwareVer, DebugPrint)  # v1.17
+
+
+def _Get_Arduino_Baudrate_impl(ComPort, Start_Baudrate, DeviceSignatur, FirmwareVer, DebugPrint=False):  # v1.17 (vorher Get_Arduino_Baudrate)
     _LAST_INFO["signature"], _LAST_INFO["firmware"] = 0, ""  # v1.12
     import time as _time  # v1.16
     _cached = BOOTLOADER_CACHE.pop(str(ComPort).upper(), None)  # v1.16: die Geraeteauswahl hat den Bootloader dieses Anschlusses eben ermittelt: nicht noch einmal zuruecksetzen und abfragen
@@ -1160,7 +1223,7 @@ def DetectArduino(port, baudrate, HWVersion=255, SWMajorVersion=255, SWMinorVers
     zuruecksetzbar) bis zu DETECT_RETRIES-mal mit Pause (beim Blinken mit 50 Baud nur einmal: der Zeitgeber ruft jede Sekunde auf).
     Ergebnis wie bisher: 1 erkannt, 0 nicht erkannt, -1 Anschluss nicht zu oeffnen, -2 nicht zuweisbar, -3 nicht zuruecksetzbar."""  # v1.05
     retries = 1 if baudrate == 50 else DETECT_RETRIES  # v1.05
-    with _DETECT_LOCK:  # v1.05
+    with _port_access_lock(), _DETECT_LOCK:  # v1.05, v1.17: erst die Anschluss-Sperre (wie Verbinden und Geraeteauswahl), dann die eigene
         result = (0, None)  # v1.05
         for attempt in range(1, retries + 1):  # v1.05
             result = _DetectArduino_once(port, baudrate, HWVersion, SWMajorVersion, SWMinorVersion, DeviceSignatur, Trials, PrintDebug, SleepTime)  # v1.05

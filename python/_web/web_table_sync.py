@@ -1,11 +1,14 @@
-# Datei-Version: 1.08 (2026-11-23) - web_table_sync.py
+# Datei-Version: 1.10 (2026-11-26) - web_table_sync.py
 # Name: web_table_sync.py
 # Path: _web/web_table_sync.py
-# Version: 1.08
-# Last Update: 2026-11-23
+# Version: 1.10
+# Last Update: 2026-11-26
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.10 2026-11-26 Mindestlaenge des Verbindungscodes sechs statt zwoelf Zeichen; bestehende Codes unveraendert.
+#   1.09 2026-11-26 IP-/Port-Anzeige auf Basis 5.41 separat bereitgestellt; Backend und M08 unveraendert.
+#   1.09 2026-11-25 Quelladresse ohne HTTP-Praefix und separates Portfeld, Verbindung unveraendert.
 #   1.08 2026-11-23 Nach Import und Rueckgaengig Tabellenansicht ueber Originalpfad sofort aktualisieren.
 #   1.07 2026-11-23 Kanalauswahl wie bei neuer Zeile, Standard 0, Quellkanaele optional erhalten.
 #   1.06 2026-11-23 Feature-Branch auf Basis 4.79; Sprachen und Startvorgaben dokumentiert.
@@ -23,10 +26,27 @@ import os  # v1.06
 from pathlib import Path  # v1.06
 import socket  # v1.06
 import tempfile  # v1.06
+from urllib.parse import urlsplit  # v1.09
 
 from nicegui import ui, run  # v1.06
 from _web.web_i18n import tr  # v1.06
 from headless import headless_table_sync as sync  # v1.06
+
+
+def split_source_address(value):  # v1.09
+    parsed = urlsplit(value if "://" in value else "http://" + value)  # v1.09
+    return parsed.hostname or "", str(parsed.port or sync.TCP_PORT), parsed.scheme or "http"  # v1.09
+
+
+def source_address(host, port, scheme="http"):  # v1.09
+    try:  # v1.09
+        number = int(str(port or sync.TCP_PORT))  # v1.09
+        if not 1 <= number <= 65535:  # v1.09
+            raise ValueError()  # v1.09
+    except (ValueError, TypeError):  # v1.09
+        raise ValueError(tr("Bitte einen Port zwischen 1 und 65535 eingeben.")) from None  # v1.09
+    host = host.strip().strip("[]")  # v1.09
+    return f"{scheme}://{'[' + host + ']' if ':' in host else host}:{number}"  # v1.09
 
 
 def recalculate_workbook(wb, *, logic=None, columns=None):  # v1.01
@@ -182,8 +202,10 @@ def install(app, ctrl, workbook, version):  # v1.06
                         try:  # v1.06
                             if not selected.value:  # v1.06
                                 raise ValueError(tr("Bitte Tabellen auswählen."))  # v1.06
-                            if len(code.value or "") < 12:  # v1.06
-                                raise ValueError(tr("Der Verbindungscode muss mindestens 12 Zeichen haben."))  # v1.06
+                            # if len(code.value or "") < 12:  # v1.10 (entfallen)
+                            #     raise ValueError(tr("Der Verbindungscode muss mindestens 12 Zeichen haben."))  # v1.10 (entfallen)
+                            if len(code.value or "") < 6:  # v1.10
+                                raise ValueError(tr("Der Verbindungscode muss mindestens 6 Zeichen haben."))  # v1.10
                             settings.update(name=source_name.value.strip() or socket.gethostname(), code=code.value, selected=list(selected.value))  # v1.06
                             data = package()  # v1.06
                             if state["share"]:  # v1.06
@@ -228,7 +250,11 @@ def install(app, ctrl, workbook, version):  # v1.06
                         ui.button(tr("Firewall einrichten"), on_click=firewall).props("flat dense")  # v1.06
                         ui.label(tr("Im Heimnetz: TCP 45875 und UDP 45874 nur im privaten Netzwerk freigeben.")).classes("text-caption")  # v1.06
                 with ui.tab_panel(receive_tab).classes("mll-sync-pane"):  # v1.06
-                    address = ui.input(tr("Quelladresse"), value=settings.get("source", ""), placeholder="http://192.168.10.20:45875").props("outlined dense").classes("w-full")  # v1.06
+                    # address = ui.input(tr("Quelladresse"), value=settings.get("source", ""), placeholder="http://192.168.10.20:45875").props("outlined dense").classes("w-full")  # v1.09 (entfallen)
+                    source_host, source_port, source_scheme = split_source_address(settings.get("source", ""))  # v1.09
+                    with ui.row().classes("w-full flex-nowrap items-start gap-2"):  # v1.09
+                        address = ui.input(tr("Quelladresse"), value=source_host, placeholder="192.168.10.20").props("outlined dense").classes("grow min-w-0")  # v1.09
+                        port = ui.input(tr("Port"), value=source_port).props('outlined dense type=number min=1 max=65535').classes("w-28 shrink-0")  # v1.09
                     source_code = ui.input(tr("Verbindungscode"), value=settings.get("source_code", ""), password=True, password_toggle_button=True).props("outlined dense").classes("w-full")  # v1.06
                     results = ui.column().classes("w-full")  # v1.06
 
@@ -240,8 +266,13 @@ def install(app, ctrl, workbook, version):  # v1.06
                             with results:  # v1.06
                                 for item in found:  # v1.06
                                     def choose(item=item):  # v1.06
-                                        address.value = item["address"]  # v1.06
-                                    ui.button(item["name"] + " · " + item["address"], on_click=choose).props("outline")  # v1.06
+                                        nonlocal source_scheme  # v1.09
+                                        selected_host, selected_port, source_scheme = split_source_address(item["address"])  # v1.09
+                                        # address.value = item["address"]  # v1.09 (entfallen)
+                                        address.value = selected_host  # v1.09
+                                        port.value = selected_port  # v1.09
+                                    # ui.button(item["name"] + " · " + item["address"], on_click=choose).props("outline")  # v1.09 (entfallen)
+                                    ui.button(item["name"] + " · " + item["address"].split("://", 1)[-1], on_click=choose).props("outline")  # v1.09
                             status.set_text(tr("Gefundene Quellen: {count}", count=len(found)))  # v1.06
                         except Exception as error:  # v1.06
                             ui.notify(tr(str(error)), type="negative")  # v1.06
@@ -249,11 +280,14 @@ def install(app, ctrl, workbook, version):  # v1.06
                     async def preview():  # v1.06
                         status.set_text(tr("Verbindung wird geprüft …"))  # v1.06
                         try:  # v1.06
-                            raw = await run.io_bound(sync.fetch, address.value, source_code.value)  # v1.06
+                            # raw = await run.io_bound(sync.fetch, address.value, source_code.value)  # v1.09 (entfallen)
+                            endpoint = source_address(address.value, port.value, source_scheme)  # v1.09
+                            raw = await run.io_bound(sync.fetch, endpoint, source_code.value)  # v1.09
                             incoming = sync.validate(raw)  # v1.06
                             current = capture()  # v1.06
                             sync.merge(current, raw, local_columns=local_columns())  # v1.06
-                            settings.update(source=address.value.strip(), source_code=source_code.value)  # v1.06
+                            # settings.update(source=address.value.strip(), source_code=source_code.value)  # v1.09 (entfallen)
+                            settings.update(source=endpoint, source_code=source_code.value)  # v1.09
                             sync.save_settings(folder, settings)  # v1.06
                             names = list(incoming["sheets"])  # v1.06
                             with ui.dialog().props("persistent") as dialog, ui.card().classes("w-[760px] max-w-[94vw]").style("max-height:90vh;overflow-y:auto"):  # v1.06

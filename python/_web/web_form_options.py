@@ -1,12 +1,14 @@
-# Datei-Version: 1.74 (2026-11-25) - web_form_options.py
+# Datei-Version: 1.76 (2026-11-26) - web_form_options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_options.py
 # Path:           _web/web_form_options.py
-# Version:        1.74
-# Last Update:    2026-11-25
+# Version:        1.76
+# Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.76  2026-11-26  Firmware installieren (Pico): der Anschluss wird mit der Geraeteauswahl der Lichtmaschine gewaehlt (web_form_comport 1.45, SelectPicoDevice) statt mit dem eigenen kleinen Dialog; nur Pico-Geraete, auch unbekannte und andere MobaLedLib Geraete sind waehlbar. Zeilen mit '# v1.76'
+#   1.75  2026-11-26  Version 5.49 (Issue 75, Juergen): Menue Werkzeuge: die Reiter Entwicklungsumgebung und Update (Wartung) und Firmware Installation stehen nicht mehr in den Hardware Optionen, sondern oeffnen als eigene Fenster ueber Werkzeuge -> Wartung und Werkzeuge -> Firmware installieren (VIEW, Show(view=...))
 #   1.74  2026-11-26  Wurde der COM Port der Lichtmaschine in der Hardwaresuche (Geraeteauswahl) geaendert, verbindet das Programm nach dem Schliessen der Optionen automatisch (Einstellung AutoConnect); eine Verbindung zum alten Anschluss wird vorher getrennt. Zeilen mit '# v1.74'
 #   1.73  2026-11-26  Displaytyp: Liste nur mit '0,96"' und '1,3"', Standard 2 (0,96") wie in ESP32Extensions.h. Zeilen mit '# v1.73'
 #   1.72  2026-11-26  ESP32: Auswahlfeld 'Displaytyp' (OLED_TYP 1 = 1,3 Zoll Adapterplatine, 2 = 0,96 Zoll Hauptplatine) neben 'Anzeige auf dem Display'; gespeichert in esp32_options['oled_typ']. Zeilen mit '# v1.72'
@@ -223,6 +225,7 @@ async def _pick_fw_port_async(ports, connected, stored, title, texts):  # v1.47 
     return result  # v1.47
 
 
+VIEW = {"only": None}  # v1.75: None = Hardware Optionen; "wartung" = Reiter Entwicklungsumgebung und Update, "firmware" = Reiter Firmware Installation (Menue Werkzeuge)
 _TAB = {"name": None, "keep": False}  # v1.35: zuletzt gewaehlter Reiter; keep: beim naechsten Oeffnen wieder dort beginnen (nach Board erkennen)
 
 def ext_panel(vals):  # v1.41 (vorher in _options_async, Reiter Erweiterungen)  # v1.31  # v1.32
@@ -654,8 +657,8 @@ async def _options_async(spec: dict, st: dict):
                             return
                         vals[k] = e.value
                         update_pico_buttons()
-                        ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)  # v1.09
-                        esp_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None and not has_summary)  # v1.30  # v1.53
+                        ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None and not view_only)  # v1.09  # v1.75
+                        esp_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None and not has_summary and not view_only)  # v1.30  # v1.53  # v1.75
                         update_dcc_tab()  # v1.06
                         other = g["b"] if which == "a" else g["a"]
                         if other is not None:
@@ -673,6 +676,7 @@ async def _options_async(spec: dict, st: dict):
                     boards.append((p, g))  # v1.08
 
             esp32_value = spec["pages"]["left"].get("esp32_value")
+            view_only = bool(spec.get("view"))  # v1.75: Fenster Wartung / Firmware installieren: ohne die Reiter ESP Einstellungen und WLAN (OTA)
             has_summary = bool(spec["pages"]["left"].get("summary"))  # v1.53
             # with ui.tabs().classes("w-full") as tabs:  # v1.33 (entfallen)
             with ui.tabs().classes("w-full mll-opttabs").props("align=left") as tabs:  # v1.33  # v1.63: Reiter links ausgerichtet
@@ -686,10 +690,10 @@ async def _options_async(spec: dict, st: dict):
                         dcc["nano"], dcc["proto"] = bool(t.get("nano", dcc["initial"])), str(vals.get("protocol") or "")  # v1.64
                         set_tab_visible(tab_obj, dcc["initial"])  # v1.06
                 esp_tab = ui.tab(tr("ESP Einstellungen"))  # v1.30
-                esp_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None and not has_summary)  # v1.30  # v1.53: mit Hauptseite stehen die Einstellungen dort
+                esp_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None and not has_summary and not view_only)  # v1.30  # v1.53: mit Hauptseite stehen die Einstellungen dort
                 ota_tab = ui.tab(tr("WLAN (OTA)"))
                 # ext_tab = ui.tab(tr("Erweiterungen"))  # v1.31  # v1.41 (entfallen: eigenes Fenster, Menue Einstellungen)
-                ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None)
+                ota_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None and not view_only)  # v1.75
             # with ui.tab_panels(tabs, value=tab_objs[0]).classes("w-full"):  # v1.35 (entfallen)
             start_tab = next((t_ for t_ in tab_objs if _TAB["keep"] and t_.props["name"] == _TAB["name"]), tab_objs[0])  # v1.35
             _TAB["keep"] = False  # v1.35
@@ -803,19 +807,21 @@ def make_class(Base):
                 return super().Hide()
             self._web_hidden = True
 
-        def Show(self, first_page_only=False):
+        def Show(self, first_page_only=False, view=None):  # v1.75: view: None, 'wartung' oder 'firmware' (Menue Werkzeuge)
             if not wd.bridge_usable():
                 return super().Show(first_page_only=first_page_only)
             if getattr(self, "_web_running", False):       # Aufruf aus einem Handler: danach neu oeffnen
                 self._web_reshow = True
                 return
             self._web_running = True
+            VIEW["only"] = view  # v1.75
             self._web_auto_connect = False  # v1.36
             port_before = self._web_port_state()  # v1.74
             try:
                 self._web_loop(first_page_only)
             finally:
                 self._web_running = False
+                VIEW["only"] = None  # v1.75
                 self.IsActive = False
                 self._web_port_changed(port_before)  # v1.74: COM Port in der Hardwaresuche geaendert: Autoconnect nach dem Schliessen
                 if getattr(self, "_web_auto_connect", False):  # v1.36: Anschluss der Lichtmaschine erkannt: danach gleich verbinden
@@ -1134,7 +1140,20 @@ def make_class(Base):
             if beginner:  # v1.44: im Anfaenger Modus fehlen die Reiter Entwicklungsumgebung und Firmware Installation
                 tabs = [t_ for t_ in tabs if t_["name"] not in (tr("Entwicklungsumgebung"), tr("Firmware Installation"))]  # v1.44
             # return {"title": M09.Get_Language_Str("Optionen und spezielle Funktionen"), "tabs": tabs,  # v1.22  # v1.44 (entfallen)
-            return {"title": tr("Hardware Optionen"), "tabs": tabs,  # v1.44
+            view = VIEW["only"]  # v1.75: Menue Werkzeuge (Issue 75)
+            names_ide = (tr("Entwicklungsumgebung"), M09.Get_Language_Str("Update"))  # v1.75
+            names_fw = (tr("Firmware Installation"),)  # v1.75
+            if view == "wartung":  # v1.75
+                tabs = [t_ for t_ in tabs if t_["name"] in names_ide]  # v1.75
+            elif view == "firmware":  # v1.75
+                tabs = [t_ for t_ in tabs if t_["name"] in names_fw]  # v1.75
+            else:  # v1.75: die Hardware Optionen enthalten diese Reiter nicht mehr
+                tabs = [t_ for t_ in tabs if t_["name"] not in names_ide + names_fw]  # v1.75
+            if view and not tabs:  # v1.75: nichts anzuzeigen (zum Beispiel Anfaenger Modus): alle Reiter wie bisher
+                view = None  # v1.75
+                VIEW["only"] = None  # v1.75
+            # return {"title": tr("Hardware Optionen"), "tabs": tabs,  # v1.44  # v1.75 (entfallen)
+            return {"title": tr({"wartung": "Wartung", "firmware": "Firmware installieren"}.get(view, "Hardware Optionen")), "tabs": tabs, "view": view,  # v1.75
                     "pages": pages, "lower": lower}
 
         def _web_ensure_text(self, left):
@@ -1473,27 +1492,25 @@ def make_class(Base):
                 return  # v1.09
             serial_port = None  # v1.47 (Issue 58): nicht der Anschluss des Blatts (dort haengt die Lichtmaschine), sondern ein eigener, immer erfragter Pico-Anschluss
             if not HP.find_boot_drives():  # v1.47: ein Pico im Bootmodus (Laufwerk RPI-RP2) braucht keinen Anschluss
-                pico_ports = HP.find_pico_serial_ports()  # v1.47
-                if pico_ports:  # v1.47: ohne Pico-Anschluss meldet flash_uf2 die Hilfe fuer den Anwender
-                    import mlpyproggen.Prog_Generator as PG_  # v1.47
-                    ctrl_ = PG_.global_controller  # v1.47
+                # Die Geraeteauswahl der Lichtmaschine mit anderen Regeln (v1.76): nur Pico-Geraete, auch unbekannte und andere MobaLedLib Geraete sind waehlbar; das Blatt bleibt unveraendert
+                import mlpyproggen.Prog_Generator as PG_  # v1.47
+                import proggen.F00_mainbuttons as F00_  # v1.76
+                ctrl_ = PG_.global_controller  # v1.47
+                connected = ""  # v1.47
+                try:  # v1.47
+                    if ctrl_.is_connection_open():  # v1.47
+                        connected = str(getattr(ctrl_, "ARDUINO_current_portname", "") or "").strip()  # v1.47
+                except Exception:                                  # noqa: BLE001  # v1.47
                     connected = ""  # v1.47
+                serial_port = F00_.Select_COM_Port_UserForm.SelectPicoDevice(M09.Get_Language_Str("Geräteauswahl", False, M09.xlWhole), _FW_PORT["port"])  # v1.76
+                if not serial_port:  # v1.47
+                    return  # v1.47
+                _FW_PORT["port"] = serial_port  # v1.47
+                if connected and serial_port.upper() == connected.upper():  # v1.47: der gewaehlte Anschluss ist die verbundene Lichtmaschine: Verbindung vorher trennen
                     try:  # v1.47
-                        if ctrl_.is_connection_open():  # v1.47
-                            connected = str(getattr(ctrl_, "ARDUINO_current_portname", "") or "").strip()  # v1.47
-                    except Exception:                                  # noqa: BLE001  # v1.47
-                        connected = ""  # v1.47
-                    texts = {"info": tr("Welcher Pico soll die Firmware bekommen? Bitte den Anschluss des Pico wählen, der neu programmiert wird."),  # v1.47
-                             "label": tr("Anschluss"), "cancel": tr("Abbrechen"), "connected": tr("(mit der Lichtmaschine verbunden)")}  # v1.47
-                    serial_port = wd.call_in_loop(_pick_fw_port_async, pico_ports, connected, _FW_PORT["port"], title, texts, default=None)  # v1.47
-                    if not serial_port:  # v1.47
-                        return  # v1.47
-                    _FW_PORT["port"] = serial_port  # v1.47
-                    if connected and serial_port.upper() == connected.upper():  # v1.47: der gewaehlte Anschluss ist die verbundene Lichtmaschine: Verbindung vorher trennen
-                        try:  # v1.47
-                            ctrl_.disconnect()  # v1.47
-                        except Exception:                              # noqa: BLE001  # v1.47
-                            logger.debug("Trennen vor der Firmware nicht moeglich", exc_info=True)  # v1.47
+                        ctrl_.disconnect()  # v1.47
+                    except Exception:                              # noqa: BLE001  # v1.47
+                        logger.debug("Trennen vor der Firmware nicht moeglich", exc_info=True)  # v1.47
             try:  # v1.09
                 # HP.flash_uf2(path, log=lambda text: logger.info("%s", text))  # v1.09  # v1.47 (entfallen)
                 HP.flash_uf2(path, serial_port=serial_port, log=lambda text: logger.info("%s", text))  # v1.47

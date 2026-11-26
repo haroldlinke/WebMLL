@@ -1,12 +1,13 @@
-# Datei-Version: 1.07 (2026-11-25) - M18_Save_Load.py
+# Datei-Version: 1.08 (2026-11-26) - M18_Save_Load.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M18_Save_Load.py
 # Path:           proggen/M18_Save_Load.py
-# Version:        1.07
-# Last Update:    2026-11-25
+# Version:        1.08
+# Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.08  2026-11-26  Import in ein Blatt, das der Anwender oder die Startseite versteckt hat (zum Beispiel Selectrix nach der Wahl einer anderen Zentrale): das Blatt wird wieder eingeblendet, sonst landeten die Daten in einem unsichtbaren Blatt und es sah aus, als wurde nichts importiert. Zeilen mit '# v1.08'
 #   1.07  2026-11-25  Umrechnung der Adressen zwischen Selectrix und DCC/LNet/CAN beim Import wie der Wechsel des Protokolls in den Optionen (headless_protocol_switch): Bitposition 1 bis 8 statt 0 bis 7. Zeilen mit '# v1.07'
 #   1.06  2026-11-24  PGF-Datei mit mehreren Seiten: Frage 'Soll die Seite importiert werden?' hat im Browser den Knopf 'Ja, alle' (alle weiteren Seiten ohne Nachfrage); Strg+Ja wie bisher
 #   1.01  2026-10-17  __Copy_and_Clear_Sheet: Vorlagenzeilen des neuen Blatts ganz loeschen (EntireRow.ClearContents); die Zeile RGB_Heartbeat(#LED) blieb in jedem beim Laden einer PGF-Datei angelegten Blatt stehen; davor Original-Port, nicht erfasst
@@ -322,6 +323,9 @@ def __Open_or_Create_Sheet(SheetName, Inp_Page_ID, Name, ToActiveSheet):
             CreatedNewSheet = True
         else:
             PG.ThisWorkbook.Sheets(SheetName).Activate()
+        if getattr(P01.ActiveSheet, 'user_hidden', False):  # v1.08: das Zielblatt war versteckt (Startseite, Kontextmenue): wieder einblenden
+            P01.ActiveSheet.user_hidden = False  # v1.08
+            Debug.Print('Open_or_Create_Sheet: das versteckte Blatt ' + SheetName + ' wurde eingeblendet')  # v1.08
         Page_ID = P01.ActiveSheet.Cells(M02.SH_VARS_ROW, M02.PAGE_ID_COL)
     __Import_Page_ID = Inp_Page_ID
     __First_Line = True

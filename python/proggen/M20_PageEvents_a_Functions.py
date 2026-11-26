@@ -1,12 +1,13 @@
-# Datei-Version: 1.18 (2026-11-25) - M20_PageEvents_a_Functions.py
+# Datei-Version: 1.19 (2026-11-26) - M20_PageEvents_a_Functions.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M20_PageEvents_a_Functions.py
 # Path:           proggen/M20_PageEvents_a_Functions.py
-# Version:        1.18
-# Last Update:    2026-11-25
+# Version:        1.19
+# Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.19  2026-11-26  DCC, LNet, CAN: Pruefung im Adressfeld (Check_Address_Input): Adresse 0 und kleiner sind nicht erlaubt. Selectrix: Channel 1 bis 99 (vorher 0 bis 99), Bitposition 1 bis 8. Bei einem ungueltigen Wert Meldung und die Zelle wird geleert. Zeilen mit '# v1.19'
 #   1.18  2026-11-25  Selectrix: Pruefung der Wertebereiche bei der Eingabe (SX_Check_Input): Channel 0 bis 99 (Namen und Variablen sind erlaubt), Bitposition ganze Zahl 1 bis 8; bei einem ungueltigen Wert Meldung und die Zelle wird geleert. Zeilen mit '# v1.18'
 #   1.17  2026-11-25  Selectrix: der Dialog Taster/An-Aus oeffnet sich sofort, wenn Channel und Bitposition eingegeben sind und der Typ noch leer ist (wie bei DCC nach der Adresse), nicht erst beim erneuten Anklicken der Zelle Typ; Select_Typ_by_Dialog: bei Selectrix ist Channel 0 gueltig. Zeilen mit '# v1.17'
 #   1.16  2026-11-25  Update_TestButtons: bei Selectrix ist Channel 0 gueltig (Channel [0..99]); bisher loeschte die Pruefung 'Adresse kleiner 1' bei Channel 0 den Typ und die Testtasten. Zeilen mit '# v1.16'
@@ -565,8 +566,7 @@ def Select_Typ_by_Dialog(Target):
     # if P01.val(M25.Get_Address_String(Target.Row)) < 1:                                           # 08.12.25: Juergen don't allow 0 DCC address  # v1.03  # v1.11 (entfallen)
     #     return  # v1.03  # v1.11 (entfallen)
     address = M25.Get_Address_String(Target.Row)  # v1.11
-    # if P01.val(address.split(' - ', 1)[0]) < 1:  # v1.11: Adressspanne "5 - 8": nur die erste Adresse pruefen  # v1.17 (entfallen)
-    if P01.val(address.split(' - ', 1)[0]) < (0 if M25.Page_ID == 'Selectrix' else 1):  # v1.17: bei Selectrix ist Channel 0 gueltig
+    if P01.val(address.split(' - ', 1)[0]) < 1:  # v1.11: Adressspanne "5 - 8": nur die erste Adresse pruefen  # v1.19: auch bei Selectrix (Channel 1 bis 99)
         return  # v1.11
     OldEvents = P01.Application.EnableEvents
     P01.Application.EnableEvents = False
@@ -607,14 +607,40 @@ def SX_Check_Input(Target):  # v1.18
         if Numbers is None:  # v1.18
             return True  # v1.18
         Values = [Numbers.group(1).replace(',', '.')] + ([Numbers.group(2)] if Numbers.group(2) else [])  # v1.18
-        Ok = all(float(v) == int(float(v)) and 0 <= int(float(v)) <= 99 for v in Values)  # v1.18
-        Msg = tr("Ungültiger Wert '{wert}': Der Channel muss eine ganze Zahl von 0 bis 99 sein (oder ein Name).", wert=Text)  # v1.18
+        # Ok = all(float(v) == int(float(v)) and 0 <= int(float(v)) <= 99 for v in Values)  # v1.18  # v1.19 (entfallen)
+        Ok = all(float(v) == int(float(v)) and 1 <= int(float(v)) <= 99 for v in Values)  # v1.19: Channel 1 bis 99
+        Msg = tr("Ungültiger Wert '{wert}': Der Channel muss eine ganze Zahl von 1 bis 99 sein (oder ein Name).", wert=Text)  # v1.19
     if Ok:  # v1.18
         return True  # v1.18
     P01.MsgBox(Msg, vbCritical, tr('Ungültiger Eintrag bei Selectrix'))  # v1.18
     Target.Value = ''  # v1.18
     ClearButtons(Target.Row)  # v1.18
     return False  # v1.18
+
+def Check_Address_Input(Target):  # v1.19
+    """DCC, LNet, CAN: Adresse im Adressfeld pruefen. Eine Zahl (auch '3 - 5' oder '3-5') muss mindestens 1 sein, die Adresse 0 ist nicht erlaubt; Namen und Variablen sind erlaubt.
+    Bei einem ungueltigen Wert: Meldung, Zelle leeren, Rueckgabe False. Bei Selectrix (dort gilt Channel 0) immer True."""  # v1.19
+    import re  # v1.19
+    if M25.Page_ID == 'Selectrix' or Target.Column != M25.DCC_or_CAN_Add_Col:  # v1.19
+        return True  # v1.19
+    Text = str(Target.Value if Target.Value is not None else '').strip()  # v1.19
+    if Text == '':  # v1.19
+        return True  # v1.19
+    Numbers = re.fullmatch(r'([+-]?\d+(?:[.,]\d+)?)(?:\s*-\s*([+-]?\d+(?:[.,]\d+)?))?', Text)  # v1.19: eine Zahl oder zwei Zahlen mit '-' getrennt; sonst ein Name oder eine Variable
+    if Numbers is None:  # v1.19
+        return True  # v1.19
+    Values = [float(v.replace(',', '.')) for v in Numbers.groups() if v]  # v1.19
+    if all(v >= 1 for v in Values):  # v1.19
+        return True  # v1.19
+    try:  # v1.19
+        from _web.web_i18n import tr  # v1.19
+    except ImportError:  # v1.19
+        def tr(text, **values):  # v1.19
+            return text.format(**values) if values else text  # v1.19
+    P01.MsgBox(tr("Ungültiger Wert '{wert}': Die Adresse 0 ist nicht erlaubt, die kleinste Adresse ist 1.", wert=Text), vbCritical, tr('Ungültige Adresse'))  # v1.19
+    Target.Value = ''  # v1.19
+    ClearButtons(Target.Row)  # v1.19
+    return False  # v1.19
 
 def SX_Ask_Typ_if_Complete(Row):  # v1.17
     """Selectrix: Sind Channel und Bitposition eingegeben und ist der Typ leer, den Dialog Taster/An-Aus oeffnen (bei DCC macht das Update_StartValue nach der Adresse)."""  # v1.17
@@ -626,7 +652,7 @@ def SX_Ask_Typ_if_Complete(Row):  # v1.17
     if Bit < 1 or Bit > 8:  # v1.17
         return  # v1.17
     Channel = M25.Get_First_Number_of_Range(Row, M25.SX_Channel_Col)  # v1.17
-    if Channel == '' or P01.val(Channel) < 0 or P01.val(Channel) > 99:  # v1.17
+    if Channel == '' or P01.val(Channel) < 1 or P01.val(Channel) > 99:  # v1.17  # v1.19: Channel 1 bis 99
         return  # v1.17
     Select_Typ_by_Dialog(P01.Cells(Row, M25.Inp_Typ_Col))  # v1.17
 
@@ -1062,12 +1088,13 @@ def Global_Worksheet_Change(Target):
                     # 22.10.21:
             elif (Target.Column == M25.DCC_or_CAN_Add_Col) or (Target.Column == M25.SX_Channel_Col):
                 if M25.Page_ID == 'DCC' or M25.Page_ID == 'LNet':
-                    Complete_Addr_Column_with_InCnt(Row)
-                    Update_TestButtons(Row)
-                    Update_StartValue(Row)
+                    if Check_Address_Input(Target):  # v1.19: Adresse 0 ist nicht erlaubt
+                        Complete_Addr_Column_with_InCnt(Row)
+                        Update_TestButtons(Row)
+                        Update_StartValue(Row)
                 else:
                     #P01.ActiveCell().Offset(0, 1).Select        #' 15.10.20:
-                    if SX_Check_Input(Target):  # v1.18
+                    if SX_Check_Input(Target) and Check_Address_Input(Target):  # v1.18  # v1.19
                         SX_Ask_Typ_if_Complete(Row)  # v1.17: Channel nach der Bitposition eingegeben
             elif (Target.Column == M25.InCnt___Col):
                 Complete_Addr_Column_with_InCnt(Row)

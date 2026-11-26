@@ -1,12 +1,13 @@
-# Datei-Version: 1.00 (2026-11-25) - headless_protocol_switch.py
+# Datei-Version: 1.01 (2026-11-26) - headless_protocol_switch.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_protocol_switch.py
 # Path:           headless/headless_protocol_switch.py
-# Version:        1.00
-# Last Update:    2026-11-25
+# Version:        1.01
+# Last Update:    2026-11-26
 # Author:         Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.01  2026-11-26  Selectrix kennt Channel 1 bis 99 (Channel 0 und damit die Adresse 0 entfallen): DCC-Adressen 9 bis 800 sind umrechenbar. Zeilen mit '# v1.01'
 #   1.00  2026-11-25  Neu: Wechsel eines Blattes zwischen Selectrix und DCC/LNet/CAN mit Umrechnung. Selectrix hat zwei Spalten (Channel [0..99] und Bitposition [1..8])
 #                     statt der einen Spalte Adresse: die Spalte Bitposition wird eingefuegt oder entfernt, die Adressen werden umgerechnet, Rot/Gruen werden
 #                     zu Taster, die Testtasten werden neu gebaut.
@@ -18,7 +19,7 @@ alles Weitere ist um eine Spalte nach rechts verschoben). Der Wechsel zwischen S
 
 Adresse und Selectrix sind dieselbe fortlaufende Nummer: der Code-Generator rechnet bei Selectrix  Nummer = Channel * 8 + Bitposition - 1  (Bitposition 1 bis 8).
 Eine DCC-Adresse a (ab 1) wird deshalb zu  Channel = (a - 1) // 8,  Bitposition = (a - 1) % 8 + 1  und umgekehrt  a = Channel * 8 + Bitposition.
-Selectrix kennt Channel 0 bis 99, also Adressen 1 bis 800.
+Selectrix kennt Channel 1 bis 99, also Adressen 9 bis 800 (Channel 1, Bitposition 1 = Adresse 9).
 
 Typen: In Selectrix gibt es An/Aus und Taster, aber kein Rot und Gruen (zwei Tasten je Adresse). Rot und Gruen werden beim Wechsel zu Selectrix zu Taster,
 ein leerer Typ wird ebenfalls Taster. Beim Wechsel zurueck wird Taster zu einem leeren Typ (wie beim Import einer Selectrix-Pgf-Datei in ein DCC-Blatt). An/Aus bleibt An/Aus.
@@ -33,6 +34,7 @@ logger = logging.getLogger(__name__)
 SX = "Selectrix"
 ADDR_COL0 = 3                      # Spalte D (0-basiert): Adresse oder Name / Channel oder Name
 BIT_COL0 = 4                       # Spalte E (0-basiert): Bitposition, nur bei Selectrix
+MIN_SX_ADDR = 9                    # Channel 1, Bitposition 1  # v1.01
 MAX_SX_ADDR = 800                  # Channel 99, Bitposition 8
 FIRST_DATA_ROW0 = 2                # Zeile 3 (0-basiert): erste Datenzeile
 
@@ -43,15 +45,15 @@ def crosses(old_pid, new_pid) -> bool:
 
 
 def to_selectrix(address: int):
-    """DCC-Adresse -> (Channel, Bitposition); None, wenn Selectrix sie nicht kennt (kleiner 1 oder groesser 800)"""
-    if address < 1 or address > MAX_SX_ADDR:
+    """DCC-Adresse -> (Channel, Bitposition); None, wenn Selectrix sie nicht kennt (kleiner 9 oder groesser 800)"""  # v1.01
+    if address < MIN_SX_ADDR or address > MAX_SX_ADDR:  # v1.01
         return None
     return (address - 1) // 8, (address - 1) % 8 + 1
 
 
 def from_selectrix(channel: int, bit: int):
     """(Channel, Bitposition) -> Adresse; None bei ungueltiger Bitposition oder Channel"""
-    if not (0 <= channel <= 99 and 1 <= bit <= 8):
+    if not (1 <= channel <= 99 and 1 <= bit <= 8):  # v1.01
         return None
     return channel * 8 + bit
 
@@ -119,7 +121,7 @@ def warning_text(info, old_pid, new_pid, tr=lambda text, **values: text.format(*
         if info["red_green"]:
             parts += ["", tr("Selectrix kennt nur Taster und An/Aus, keine Rot/Grün-Schalter: {n} Zeilen mit Rot oder Grün werden zu Taster.", n=info["red_green"])]
         if info["unconvertible"]:
-            parts += ["", tr("{n} Adressen liegen außerhalb von 1 bis 800 (Channel 0 bis 99) und können nicht umgerechnet werden; der Code-Generator meldet sie als Fehler.", n=info["unconvertible"])]
+            parts += ["", tr("{n} Adressen liegen außerhalb von 9 bis 800 (Channel 1 bis 99) und können nicht umgerechnet werden; der Code-Generator meldet sie als Fehler.", n=info["unconvertible"])]
     else:
         parts += ["", tr("Taster werden zu einem leeren Typ (DCC, LNet und CAN kennen Rot, Grün und An/Aus).")]
         if info["unconvertible"]:

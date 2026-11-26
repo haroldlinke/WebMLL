@@ -1,8 +1,8 @@
-# Datei-Version: 1.05 (2026-11-26) - web_startpage.py
+# Datei-Version: 1.07 (2026-11-26) - web_startpage.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_startpage.py
 # Path:           _web/web_startpage.py
-# Version:        1.05
+# Version:        1.07
 # Last Update:    2026-11-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
@@ -15,6 +15,8 @@
 #                     Startprogramme/<Lichtmaschine>[_<Zentrale>].MLL_pgf), Haken "nicht mehr anzeigen" (Einstellung ShowStartPage), Hinweis zum Anfaenger Modus
 #   1.03  2026-11-26  Reihenfolge: erst die Lichtmaschine, dann die Zentrale (nur die von der Lichtmaschine unterstuetzten); Lichtmaschinen aus csv/Lichtmaschinen_prop.json (jedes Produkt eine Kachel); Anrede Du statt Sie
 #   1.04  2026-11-26  Lichtmaschinen berichtigt: Mini (Nano, nur DCC), Pico Zero (alle Zentralen), MoLLi (Pico, nur DCC) je eine Kachel
+#   1.07  2026-11-26  Eigene Bilder fuer Lichtmaschine Mini und MoLLi (images/Mini_image.png, images/MoLLi_image.png; eingebaute Liste und csv/Lichtmaschinen_prop.json 1.03)
+#   1.06  2026-11-26  Pico Zero unterstuetzt nur DCC (Selectrix, LNet und CAN sind auf der Hardware nicht vorhanden; csv/Lichtmaschinen_prop.json 1.02 und eingebaute Liste)
 #   1.05  2026-11-26  Alle Kacheln (Lichtmaschinen und Zentralen) gleich gross: Raster statt Zeile mit Umbruch, die letzte Zeile wird nicht breiter, Kacheln einer Zeile gleich hoch
 # ----------------------------------------------------------------------------------------------
 """Startseite fuer Einsteiger.
@@ -44,10 +46,13 @@ CENTRALS = (
 # Diese Liste gilt, wenn die Datei fehlt oder fehlerhaft ist.
 DEFAULT_MACHINES = (
     {"key": "Classic", "name": "Lichtmaschine Classic", "platform": "AM328", "board": "Nano", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": "Nano"},
-    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "centrals": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": ""},
+    # {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "centrals": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": ""},  # v1.07 (entfallen)
+    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "centrals": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "Mini_image.png", "detect": ""},  # v1.07
     {"key": "Pro", "name": "Lichtmaschine Pro", "platform": "ESP32", "board": "ESP32", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "ESP32", "program": "Pro", "image": "ESP32_image.png", "detect": "ESP32"},
-    {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},
-    {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "centrals": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": ""},
+    # {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},  # v1.06 (entfallen)
+    {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "centrals": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},  # v1.06
+    # {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "centrals": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": ""},  # v1.07 (entfallen)
+    {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "centrals": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "MoLLi_image.png", "detect": ""},  # v1.07
 )
 MACHINES_FILE = os.path.join("csv", "Lichtmaschinen_prop.json")
 MACHINES = [dict(m) for m in DEFAULT_MACHINES]        # v1.03
