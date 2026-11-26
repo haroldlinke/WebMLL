@@ -6774,3 +6774,5 @@ Patterngenerator, Stufe 1, Runde 1: Die Tabelle wird im neuen Reiter „Patterng
 
 Offen in dieser Stufe: Bearbeiten und Ereignisse (Runde 2), Werkzeugleiste (Neues Blatt, Aktualisieren, Neu berechnen, Spalten, RGB LED), Textausrichtung und Textüberlauf der Beschriftungen, Farben der LED-Tabelle (vermutlich bedingte Formatierung), Anleitung und Checkliste.
 Bekanntes Risiko: Importzirkel `XLA_Application` → `P01_Worksheetcalc` → `pattgen` → `Pattern_Generator`. `headless_pattgen` wird deshalb erst beim ersten Öffnen des Reiters importiert.
+
+Installationsprüfung 2026-11-26: Windows D:/WebMll mit beiden Features aktualisiert, release_tools full in Ordnung; offenes Windows-Programm muss noch neu gestartet werden. Linux-VM: /home/moosbewohner/WebMLL, WebMLL-TabellenSync-Test und WebMLL-M08-Test über den Original-Updater mit Sicherung auf 5.41 aktualisiert, danach beide Featureanpassungen eingespielt. Hauptdienst und Testinstanz neu gestartet; HTTP 8080 und 8098 jeweils 200. Keine bestehenden Tabellen importiert oder ersetzt.
