@@ -1,4 +1,4 @@
-Datei-Version: 1.121 (2026-11-26) - HOC_intern.md
+Datei-Version: 1.122 (2026-11-26) - HOC_intern.md
 Stand: Version 5.41
 
 # webMobaLedLib: History of Change (intern, ausführlich)
@@ -8,6 +8,16 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## Datenübertragung 1.10 (2026-11-26): Mindestlänge sechs Zeichen
+
+Neue Funktionen:
+- Verbindungscodes ab sechs Zeichen sind zulässig; längere und gespeicherte Codes bleiben gültig.
+
+Korrekturen:
+- Validierung und Meldung in DE/EN/NL/FR/IT/ES/DA angepasst. Automatische Erzeugung weiterhin 16 Zeichen, keine gespeicherten Codes automatisch gekürzt.
+
+Dateien: `_web/web_table_sync.py` 1.10, Sprachkatalog Ergänzung 2026-11-26. Nur die Mindestlänge im bestehenden Freigabedialog wird geändert; Backend/HMAC und Ports unverändert. Prüfung: vorhandene 24 Datenübertragungstests plus Grenzwerte 5/6/12/16 Zeichen und sieben Sprachen. Nicht geprüft: manuelle Browserbedienung/echter Tabellenimport mit sechsstelligem Code.
 
 ## 5.41 – Datenübertragung: Quelladresse und Port (2026-11-26)
 

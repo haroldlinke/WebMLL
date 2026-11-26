@@ -2771,3 +2771,5 @@ Flags auswählen;Select flags;;;;;
 Farb Test beenden;Close Color Test;;;;;
 
 Bitte einen Port zwischen 1 und 65535 eingeben.;Please enter a port between 1 and 65535.;Voer een poort tussen 1 en 65535 in.;Veuillez saisir un port entre 1 et 65535.;Inserire una porta tra 1 e 65535.;Introduzca un puerto entre 1 y 65535.;Indtast en port mellem 1 og 65535.
+
+Der Verbindungscode muss mindestens 6 Zeichen haben.;The connection code must contain at least 6 characters.;De verbindingscode moet minstens 6 tekens bevatten.;Le code de connexion doit contenir au moins 6 caractères.;Il codice di connessione deve contenere almeno 6 caratteri.;El código de conexión debe contener al menos 6 caracteres.;Forbindelseskoden skal indeholde mindst 6 tegn.

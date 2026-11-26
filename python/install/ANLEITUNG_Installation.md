@@ -1,5 +1,5 @@
 # MobaLedLib Studio – Installation und Betrieb
-*Datei-Version: 5.41-data.1 (2026-11-26), gilt für Version 5.41*
+*Datei-Version: 5.41-data.2 (2026-11-26), gilt für Version 5.41*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -1847,3 +1847,7 @@ Korrekturen:
 - Gespeicherte Adressen und Suchergebnisse befüllen beide Felder; das HTTP-Präfix entfällt nur in der Anzeige.
 
 Zu prüfen: Werden gespeicherte IP-Adresse und Port getrennt angezeigt? Füllt ein Suchergebnis beide Felder? Funktionieren eigener Port und gespeichertes HTTPS weiterhin? Bleiben die Felder auf schmalen Bildschirmen nebeneinander nutzbar?
+
+## Verbindungscode (Dialog 1.10)
+
+Der Verbindungscode muss mindestens sechs Zeichen enthalten. Längere und gespeicherte Codes bleiben gültig und werden nicht automatisch gekürzt. Zu prüfen: Wird ein Code mit fünf Zeichen abgelehnt und einer mit sechs Zeichen angenommen? Funktionieren längere Codes weiterhin?

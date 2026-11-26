@@ -1,9 +1,17 @@
-Datei-Version: 1.127 (2026-11-26) - HOC_Anwender.md
+Datei-Version: 1.128 (2026-11-26) - HOC_Anwender.md
 Stand: Version 5.41
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Datenübertragung 1.10 (2026-11-26): Mindestlänge sechs Zeichen
+
+Neue Funktionen:
+- Verbindungscodes ab sechs Zeichen sind zulässig; längere und gespeicherte Codes bleiben gültig.
+
+Korrekturen:
+- Validierung und Meldung in DE/EN/NL/FR/IT/ES/DA angepasst. Automatische Erzeugung weiterhin 16 Zeichen, keine gespeicherten Codes automatisch gekürzt.
 
 ## 5.41 – Datenübertragung: Quelladresse und Port (2026-11-26)
 

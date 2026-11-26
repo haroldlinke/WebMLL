@@ -1,5 +1,5 @@
 # MobaLedLib Studio – Checkliste für Betatester
-*Datei-Version: 4.20-data (2026-11-26), gilt für Version 5.41*
+*Datei-Version: 4.21-data (2026-11-26), gilt für Version 5.41*
 
 Danke, dass du die Web-Version testest. Ziel: **Installationsprobleme auf verschiedenen Systemen** und **Probleme der Oberfläche bei verschiedenen Arbeitsweisen** früh finden.
 Es genügt, wenn du das testest, was zu deinem System und deiner Arbeitsweise passt. Jede Rückmeldung hilft, auch „alles funktioniert“.
@@ -519,3 +519,7 @@ Korrekturen:
 - Gespeicherte Adressen und Suchergebnisse befüllen beide Felder; das HTTP-Präfix entfällt nur in der Anzeige.
 
 Zu prüfen: Werden gespeicherte IP-Adresse und Port getrennt angezeigt? Füllt ein Suchergebnis beide Felder? Funktionieren eigener Port und gespeichertes HTTPS weiterhin? Bleiben die Felder auf schmalen Bildschirmen nebeneinander nutzbar?
+
+## Verbindungscode (Dialog 1.10)
+
+Der Verbindungscode muss mindestens sechs Zeichen enthalten. Längere und gespeicherte Codes bleiben gültig und werden nicht automatisch gekürzt. Zu prüfen: Wird ein Code mit fünf Zeichen abgelehnt und einer mit sechs Zeichen angenommen? Funktionieren längere Codes weiterhin?

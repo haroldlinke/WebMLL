@@ -1,11 +1,12 @@
-# Datei-Version: 1.09 (2026-11-26) - web_table_sync.py
+# Datei-Version: 1.10 (2026-11-26) - web_table_sync.py
 # Name: web_table_sync.py
 # Path: _web/web_table_sync.py
-# Version: 1.09
+# Version: 1.10
 # Last Update: 2026-11-26
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.10 2026-11-26 Mindestlaenge des Verbindungscodes sechs statt zwoelf Zeichen; bestehende Codes unveraendert.
 #   1.09 2026-11-26 IP-/Port-Anzeige auf Basis 5.41 separat bereitgestellt; Backend und M08 unveraendert.
 #   1.09 2026-11-25 Quelladresse ohne HTTP-Praefix und separates Portfeld, Verbindung unveraendert.
 #   1.08 2026-11-23 Nach Import und Rueckgaengig Tabellenansicht ueber Originalpfad sofort aktualisieren.
@@ -201,8 +202,10 @@ def install(app, ctrl, workbook, version):  # v1.06
                         try:  # v1.06
                             if not selected.value:  # v1.06
                                 raise ValueError(tr("Bitte Tabellen auswählen."))  # v1.06
-                            if len(code.value or "") < 12:  # v1.06
-                                raise ValueError(tr("Der Verbindungscode muss mindestens 12 Zeichen haben."))  # v1.06
+                            # if len(code.value or "") < 12:  # v1.10 (entfallen)
+                            #     raise ValueError(tr("Der Verbindungscode muss mindestens 12 Zeichen haben."))  # v1.10 (entfallen)
+                            if len(code.value or "") < 6:  # v1.10
+                                raise ValueError(tr("Der Verbindungscode muss mindestens 6 Zeichen haben."))  # v1.10
                             settings.update(name=source_name.value.strip() or socket.gethostname(), code=code.value, selected=list(selected.value))  # v1.06
                             data = package()  # v1.06
                             if state["share"]:  # v1.06

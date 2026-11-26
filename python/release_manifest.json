@@ -1,5 +1,5 @@
 {
-"created": "2026-11-26 12:05:02",
+"created": "2026-11-26 16:50:31",
 "file_count": 2351,
 "files": {
 "Boards/Heartbeat.uf2": {
@@ -1067,8 +1067,8 @@
 "size": 23642
 },
 "_web/web_table_sync.py": {
-"sha256": "5e6e93a2895f37ef337c4ebdf92f21e76f1e871677899285bc8ba1766adb00d4",
-"size": 32755
+"sha256": "e2c91527660f2272c41189c931eec0bc0b586dda75c407edb78c6b59319a3e66",
+"size": 33085
 },
 "_web/web_tabs.py": {
 "sha256": "e724da9f032990539a32b8b9ca51f62de53ff777a0983df1eb8cc7a11aad866b",
@@ -1199,8 +1199,8 @@
 "size": 4205904
 },
 "csv/Web_Languages.csv": {
-"sha256": "a4c699b648741e9682ae71014b736408bbcc725b2331c8f7c2e2c5216ca13342",
-"size": 747758
+"sha256": "bb2926ab608c316f4bbf2a667e84480ba099be79dfab3136134a2b06bb2452d0",
+"size": 748150
 },
 "csv/xLibraries.csv": {
 "sha256": "a737fc50e763b84683b77c46c5f9a4b338362e0587400daea97f0ed0e89e2b81",
@@ -7571,8 +7571,8 @@
 "size": 2829
 },
 "install/ANLEITUNG_Installation.md": {
-"sha256": "b9d60f14c29726bba501ad2f6443d71f8f4d888dc769076eb070d1b719cd09f8",
-"size": 251938
+"sha256": "70b58ee92bcd362d8f9f29bb358ee3f79213f28503429392f414c6956c05c559",
+"size": 252259
 },
 "install/ANLEITUNG_Linux_Desktop.pdf": {
 "sha256": "ed3bf81790dab00eb36917e8a5bbc212fbf1d70682682223210bec33bb12efec",
@@ -7587,8 +7587,8 @@
 "size": 86520
 },
 "install/BETATEST_Checkliste.md": {
-"sha256": "3b24424e04ab679725c8fa0b34582ad2b01f9e25b92fe8d747c91a86adaa7f48",
-"size": 203586
+"sha256": "617f254843a37d8e9613f79a6e5c979d7c7ff676923700238d49e0e73b11d125",
+"size": 203907
 },
 "install/UEBERSETZEN.md": {
 "sha256": "2a5b4bf59358e3c0e82fabb6e88b0f4605de0bfa334c777f0822b1765b4c4107",
