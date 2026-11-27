@@ -1886,3 +1886,7 @@ Bei eingeschaltetem **Schnellen Update** schließt **Setup übertragen** eine be
 Ein **Doppelklick** auf **Name** oder **Beleuchtung** einer Datenzeile öffnet die **Makroauswahl** (wie in Excel). Den Makrotext bearbeitest du mit **Umschalt + Doppelklick**, **F2**, **Enter** oder dem Kontextmenü „Zelle bearbeiten“. Wer den Schalter in einer älteren Version ausgeschaltet gespeichert hatte, bekommt ihn einmal eingeschaltet; ausschalten geht unter Programm Einstellungen, „Bedienung der Tabelle“.
 
 In der erzeugten Datei `LEDs_AutoProg.h` stehen beim **Schnellen Update** (ESP32, Pico) die Eingangskanal-Defines (`INCH_…`) und die Zählwerte `TOTAL_SWITCHES_A` bis `D` und `TOTAL_VARIABLES` zwischen `//MLLDYN_BEGIN` und `//MLLDYN_END`, also im Teil, der zur Konfiguration gehört und nicht zur Firmware.
+
+## M08-Beitrag auf Basis 5.60
+
+Programmversion unverändert 5.60. Zu prüfen: Nano alt/neu/Full und Pico über USB, ESP32 über USB/WLAN; Anschluss-Hinweis; Abbrechen der Geräteauswahl und laufender Prozesse; Timeout ohne Erfolgsmeldung; Wiederverwendung einer bestehenden EFFECT-Verbindung bei schneller Konfiguration; Neustart und Wiederverbindung an echten Geräten. Hardwaretests sind offen.
