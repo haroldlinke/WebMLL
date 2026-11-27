@@ -1,13 +1,14 @@
-# Datei-Version: 1.01 (2026-11-19) - headless_macro_edit.py  # v1.01
+# Datei-Version: 1.02 (2026-11-27) - headless_macro_edit.py  # v1.02
 # Name: headless_macro_edit.py
 # Path: headless/headless_macro_edit.py
-# Version: 1.01  # v1.01
-# Last Update: 2026-11-19
-# Author: Harold Linke
+# Version: 1.02  # v1.02
+# Last Update: 2026-11-27
+# Author: Harold Linke, Jürgen Winkler
 # Licence: LGPL V2.1
 # History of Change:
 #   1.00  2026-11-19  Syntax und Parameterzahl bei manuell bearbeiteten Makros pruefen
 #   1.01  2026-11-19  Felder der Tabellenzeile (LEDs, InCnt, LocInCh) aus dem Makrotext ableiten wie der Auswahldialog
+#   1.02  2026-11-27  Makros der Extensions (EX.IRReceiverNEC): Name mit Punkt wird akzeptiert, Argumente werden wie im Extension-Dialog nach Typ, Min und Max der Metadaten geprueft (check_extension_arguments)
 """Syntax checks for manually edited configuration cells and the row fields derived from the macro."""  # v1.01
 from __future__ import annotations
 
@@ -27,7 +28,8 @@ def parse_call(text: str) -> tuple[str, list[str]] | None:
     text = text.strip()
     if not text or text.startswith(("#", "//")):
         return None
-    match = re.match(r"([A-Za-z_][A-Za-z_0-9]*)\s*\(", text)
+    # match = re.match(r"([A-Za-z_][A-Za-z_0-9]*)\s*\(", text)  # v1.02 (entfallen)
+    match = re.match(r"([A-Za-z_][A-Za-z_0-9]*(?:\.[A-Za-z_][A-Za-z_0-9]*)*)\s*\(", text)  # v1.02: Erweiterungsmakros wie EX.IRReceiverNEC(...)
     if not match:
         raise MacroSyntaxError("Ein Makroaufruf muss mit einem Namen und einer öffnenden Klammer beginnen.")
     stack = [")"]
@@ -81,7 +83,8 @@ def expected_argument_count(template: str, parameter_types: dict[str, str]) -> i
         return None
     count = 0
     for parameter in parsed[1]:
-        if not re.fullmatch(r"#?[A-Za-z_][A-Za-z_0-9]*", parameter):
+        # if not re.fullmatch(r"#?[A-Za-z_][A-Za-z_0-9]*", parameter):  # v1.02 (entfallen)
+        if not re.fullmatch(r"#?[A-Za-z_][A-Za-z_0-9]*(?:\.[A-Za-z_][A-Za-z_0-9]*)*", parameter):  # v1.02: EX.<Extension>.<Parameter>
             return None
         if parameter.startswith("#") or parameter in ("LED", "InCh", "Cx", "B_LED_Cx"):
             count += 1
@@ -90,6 +93,109 @@ def expected_argument_count(template: str, parameter_types: dict[str, str]) -> i
         else:
             count += {"RGB": 3, "RGB2": 6}.get(parameter_types[parameter], 1)
     return count
+
+
+# Extensions (EX.<TypeName>(...)): the arguments are passed to the constructor, their format is described by the metadata of the extension  # v1.02
+# (MobaLedLib.properties -> Par_Description: Type, Min, Max). The checks follow UserForm_Other.Check_Par_with_ErrMsg of the extension dialog.  # v1.02
+TIME_UNITS = {"min": 60000, "sek": 1000, "sec": 1000, "ms": 1}  # v1.02
+DEFAULT_VARIABLE_PATTERN = r"^[A-Za-z][A-Za-z0-9_]*$"  # v1.02: M02.PAT_LEDVariableName
+
+
+def is_extension_type(typ: str) -> bool:  # v1.02
+    """Typ column of Lib_Macros: 'EX.Constructor' (constructor of an extension) or 'EX.Macro.<id>' (macro of an extension)."""
+    typ = (typ or "").strip()
+    return typ == "EX.Constructor" or typ.startswith("EX.Macro.")
+
+
+def parameter_type(type_text: str) -> str:  # v1.02
+    """Type column of Par_Description: only the last part counts ('Domain.Class.Time' -> 'Time'), as in M10.__Get_Type_Only."""
+    return (type_text or "").strip().split(".")[-1]
+
+
+def _range_text(minimum: str, maximum: str) -> str:  # v1.02
+    if minimum != "" and maximum != "":
+        return f"{minimum} – {maximum}"
+    return f"≥ {minimum}" if minimum != "" else f"≤ {maximum}"
+
+
+def _to_float(text: str) -> float | None:  # v1.02
+    try:
+        return float(text.strip().replace(",", "."))
+    except ValueError:
+        return None
+
+
+def _check_integer(label: str, text: str, minimum: str, maximum: str, shown: str | None = None):  # v1.02
+    """Integer within Min..Max (empty Min or Max = no limit); returns (message, parameters) or None."""
+    number = _to_float(text) if text.strip() else None
+    if number is None or number != int(number):
+        return ("Der Parameter '{parameter}' muss eine ganze Zahl sein.", {"parameter": label})
+    low, high = _to_float(minimum), _to_float(maximum)
+    if (low is not None and number < low) or (high is not None and number > high):
+        return ("Der Parameter '{parameter}' hat den Wert {value}, zulässig ist der Bereich {range}.",
+                {"parameter": label, "value": shown if shown is not None else text.strip(), "range": _range_text(minimum, maximum)})
+    return None
+
+
+def check_argument(label: str, type_text: str, minimum: str, maximum: str, value: str, variable_pattern: str = DEFAULT_VARIABLE_PATTERN):  # v1.02
+    """Check one argument like the extension dialog. Returns None if it is valid, else (message, parameters) for tr()."""
+    value = value.strip()
+    kind = parameter_type(type_text)
+    if kind == "":
+        return _check_integer(label, value, minimum, maximum)
+    if kind == "Time":
+        if _to_float(value) is not None:
+            return _check_integer(label, value, minimum, maximum)
+        parts = value.replace(",", ".").split()
+        factor = TIME_UNITS.get(parts[1].lower()) if len(parts) == 2 else None
+        number = _to_float(parts[0]) if parts else None
+        if factor is None or number is None:
+            return ("Der Parameter '{parameter}' muss eine Zeitangabe sein, zum Beispiel 3 Sec (Einheiten: Min, Sec, ms).", {"parameter": label})
+        return _check_integer(label, str(int(number * factor + 0.5)), minimum, maximum, shown=value)
+    if kind == "Var":
+        if not value or not (value.startswith("#InCh") or re.match(r"[_A-Za-z]", value)):
+            return ("Der Parameter '{parameter}' muss einen gültigen Variablennamen enthalten.", {"parameter": label})
+        return None
+    if kind in ("LED#OrName", "LEDName"):
+        if kind == "LED#OrName" and _to_float(value) is not None:
+            return _check_integer(label, value, minimum, maximum)
+        if not re.match(variable_pattern, value):
+            return ("Der Parameter '{parameter}' muss einen gültigen Variablennamen enthalten.", {"parameter": label})
+    return None  # other types are not checked in the dialog either
+
+
+def check_extension_arguments(template: str, args: list[str], parameters: dict[str, tuple], variable_pattern: str = DEFAULT_VARIABLE_PATTERN):  # v1.02
+    """Check the arguments of an extension macro against the metadata of its parameters.
+
+    template: macro template of Lib_Macros (EX.Name(Par1, Par2, ...)); parameters: name -> (type, min, max, label) from Par_Description.
+    Returns None if everything is valid or can not be judged, else (message, parameters) for tr().
+    """
+    types = {name: info[0] for name, info in parameters.items()}
+    types = {name: parameter_type(kind) for name, kind in types.items()}
+    expected = expected_argument_count(template, types)
+    if expected is None:
+        return None
+    if len(args) != expected:
+        return ("Das Makro erwartet {expected} Parameter, angegeben wurden {actual}.", {"expected": expected, "actual": len(args)})
+    position = 0
+    for name in parse_call(template)[1]:
+        if name.startswith("#") or name in ("LED", "InCh", "Cx", "B_LED_Cx"):
+            position += 1  # LED, input channel and channel are checked together with the table row
+            continue
+        width = {"RGB": 3, "RGB2": 6}.get(types.get(name, ""), 1)
+        kind, minimum, maximum, label = parameters[name]
+        label = label or name.rsplit(".", 1)[-1]
+        if width == 1:
+            error = check_argument(label, kind, minimum, maximum, args[position], variable_pattern)
+            if error:
+                return error
+        else:
+            for color in args[position:position + width]:
+                number = _to_float(color)
+                if number is None or number != int(number) or not 0 <= number <= 255:
+                    return ("Die Farbwerte des Parameters '{parameter}' müssen ganze Zahlen von 0 bis 255 sein.", {"parameter": label})
+        position += width
+    return None
 
 
 # Row fields derived from the macro (same rules as the selection dialog in M09_Select_Macro)  # v1.01

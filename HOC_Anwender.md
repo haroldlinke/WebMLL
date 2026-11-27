@@ -1,9 +1,17 @@
-Datei-Version: 1.145 (2026-11-27) - HOC_Anwender.md
-Stand: Version 5.60
+Datei-Version: 1.146 (2026-11-27) - HOC_Anwender.md
+Stand: Version 5.61
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Version 5.61 (2026-11-27), Jürgen Winkler
+
+Korrekturen:
+- Makrotext direkt bearbeiten: Makros von Erweiterungen (zum Beispiel `EX.IRReceiverNEC(23, 0, 2)`) wurden fälschlich als ungültig abgewiesen. Jetzt werden Anzahl und Werte der Parameter so geprüft wie im Dialog der Erweiterung (Zahlenbereich, Zeitangabe, Variablenname, Farbwerte).
+
+Neue Funktionen:
+- Im Dialog „Ungültiger Makrotext“ löst die Return-Taste sofort „Änderung prüfen“ aus, und der Cursor steht beim Öffnen im Makrotext-Feld.
 
 ## Version 5.60 (2026-11-27), Pull Request 83 (Jueff)
 

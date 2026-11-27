@@ -1,5 +1,5 @@
-Datei-Version: 1.140 (2026-11-27) - HOC_intern.md
-Stand: Version 5.60
+Datei-Version: 1.141 (2026-11-27) - HOC_intern.md
+Stand: Version 5.61
 
 # webMobaLedLib: History of Change (intern, ausführlich)
 
@@ -61,6 +61,22 @@ SwitchC bewusst nicht aufgenommen (nicht gewünscht); der Name lässt sich einti
 | Wiki `pg_tabelle.txt` | 1.14 | Abschnitt „Die Funktion Logic“; `seiten_update` 1.14 |
 
 Das Makro `Logic(Erg, A AND B OR …)` und `Create_Result` sind unverändert; der Baukasten erzeugt denselben Text. Nicht im Browser geprüft, nur die reinen Funktionen (Test mit 11 Ausdrücken).
+
+## 5.61 (2026-11-27), Jürgen Winkler: Makrotext von Erweiterungen prüfen, Return im Fehlerdialog
+
+**Problem (Jürgen):** Beim direkten Bearbeiten wurde `EX.IRReceiverNEC(2, 0)` mit „Ein Makroaufruf muss mit einem Namen und einer öffnenden Klammer beginnen.“ abgewiesen. **Ursache:** `parse_call` und `expected_argument_count` (`headless_macro_edit.py`) erlaubten im Namen keinen Punkt. Die Namen der Erweiterungen sind `EX.<TypeName>`, ihre eigenen Parameter in der Vorlage `EX.<Erweiterung>.<Parameter>` (`M38_Extensions.Load_Extensions`).
+
+**Änderung:** Der Name darf Punkte enthalten (`Teil.Teil`). Für Makros vom Typ `EX.Constructor` und `EX.Macro.*` prüft `validate_macro_text` jetzt Anzahl und Werte der Argumente mit den Metadaten der Erweiterung aus `Par_Description` (Typ, Min, Max), nach dem Muster von `UserForm_Other.Check_Par_with_ErrMsg`: ohne Typ ganze Zahl im Bereich, `Time` (Zahl in ms oder Zahl mit Einheit Min/Sec/ms), `Var`, `LEDName` und `LED#OrName` (Variablenname), `RGB` und `RGB2` (0 bis 255). Andere Typen prüft auch der Dialog nicht. Fünf neue Meldungen in `Web_Languages.csv`. Im Dialog „Ungültiger Makrotext“ löst Return „Änderung prüfen“ aus (Umschalt+Return bleibt Zeilenumbruch), der Cursor steht beim Öffnen im Feld (`autofocus`).
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `headless/headless_macro_edit.py` | 1.02 | Name mit Punkt, `check_extension_arguments`, `check_argument`, `is_extension_type` |
+| `webmobaledlib.py` | 5.61 | `validate_macro_text` (Erweiterungen), `correct_macro_text` (Return, Autofokus), Version, Verlauf |
+| `csv/Web_Languages.csv` | | 5 neue Meldungen |
+| `test_macro_edit.py` | 1.02 | Tests für Namen mit Punkt, Argumentprüfung, Übersetzungen |
+| `install/BETATEST_Checkliste.md` | 4.37 | Punkt 434 |
+
+**Geprüft:** `test_macro_edit.py` (18 Tests, mit dem echten Übersetzer in allen sieben Sprachen). **Nicht geprüft:** Der Dialog im Browser (Return, Cursor). Die echten Metadaten von InfraredMLX lagen nicht vor, der Test nutzt nachgebaute Parameter. Wert-Prüfung nur für die genannten Typen; in der Vorlage fehlende Parameternamen in `Par_Description` lassen die Prüfung aus.
 
 ## 5.60 (2026-11-27), Pull Request 83 (Jueff): Mainboard_LED auf dem ESP32
 

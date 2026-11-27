@@ -1,13 +1,14 @@
-# Datei-Version: 1.01 (2026-11-19) - test_macro_edit.py  # v1.01
+# Datei-Version: 1.02 (2026-11-27) - test_macro_edit.py  # v1.02
 # Name: test_macro_edit.py
 # Path: test_macro_edit.py
-# Version: 1.01  # v1.01
-# Last Update: 2026-11-19
-# Author: Harold Linke
+# Version: 1.02  # v1.02
+# Last Update: 2026-11-27
+# Author: Harold Linke, Jürgen Winkler
 # Licence: LGPL V2.1
 # History of Change:
 #   1.00  2026-11-19  Tests der Makro-Syntaxpruefung
 #   1.01  2026-11-19  Tests fuer das Neufuellen von LEDs, InCnt und LocInCh nach dem Aendern des Makros
+#   1.02  2026-11-27  Test fuer Makronamen mit Punkt (EX.IRReceiverNEC)
 """Tests for the syntax checks used by the configuration cell editor."""
 import ast
 import csv
@@ -26,6 +27,13 @@ class MacroEditTests(unittest.TestCase):
         self.assertEqual(parse_call('Const(#LED, C1, f(1, 2), "a,b)", {1, 2})'),
                          ('Const', ['#LED', 'C1', 'f(1, 2)', '"a,b)"', '{1, 2}']))
         self.assertEqual(parse_call('RGB_Heartbeat()'), ('RGB_Heartbeat', []))
+
+    def test_extension_macro_names_with_dot(self):  # v1.02
+        self.assertEqual(parse_call('EX.IRReceiverNEC(2, 0)'), ('EX.IRReceiverNEC', ['2', '0']))
+        self.assertEqual(parse_call('EX.P_ScheduleExtension(Test1, Test1, SI_1, 13)')[0], 'EX.P_ScheduleExtension')
+        for text in ('EX.(1)', '.EX(1)', 'EX..A(1)', 'EX.1A(1)'):
+            with self.subTest(text=text), self.assertRaises(MacroSyntaxError):
+                parse_call(text)
 
     def test_invalid_calls(self):
         for text in ('Const', 'Const(', 'Const(1,)', 'Const(,1)', 'Const(1,,2)',
@@ -66,14 +74,22 @@ class MacroEditTests(unittest.TestCase):
                 'Nach dem Makroaufruf steht zusätzlicher Text.',
                 'Der Makroaufruf hat eine nicht geschlossene Klammer oder Zeichenkette.',
                 'Das Makro erwartet {expected} Parameter, angegeben wurden {actual}.',
-                'Fehler beim Prüfen des Makrotexts: {ex}']
+                # 'Fehler beim Prüfen des Makrotexts: {ex}']  # v1.02 (entfallen)
+                'Fehler beim Prüfen des Makrotexts: {ex}',
+                "Der Parameter '{parameter}' muss eine ganze Zahl sein.",
+                "Der Parameter '{parameter}' hat den Wert {value}, zulässig ist der Bereich {range}.",
+                "Der Parameter '{parameter}' muss eine Zeitangabe sein, zum Beispiel 3 Sec (Einheiten: Min, Sec, ms).",
+                "Der Parameter '{parameter}' muss einen gültigen Variablennamen enthalten.",
+                "Die Farbwerte des Parameters '{parameter}' müssen ganze Zahlen von 0 bis 255 sein."]  # v1.02
         catalog = load_catalog(force=True)
         for key in keys:
             self.assertTrue(all(catalog[key][:7]), key)
             for language in range(7):
                 with use_language(language):
-                    result = tr(key, expected=5, actual=3, ex='test')
-                self.assertEqual(result, catalog[key][language].format(expected=5, actual=3, ex='test'))
+                    # result = tr(key, expected=5, actual=3, ex='test')  # v1.02 (entfallen)
+                    result = tr(key, expected=5, actual=3, ex='test', parameter='P', value='9', range='0 – 5')  # v1.02
+                # self.assertEqual(result, catalog[key][language].format(expected=5, actual=3, ex='test'))  # v1.02 (entfallen)
+                self.assertEqual(result, catalog[key][language].format(expected=5, actual=3, ex='test', parameter='P', value='9', range='0 – 5'))  # v1.02
 
     def test_library_count_validation(self):
         root = Path(__file__).parent
@@ -85,12 +101,20 @@ class MacroEditTests(unittest.TestCase):
             rows = list(csv.reader(f, delimiter=';'))
         with (root / 'csv' / 'Par_Description.csv').open(encoding='utf-8-sig', newline='') as f:
             parameters = list(csv.reader(f, delimiter=';'))
+        # Konstruktor einer Extension (wie M38_Extensions.Load_Extensions ihn in Lib_Macros und Par_Description einträgt)  # v1.02
+        extension_row = [''] * 17
+        extension_row[0], extension_row[14], extension_row[15] = 'EX.Constructor', 'EX.IRReceiverNEC(EX.InfraredMLX.Pin, EX.InfraredMLX.Wait, EX.InfraredMLX.Name)', 'EX.IRReceiverNEC('
+        rows.append(extension_row)
+        parameters += [['EX.InfraredMLX.Pin', '', '', '0', '40', '2', '', 'Pin'],
+                       ['EX.InfraredMLX.Wait', '', 'Time', '0', '1000', '0', '', 'Wartezeit'],
+                       ['EX.InfraredMLX.Name', '', 'Var', '', '', '', '', 'Name']]
         by_name = {r[15]: i for i, r in enumerate(rows) if len(r) > 16 and r[15]}
         lib = SimpleNamespace(Cells=lambda row, col: rows[row][col - 1])
         param_sheet = SimpleNamespace(tksheet=SimpleNamespace(data=parameters))
         env = {'macro_edit': macro_edit, 'M09SM': SimpleNamespace(Find_Macro_in_Lib_Macros_Sheet=lambda s: by_name.get(s, 0)),
                'M02': SimpleNamespace(LIBMACROS_SH='lib', PAR_DESCR_SH='params', SM_Typ___COL=1,
-                                      SM_Mode__COL=2, SM_Macro_COL=15),
+                                      # SM_Mode__COL=2, SM_Macro_COL=15),  # v1.02 (entfallen)
+                                      SM_Mode__COL=2, SM_Macro_COL=15, PAT_LEDVariableName=r'^[A-Za-z][A-Za-z0-9_]*$'),  # v1.02
                'wb': SimpleNamespace(Sheets=lambda name: lib if name == 'lib' else param_sheet),
                'tr': lambda text, **kw: text.format(**kw)}
         exec(compile(module, 'webmobaledlib.py', 'exec'), env)
@@ -101,6 +125,12 @@ class MacroEditTests(unittest.TestCase):
             validate(ws, 'Const(#LED)')
         validate(ws, 'House(#LED, #InCh, 1, 2, ROOM_DARK)')
         validate(ws, 'CustomMacro(1)')
+        validate(ws, 'EX.IRReceiverNEC(2, 0, Taste)')  # v1.02
+        validate(ws, 'EX.IRReceiverNEC(2, 0.5 Sec, _Taste)')  # v1.02
+        for text in ('EX.IRReceiverNEC(2, 0)', 'EX.IRReceiverNEC(41, 0, Taste)', 'EX.IRReceiverNEC(a, 0, Taste)',
+                     'EX.IRReceiverNEC(2, 2 Sec, Taste)', 'EX.IRReceiverNEC(2, 5 Tage, Taste)', 'EX.IRReceiverNEC(2, 0, 1Taste)'):  # v1.02
+            with self.subTest(text=text), self.assertRaises(MacroSyntaxError):
+                validate(ws, text)
 
 
 class RowFieldTests(unittest.TestCase):  # v1.01

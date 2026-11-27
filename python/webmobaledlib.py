@@ -1,8 +1,8 @@
-# Datei-Version: 5.60 (2026-11-27) - webmobaledlib.py
+# Datei-Version: 5.61 (2026-11-27) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        5.60
+# Version:        5.61
 # Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
@@ -81,6 +81,7 @@
 #   5.58  2026-11-27  Servo- und LED-Farb-Animations-Dialog: Feld Anschluss-Kanal heisst LM-Ausgang mit Tooltip; Parameterformular: LED Kanal Auswahl heisst LED RGB-Anschluss Auswahl; Wiki Begriffe: LM-Ausgang, LED RGB-Anschluss (web_form_servoanim 1.07, web_form_ledcoloranim 1.02, web_form_other 1.21, Web_Languages.csv)
 #   5.59  2026-11-27  Pull Request 82 (Jueff, dort V5.51 bis V5.69): Serieller Monitor (Verbindungsknopf, EFFECT oder DIRECT Mode, Verbindungsverlust mit automatischem Neuverbinden, Verlassen des Monitors stellt die Verbindung auf das Blatt um), Setup uebertragen mit schnellem Upload ueber die offene Verbindung, Plattformen und Protokolle (csv/Lichtmaschinen_prop.json: devices, platforms, protocols), LNet-Lizenz je Blatt, Selectrix-Pruefung, Firmware-Auswahl nach Plattform, ESP32: keine Mainboard_LED-Defines in der Kopfdatei, Doppelklick-Schalter, Sync_Toggle_Buttons_by_Address. Zeilen im Code behalten die Marker # v5.51 bis # v5.69 des PR; die Dateien web_params (Stand 5.51) und web_tabs sind zusammengefuehrt
 #   5.60  2026-11-27  Pull Request 83 (Jueff, dort Identify 1.04): ESP32: das Makro Mainboard_LED(n, InCh) schaltet die drei Status LEDs der Hauptplatine ueber MllStatusLedSet() (wie das Identify Blinken); keine Pins mehr (LEDs_AutoProg.ino, Zeilen mit '// v1.04'; nicht kompiliert, nicht am Board getestet)
+#   5.61  2026-11-27  Jürgen Winkler: Makrotext direkt bearbeiten: Makros der Extensions (zum Beispiel EX.IRReceiverNEC(23, 0, 2)) wurden als ungueltig abgewiesen (Name mit Punkt); jetzt werden Anzahl und Werte der Argumente wie im Extension-Dialog nach Typ, Min und Max der Metadaten der Extension geprueft (headless_macro_edit 1.02); im Dialog Ungueltiger Makrotext loest Return Aenderung pruefen aus, der Cursor steht beim Oeffnen im Makrotext. Zeilen mit '# v5.61'
 #   5.38  2026-11-26  Ohne Lichtmaschine kam die Meldung 'Fehler beim Oeffnen der Verbindung' bei jedem Wechsel auf einen Reiter mit Direktmodus (Farb Test, Servo Test, Sound Test): das automatische Verbinden beim Reiterwechsel scheitert jetzt nur einmal mit Meldung, danach wird nicht mehr versucht, bis eine Verbindung besteht oder der Anwender selbst verbindet (Menue, Testtasten)
 #   5.37  2026-11-26  Farb Test: Knopf 'Farb Test beenden' unten rechts (web_colorcheck 1.13); Set_ColTab oeffnet den Farb Test auch ohne Lichtmaschine, kein Anschluss noetig (M60_CheckColors 1.01); Parameterformular: Flags (OptCtrPar, CtrMode, RandMode) als aufklappbare Hakenliste (web_form_other 1.17, Web_Languages.csv)
 #   5.36  2026-11-26  Startseite: alle Kacheln gleich gross (auch Ohne Zentrale und die letzte Lichtmaschine), Raster statt Zeilenumbruch (web_startpage 1.05)
@@ -1875,7 +1876,8 @@ def font_scales(ctrl) -> dict:
 # VERSION = "5.57 (2026-11-27)"  # v5.58 (entfallen)
 # VERSION = "5.58 (2026-11-27)"  # v5.59 (entfallen)
 # VERSION = "5.59 (2026-11-27)"  # v5.60 (entfallen)
-VERSION = "5.60 (2026-11-27)"  # v5.60
+# VERSION = "5.60 (2026-11-27)"  # v5.61 (entfallen)
+VERSION = "5.61 (2026-11-27)"  # v5.61
 # VERSION = "4.09 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.08 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.07 (2026-11-19)"  # v3.64 (entfallen)
@@ -5074,10 +5076,20 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if not lib_row:
             return  # Custom macros can be defined outside Lib_Macros.
         lib = wb.Sheets(M02.LIBMACROS_SH)
-        if str(lib.Cells(lib_row, M02.SM_Typ___COL)).strip() or str(lib.Cells(lib_row, M02.SM_Mode__COL)).strip():
+        # if str(lib.Cells(lib_row, M02.SM_Typ___COL)).strip() or str(lib.Cells(lib_row, M02.SM_Mode__COL)).strip():  # v5.61 (entfallen)
+        typ = str(lib.Cells(lib_row, M02.SM_Typ___COL)).strip()  # v5.61
+        is_extension = macro_edit.is_extension_type(typ)  # v5.61
+        if (typ and not is_extension) or str(lib.Cells(lib_row, M02.SM_Mode__COL)).strip():  # v5.61
             return  # Special forms have their own, sometimes variable syntax.
         template = str(lib.Cells(lib_row, M02.SM_Macro_COL))
         param_sheet = wb.Sheets(M02.PAR_DESCR_SH)
+        if is_extension:  # v5.61: the arguments of an extension are described by its metadata, checked like in the extension dialog
+            cells = lambda r, i: str(r[i]).strip() if len(r) > i and r[i] is not None else ""  # v5.61
+            parameters = {cells(r, 0): (cells(r, 2), cells(r, 3), cells(r, 4), cells(r, 7)) for r in param_sheet.tksheet.data if cells(r, 0)}  # v5.61
+            error = macro_edit.check_extension_arguments(template.split("§")[0], parsed[1], parameters, M02.PAT_LEDVariableName)  # v5.61
+            if error:  # v5.61
+                raise macro_edit.MacroSyntaxError(tr(error[0], **error[1]))  # v5.61
+            return  # v5.61
         types = {str(r[0]).strip(): str(r[2]).strip() for r in param_sheet.tksheet.data if len(r) > 2}
         count = macro_edit.expected_argument_count(template, types)
         if count is not None and len(parsed[1]) != count:
@@ -5121,7 +5133,9 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         with ui.dialog().props("persistent") as dlg, ui.card().classes("w-[720px] max-w-full"):
             ui.label(tr("Ungültiger Makrotext")).classes("text-h6 text-negative")
             message = ui.label(error).classes("text-negative")
-            editor = ui.textarea(tr("Makrotext"), value=text).props("outlined autogrow").classes("w-full")
+            # editor = ui.textarea(tr("Makrotext"), value=text).props("outlined autogrow").classes("w-full")  # v5.61 (entfallen)
+            editor = ui.textarea(tr("Makrotext"), value=text).props("outlined autogrow autofocus").classes("w-full")  # v5.61: Cursor beim Oeffnen im Makrotext
+            editor.on("keydown.enter.exact.prevent", lambda _: dlg.submit(editor.value))  # v5.61: Return loest 'Änderung prüfen' aus (Umschalt+Return bleibt ein Zeilenumbruch)
             with ui.row().classes("w-full justify-end"):
                 ui.button(tr("Ursprünglichen Makrotext wiederherstellen"), on_click=lambda: dlg.submit(None)).props("flat")
                 ui.button(tr("Änderung prüfen"), on_click=lambda: dlg.submit(editor.value)).props("color=primary")
