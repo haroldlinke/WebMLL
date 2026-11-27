@@ -1,12 +1,14 @@
-# Datei-Version: 1.06 (2026-11-24) - headless_dyn_config.py
+# Datei-Version: 1.08 (2026-11-27) - headless_dyn_config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_dyn_config.py
 # Path:           headless/headless_dyn_config.py
-# Version:        1.06
-# Last Update:    2026-11-24
+# Version:        1.08
+# Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.08  2026-11-27  normalize_header: die Namen der Eingangskanaele (INCH_xxx) werden auch aus den Zeilen zwischen //MLLDYN_BEGIN und //MLLDYN_END gelesen (dort stehen jetzt die Eingangskanal-Defines), sonst bliebe die Ersetzung durch die Nummer aus und eine Aenderung der Nummern ginge an der Signatur vorbei. Zeilen mit '# v1.08'
+#   1.07  2026-11-27  SharedLink: die Konfiguration ueber die schon offene Verbindung (EFFECT Mode, derselbe Anschluss) uebertragen, ohne sie zu schliessen und neu zu oeffnen; Link.read ruft _fill. Zeilen mit '# v1.07'
 #   1.06  2026-11-24  wait_for_port: Device-Pfad, Seriennummer und Location werden in einer Schleife ueber die Ports geprueft. Zeilen mit '# v1.06'
 #   1.05  2026-11-24  wait_for_port: Pico gilt schon als gefunden, wenn die Seriennummer ODER die Location (jeweils, wenn uebergeben) passt. Zeilen mit '# v1.05'
 #   1.04  2026-11-24  ~MLLERR wird auch ohne Leerzeichen und ohne Text erkannt (Fehler vom Geraet: unbekannter Fehler). Zeilen mit '# v1.04'
@@ -290,8 +292,12 @@ def normalize_header(text):
     """LEDs_AutoProg.h ohne alles, was die Firmware nicht beeinflusst: Datentabellen (zwischen den Marken), Zeitstempel, Signatur, Kommentare und die Namen der Eingangskanaele
     (INCH_xxx wird durch die Nummer ersetzt)."""
     lines, skip = [], False
+    inch = {}  # v1.08
     for line in text.splitlines():
         s = line.strip()
+        m_inch = re.match(r"\s*#\s*define\s+(INCH_\w+)\s+(\d+)\b", line)  # v1.08: auch in den Zeilen zwischen den Marken (dort stehen sie im Modus MLL_DYNAMIC_CONFIG)
+        if m_inch:  # v1.08
+            inch[m_inch.group(1)] = m_inch.group(2)  # v1.08
         if s == MARK_BEGIN:
             skip = True
             continue
@@ -303,13 +309,11 @@ def normalize_header(text):
         if re.match(r"#\s*define\s+(TOTAL_SWITCHES_[A-D]|TOTAL_VARIABLES)\b", s):  # v1.01: nur Information in der Kopfdatei, kein Programm benutzt diese Werte
             continue  # v1.01
         lines.append(line)
-    inch = {}
+    # inch = {}  # v1.08 (oben gefuellt)
     rest = []
     for line in lines:
         m = re.match(r"\s*#\s*define\s+(INCH_\w+)\s+(\d+)\b", line)
-        if m:
-            inch[m.group(1)] = m.group(2)
-        else:
+        if not m:  # v1.08
             rest.append(line)
     out = []
     for line in rest:
@@ -459,10 +463,52 @@ class Link:
                     return msg
             if time.time() >= end:
                 return None
-            try:
-                self.buf += self.ser.read(max(1, self.ser.in_waiting))
-            except Exception as e:                         # noqa: BLE001
-                raise DynConfigError("Schnittstelle: %s" % e)
+            self._fill(end)  # v1.07
+
+    def _fill(self, end):  # v1.07
+        try:
+            self.buf += self.ser.read(max(1, self.ser.in_waiting))
+        except Exception as e:                             # noqa: BLE001
+            raise DynConfigError("Schnittstelle: %s" % e)
+
+
+class SharedLink(Link):  # v1.07
+    """Wie Link, aber ueber die schon offene Verbindung des Controllers (zum Beispiel EFFECT Mode am selben Anschluss): die Verbindung wird weder geschlossen noch neu geoeffnet.
+    Gesendet wird direkt auf die offene Schnittstelle, die Antworten (~MLLCFG, ~MLLERR) liefert der Empfangsthread des Controllers ueber ctrl.cfg_lines (sie erscheinen nicht im Serial Monitor)."""
+
+    def __init__(self, ctrl):
+        import logging
+        import queue as _queue
+        self.log = logging.getLogger("dyn_cfg.link")
+        self.ctrl = ctrl
+        self.ser = ctrl.arduino
+        self.buf = b""
+        self.lines = _queue.Queue()
+        ctrl.cfg_lines = self.lines
+
+    def close(self):                                       # die Verbindung bleibt offen
+        if getattr(self.ctrl, "cfg_lines", None) is self.lines:
+            self.ctrl.cfg_lines = None
+
+    def clear(self):
+        self.buf = b""
+        try:
+            while True:
+                self.lines.get_nowait()
+        except Exception:                                  # noqa: BLE001
+            pass
+
+    def _fill(self, end):
+        import queue as _queue
+        if self.ctrl.arduino is not self.ser or not getattr(self.ser, "is_open", True):
+            raise DynConfigError("Schnittstelle: Verbindung geschlossen")
+        try:
+            text = self.lines.get(timeout=max(0.01, min(0.1, end - time.time())))
+        except _queue.Empty:
+            return
+        self.buf += text.encode("ascii", errors="replace")
+        if not self.buf.endswith(bytes([10])):
+            self.buf += bytes([10])
 
 
 class TcpLink(Link):  # v1.02

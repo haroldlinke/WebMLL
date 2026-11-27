@@ -1,15 +1,16 @@
-# Datei-Version: 1.02 (2026-11-15) - F00_mainbuttons.py
+# Datei-Version: 1.03 (2026-11-26) - F00_mainbuttons.py
 # ----------------------------------------------------------------------------------------------
 # Name:           F00_mainbuttons.py
 # Path:           proggen/F00_mainbuttons.py
-# Version:        1.02
-# Last Update:    2026-11-15
+# Version:        1.03
+# Last Update:    2026-11-26
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
 #   1.01  2026-10-27  PlatformIO: keine Pruefung der ARDUINO IDE und der Bibliotheken beim Start, Sketchbook-Pfad = Python-Ordner, Erweiterungen werden geladen
 #   1.02  2026-11-15  Simulator beim Start ueber M39.Sim_Autostart
+#   1.03  2026-11-26  port_is_available: eine Zahl kleiner oder gleich 0 im Anschluss (Excel setzt beim Hochladen -7 als Hinweis, 'Anschluss belegt') gilt als nicht vorhanden; vorher wurde daraus 'COM-7' und die Pruefung des Pico meldete 'kein PICO an COM-7'
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -418,6 +419,11 @@ def port_is_available(port):
         return port > 0
     elif type(port)==str or type(port)==P01.CRange:
         strport=str(port)
+        try:  # v1.03
+            if float(strport.strip()) <= 0:  # v1.03: negative Zahl (Hinweis fuer den Auto-Reconnect) oder 0: kein Anschluss
+                return False  # v1.03
+        except ValueError:  # v1.03
+            pass  # v1.03
         port_available = not (strport.startswith("*") or strport=="COM?" or strport==" " or strport=="NO DEVICE" or strport=="")
         if port_available:
             if strport.startswith("IP:"):

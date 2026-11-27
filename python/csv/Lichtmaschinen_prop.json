@@ -1,11 +1,15 @@
 {
-  "_Datei-Version": "1.01 (2026-11-26) - Lichtmaschinen_prop.json",
-  "_Hinweis": "Eigenschaften aller Lichtmaschinen-Produkte. Ein neues Produkt wird nur hier als weiterer Eintrag unter Lichtmaschinen ergaenzt (die Startseite zeigt jeden Eintrag als eigene Kachel). Felder: key = eindeutiger Kurzname (auch Teil des Dateinamens des Startprogramms, wenn program fehlt), name = Anzeigename, platform = Plattform (AM328, ESP32, PICO), board = einzustellendes Board (Nano, ESP32, Pico), centrals = unterstuetzte Zentralen (DCC, Selectrix, LNet, CAN), text = Kurztext der Kachel, program = Name des Startprogramms im Ordner Startprogramme (ohne .MLL_pgf), image = Bild im Ordner images, detect = Typ der Anschlusserkennung (Nano, ESP32, Pico) oder leer, wenn das Produkt nicht automatisch erkannt werden kann.",
-  "Lichtmaschinen": [
-    {"key": "Classic", "name": "Lichtmaschine Classic", "platform": "AM328", "board": "Nano", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": "Nano"},
-    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "centrals": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": ""},
-    {"key": "Pro", "name": "Lichtmaschine Pro", "platform": "ESP32", "board": "ESP32", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "ESP32", "program": "Pro", "image": "ESP32_image.png", "detect": "ESP32"},
-    {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},
-    {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "centrals": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": ""}
+  "_Datei-Version": "1.06 (2026-11-26) - Lichtmaschinen_prop.json",
+  "_Hinweis": "devices = Eigenschaften aller Lichtmaschinen-Produkte. Ein neues Produkt wird nur hier als weiterer Eintrag ergaenzt (die Startseite zeigt jeden Eintrag als eigene Kachel). Felder: key = eindeutiger Kurzname (auch Teil des Dateinamens des Startprogramms, wenn program fehlt), name = Anzeigename, platform = Plattform (AM328, ESP32, PICO), board = einzustellendes Board (Nano, ESP32, Pico), protocols = unterstuetzte Protokolle (DCC, Selectrix, LNet, CAN), text = Kurztext der Kachel, program = Name des Startprogramms im Ordner Startprogramme (ohne .MLL_pgf), image = Bild im Ordner images (leer oder nicht gefunden: leere Flaeche), detect = Typ der Anschlusserkennung (Nano, ESP32, Pico) oder leer, wenn das Produkt nicht automatisch erkannt werden kann. platforms = Plattformen anderer MobaLedLib Geraete (keine Lichtmaschinen), so wie das Geraet sie mit ~MLLINFO meldet und wie sie in den Firmware-Beschreibungen (.desc) stehen: platform, name = Anzeigename (Ueberschrift in der Firmware-Auswahl), text = Kurztext, image = Bild im Ordner images (fehlt es, zeigt die Geraeteauswahl keines).",
+  "devices": [
+    {"key": "Classic", "name": "Lichtmaschine Classic", "platform": "AM328", "board": "Nano", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": "Nano"},
+    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "protocols": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "Mini_image.png", "detect": ""},
+    {"key": "Pro", "name": "Lichtmaschine Pro", "platform": "ESP32", "board": "ESP32", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "ESP32", "program": "Pro", "image": "ESP32_image.png", "detect": "ESP32"},
+    {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},
+    {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "MoLLi_image.png", "detect": ""}
+  ],
+  "platforms": [
+    {"platform": "MLL512V1", "name": "Sound/Servo", "text": "Sound- und Servomodul", "image": ""},
+    {"platform": "MLLS88GWV1", "name": "S88 Gateway", "text": "S88-Melder Gateway", "image": ""}
   ]
 }

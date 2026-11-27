@@ -1,14 +1,15 @@
-# Datei-Version: 1.02 (2026-10-28) - headless_pico.py
+# Datei-Version: 1.03 (2026-11-26) - headless_pico.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_pico.py
 # Path:           headless/headless_pico.py
-# Version:        1.02
-# Last Update:    2026-10-28
-# Author:         Harold Linke
+# Version:        1.03
+# Last Update:    2026-11-26
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-28  Neu: Pico-Firmware suchen, Pico im Bootmodus finden (Linux, macOS, Windows), UF2-Datei schreiben
 #   1.01  2026-10-28  Einhaengen mit udisksctl nach einem Fehlschlag erst nach 30 Sekunden noch einmal versuchen
+#   1.03  2026-11-26  scan_firmware liest das Feld platform der Beschreibung (je Version und je Gruppe) und sortiert die Gruppen nach Plattform, dann nach Name (ohne Plattform zuletzt). Zeilen mit '# v1.03'
 #   1.02  2026-10-28  Windows: Fehler beim Oeffnen des Anschlusses mit 1200 Baud ist kein Fehler (der Pico startet neu), auf das Laufwerk warten; Laufwerke ohne Unterprozess; Firmware-Ordner mit anderer Schreibweise; has_firmware
 # ----------------------------------------------------------------------------------------------
 
@@ -195,9 +196,10 @@ def scan_firmware(folder: str, lang: str = "DE") -> list:
             continue
         desc = os.path.join(folder, fname[:-4] + ".desc")
         has_desc = os.path.isfile(desc)
-        name = short = detail = version = ""
+        name = short = detail = version = platform = ""  # v1.03
         if has_desc:
             data = read_desc(desc)
+            platform = str(data.get("platform") or "").strip() if isinstance(data, dict) else ""  # v1.03
             name, short, detail, version = desc_details(data, lang)
             if short == "":
                 name, short, detail, version = desc_details(data, "EN")
@@ -207,11 +209,12 @@ def scan_firmware(folder: str, lang: str = "DE") -> list:
             detail = detail or f"Firmware {base} Version {version}"
         else:
             base = get_base_name(name)
-        groups.setdefault(base, []).append({"version": version, "file": fname, "short": short, "detail": detail})
+        groups.setdefault(base, []).append({"version": version, "file": fname, "short": short, "detail": detail, "platform": platform})  # v1.03
     out = []
     for base in sorted(groups):
         versions = sorted(groups[base], key=functools.cmp_to_key(lambda x, y: compare_versions(y["version"], x["version"])))
-        out.append({"base": base, "versions": versions})
+        out.append({"base": base, "versions": versions, "platform": next((v["platform"] for v in versions if v["platform"]), "")})  # v1.03: Plattform der hoechsten Version mit Angabe
+    out.sort(key=lambda g: (g["platform"] == "", g["platform"].lower(), g["base"].lower()))  # v1.03: nach Plattform gruppiert, ohne Angabe zuletzt
     return out
 
 

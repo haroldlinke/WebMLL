@@ -1,9 +1,9 @@
 ====== MobaLedLib Studio – Datenübertragung zwischen Rechnern ======
-//Seitenstand 1.02 (2026-11-24), gilt für Version 5.12//
+//Seitenstand 1.03 (2026-11-26), gilt für Version 5.49//
 
 Mit der **Datenübertragung** holst du Tabellen oder einzelne Zeilen von **einem anderen Rechner** im Heimnetz auf deinen Rechner. Das ist nützlich, wenn du zum Beispiel am Schreibtisch planst und die Tabellen an der Anlage (etwa auf dem Raspberry Pi) brauchst. Du brauchst dafür **kein Konto** und **kein Internet**. Beide Rechner arbeiten weiter mit ihren **eigenen** Daten, nichts wird automatisch abgeglichen.
 
-Du findest die Funktion im Menü //Einstellungen → Datenübertragung//. Sie hat zwei Reiter: **Dieser PC als Quelle** (hier gibst du Tabellen frei) und **Tabellen übernehmen** (hier holst du sie ab).
+Du findest die Funktion im Menü //Werkzeuge → Datenübertragung//. Sie hat zwei Reiter: **Dieser PC als Quelle** (hier gibst du Tabellen frei) und **Tabellen übernehmen** (hier holst du sie ab).
 
 ===== Auf dem Quell-Rechner freigeben =====
 

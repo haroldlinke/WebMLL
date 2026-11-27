@@ -1,9 +1,9 @@
-# Datei-Version: 1.18 (2026-11-25) - web_serial.py
+# Datei-Version: 1.31 (2026-11-27) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.18
-# Last Update:    2026-11-25
+# Version:        1.31
+# Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
@@ -17,6 +17,17 @@
 #   1.07  2026-11-14  ESP32: Verbindung ueber WLAN mit Anmeldung per HMAC (Port 2323, connect_esp32); Schreibfehler schliesst nur die eigene Verbindung (Beitrag des Fork-Entwicklers)
 #   1.08  2026-11-14  TcpPort: ungueltiger Hostname (UnicodeError, "label too long") wird als OSError gemeldet statt abzustuerzen
 #   1.09  2026-11-14  Automatisches Verbinden (ohne Anschlussangabe): ist fuer das Blatt eine ESP32-WLAN-Verbindung eingetragen (wifi_target_provider), wird zuerst WLAN versucht, sonst USB; connect(wlan=False) erzwingt USB
+#   1.31  2026-11-27  cfg_lines: Zeilen mit ~MLLCFG oder ~MLLERR gehen waehrend einer Konfigurationsuebertragung (Setup uebertragen, schneller Weg) ueber die bestehende Verbindung an die Uebertragung statt in den Serial Monitor (headless_dyn_config.SharedLink). Zeilen mit '# v1.31'
+#   1.30  2026-11-27  Der schnelle Test auf den EFFECT Mode ist hart auf monitor_probe_ms begrenzt (eigener Thread, Schreib-Zeitlimit, kein flush): ein Geraet, das nicht oder nicht wie erwartet antwortet oder das Schreiben blockiert, haelt das Verbinden nicht auf. Zeilen mit '# v1.30'
+#   1.29  2026-11-27  Serial Monitor: zuerst ein schneller Test auf den EFFECT Mode (ein '#?' und hoechstens 250 ms warten, monitor_probe_ms); antwortet das Geraet mit LEDs_AutoProg, gilt die normale Verbindung (EFFECT Mode), sonst wird nur mitgelesen (DIRECT Mode). Zeilen mit '# v1.29'
+#   1.28  2026-11-27  Der Serial Monitor liest nur mit und zeigt deshalb 'Verbunden mit COMx - DIRECT Mode' (nicht EFFECT Mode). Zeilen mit '# v1.28'
+#   1.27  2026-11-27  Automatisch neu verbinden: nach einem Verbindungsverlust wartet ein Hintergrundthread, bis der Anschluss wieder in der Portliste steht, und verbindet dann ohne Dialoge wieder (Serial Monitor: mitlesen, sonst wie beim Autoconnect). Trennen durch den Anwender beendet das Warten. Zeilen mit '# v1.27'
+#   1.26  2026-11-27  lost_port: der verlorene Anschluss, damit die Statusanzeige Typ und Anschluss nennt (Verbindung verloren - Pro/COM3). Zeilen mit '# v1.26'
+#   1.25  2026-11-27  Verbindungsverlust (USB abgezogen): ein Lesefehler des Empfangsthreads schliesst die Verbindung auch bei einem seriellen Anschluss (vorher nur bei WLAN); Status 'Verbindung verloren' (rot) und eine Zeile im Serial Monitor. Zeilen mit '# v1.25'
+#   1.24  2026-11-26  connecting: Kennzeichen, solange ein Verbindungsaufbau laeuft (Knoepfe in Kopfzeile und Serial Monitor zeigen dann Verbinden... grau und gesperrt). Zeilen mit '# v1.24'
+#   1.23  2026-11-26  connect_monitor: DTR und RTS richten sich nach dem Typ des gewaehlten Anschlusses (USB-Kennung: Pico = an, Nano und ESP32 = aus) und nicht nach dem Board im Blatt; sonst schwieg ein Pico im Serial Monitor, wenn im Blatt ein anderes Board stand. Zeilen mit '# v1.23'
+#   1.22  2026-11-26  connect_monitor: Verbinden nur zum Mitlesen (Serial Monitor): der Anschluss wird geoeffnet und gelesen, es gibt keine Abfrage am Geraet (kein '#?', kein '#X'); der Fehlerdialog 'Falsche oder keine Antwort vom Geraet' entfaellt. Zeilen mit '# v1.22'
+#   1.21  2026-11-26  Auswahl des Anschlusses im Serial Monitor zeigt bekannte Typen (Nano/Uno, ESP32, Pico, andere MobaLedLib Geraete laut ~MLLINFO) und den Untertyp nach der USB-Kennung (CH340, CP2102, FT232, Pico ...): list_serial_ports_typed, describe_port, usb_subtype. Zeilen mit '# v1.21'
 #   1.10  2026-11-14  connect_if_not_connected (Testtasten, DCC-Tastatur, Z21 ...) versucht auch mit Anschlussangabe zuerst die eingetragene ESP32-WLAN-Verbindung
 #   1.11  2026-11-16  Protokoll: Zeilen der Lichtmaschine (Empfang) werden mit Level DEBUG protokolliert, die Startmeldung mit der Auswertung (LEDs je Kanal, Summe, Version) mit Level INFO
 #   1.12  2026-11-19  Stilles Verbinden (quiet): keine Dialoge bei Fehlern (Automatisch verbinden beim Start und nach dem Hochladen); dtr_override fuer einen gefundenen Pico (Issue 20)
@@ -25,6 +36,8 @@
 #   1.13  2026-11-21  Option LedOffOnDisconnect (Programm Einstellungen): Beim Trennen werden die LEDs nur noch ausgeschaltet, wenn die Option gesetzt ist (Vorgabe aus; vorher immer)
 #   1.16  2026-11-25  Texte: Gerät statt ARDUINO (Verbindungsstatus, Meldung bei falscher oder fehlender Antwort). Zeilen mit '# v1.16'
 #   1.17  2026-11-25  Stilles Verbinden waehrend des offenen Dialogs Geraeteauswahl wird uebersprungen; Trennung der Verbindung waehrend des Verbindens (self.arduino None) ergibt keinen Traceback mehr. Zeilen mit '# v1.17'
+#   1.20  2026-11-26  Eine Verbindung pro Geraet: PORT_ACCESS_LOCK (Oeffnen und Handshake eines Anschlusses sind exklusiv, auch gegenueber den Abfragen der Geraeteauswahl), Reihenfolge der Sperren _conn_lock vor PORT_ACCESS_LOCK; eine offene Verbindung zum selben Anschluss oder ESP32 wird wiederverwendet (USB, WLAN, connect, connect_esp32, connectIP); connect_if_not_connected wartet auf einen laufenden Verbindungsaufbau; connect_silent (quiet und dtr_override nur unter der Sperre, eine offene Verbindung bleibt); close_arduino_connection_after_write_error unter _conn_lock. Zeilen mit '# v1.20'
+#   1.19  2026-11-26  Startmeldung wird pro Verbindung nur einmal ausgewertet; die zweite Auswertung protokolliert den Aufrufer (Zeilen mit '# v1.19')
 #   1.18  2026-11-25  ARDUINO_startmessage: Startmeldung ('LEDs_AutoProg Ver 3: ...') der aktiven Verbindung, die Geraeteauswahl wertet sie fuer die Versionsanzeige des Nano aus. Zeilen mit '# v1.18'
 # ----------------------------------------------------------------------------------------------
 """Serielle Verbindung zum Arduino/Pico ohne Tk (Mixin fuer HeadlessAppController).
@@ -60,6 +73,10 @@ except ImportError:                                   # aeltere Installation ohn
         return text.format(**values) if values else text  # v1.04
 
 logger = logging.getLogger(__name__)
+
+# v1.20: Ein Zugriff auf einen seriellen Anschluss gleichzeitig: Verbinden (Oeffnen und Handshake), Abfragen der Geraeteauswahl (Typ, Version, MLLIDENT, Bootloader) und die Erkennung
+# (DetectArduino, Get_Arduino_Baudrate). Reihenfolge der Sperren immer: SerialMixin._conn_lock, dann PORT_ACCESS_LOCK, dann M07._DETECT_LOCK. Wiedereintrittsfaehig (RLock).
+PORT_ACCESS_LOCK = threading.RLock()  # v1.20
 
 
 def _const(name: str, default):
@@ -185,11 +202,75 @@ def list_serial_ports() -> list[tuple[str, str]]:
         return []
 
 
+# ------------------------------------------------------------------------------------------ Typ und Untertyp eines Anschlusses (v1.21)
+USB_SUBTYPES = {  # (VID, PID) -> Untertyp; PID None = jedes Geraet dieses Herstellers
+    (0x1A86, 0x7523): "CH340", (0x1A86, 0x7522): "CH340", (0x1A86, 0x5523): "CH341", (0x1A86, 0x55D4): "CH9102", (0x1A86, None): "CH34x",
+    (0x10C4, 0xEA60): "CP2102", (0x10C4, 0xEA70): "CP2105", (0x10C4, 0xEA71): "CP2108", (0x10C4, None): "CP210x",
+    (0x0403, 0x6001): "FT232R", (0x0403, 0x6010): "FT2232", (0x0403, 0x6014): "FT232H", (0x0403, 0x6015): "FT231X", (0x0403, None): "FTDI",
+    (0x2341, None): "Arduino", (0x2A03, None): "Arduino",
+    (0x2E8A, 0x000A): "Seriell", (0x2E8A, 0x0003): "Bootmodus", (0x2E8A, 0x0005): "MicroPython", (0x2E8A, None): "Raspberry Pi",
+    (0x239A, 0x813D): "Adafruit Pico", (0x303A, None): "Espressif",
+}
+
+
+def usb_subtype(vid, pid) -> str:
+    """Untertyp nach der USB-Kennung (zum Beispiel CH340, CP2102, FT232R, Seriell beim Pico); '' wenn die Kennung nicht bekannt ist"""
+    if vid is None:
+        return ""
+    return USB_SUBTYPES.get((vid, pid)) or USB_SUBTYPES.get((vid, None)) or ""
+
+
+def port_type(p) -> str:
+    """Bekannter Typ des Anschlusses: 'Nano/Uno', 'ESP32', 'Pico' oder der type eines anderen MobaLedLib Geraets laut ~MLLINFO (PICOSERVO ...); '' wenn unbekannt.
+    Gleiche Regeln wie M07_COM_Port.Classify_Port (Hersteller-Kennung und Beschreibung)."""
+    vid = getattr(p, "vid", None)
+    desc = str(getattr(p, "description", "") or "")
+    hwid = str(getattr(p, "hwid", "") or "").upper()
+    import sys
+    other = getattr(sys.modules.get("proggen.M07_COM_Port_New"), "OTHER_TYPES", {}) or {}
+    if str(getattr(p, "device", "")) in other:
+        return str(other[str(p.device)])
+    if vid == 0x2E8A or "VID:PID=2E8A:" in hwid or "VID:PID=239A:813D" in hwid:
+        return "Pico"
+    if vid == 0x10C4 or "CP210x" in desc or "CP2102 USB to UART" in desc:
+        return "ESP32"
+    if vid in (0x1A86, 0x0403, 0x2341, 0x2A03) or "CH340" in desc or "Arduino" in desc or "FT232" in desc or "USB2.0-Ser" in desc or "VID:PID=0403:" in hwid:
+        return "Nano/Uno"
+    return ""
+
+
+def describe_port(p) -> str:
+    """Text fuer die Auswahl: 'COM3 – ESP32 (CP2102, 10C4:EA60)'. Ohne bekannten Typ die Beschreibung des Systems, mit USB-Kennung wenn es eine gibt."""
+    vid, pid = getattr(p, "vid", None), getattr(p, "pid", None)
+    usb = ("%04X:%04X" % (vid, pid or 0)) if vid is not None else ""
+    typ = port_type(p)
+    sub = usb_subtype(vid, pid)
+    details = ", ".join(x for x in (sub, usb) if x)
+    if typ:
+        text = typ + (" (" + details + ")" if details else "")
+    else:
+        desc = str(getattr(p, "description", "") or "").strip()
+        desc = "" if desc.lower() in ("n/a", str(getattr(p, "device", "")).lower()) else desc
+        text = " ".join(x for x in (desc, ("(" + usb + ")") if usb else "") if x)
+    return (str(p.device) + " – " + text) if text else str(p.device)
+
+
+def list_serial_ports_typed() -> list[tuple[str, str]]:
+    """[(Port, Text)] mit bekanntem Typ und Untertyp (describe_port); Reihenfolge wie list_serial_ports"""
+    try:
+        from serial.tools import list_ports
+        return [(p.device, describe_port(p)) for p in list_ports.comports()]
+    except Exception:                                     # noqa: BLE001
+        logger.debug("Portliste nicht verfuegbar", exc_info=True)
+        return []
+
+
 # ------------------------------------------------------------------------------------------ Mixin
 class SerialMixin:
     def _serial_init(self):
         self.arduino = None
         self.queue = RxLog(on_line=self._on_rx_line)
+        self.cfg_lines = None  # v1.31: queue.Queue, solange die Konfiguration ueber diese Verbindung uebertragen wird
         self.rx_listeners: list = []                    # Funktionen text -> None, die jede Zeile vom Arduino bekommen (zum Beispiel der Z21 Simulator fuer die Rueckmeldung)  # v1.03
         self.ARDUINO_IP = False
         self.ARDUINO_current_portname = ""
@@ -250,6 +331,10 @@ class SerialMixin:
             except UnicodeDecodeError:
                 text = str(bytes(data))
             logger.debug("Lichtmaschine: %r", text)  # v1.11
+            cfg = self.cfg_lines  # v1.31
+            if cfg is not None and ("~MLLCFG" in text or "~MLLERR" in text):  # v1.31
+                cfg.put(text)  # v1.31
+                continue  # v1.31
             if not text.startswith("****"):
                 self.queue.put(text)
         logger.info("Empfangsthread (Telnet) beendet")
@@ -265,8 +350,8 @@ class SerialMixin:
                 data = port.read(1)
             except Exception as ex:                       # noqa: BLE001
                 logger.info("Empfangsthread beendet: %s", ex)
-                if isinstance(port, TcpPort) and not stop.is_set() and self.arduino is port:
-                    self.close_arduino_connection_after_write_error(expected_port=port)
+                if not stop.is_set() and self.arduino is port:  # v1.25: nicht selbst getrennt: die Verbindung ist weg (USB abgezogen, WLAN weg)
+                    self._connection_lost(port)  # v1.25
                 break
             if not data:
                 continue
@@ -296,9 +381,75 @@ class SerialMixin:
                     text = str(bytes(buf))
                 buf.clear()
                 logger.debug("Lichtmaschine: %r", text)  # v1.11
+                cfg = self.cfg_lines  # v1.31
+                if cfg is not None and ("~MLLCFG" in text or "~MLLERR" in text):  # v1.31: Antwort der Konfigurationsuebertragung
+                    cfg.put(text)  # v1.31
+                    continue  # v1.31
                 if not text.startswith("****"):           # Debugmeldungen des Arduinos
                     self.queue.put(text)
         logger.info("Empfangsthread beendet")
+
+    def _connection_lost(self, port):  # v1.25
+        """Der Empfangsthread bekam einen Lesefehler, ohne dass getrennt wurde: Verbindung schliessen, Status und Zeile im Serial Monitor."""
+        name = str(getattr(self, "ARDUINO_current_portname", "") or getattr(port, "portstr", "") or getattr(port, "port", "") or "")
+        logger.warning("Verbindung zu %s verloren (Lesefehler)", name)
+        self.lost_port = name  # v1.26
+        monitor = bool(getattr(self, "monitor_connected", False))  # v1.27
+        self.close_arduino_connection_after_write_error(expected_port=port)
+        self._set_connect_status("Verbindung verloren", "red")
+        self._start_reconnect_watch(name, monitor)  # v1.27
+        self.queue.put("*** " + tr("Verbindung zu {port} verloren", port=name) + "\r\n")
+
+    reconnect_interval = 1.0   # v1.27: Sekunden zwischen zwei Blicken in die Portliste
+    reconnect_settle = 1.5     # v1.27: Wartezeit, nachdem der Anschluss wieder da ist (der Treiber braucht einen Moment)
+    reconnect_max_wait = 1800  # v1.27: so lange (Sekunden) wird gewartet
+
+    def _start_reconnect_watch(self, port, monitor):  # v1.27
+        if not port or port.upper().startswith("IP:") or getattr(self, "ARDUINO_IP", False):
+            return                                                 # nur serielle Anschluesse
+        t = getattr(self, "_reconnect_thread", None)
+        if t is not None and t.is_alive():
+            return
+        self._reconnect_thread = threading.Thread(target=self._reconnect_watch, args=(port, monitor), name="serial-reconnect", daemon=True)
+        self._reconnect_thread.start()
+
+    def _port_present(self, port):  # v1.27
+        try:
+            from serial.tools import list_ports
+            return any(str(p.device).upper() == str(port).upper() for p in list_ports.comports())
+        except Exception:                                          # noqa: BLE001
+            return False
+
+    def _reconnect_watch(self, port, monitor):  # v1.27
+        """Wartet, bis der verlorene Anschluss wieder da ist, und verbindet neu. Endet, wenn der Anwender getrennt oder anders verbunden hat (lost_port geloescht oder Verbindung offen)."""
+        deadline = time.time() + self.reconnect_max_wait
+        failures = 0
+        logger.info("Warte auf den Anschluss %s fuer die automatische Neuverbindung", port)
+        while time.time() < deadline and failures < 3:
+            time.sleep(self.reconnect_interval)
+            if getattr(self, "lost_port", "") != port or self.is_connection_open():
+                return                                             # getrennt oder schon neu verbunden
+            if not self._port_present(port):
+                continue
+            time.sleep(self.reconnect_settle)
+            if getattr(self, "lost_port", "") != port or self.is_connection_open():
+                return
+            logger.info("Anschluss %s ist wieder da: verbinde neu", port)
+            self.quiet = True                                      # keine Dialoge im Hintergrund
+            try:
+                ok = self.connect_monitor(port) if monitor else self.connect_silent(port=port)
+            except Exception:                                      # noqa: BLE001
+                logger.warning("Automatische Neuverbindung zu %s fehlgeschlagen", port, exc_info=True)
+                ok = False
+            finally:
+                self.quiet = False
+            if ok:
+                self.lost_port = ""
+                logger.info("Neu verbunden mit %s", port)
+                return
+            failures += 1
+            self.lost_port = port                                  # weiter warten und noch einmal versuchen
+            self._set_connect_status("Verbindung verloren", "red")
 
     def _start_reader(self):
         self._stop_reader()
@@ -416,6 +567,10 @@ class SerialMixin:
     # ------------------------------------------------------------------ Eigenschaften des Arduinos
     def determine_ARDUINO_Properties_from_Startmessage(self, startmessage):
         """Startmeldung z. B.: LEDs_AutoProg Ver 4: Type-3.3.2F5 FastLED 3.9.12 25.03.25 11:39,<LEDs je Kanal>"""
+        key = str(startmessage or "").strip()  # v1.19
+        if key and key == getattr(self, "_evaluated_startmsg", None):  # v1.19: dieselbe Meldung noch einmal (zweiter Aufruf in dieser Verbindung)
+            return  # v1.19, v1.20: Ursache: der Handshake legt die Meldung in self.queue (RxLog.on_line -> _on_rx_line wertet sie schon aus, SerialIF_teststring3 = 'LEDs_AutoProg') und ruft danach selbst auf
+        self._evaluated_startmsg = key  # v1.19
         self.ARDUINO_version = 0
         self.ARDUINO_startmessage = str(startmessage or "")  # v1.18: fuer die Geraeteauswahl (Version der MobaLedLib-Bibliothek)
         m = re.search(r"Ver (\d+):", startmessage)
@@ -547,9 +702,10 @@ class SerialMixin:
         return ser  # v1.06
 
     def connect_if_not_connected(self, port=None):
-        if self.is_connection_open():
-            return True
-        return self.connect(port=port, wlan=True)  # v1.10: auch mit Anschlussangabe (Testtasten) zuerst die eingetragene WLAN-Verbindung
+        with self._conn_lock:  # v1.20: ein laufender Verbindungsaufbau (self.arduino ist schon gesetzt, der Handshake laeuft noch) wird abgewartet, nicht mitbenutzt
+            if self.is_connection_open():
+                return True
+            return self.connect(port=port, wlan=True)  # v1.10: auch mit Anschlussangabe (Testtasten) zuerst die eingetragene WLAN-Verbindung
 
     def _set_connect_status(self, text, fg="black"):
         text = tr(text)  # v1.05: feste Texte wie 'Nicht Verbunden' in der eingestellten Sprache (zusammengesetzte Texte sind schon uebersetzt oder bleiben)
@@ -577,6 +733,9 @@ class SerialMixin:
                     logger.debug("wifi_target_provider fehlgeschlagen", exc_info=True)
                     target = None
                 if target:
+                    if self._is_connected_to(target[0], via_ip=True):  # v1.20: schon mit diesem ESP32 verbunden: nicht trennen und neu verbinden
+                        logger.info("Verbindung zu %s besteht schon, sie wird wiederverwendet", target[0])  # v1.20
+                        return True  # v1.20
                     if self.arduino:
                         self.disconnect()
                     logger.info("connect: zuerst WLAN %s", target[0])
@@ -586,7 +745,7 @@ class SerialMixin:
             return self._connect(port)
 
     def _connect(self, port=None):
-        self.ARDUINO_IP = False
+        # self.ARDUINO_IP = False  # v1.20 (entfallen: erst nach der Pruefung auf eine bestehende Verbindung, sonst erkennt _is_connected_to eine offene WLAN-Verbindung nicht)
         if port is None and self.sheet_port_provider is not None:  # v1.14 (Issue 59): Anschluss des aktiven Blatts
             try:  # v1.14
                 port = self.sheet_port_provider() or None  # v1.14
@@ -599,8 +758,16 @@ class SerialMixin:
         if port.isdigit():
             port = "COM" + port                        # wie F00.port_check_format
         if port.startswith("IP:"):
-            return self.connectIP(IPAdresse=port[3:])
-        logger.info("connect %s", port)
+            ok = self.connectIP(IPAdresse=port[3:])  # v1.20
+            if not ok:  # v1.20: wie bisher bleibt ARDUINO_IP nach einem Fehlschlag aus
+                self.ARDUINO_IP = False  # v1.20
+            return ok  # v1.20
+        try:  # v1.20: wer verbindet (Aufrufer von connect)
+            import sys as _sys  # v1.19
+            _c = _sys._getframe(2)  # v1.20
+            logger.info("connect %s (von %s:%s %s)", port, _c.f_code.co_filename.split("\\")[-1].split("/")[-1], _c.f_lineno, _c.f_code.co_name)  # v1.19, v1.20
+        except ValueError:  # v1.20
+            logger.info("connect %s", port)  # v1.20
         try:  # v1.17: der Dialog Geraeteauswahl belegt die Anschluesse (Ident, Abfrage von Typ und Version): stilles Verbinden jetzt nicht
             import proggen.M07_COM_Port_New as _M07Dlg
             if getattr(self, "quiet", False) and getattr(_M07Dlg, "Device_Dialog_Open", False):
@@ -608,6 +775,10 @@ class SerialMixin:
                 return False
         except Exception:                                  # noqa: BLE001
             logger.debug("Dialog-Zustand nicht lesbar", exc_info=True)
+        if self._is_connected_to(port):  # v1.19, v1.20: schon offen am selben Anschluss: wiederverwenden, nicht neu oeffnen (Reset)
+            logger.info("Verbindung zu %s besteht schon, sie wird wiederverwendet", port)  # v1.19
+            return True  # v1.19
+        self.ARDUINO_IP = False  # v1.20 (stand vorher am Anfang von _connect)
         if self.is_connection_open():
             self.disconnect()
         if port == "" or port.upper() == "NO DEVICE":
@@ -616,15 +787,10 @@ class SerialMixin:
         # self._set_connect_status("Versuch sich mit dem ARDUINO am Port " + port + " zu verbinden ...", "red")  # v1.04 (entfallen)
         # self._set_connect_status(tr('Versuch sich mit dem ARDUINO am Port ') + port + " zu verbinden ...", "red")  # v1.04  # v1.16 (entfallen)
         self._set_connect_status(tr('Versuch sich mit dem Gerät am Port ') + port + " zu verbinden ...", "red")  # v1.16: Gerät statt ARDUINO
-        try:
-            import serial
-            self.ARDUINO_status = "Connecting"
-            # self.arduino = serial.Serial(port, baudrate=115200, timeout=2, parity=serial.PARITY_NONE,  # v1.06 (entfallen: oeffnete mit DTR an: Reset des Nano)
-            #                              stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)  # v1.06 (entfallen)
-            self.arduino = self._open_serial(serial, port)  # v1.06
-            self.ARDUINO_startmessage = ""  # v1.18: Startmeldung des vorherigen Geraets verwerfen
-        except BaseException as e:                        # noqa: BLE001
-            logger.info("Port %s nicht zu oeffnen: %s", port, e)
+        status, err = self._open_and_handshake(port)  # v1.20: Oeffnen und Handshake exklusiv (PORT_ACCESS_LOCK)
+        if status == "ok":  # v1.20
+            return True  # v1.20
+        if status == "open_error":  # v1.20: Fehlerdialog AUSSERHALB der Sperre (der Dialog Geraeteauswahl braucht sie fuer seine Abfragen)
             macro = self.MacroDef.data.get("StartPage", {}) if getattr(self, "MacroDef", None) else {}
             # title = macro.get("connect_open_error_title", "Fehler beim Öffnen des Ports")  # v1.15 (entfallen)
             title = macro.get("connect_open_error_title", tr("Fehler beim Öffnen der Verbindung"))  # v1.15
@@ -641,67 +807,223 @@ class SerialMixin:
                 except Exception:                         # noqa: BLE001
                     logger.info("Portauswahl nicht moeglich", exc_info=True)
             return False
+        if status == "dropped":  # v1.20
+            return self._fail_connect()  # v1.20
+        # status == "read_error"  # v1.20
+        self._fail_connect()  # v1.20: erst Status und Anschluss freigeben, dann der Dialog
+        # self._msg("Falsche oder keine Antwort vom ARDUINO.\n\nPrüfe, ob das richtige MobaLedLib-Programm auf den "  # v1.16 (entfallen)
+        # "Arduino geladen ist. Es muss mit dem Compilerschalter\n  #define RECEIVE_LED_COLOR_PER_RS232\n"  # v1.16 (entfallen)
+        # "übersetzt sein. Das Programm kann mit dem Knopf 'Z. Arduino schicken' geladen werden.",  # v1.16 (entfallen)
+        # "Fehler beim Lesen der Antwort des ARDUINO")  # v1.16 (entfallen)
+        self._msg("Falsche oder keine Antwort vom Gerät.\n\nPrüfe, ob das richtige MobaLedLib-Programm auf das "  # v1.16: Gerät statt Arduino
+                  "Gerät geladen ist. Es muss mit dem Compilerschalter\n  #define RECEIVE_LED_COLOR_PER_RS232\n"  # v1.16
+                  "übersetzt sein. Das Programm kann mit dem Knopf 'Z. Arduino schicken' geladen werden.",  # v1.16
+                  "Fehler beim Lesen der Antwort des Geräts")  # v1.16
+        return False  # v1.20
 
-        time.sleep(1)
-        self.send_to_ARDUINO_init_buffer(immediatly=True)
+    @staticmethod
+    def _monitor_dtr(port):  # v1.23
+        """DTR (und RTS) fuer den Serial Monitor nach dem Geraet am Anschluss: True beim Pico (sein serieller USB-Anschluss sendet nur mit DTR), False bei Nano, Uno und ESP32 (DTR setzt sie
+        zurueck), None wenn der Typ nicht erkennbar ist (dann gilt das Board im Blatt wie beim normalen Verbinden)."""
         try:
-            self.arduino.flush()
-        except Exception:                                 # noqa: BLE001
-            pass
-        self.send_to_ARDUINO("#?\r\n")
-        self._wait_sent(2.0)
-        txt, read_error = "", False
-        t1 = _const("SerialIF_teststring1", "#?LEDs_AutoProg")
-        trials, start = 0, time.time()
-        try:  # v1.17: wird die Verbindung waehrend des Verbindens von aussen getrennt (self.arduino ist dann None), kein Traceback
-            while True:                                       # wie im Original: bis zu 3 neue Anfragen im Sekundentakt
-                if self.arduino.in_waiting > 0:
-                    while "\n" in txt:
-                        txt = txt.split("\n")[-1]
-                    txt += self.arduino.read(self.arduino.in_waiting).decode(errors="ignore")
-                    pos = txt.find(t1)
-                    if pos != -1:
-                        pos2 = txt.find("\r\n", pos)
-                        if pos2 != -1:
-                            txt = txt[pos + 2:pos2]
-                            self.queue.put(txt)
-                            self.determine_ARDUINO_Properties_from_Startmessage(txt)
-                            break
-                if time.time() - start >= 1:
-                    trials += 1
-                    if trials > 3:
-                        read_error = True
-                        break
-                    start = time.time()
-                    self.arduino.write(b"#?\n")
-                time.sleep(0.01)
-        except (AttributeError, OSError):  # v1.17
-            logger.info("Verbindung zu %s wurde waehrend des Verbindens getrennt", port)
-            return self._fail_connect()
-        self.send_to_ARDUINO("#X\r\n")
-        if read_error:
-            # self._msg("Falsche oder keine Antwort vom ARDUINO.\n\nPrüfe, ob das richtige MobaLedLib-Programm auf den "  # v1.16 (entfallen)
-            # "Arduino geladen ist. Es muss mit dem Compilerschalter\n  #define RECEIVE_LED_COLOR_PER_RS232\n"  # v1.16 (entfallen)
-            # "übersetzt sein. Das Programm kann mit dem Knopf 'Z. Arduino schicken' geladen werden.",  # v1.16 (entfallen)
-            # "Fehler beim Lesen der Antwort des ARDUINO")  # v1.16 (entfallen)
-            self._msg("Falsche oder keine Antwort vom Gerät.\n\nPrüfe, ob das richtige MobaLedLib-Programm auf das "  # v1.16: Gerät statt Arduino
-                      "Gerät geladen ist. Es muss mit dem Compilerschalter\n  #define RECEIVE_LED_COLOR_PER_RS232\n"  # v1.16
-                      "übersetzt sein. Das Programm kann mit dem Knopf 'Z. Arduino schicken' geladen werden.",  # v1.16
-                      "Fehler beim Lesen der Antwort des Geräts")  # v1.16
+            from serial.tools import list_ports
+            for p in list_ports.comports():
+                if str(p.device).upper() == str(port).upper():
+                    typ = port_type(p)
+                    if typ == "Pico" or getattr(p, "vid", None) == 0x2E8A:
+                        return True
+                    return False if typ in ("Nano/Uno", "ESP32") else None
+        except Exception:                                  # noqa: BLE001
+            logger.debug("Typ des Anschlusses nicht ermittelt", exc_info=True)
+        return None
+
+    def connect_monitor(self, port):  # v1.22
+        """Serial Monitor: den Anschluss nur oeffnen und mitlesen. Anders als connect() fragt es das Geraet nicht ab ('#?' mit Pruefung der Antwort LEDs_AutoProg): es kann jedes Geraet
+        sein, auch eines ohne MobaLedLib-Programm oder mit einem anderen. Rueckgabe True, wenn die Verbindung steht."""
+        port = str(port or "").strip()
+        if port.isdigit():
+            port = "COM" + port
+        if not port or port.upper() in ("NO DEVICE", "COM?"):
+            self._msg("Es ist kein Port ausgewählt.", "Verbinden")
+            return False
+        with self._conn_lock:
+            if self._is_connected_to(port):
+                return True
+            if self.is_connection_open():
+                self.disconnect()
+            self.ARDUINO_IP = False
+            self._set_connect_status(tr('Versuch sich mit dem Gerät am Port ') + port + " zu verbinden ...", "red")
+            self.monitor_only = True
+            saved_dtr = self.dtr_override
+            dtr = self._monitor_dtr(port)  # v1.23
+            if dtr is not None:
+                self.dtr_override = dtr
             try:
-                self.arduino.close()
+                status, err = self._open_and_handshake(port)
+            finally:
+                self.monitor_only = False
+                self.dtr_override = saved_dtr
+        if status == "ok":
+            return True
+        self._fail_connect()
+        if status == "open_error":
+            self._msg("Der Port {} konnte nicht geöffnet werden.".format(port), tr("Fehler beim Öffnen der Verbindung"))
+        return False
+
+    def _is_connected_to(self, target, via_ip=False):  # v1.20
+        """Ist schon eine fertig aufgebaute Verbindung zu diesem Anschluss (COM7, /dev/ttyUSB0) bzw. dieser IP-Adresse offen? ARDUINO_current_portname wird erst nach dem Handshake gesetzt."""  # v1.20
+        return (self.is_connection_open() and bool(self.ARDUINO_IP) == bool(via_ip)  # v1.20
+                and str(getattr(self, "ARDUINO_current_portname", "") or "").upper() == str(target or "").upper())  # v1.20
+
+    connecting = False  # v1.24
+    monitor_probe_ms = 250  # v1.29: so lange wartet der Serial Monitor auf die Antwort des Tests auf den EFFECT Mode
+
+    def _quick_effect_probe(self, port):  # v1.29, v1.30
+        """Schneller Test fuer den Serial Monitor: ein '#?' senden und hoechstens monitor_probe_ms auf '#?LEDs_AutoProg' warten (kein Warten auf den Start des Geraets, kein Wiederholen).
+        Hart begrenzt: der Test laeuft in einem eigenen Thread, nach der Frist wird er aufgegeben (ein Geraet, das das Schreiben blockiert oder nur Unsinn sendet, haelt das Verbinden nicht auf).
+        True: das Geraet meldet sich im EFFECT Mode (Startmeldung ausgewertet, '#X' gesendet wie beim normalen Verbinden)."""
+        t1 = _const("SerialIF_teststring1", "#?LEDs_AutoProg")
+        limit = self.monitor_probe_ms / 1000.0
+        ser = self.arduino
+        cancel = threading.Event()
+        result = {"msg": None}
+        orig_write_timeout = getattr(ser, "write_timeout", None)
+
+        def worker():
+            txt = ""
+            end = time.time() + limit
+            try:
+                try:
+                    ser.write_timeout = limit                      # ein blockiertes Schreiben bricht ab (pyserial: SerialTimeoutException)
+                except Exception:                                  # noqa: BLE001
+                    pass
+                ser.write(b"#?" + bytes([13, 10]))
+                while time.time() < end and not cancel.is_set():
+                    if ser.in_waiting > 0:
+                        txt += ser.read(min(ser.in_waiting, 512)).decode(errors="ignore")[-2000:]
+                        pos = txt.find(t1)
+                        if pos != -1:
+                            pos2 = txt.find(chr(13) + chr(10), pos)
+                            if pos2 != -1:
+                                result["msg"] = txt[pos + 2:pos2]
+                                return
+                        txt = txt[-2000:]
+                    time.sleep(0.005)
+            except Exception:                                      # noqa: BLE001
+                logger.debug("Schneller Test auf den EFFECT Mode ohne Ergebnis", exc_info=True)
+
+        t = threading.Thread(target=worker, name="serial-probe", daemon=True)
+        t.start()
+        t.join(limit + 0.05)
+        try:
+            ser.write_timeout = orig_write_timeout                 # wie vorher (ein haengendes Schreiben im Thread laeuft nach seinem Zeitlimit von selbst ab)
+        except Exception:                                          # noqa: BLE001
+            pass
+        if t.is_alive():
+            cancel.set()
+            logger.info("Schneller Test auf den EFFECT Mode an %s nach %d ms abgebrochen: DIRECT Mode", port, self.monitor_probe_ms)
+            return False
+        msg = result["msg"]
+        if msg is None:
+            return False
+        self.queue.put(msg)
+        self.determine_ARDUINO_Properties_from_Startmessage(msg)
+        self.send_to_ARDUINO("#X" + chr(13) + chr(10))
+        return True
+
+    def _open_and_handshake(self, port):  # v1.24: Huelle, setzt das Kennzeichen connecting
+        self.connecting = True  # v1.24
+        self.monitor_connected = bool(getattr(self, "monitor_only", False))  # v1.27: merken, ob nur mitgelesen wird (fuer die automatische Neuverbindung)
+        try:
+            return self._open_and_handshake_core(port)  # v1.24
+        finally:
+            self.connecting = False  # v1.24
+
+    def _open_and_handshake_core(self, port):  # v1.20: aus _connect verschoben; Ergebnis (Status, Fehler), Status: ok, open_error, dropped, read_error
+        """Oeffnet den Anschluss und liest die Startmeldung ('#?'). Alles unter PORT_ACCESS_LOCK: Die Abfragen der Geraeteauswahl und die Erkennung greifen nicht dazwischen
+        und oeffnen den Anschluss nicht ein zweites Mal. Keine Dialoge hier (sonst blockiert die Sperre die Geraeteauswahl)."""  # v1.20
+        with PORT_ACCESS_LOCK:  # v1.20
+            try:
+                import serial
+                self.ARDUINO_status = "Connecting"
+                # self.arduino = serial.Serial(port, baudrate=115200, timeout=2, parity=serial.PARITY_NONE,  # v1.06 (entfallen: oeffnete mit DTR an: Reset des Nano)
+                #                              stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)  # v1.06 (entfallen)
+                self.arduino = self._open_serial(serial, port)  # v1.06
+                self.ARDUINO_startmessage = ""  # v1.18: Startmeldung des vorherigen Geraets verwerfen
+                self._evaluated_startmsg = None  # v1.19: neue Verbindung, neue Auswertung
+            except BaseException as e:                    # noqa: BLE001
+                logger.info("Port %s nicht zu oeffnen: %s", port, e)
+                return "open_error", e  # v1.20
+
+            if getattr(self, "monitor_only", False) and self._quick_effect_probe(port):  # v1.29: Serial Monitor: das Geraet meldet sich im EFFECT Mode: normale Verbindung
+                self.monitor_connected = False  # v1.29
+                self.ARDUINO_current_portname = port  # v1.29
+                self.ARDUINO_status = "Connected"  # v1.29
+                self._set_connect_status(tr('Verbunden mit ') + port + " - EFFECT Mode", "green")  # v1.29
+                self._start_reader()  # v1.29
+                return "ok", None  # v1.29
+            if getattr(self, "monitor_only", False):  # v1.22: Serial Monitor: nur mitlesen, keine Abfrage am Geraet (DIRECT Mode)
+                self.ARDUINO_current_portname = port
+                self.ARDUINO_status = "Connected"
+                self._set_connect_status(tr('Verbunden mit ') + port + " - DIRECT Mode", "green")  # v1.28: der Monitor ist der Direktmodus (kein EFFECT Mode)
+                self._start_reader()
+                return "ok", None
+
+            time.sleep(1)
+            self.send_to_ARDUINO_init_buffer(immediatly=True)
+            try:
+                self.arduino.flush()
             except Exception:                             # noqa: BLE001
                 pass
-            return self._fail_connect()
-        self.ARDUINO_current_portname = port
-        self.ARDUINO_status = "Connected"
-        # self._set_connect_status("Verbunden mit " + port + " - EFFECT Mode", "green")  # v1.04 (entfallen)
-        self._set_connect_status(tr('Verbunden mit ') + port + " - EFFECT Mode", "green")  # v1.04
-        self._start_reader()
-        return True
+            self.send_to_ARDUINO("#?\r\n")
+            self._wait_sent(2.0)
+            txt, read_error = "", False
+            t1 = _const("SerialIF_teststring1", "#?LEDs_AutoProg")
+            trials, start = 0, time.time()
+            try:  # v1.17: wird die Verbindung waehrend des Verbindens von aussen getrennt (self.arduino ist dann None), kein Traceback
+                while True:                                   # wie im Original: bis zu 3 neue Anfragen im Sekundentakt
+                    if self.arduino.in_waiting > 0:
+                        while "\n" in txt:
+                            txt = txt.split("\n")[-1]
+                        txt += self.arduino.read(self.arduino.in_waiting).decode(errors="ignore")
+                        pos = txt.find(t1)
+                        if pos != -1:
+                            pos2 = txt.find("\r\n", pos)
+                            if pos2 != -1:
+                                txt = txt[pos + 2:pos2]
+                                self.queue.put(txt)
+                                self.determine_ARDUINO_Properties_from_Startmessage(txt)
+                                break
+                    if time.time() - start >= 1:
+                        trials += 1
+                        if trials > 3:
+                            read_error = True
+                            break
+                        start = time.time()
+                        self.arduino.write(b"#?\n")
+                    time.sleep(0.01)
+            except (AttributeError, OSError):  # v1.17
+                logger.info("Verbindung zu %s wurde waehrend des Verbindens getrennt", port)
+                return "dropped", None  # v1.20
+            self.send_to_ARDUINO("#X\r\n")
+            if read_error:
+                try:
+                    self.arduino.close()
+                except Exception:                         # noqa: BLE001
+                    pass
+                return "read_error", None  # v1.20
+            self.ARDUINO_current_portname = port
+            self.ARDUINO_status = "Connected"
+            # self._set_connect_status("Verbunden mit " + port + " - EFFECT Mode", "green")  # v1.04 (entfallen)
+            self._set_connect_status(tr('Verbunden mit ') + port + " - EFFECT Mode", "green")  # v1.04
+            self._start_reader()
+            return "ok", None  # v1.20
 
     def connect_esp32(self, host, password):
         with self._conn_lock:
+            if self._is_connected_to(host, via_ip=True):  # v1.20: schon mit diesem ESP32 verbunden
+                logger.info("Verbindung zu %s besteht schon, sie wird wiederverwendet", host)  # v1.20
+                return True  # v1.20
             if self.arduino:
                 self.disconnect()
             return self.connectIP(host, esp32_password=password)
@@ -710,6 +1032,12 @@ class SerialMixin:
         """Connect to a WLAN Pico or authenticate to an ESP32 device session."""
         if not IPAdresse:
             return False
+        with self._conn_lock:  # v1.20: auch direkte Aufrufe (Zeitgeber des Dialogs: jede Sekunde) sind serialisiert und verbinden nicht neu, wenn die Verbindung steht
+            if self._is_connected_to(IPAdresse, via_ip=True):  # v1.20
+                return True  # v1.20
+            return self._connectIP_impl(IPAdresse, esp32_password=esp32_password)  # v1.20
+
+    def _connectIP_impl(self, IPAdresse, *, esp32_password=None):  # v1.20: Rumpf von connectIP
         # self._set_connect_status("Versuch sich mit dem PICO- IP: " + IPAdresse + " zu verbinden ...", "red")  # v1.04 (entfallen)
         if esp32_password is None:
             self._set_connect_status(tr('Versuch sich mit dem PICO- IP: ') + IPAdresse + " zu verbinden ...", "red")
@@ -744,6 +1072,7 @@ class SerialMixin:
                 raise ConnectionError("keine gueltige Antwort: " + txt[:60])
             txt = txt[pos:pos2]
             self.ARDUINO_IP = True
+            self._evaluated_startmsg = None  # v1.19
             self.queue.put(txt)
             self.determine_ARDUINO_Properties_from_Startmessage(txt)
             self.ARDUINO_current_portname = IPAdresse
@@ -784,19 +1113,48 @@ class SerialMixin:
                 self.ARDUINO_current_portname = ""
                 self.ARDUINO_status = ""
                 self.send_active = False
+            self.lost_port = ""  # v1.27: Trennen durch den Anwender beendet das Warten auf die automatische Neuverbindung
             self._set_connect_status("Nicht Verbunden", "black")
 
-    def close_arduino_connection_after_write_error(self, expected_port=None):
-        if expected_port is not None and self.arduino is not expected_port:
-            return
-        self._stop_reader()
-        try:
-            if self.arduino:
-                self.arduino.close()
-        except Exception:                                 # noqa: BLE001
-            pass
-        self.arduino = None
-        self.ARDUINO_current_portname = ""
-        self.ARDUINO_status = ""
-        self.send_active = False
-        self._set_connect_status("Nicht Verbunden", "black")
+    def close_arduino_connection_after_write_error(self, expected_port=None, lock_timeout=1.0):
+        """Schliesst die Verbindung nach einem Schreibfehler (Sendethread) oder fuer eine Abfrage (expected_port). Unter _conn_lock, damit nicht zugleich verbunden oder getrennt wird;
+        kommt die Sperre nicht binnen lock_timeout (0 = nicht warten), wird wie bisher ohne sie geschlossen (kein Stillstand: der Sendethread wird von disconnect abgewartet)."""  # v1.20
+        got = self._conn_lock.acquire(timeout=lock_timeout) if lock_timeout and lock_timeout > 0 else self._conn_lock.acquire(blocking=False)  # v1.20
+        try:  # v1.20
+            if expected_port is not None and self.arduino is not expected_port:
+                return
+            self._stop_reader()
+            try:
+                if self.arduino:
+                    self.arduino.close()
+            except Exception:                             # noqa: BLE001
+                pass
+            self.arduino = None
+            self.ARDUINO_current_portname = ""
+            self.ARDUINO_status = ""
+            self.send_active = False
+            self._set_connect_status("Nicht Verbunden", "black")
+        finally:  # v1.20
+            if got:  # v1.20
+                self._conn_lock.release()  # v1.20
+
+    def connect_silent(self, port=None, wlan=None, dtr=None, esp32=None, verify=None):  # v1.20
+        """Verbinden ohne Dialoge (Autoconnect beim Start, nach dem Hochladen, Blattwechsel). quiet und dtr_override gelten nur fuer diesen Aufruf und werden unter _conn_lock gesetzt
+        und zurueckgenommen (vorher setzte der Aufrufer sie ungeschuetzt: zwei gleichzeitige Aufrufe stoerten sich). Eine schon offene Verbindung bleibt unberuehrt (Rueckgabe True,
+        kein Trennen, kein erneutes Oeffnen); zum Wechseln erst disconnect() unter derselben Sperre aufrufen. verify: Funktion ohne Argument; liefert sie False, wird wieder getrennt."""
+        with self._conn_lock:  # v1.20
+            if self.is_connection_open():  # v1.20
+                return True  # v1.20
+            self.quiet, self.dtr_override = True, dtr  # v1.20
+            try:  # v1.20
+                if esp32:  # v1.20
+                    self.connect_esp32(esp32[0], esp32[1])  # v1.20
+                else:  # v1.20
+                    self.connect(port=port, wlan=wlan)  # v1.20
+                ok = bool(self.is_connection_open())  # v1.20
+                if ok and verify is not None and not verify():  # v1.20
+                    self.disconnect()  # v1.20
+                    return False  # v1.20
+                return ok  # v1.20
+            finally:  # v1.20
+                self.quiet, self.dtr_override = False, None  # v1.20

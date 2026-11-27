@@ -184,12 +184,12 @@
         "Typ": "SerialMonitorPage",
         "Name": "SerialMonitorPage",
         "MTabName": "Serial\nMonitor",
-        "Title": "Serial Monitor",
+        "Title": "Serieller Monitor",
         "Button_1": "Senden",
         "Button_2": "",
         "Button_3": "",
-        "Kurzbeschreibung": "Serial Monitor",
-        "Ausführliche Beschreibung": "Der Serial Monitor protokolliert die Kommunikation des Programms mit dem ARDUINO. Dies ist mehr für die Fehlerbehebung gedacht und für Experten.",
+        "Kurzbeschreibung": "Serieller Monitor",
+        "Ausführliche Beschreibung": "Der serielle Monitor protokolliert die Kommunikation des Programms mit dem ARDUINO. Dies ist mehr für die Fehlerbehebung gedacht und für Experten.",
         "Params": [
             "SerialMonitorInput"
         ]

@@ -1,5 +1,5 @@
 ====== MobaLedLib Studio – Zusätzlich: Arduino IDE ======
-//Seitenstand 1.04 (2026-11-24), gilt für Version 5.09//
+//Seitenstand 1.05 (2026-11-26), gilt für Version 5.49//
 
 MobaLedLib Studio überträgt das Programm normalerweise mit **PlatformIO**. Es wird bei der Installation automatisch mitinstalliert. **Du brauchst die Arduino IDE also nicht.**
 
@@ -56,7 +56,7 @@ Wenn du wieder **PlatformIO** benutzen willst, stellst du es an derselben Stelle
 ===== Wenn etwas nicht klappt =====
 
 ^ Was passiert ^ Was hilft ^
-| „ARDUINO IDE nicht gefunden“ | Öffne **Hardware Optionen**, Reiter **Entwicklungsumgebung**, Knopf **ARDUINO-IDE Einstellungen** und klicke auf **IDE suchen**. Oder trage den Pfad der Startdatei ein. |
+| „ARDUINO IDE nicht gefunden“ | Öffne **Werkzeuge → Wartung**, Knopf **ARDUINO-IDE Einstellungen** und klicke auf **IDE suchen**. Oder trage den Pfad der Startdatei ein. |
 | Beim Kompilieren fehlt „MobaLedLib.h“ | Die Bibliotheken fehlen. Öffne den Reiter **UPDATE** (er erscheint nur mit der ARDUINO IDE) und lasse die Bibliotheken installieren. |
 | Windows: Die Installation der IDE bricht ab | Lade die IDE 1.8.19 von Hand von [[https://www.arduino.cc/en/software/OldSoftwareReleases/|arduino.cc]] und starte die Installation noch einmal mit ''install_windows.bat /libs''. |
 | Der schnelle Bootloader geht nicht | Diese Funktion läuft in MobaLedLib Studio nur mit PlatformIO. |

@@ -1,12 +1,17 @@
-# Datei-Version: 1.24 (2026-11-25) - M07_COM_Port_New.py
+# Datei-Version: 1.29 (2026-11-26) - M07_COM_Port_New.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port_New.py
 # Path:           proggen/M07_COM_Port_New.py
-# Version:        1.24
-# Last Update:    2026-11-25
+# Version:        1.29
+# Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.29  2026-11-26  Die Einordnung als 'Andere MobaLedLib Geraete' entscheidet wieder der type (nicht LICHTMASCHINE und keine Konfiguration); Platform_Is_Central und Is_Other_Device (v1.26, isCentral) entfallen. Zeilen mit '# v1.29'
+#   1.28  2026-11-26  Die Liste in csv/Lichtmaschinen_prop.json heisst devices (der alte Name Lichtmaschinen wird noch gelesen). Zeile mit '# v1.28'
+#   1.27  2026-11-26  Toleranteres Lesen der Antwort auf ~MLLINFO und ~MLLCFG INFO (Parse_Kv): unbekannte Schluessel werden uebergangen, Schluessel in Gross-/Kleinschreibung, Werte in Anfuehrungszeichen, Trenner Leerzeichen, Komma oder Semikolon, Zeichen vor der Kennung, Eintraege ohne =; type immer in Grossbuchstaben. Zeilen mit '# v1.27'
+#   1.26  2026-11-26  Ob ein Geraet als 'Andere MobaLedLib Geraete' (nicht als Lichtmaschine waehlbar) gilt, entscheidet das Feld isCentral der Plattform in csv/Lichtmaschinen_prop.json (Platform_Is_Central, Is_Other_Device); unbekannte Plattformen wie bisher nach type. Zeilen mit '# v1.26'
+#   1.25  2026-11-26  Eine Verbindung pro Geraet: _SERIAL_LOCK ist die gemeinsame Sperre web_serial.PORT_ACCESS_LOCK (auch Verbinden und Erkennung); die Abfragen pruefen NACH dem Warten auf die Sperre noch einmal, ob das Hauptprogramm inzwischen verbunden hat (nicht ein zweites Mal oeffnen, kein falsches 'blockiert'); _Main_Connection nur bei fertigem Handshake. Zeilen mit '# v1.25'
 #   1.1.24  2026-11-26  Query_Nano_Bootloader legt das Ergebnis in M07.BOOTLOADER_CACHE ab. Zeilen mit '# v1.24'
 #   1.23  2026-11-26  Query_Nano_Bootloader(): Bootloader des Nano ermitteln (alt/neu/Full) fuer die Geraeteauswahl. Zeilen mit '# v1.23'
 #   1.00  2026-10-12  Stand der Umstellung (nicht erfasst)
@@ -251,12 +256,16 @@ def _Release_Main_Connection(Port):  # v1.10
         con = PG.global_controller
         old = con.arduino
         if old is not None and getattr(old, "port", None) == Port:
-            con.close_arduino_connection_after_write_error(expected_port=old)
+            con.close_arduino_connection_after_write_error(expected_port=old, lock_timeout=0)  # v1.25: wir halten schon die Anschluss-Sperre: nicht auf _conn_lock warten (Reihenfolge der Sperren)
     except Exception:                                          # noqa: BLE001
         logging.getLogger(__name__).debug("Verbindung des Hauptprogramms nicht getrennt", exc_info=True)
 
 
-_SERIAL_LOCK = threading.Lock()   # v1.11: ein Zugriff auf einen Anschluss gleichzeitig (MLLIDENT-Thread und Abfrage von Typ und Version)
+# _SERIAL_LOCK = threading.Lock()   # v1.11: ein Zugriff auf einen Anschluss gleichzeitig (MLLIDENT-Thread und Abfrage von Typ und Version)  # v1.25 (entfallen: gemeinsame Sperre mit web_serial)
+try:  # v1.25: dieselbe Sperre wie beim Verbinden des Hauptprogramms (web_serial._open_and_handshake) und der Erkennung (M07.DetectArduino): ein Zugriff auf Anschluesse gleichzeitig
+    from _web.web_serial import PORT_ACCESS_LOCK as _SERIAL_LOCK  # v1.25
+except Exception:                                                  # noqa: BLE001  # v1.25
+    _SERIAL_LOCK = threading.RLock()  # v1.25
 _IDENT_LOCK = threading.Lock()    # v1.11: schuetzt _IDENT_WANTED
 _IDENT_WANTED = {}                # v1.11: Anschluss -> (Board, Cmd): zuletzt gewuenschter Befehl; der MLLIdent-Thread sendet ihn
 _IDENT_WAKE = threading.Event()   # v1.11
@@ -295,6 +304,10 @@ def _Ident_Send_Now(Port, Board, Cmd):  # v1.11
         con.send_to_ARDUINO(Cmd + "\n")
         return
     with _SERIAL_LOCK:
+        con, _ser = _Main_Connection(Port)  # v1.25: das Hauptprogramm kann waehrend des Wartens verbunden haben: ueber diese Verbindung senden
+        if con is not None:  # v1.25
+            con.send_to_ARDUINO(Cmd + "\n")  # v1.25
+            return  # v1.25
         _Release_Main_Connection(Port)  # v1.10
         ser = None
         try:
@@ -376,7 +389,8 @@ def _Main_Connection(Port):  # v1.18
     try:
         con = PG.global_controller
         ser = con.arduino
-        if ser is not None and getattr(ser, "is_open", False) and str(getattr(ser, "port", "") or "").upper() == str(Port).upper() and con.is_connection_open():
+        if (ser is not None and getattr(ser, "is_open", False) and str(getattr(ser, "port", "") or "").upper() == str(Port).upper() and con.is_connection_open()
+                and str(getattr(con, "ARDUINO_current_portname", "") or "").upper() == str(Port).upper()):  # v1.25: erst nach dem Handshake (sonst stoert eine Abfrage den Verbindungsaufbau)
             BLOCKED_PORTS.discard(str(Port))  # v1.20
             return con, ser
     except Exception:  # noqa: BLE001
@@ -384,17 +398,35 @@ def _Main_Connection(Port):  # v1.18
     return None, None
 
 
+_KV_RE = None  # v1.27
+
+
+def Parse_Kv(text):  # v1.27
+    """'k=v'-Paare eines Textes (hinter der Kennung einer Antwort) als Dict. Tolerant: Schluessel werden klein geschrieben, unbekannte Schluessel bleiben im Dict und stoeren
+    nicht (die Auswertung fragt nur nach den Schluesseln, die sie kennt); Werte duerfen in Anfuehrungszeichen stehen; getrennt wird mit Leerzeichen, Komma oder Semikolon;
+    Eintraege ohne = und Steuerzeichen werden uebergangen; bei doppelten Schluesseln gilt der erste; type steht immer in Grossbuchstaben (PICOSERVO)."""
+    global _KV_RE
+    if _KV_RE is None:
+        import re
+        _KV_RE = re.compile(r"""([A-Za-z_][A-Za-z0-9_.\-]*)\s*=\s*("[^"]*"|'[^']*'|[^\s,;]*)""")
+    info = {}
+    clean = "".join(ch if ch >= " " else " " for ch in str(text or ""))
+    for m in _KV_RE.finditer(clean):
+        k, v = m.group(1).lower(), m.group(2).strip()
+        if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+            v = v[1:-1].strip()
+        if k == "type":
+            v = v.upper()
+        info.setdefault(k, v)
+    return info
+
+
 def _Kv(line, Prefix):  # v1.18
     """'k=v'-Paare hinter Prefix als Dict; None, wenn Prefix nicht in der Zeile steht."""
     p = line.find(Prefix)
     if p < 0:
         return None
-    info = {}
-    for part in line[p + len(Prefix):].split():
-        if "=" in part:
-            k, v = part.split("=", 1)
-            info[k] = v.strip()
-    return info
+    return Parse_Kv(line[p + len(Prefix):])  # v1.27
 
 
 def _Main_Ask(con, lines, Cmd, Prefix, Timeout):  # v1.18
@@ -491,12 +523,7 @@ def _Ask(ser, Cmd, Prefix, Timeout, seen=None):  # v1.11; v1.16: seen sammelt ue
         p = line.find(Prefix)
         if p < 0:  # andere Zeilen (MLLIDENT-Echo, Meldungen) ueberlesen
             continue
-        info = {}
-        for part in line[p + len(Prefix):].split():
-            if "=" in part:
-                k, v = part.split("=", 1)
-                info[k] = v.strip()
-        return info
+        return Parse_Kv(line[p + len(Prefix):])  # v1.27: tolerant (unbekannte Schluessel stoeren nicht)
     return None
 
 
@@ -519,31 +546,35 @@ def Query_Info(Port, Board, Timeout=1.2):  # v1.11
     t0 = time.monotonic()
     with _SERIAL_LOCK:
         marks.append(("Sperre", time.monotonic() - t0))
-        t1 = time.monotonic()
-        _Release_Main_Connection(Port)
-        marks.append(("Hauptverbindung", time.monotonic() - t1))
-        ser = None
-        try:
+        con, _ser = _Main_Connection(Port)  # v1.25: das Hauptprogramm kann waehrend des Wartens auf die Sperre verbunden haben
+        if con is None:  # v1.25
             t1 = time.monotonic()
-            ser = _Open_Serial(Port, Board, 0.1)  # v1.13
-            BLOCKED_PORTS.discard(str(Port))  # v1.20
-            marks.append(("open", time.monotonic() - t1))
-            t1 = time.monotonic()
-            cfg_raw = _Ask(ser, "~MLLCFG INFO", "~MLLCFG INFO ", Timeout, seen)
-            marks.append(("CFG", time.monotonic() - t1))
-            t1 = time.monotonic()
-            fw = _Ask(ser, "~MLLINFO", "~MLLINFO ", Timeout if cfg_raw is not None else 0.4, seen)   # blieb die erste Frage ganz ohne Zeile, ist das Geraet vermutlich still
-            marks.append(("INFO", time.monotonic() - t1))
-        except Exception as e:  # noqa: BLE001
-            if _Is_Blocked(e):  # v1.20
-                BLOCKED_PORTS.add(str(Port))
-            logging.getLogger(__name__).info("Query_Info %s (%s): Fehler beim Oeffnen oder Abfragen: %r", Port, Board, e)  # v1.19: sichtbar (vorher nur DEBUG)
-        finally:
-            if ser is not None:
-                try:
-                    ser.close()
-                except Exception:  # noqa: BLE001
-                    pass
+            _Release_Main_Connection(Port)
+            marks.append(("Hauptverbindung", time.monotonic() - t1))
+            ser = None
+            try:
+                t1 = time.monotonic()
+                ser = _Open_Serial(Port, Board, 0.1)  # v1.13
+                BLOCKED_PORTS.discard(str(Port))  # v1.20
+                marks.append(("open", time.monotonic() - t1))
+                t1 = time.monotonic()
+                cfg_raw = _Ask(ser, "~MLLCFG INFO", "~MLLCFG INFO ", Timeout, seen)
+                marks.append(("CFG", time.monotonic() - t1))
+                t1 = time.monotonic()
+                fw = _Ask(ser, "~MLLINFO", "~MLLINFO ", Timeout if cfg_raw is not None else 0.4, seen)   # blieb die erste Frage ganz ohne Zeile, ist das Geraet vermutlich still
+                marks.append(("INFO", time.monotonic() - t1))
+            except Exception as e:  # noqa: BLE001
+                if _Is_Blocked(e):  # v1.20
+                    BLOCKED_PORTS.add(str(Port))
+                logging.getLogger(__name__).info("Query_Info %s (%s): Fehler beim Oeffnen oder Abfragen: %r", Port, Board, e)  # v1.19: sichtbar (vorher nur DEBUG)
+            finally:
+                if ser is not None:
+                    try:
+                        ser.close()
+                    except Exception:  # noqa: BLE001
+                        pass
+    if con is not None:  # v1.25: aktive Verbindung benutzen (ausserhalb der Sperre: die Antwort dauert)
+        return _Query_Info_Main(con, Port, Timeout)  # v1.25
     boot = next((l for l in seen if "rst:" in l or "ets " in l or "ESP-ROM" in l or "boot:" in l), None)  # v1.16
     positive = bool(fw and fw.get("type")) or bool(cfg_raw and "sig" in cfg_raw)  # v1.21
     extra = "" if positive or not seen else ", Empfangen: " + " | ".join(seen)  # v1.21: ohne gueltige Antwort alles Empfangene zeigen
@@ -564,42 +595,46 @@ def Query_Nano_Info(Port, Timeout=1.5):  # v1.14
         return _Parse_Nano(_Main_Nano_Text(con))
     text = None
     with _SERIAL_LOCK:
-        _Release_Main_Connection(Port)
-        ser = None
-        try:
-            ser = _Open_Serial(Port, "nano", 0.1)
-            BLOCKED_PORTS.discard(str(Port))  # v1.20
-            ser.reset_input_buffer()
-            deadline = time.monotonic() + Timeout
-            next_send = 0.0
-            buf = ""
-            while time.monotonic() < deadline and text is None:
-                now = time.monotonic()
-                if now >= next_send:
-                    ser.write(b"#?\r\n")
-                    ser.flush()
-                    next_send = now + 0.7
-                buf += ser.read(ser.in_waiting or 1).decode("ascii", errors="replace")
-                p = buf.find("#?LEDs_AutoProg")
-                if p >= 0:
-                    e = buf.find("\n", p)
-                    if e >= 0:
-                        text = buf[p + 2:e].strip()
-            if text is None and buf:  # v1.21: keine gueltige Antwort: Empfangenes protokollieren
-                bad = any(ord(c) > 126 or (ord(c) < 32 and c not in "\t\r\n") for c in buf)
-                logging.getLogger(__name__).info("Query_Nano_Info %s: keine gueltige Antwort, empfangen: %s%r", Port, "UNGUELTIGE ZEICHEN " if bad else "", buf[:120])
-            ser.write(b"#X\r\n")                                   # Farbmodus beenden (auch ohne Antwort: harmlos)
-            ser.flush()
-        except Exception as e:  # noqa: BLE001
-            if _Is_Blocked(e):  # v1.20
-                BLOCKED_PORTS.add(str(Port))
-            logging.getLogger(__name__).info("Query_Nano_Info %s: Fehler beim Oeffnen oder Abfragen: %r", Port, e)  # v1.19: sichtbar (vorher nur DEBUG)
-        finally:
-            if ser is not None:
-                try:
-                    ser.close()
-                except Exception:  # noqa: BLE001
-                    pass
+        con, _ser = _Main_Connection(Port)  # v1.25: das Hauptprogramm kann waehrend des Wartens auf die Sperre verbunden haben
+        if con is None:  # v1.25
+            _Release_Main_Connection(Port)
+            ser = None
+            try:
+                ser = _Open_Serial(Port, "nano", 0.1)
+                BLOCKED_PORTS.discard(str(Port))  # v1.20
+                ser.reset_input_buffer()
+                deadline = time.monotonic() + Timeout
+                next_send = 0.0
+                buf = ""
+                while time.monotonic() < deadline and text is None:
+                    now = time.monotonic()
+                    if now >= next_send:
+                        ser.write(b"#?\r\n")
+                        ser.flush()
+                        next_send = now + 0.7
+                    buf += ser.read(ser.in_waiting or 1).decode("ascii", errors="replace")
+                    p = buf.find("#?LEDs_AutoProg")
+                    if p >= 0:
+                        e = buf.find("\n", p)
+                        if e >= 0:
+                            text = buf[p + 2:e].strip()
+                if text is None and buf:  # v1.21: keine gueltige Antwort: Empfangenes protokollieren
+                    bad = any(ord(c) > 126 or (ord(c) < 32 and c not in "\t\r\n") for c in buf)
+                    logging.getLogger(__name__).info("Query_Nano_Info %s: keine gueltige Antwort, empfangen: %s%r", Port, "UNGUELTIGE ZEICHEN " if bad else "", buf[:120])
+                ser.write(b"#X\r\n")                                   # Farbmodus beenden (auch ohne Antwort: harmlos)
+                ser.flush()
+            except Exception as e:  # noqa: BLE001
+                if _Is_Blocked(e):  # v1.20
+                    BLOCKED_PORTS.add(str(Port))
+                logging.getLogger(__name__).info("Query_Nano_Info %s: Fehler beim Oeffnen oder Abfragen: %r", Port, e)  # v1.19: sichtbar (vorher nur DEBUG)
+            finally:
+                if ser is not None:
+                    try:
+                        ser.close()
+                    except Exception:  # noqa: BLE001
+                        pass
+    if con is not None:  # v1.25
+        return _Parse_Nano(_Main_Nano_Text(con))  # v1.25
     return _Parse_Nano(text)
 
 
@@ -619,6 +654,10 @@ def Query_Nano_Bootloader(Port):  # v1.23
         return None
     t0 = time.monotonic()
     with _SERIAL_LOCK:
+        con, _ser = _Main_Connection(Port)  # v1.25: das Hauptprogramm kann waehrend des Wartens auf die Sperre verbunden haben
+        if con is not None:  # v1.25
+            log.info("Bootloader-Abfrage %s: aktive Verbindung des Hauptprogramms, nicht abgefragt", Port)  # v1.25
+            return None  # v1.25
         M07.BOOTLOADER_CACHE.pop(str(Port).upper(), None)  # v1.24: frisch abfragen, kein alter Wert
         baud = M07.Get_Arduino_Baudrate(Port, 115200, 0, "")
         fw, sig = M07.Get_Last_Detect_Info()

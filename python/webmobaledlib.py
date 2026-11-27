@@ -1,8 +1,8 @@
-# Datei-Version: 5.41 (2026-11-26) - webmobaledlib.py
+# Datei-Version: 5.69 (2026-11-27) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        5.41
+# Version:        5.69
 # Last Update:    2026-11-26
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
@@ -61,6 +61,33 @@
 #   5.39  2026-11-26  Makro Button (und alle Makros, deren Zelle in Lib_Macros einen Kommentar hat): Fehler 'Der Parameter Name Val1§Duration 0 not possible wurde nicht im Sheet Par_Description gefunden' behoben, der Kommentar der Zelle (Text nach dem §) gehoert nicht zum Makro (M09_Select_Macro 1.01, M06_Write_Header_SW 1.15, web_form_other 1.18, web_macro_tree 1.13)
 #   5.40  2026-11-26  Offizielles Release MobaLedLib 3.6.0 uebernommen: Lib_Version_Nr 3.6.0 ohne Zusatz (M02_Public 1.06), platformio.ini nennt die Bibliothek mit dieser Version (M08_ARDUINO 1.37), library.properties 3.6.0, neue Excel-Arbeitsmappe csv/Prog_Generator_MobaLedLib.xlsm, neues Beispiel Prog_Generator_Examples/AddressLearn.MLL_pgf
 #   5.41  2026-11-26  Bibliothek MobaLedLib 3.6.0 verglichen (Harold): README.md der Bibliothek uebernommen (libraries/MobaLedLib/README.md); PicoFastLED.h bleibt (unsere Fassung ist neuer), alle anderen Dateien gleich
+#   5.42  2026-11-26  Startseite: Pico Zero unterstuetzt nur DCC (Selectrix, LNet und CAN sind auf der Hardware nicht vorhanden) (web_startpage 1.06, csv/Lichtmaschinen_prop.json 1.02)
+#   5.43  2026-11-26  Startseite: eigene Bilder fuer Lichtmaschine Mini und MoLLi (images/Mini_image.png, images/MoLLi_image.png; web_startpage 1.07, csv/Lichtmaschinen_prop.json 1.03)
+#   5.44  2026-11-26  Jürgen Winkler, Pull Request 74, weiterer Commit (dort V5.26): Geraeteauswahl zeigt bei Pico-Geraeten die Seriennummer hinter der Bezeichnung (web_form_comport 1.44)
+#   5.45  2026-11-26  Fehler behoben: die Einstellung Startseite beim Programmstart anzeigen stand unter Spezial statt unter Allgemein (web_params 1.19)
+#   5.46  2026-11-26  Juergen Winkler, Pull Request 76 (dort V5.42): Verbindung: Statusmeldung neben dem Knopf zeigt Typ und Anschluss (Nicht verbunden - Pro/COM3, Verbunden mit Pro/COM3 - EFFECT Mode); eine negative Zahl im Anschluss der Lichtmaschine des Blatts ist ein Hinweis fuer den Auto-Reconnect (zuerst dieser Anschluss, am Start und nach dem Wiederherstellen, keine Suche ueber alle Anschluesse); der Knopf Mit Lichtmaschine verbinden heisst mit Verbindung Trennen (Menue: Trennen); nach Wiederherstellen eines zwischengespeicherten Stands passt sich die Verbindung an Typ und Anschluss des Blatts an; Strg+C beendet ohne Fehlermeldung; eine Verbindung pro Geraet: gemeinsame Anschluss-Sperre fuer Verbinden, Abfragen der Geraeteauswahl und Erkennung, eine offene Verbindung zum selben Anschluss oder ESP32 wird wiederverwendet (web_serial 1.20, M07_COM_Port_New 1.25, M07_COM_Port 1.17, KI_ENTWICKLUNG_Prompt 1.02, test_single_connection.py)
+#   5.47  2026-11-26  Fehler behoben: Upload ohne Anschluss in der Tabelle brach mit "module 'vb2py.logger' has no attribute 'warning'" ab (M07_COM_Port 1.18: logger nach den Importen neu gesetzt)
+#   5.48  2026-11-26  Fehler behoben (Harold): steht im Anschluss der Tabelle -7 (von Excel gesetzt, Hinweis fuer den Auto-Reconnect), kam beim Setup uebertragen 'Es ist kein PICO an COM Port COM-7 angeschlossen'; jetzt gilt eine Zahl <= 0 als kein Anschluss und es wird der Anschluss der aktiven Verbindung benutzt (F00_mainbuttons 1.03, M07_COM_Port 1.19)
+#   5.69  2026-11-27  ESP32: die Zeilen #undef/#define Mainboard_LEDn werden nicht in die Kopfdatei geschrieben (M06_Write_Header 1.23, Remove_Mainboard_LED_Defines). Zeilen mit '# v5.69'
+#   5.68  2026-11-27  LEDs_AutoProg.h im Modus MLL_DYNAMIC_CONFIG: die Eingangskanal-Defines (Input channel defines for local inputs and expert users) und TOTAL_SWITCHES_A bis D, TOTAL_VARIABLES stehen zwischen //MLLDYN_BEGIN und //MLLDYN_END (M06_Write_Header 1.22, M06_Write_Header_SW 1.16, headless_dyn_config 1.08). Zeilen mit '# v5.68'
+#   5.67  2026-11-27  Doppelklick auf Name und Beleuchtung oeffnet die Makroauswahl auch bei Anwendern, die den Schalter vor V5.27 (Standard damals aus) gespeichert hatten: der alte Wert aus wird einmal auf an gesetzt (web_layout 1.23). Zeilen mit '# v5.67'
+#   5.66  2026-11-27  Fehler behoben: nach dem Zuruecksetzen der Testtasten (zum Beispiel nach Setup uebertragen) war bei mehreren Zeilen mit derselben Adresse nur die Taste der Zeile mit Startwert 1 eingeschaltet, die anderen blieben aus (Sync_Toggle_Buttons_by_Address verglich die Richtung als Text, M20 1.20). Zeilen mit '# v5.66'
+#   5.65  2026-11-27  Setup uebertragen mit schnellem Upload: ist schon im EFFECT Mode mit demselben Anschluss verbunden, bleibt die Verbindung bestehen und die Konfiguration geht ueber sie (M42.Reuse_Connection, headless_dyn_config.SharedLink, web_serial cfg_lines, M08 1.40). Zeilen mit '# v5.65'
+#   5.64  2026-11-27  Serieller Monitor: der schnelle Test auf den EFFECT Mode ist hart auf 250 ms begrenzt; Geraete, die nicht oder nicht wie erwartet antworten oder das Schreiben blockieren, halten das Verbinden nicht auf, danach gilt der DIRECT Mode (web_serial 1.30). Zeilen mit '# v5.64'
+#   5.63  2026-11-27  Serieller Monitor: Verbinden testet zuerst schnell (hoechstens 250 ms) auf den EFFECT Mode und liest nur mit (DIRECT Mode), wenn das Geraet nicht antwortet (web_serial 1.29). Zeilen mit '# v5.63'
+#   5.62  2026-11-27  Auch der Wechsel vom Seriellen Monitor in Farb Test, Servo Test, Sound Test, DCC Keyboard oder Patterngenerator baut eine Direktmodus-Verbindung des Monitors im EFFECT Mode mit dem Anschluss des Blatts neu auf (vor dem Start des Direktmodus der Seite); eine schon korrekte EFFECT Mode Verbindung bleibt (monitor_left_for_sheet, sync_connection_to_sheet restart). Zeilen mit '# v5.62'
+#   5.61  2026-11-27  Der Serielle Monitor zeigt 'DIRECT Mode' (liest nur mit); beim Verlassen in Richtung Programm Generator wird eine Direktmodus-Verbindung im EFFECT Mode neu aufgebaut (auch zum selben Anschluss), eine EFFECT Mode Verbindung bleibt wie bisher nur bei anderem Anschluss des Blatts nicht erhalten (web_serial 1.28, sync_connection_to_sheet force). Zeilen mit '# v5.61'
+#   5.60  2026-11-27  Wechsel vom Seriellen Monitor in den Programm Generator: die Verbindung wird wieder auf das Board und den Anschluss des Blatts umgestellt, ausser es ist derselbe Anschluss (sync_connection_to_sheet, monitor_left_for_sheet). Zeilen mit '# v5.60'
+#   5.59  2026-11-27  Automatisch neu verbinden: nach einem Verbindungsverlust (USB abgezogen) verbindet das Programm wieder, sobald der Anschluss zurueck ist (Serial Monitor: mitlesen); Trennen durch den Anwender beendet das Warten (web_serial 1.27). Zeilen mit '# v5.59'
+#   5.58  2026-11-27  Verbindung verloren nennt wie Nicht verbunden Typ und Anschluss (Verbindung verloren - Pro/COM3; web_serial 1.26). Zeilen mit '# v5.58'
+#   5.57  2026-11-27  Verbindungsverlust (zum Beispiel USB abgezogen) wird erkannt: Knoepfe rot, Status Verbindung verloren, Zeile im Serial Monitor (web_serial 1.25). Zeilen mit '# v5.57'
+#   5.56  2026-11-26  Serial Monitor: DTR nach dem Geraet am Anschluss (Pico antwortet), beim Wechsel des Anschlusses zeigen Knopf und Status die Schritte (Nicht verbunden, Verbindungsaufbau, Verbunden); waehrend des Verbindungsaufbaus sind beide Verbindungsknoepfe (Kopfzeile und Serieller Monitor) grau, gesperrt und heissen Verbinden... (web_serial 1.24, web_serial_page 1.07). Zeilen mit '# v5.56'
+#   5.55  2026-11-26  Zusammenfuehrung mit 5.54 (haroldlinke/main): die Dateien von Pull Request 80 und den Folgeaenderungen (5.50 bis 5.53 der Arbeitskopie) behalten ihren Stand; in 5.54 standen mehrere Dateien auf einem aelteren Stand (zum Beispiel M07_COM_Port 1.16, web_serial 1.18, web_startpage 1.05). Siehe HOC_intern 5.55
+#   5.53  2026-11-26  Der Reiter heisst Serieller Monitor (vorher Serial Monitor); der Knopf dort heisst nur Verbinden (vorher Mit Lichtmaschine verbinden; web_serial_page 1.05, web_tabs, csv/Web_Languages.csv). Zeilen mit '# v5.53'
+#   5.52  2026-11-26  Serial Monitor: ein Knopf zum Verbinden und Trennen und dieselbe Statusanzeige wie beim zentralen Verbindungsknopf (web_serial_page 1.03). Zeilen mit '# v5.52'
+#   5.51  2026-11-26  Die Bestaetigung der LNet-Lizenz (esp32_options['lnet_license']) gilt nur fuer das eigene Blatt: sie wird weder in die PGF-Datei geschrieben noch beim Kopieren eines Blatts (Reiter, Duplizieren) in die Kopie uebernommen (web_form_options 1.79). Zeilen mit '# v5.51'
+#   5.50  2026-11-26  Anschluss im Blatt als negative Zahl (-3 = Hinweis, das Geraet war an COM3): Autoconnect traegt den gefundenen Anschluss ins Blatt ein (_store_hint_port); Setup uebertragen und Hochladen pruefen den Hinweis (M07_COM_Port 1.20: Resolve_Port_Hint), klappt das nicht, oeffnet sich der Dialog Board und USB Port erkennen
+#   5.49  2026-11-26  Issue 75 (Juergen): neues Menue Werkzeuge mit Datenuebertragung (vorher Einstellungen), Firmware installieren, ESP32-Firmware ueber WLAN hochladen und Wartung (Entwicklungsumgebung und Update, vorher Reiter der Hardware Optionen); im Anfaenger Modus ausgeblendet (web_form_options 1.75)
 #   5.38  2026-11-26  Ohne Lichtmaschine kam die Meldung 'Fehler beim Oeffnen der Verbindung' bei jedem Wechsel auf einen Reiter mit Direktmodus (Farb Test, Servo Test, Sound Test): das automatische Verbinden beim Reiterwechsel scheitert jetzt nur einmal mit Meldung, danach wird nicht mehr versucht, bis eine Verbindung besteht oder der Anwender selbst verbindet (Menue, Testtasten)
 #   5.37  2026-11-26  Farb Test: Knopf 'Farb Test beenden' unten rechts (web_colorcheck 1.13); Set_ColTab oeffnet den Farb Test auch ohne Lichtmaschine, kein Anschluss noetig (M60_CheckColors 1.01); Parameterformular: Flags (OptCtrPar, CtrMode, RandMode) als aufklappbare Hakenliste (web_form_other 1.17, Web_Languages.csv)
 #   5.36  2026-11-26  Startseite: alle Kacheln gleich gross (auch Ohne Zentrale und die letzte Lichtmaschine), Raster statt Zeilenumbruch (web_startpage 1.05)
@@ -690,6 +717,32 @@ REQUIRED_FILES = {  # v1.75
     "_web/web_colorcheck.py": "1.13", "_web/web_form_other.py": "1.17",  # v5.37
     "_web/web_macro_tree.py": "1.13", "_web/web_form_other.py": "1.18", "proggen/M06_Write_Header_SW.py": "1.15",  # v5.39
     "proggen/M02_Public.py": "1.06", "proggen/M08_ARDUINO.py": "1.37",  # v5.40
+    "_web/web_startpage.py": "1.06",  # v5.42
+    "_web/web_startpage.py": "1.07",  # v5.43
+    "_web/web_form_comport.py": "1.44",  # v5.44
+    "_web/web_params.py": "1.19",  # v5.45
+    "proggen/M07_COM_Port_New.py": "1.25", "proggen/M07_COM_Port.py": "1.17", "_web/web_serial.py": "1.20",  # v5.46
+    "proggen/M07_COM_Port.py": "1.18",  # v5.47
+    "proggen/M07_COM_Port.py": "1.19", "proggen/F00_mainbuttons.py": "1.03",  # v5.48
+    "_web/web_form_options.py": "1.75",  # v5.49
+    "proggen/M06_Write_Header.py": "1.21", "proggen/M07_COM_Port.py": "1.20", "proggen/M08_ARDUINO.py": "1.39", "proggen/M18_Save_Load.py": "1.08",  # v5.50
+    "proggen/M20_PageEvents_a_Functions.py": "1.19", "headless/headless_protocol_switch.py": "1.01", "_web/web_form_comport.py": "1.47", "_web/web_log.py": "1.15",  # v5.50
+    "_web/web_form_options.py": "1.76",  # v5.50
+    "headless/headless_firmware_dl.py": "1.01", "_web/web_form_firmware_download.py": "1.03",  # v5.50
+    "_web/web_form_comport.py": "1.51", "_web/web_form_options.py": "1.79", "_web/web_form_firmware.py": "1.06", "_web/web_startpage.py": "1.13", "_web/web_serial.py": "1.22",  # v5.52
+    "_web/web_serial_page.py": "1.07", "proggen/M07_COM_Port_New.py": "1.29", "headless/headless_pico.py": "1.03",  # v5.52
+    "_web/web_serial.py": "1.24",  # v5.56
+    "_web/web_serial.py": "1.25",  # v5.57
+    "_web/web_serial.py": "1.26",  # v5.58
+    "_web/web_serial.py": "1.27",  # v5.59
+    "_web/web_serial.py": "1.28",  # v5.61
+    "_web/web_serial.py": "1.29",  # v5.63
+    "_web/web_serial.py": "1.30",  # v5.64
+    "_web/web_serial.py": "1.31", "headless/headless_dyn_config.py": "1.07", "proggen/M42_Dyn_Config.py": "1.13", "proggen/M08_ARDUINO.py": "1.40",  # v5.65
+    "proggen/M20_PageEvents_a_Functions.py": "1.20",  # v5.66
+    "_web/web_layout.py": "1.23",  # v5.67
+    "proggen/M06_Write_Header.py": "1.22", "proggen/M06_Write_Header_SW.py": "1.16", "headless/headless_dyn_config.py": "1.08",  # v5.68
+    "proggen/M06_Write_Header.py": "1.23",  # v5.69
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -785,12 +838,46 @@ except Exception:                                     # noqa: BLE001  # v2.79
     logger.debug("headless_ssl nicht benutzbar", exc_info=True)  # v2.79
 
 
-def translate_connect_status(text):  # v2.91
+def connect_device_label(ctrl, connected, sheet_port=""):  # v5.42
+    """Typ und Anschluss der Lichtmaschine fuer die Verbindungsmeldung, z. B. 'Pro/COM3'. Verbunden: der aktive Anschluss, sonst der des Blatts (sheet_port)."""
+    port = str(getattr(ctrl, "ARDUINO_current_portname", "") or "").strip() if connected else ""  # v5.42
+    if not connected and str(getattr(ctrl, "connectstatus_text", "")).strip() in ("Verbindung verloren", tr("Verbindung verloren")):  # v5.58: nach einem Verbindungsverlust der verlorene Anschluss
+        port = str(getattr(ctrl, "lost_port", "") or "").strip()  # v5.58
+    if not port:  # v5.42
+        port = str(sheet_port or "").strip()  # v5.42: nur der Anschluss des Blatts, nicht die globale Einstellung
+        if port.isdigit():  # v5.42
+            port = "COM" + port  # v5.42
+        if port.upper() in ("NO DEVICE", "COM?") or port.upper().startswith("IP:"):  # v5.42
+            port = ""  # v5.42
+    try:  # v5.42
+        import proggen.M02a_Public as _M02a  # v5.42
+        import proggen.M02_Public as _M02  # v5.42
+        bt = _M02a.Get_BoardTyp()  # v5.42
+        typ = "Pro" if bt == _M02.HT_ESP32 else ("Pico" if bt == _M02.HT_PICO else "Classic")  # v5.42
+    except Exception:                                                      # noqa: BLE001  # v5.42
+        logger.debug("Typ der Lichtmaschine fuer die Verbindungsmeldung nicht lesbar", exc_info=True)  # v5.42
+        typ = ""  # v5.42
+    return "/".join(x for x in (typ, port) if x)  # v5.42
+
+
+MONITOR_LEAVE_TABS = ("pg", "farb", "patt", "servo1", "servo2", "sound", "dcc")  # v5.62
+
+
+def monitor_left_for_sheet(old_tab, new_tab):  # v5.60
+    """Wechsel vom Seriellen Monitor (mon) in den Programm Generator (pg), Farb Test, Servo Test, Sound Test, DCC Keyboard oder Patterngenerator: die Verbindung gehoert dann wieder zum Blatt (Board, Anschluss, EFFECT Mode)."""  # v5.60  # v5.62
+    return old_tab == "mon" and new_tab in MONITOR_LEAVE_TABS  # v5.60  # v5.62
+
+
+def translate_connect_status(text, device=""):  # v2.91, v5.42: device = 'Pro/COM3' wird angezeigt
     """Verbindungsstatus (kommt aus dem Controller auf Deutsch: 'Nicht verbunden', 'Nicht Verbunden', 'Verbunden COM5 - EFFECT Mode') in der eingestellten Sprache"""  # v2.91
     t = str(text or "")  # v2.91
+    if t.strip() in ("Verbindung verloren", tr("Verbindung verloren")):  # v5.58: wie Nicht verbunden mit Typ und Anschluss
+        return tr("Verbindung verloren") + (" - " + device if device else "")  # v5.58
     if t.strip().lower() == "nicht verbunden":  # v2.91
-        return tr("Nicht verbunden")  # v2.91
+        return tr("Nicht verbunden") + (" - " + device if device else "")  # v2.91, v5.42
     m = re.fullmatch(r"Verbunden (.+) - (EFFECT|DIRECT) Mode", t)  # v2.91
+    if m and device:  # v5.42
+        return tr("Verbunden mit ") + device + " - " + m.group(2) + " Mode"  # v5.42
     if m:  # v2.91
         return tr("Verbunden {port} - " + m.group(2) + " Mode", port=m.group(1))  # v2.91
     return tr(t) if t.strip() else t  # v2.91
@@ -1782,7 +1869,33 @@ def font_scales(ctrl) -> dict:
 # VERSION = "5.38 (2026-11-26)"  # v5.39 (entfallen)
 # VERSION = "5.39 (2026-11-26)"  # v5.40 (entfallen)
 # VERSION = "5.40 (2026-11-26)"  # v5.41 (entfallen)
-VERSION = "5.41 (2026-11-26)"  # v5.41  # v5.23  # v5.22  # v5.21  # v5.20  # v5.19  # v5.11  # v5.12  # v5.13  # v5.14  # v5.15  # v5.16  # v5.17  # v5.18  # v3.64  # v4.26  # v4.27  # v4.28  # v4.29  # v4.30  # v4.31  # v4.32  # v4.33  # v4.34  # v4.35  # v4.36  # v4.37  # v4.38  # v4.39  # v4.40  # v4.41  # v4.42  # v4.43  # v4.44  # v4.45  # v4.46  # v4.47  # v4.48  # v4.49  # v4.50  # v4.51  # v4.52  # v4.53  # v4.54  # v4.55  # v4.56  # v4.57  # v4.58  # v4.59  # v4.60  # v4.61  # v4.62  # v4.63  # v4.64  # v4.65  # v4.66  # v4.67  # v4.68  # v4.69  # v4.70  # v4.71  # v4.72  # v4.73  # v4.74  # v4.75  # v4.76  # v4.77  # v4.78  # v4.79  # v4.80  # v4.81  # v4.82  # v4.83  # v4.84  # v4.85  # v4.86  # v4.87  # v4.88  # v4.89  # v4.90  # v4.91  # v4.92  # v4.93  # v4.94  # v4.95  # v4.96  # v4.97  # v4.98  # v4.99  # v5.00  # v5.01  # v5.02  # v5.03  # v5.04  # v5.24  # v5.25  # v5.26  # v5.27  # v5.28  # v5.29
+# VERSION = "5.41 (2026-11-26)"  # v5.42 (entfallen)
+# VERSION = "5.42 (2026-11-26)"  # v5.43 (entfallen)
+# VERSION = "5.43 (2026-11-26)"  # v5.44 (entfallen)
+# VERSION = "5.44 (2026-11-26)"  # v5.45 (entfallen)  # v5.23  # v5.22  # v5.21  # v5.20  # v5.19  # v5.11  # v5.12  # v5.13  # v5.14  # v5.15  # v5.16  # v5.17  # v5.18  # v3.64  # v4.26  # v4.27  # v4.28  # v4.29  # v4.30  # v4.31  # v4.32  # v4.33  # v4.34  # v4.35  # v4.36  # v4.37  # v4.38  # v4.39  # v4.40  # v4.41  # v4.42  # v4.43  # v4.44  # v4.45  # v4.46  # v4.47  # v4.48  # v4.49  # v4.50  # v4.51  # v4.52  # v4.53  # v4.54  # v4.55  # v4.56  # v4.57  # v4.58  # v4.59  # v4.60  # v4.61  # v4.62  # v4.63  # v4.64  # v4.65  # v4.66  # v4.67  # v4.68  # v4.69  # v4.70  # v4.71  # v4.72  # v4.73  # v4.74  # v4.75  # v4.76  # v4.77  # v4.78  # v4.79  # v4.80  # v4.81  # v4.82  # v4.83  # v4.84  # v4.85  # v4.86  # v4.87  # v4.88  # v4.89  # v4.90  # v4.91  # v4.92  # v4.93  # v4.94  # v4.95  # v4.96  # v4.97  # v4.98  # v4.99  # v5.00  # v5.01  # v5.02  # v5.03  # v5.04  # v5.24  # v5.25  # v5.26  # v5.27  # v5.28  # v5.29
+# VERSION = "5.45 (2026-11-26)"  # v5.46 (entfallen)
+# VERSION = "5.46 (2026-11-26)"  # v5.47 (entfallen)
+# VERSION = "5.47 (2026-11-26)"  # v5.48 (entfallen)
+# VERSION = "5.48 (2026-11-26)"  # v5.49 (entfallen)
+# VERSION = "5.49 (2026-11-26)"  # v5.49  # v5.50 (entfallen)
+# VERSION = "5.50 (2026-11-26)"  # v5.50  # v5.51 (entfallen)
+# VERSION = "5.51 (2026-11-26)"  # v5.51  # v5.52 (entfallen)
+# VERSION = "5.52 (2026-11-26)"  # v5.52  # v5.53 (entfallen)
+# VERSION = "5.53 (2026-11-26)"  # v5.53  # v5.56 (entfallen)
+# VERSION = "5.56 (2026-11-26)"  # v5.56  # v5.57 (entfallen)
+# VERSION = "5.57 (2026-11-27)"  # v5.57  # v5.58 (entfallen)
+# VERSION = "5.58 (2026-11-27)"  # v5.58  # v5.59 (entfallen)
+# VERSION = "5.59 (2026-11-27)"  # v5.59  # v5.60 (entfallen)
+# VERSION = "5.60 (2026-11-27)"  # v5.60  # v5.61 (entfallen)
+# VERSION = "5.61 (2026-11-27)"  # v5.61  # v5.62 (entfallen)
+# VERSION = "5.62 (2026-11-27)"  # v5.62  # v5.63 (entfallen)
+# VERSION = "5.63 (2026-11-27)"  # v5.63  # v5.64 (entfallen)
+# VERSION = "5.64 (2026-11-27)"  # v5.64  # v5.65 (entfallen)
+# VERSION = "5.65 (2026-11-27)"  # v5.65  # v5.66 (entfallen)
+# VERSION = "5.66 (2026-11-27)"  # v5.66  # v5.67 (entfallen)
+# VERSION = "5.67 (2026-11-27)"  # v5.67  # v5.68 (entfallen)
+# VERSION = "5.68 (2026-11-27)"  # v5.68  # v5.69 (entfallen)
+VERSION = "5.69 (2026-11-27)"  # v5.69
 # VERSION = "4.09 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.08 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.07 (2026-11-19)"  # v3.64 (entfallen)
@@ -2570,7 +2683,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         ui.tab("sound", label="Sound Test")  # v1.95
         ui.tab("dcc", label="DCC Keyboard")  # v1.95
         z21_tab = ui.tab("z21", label="Z21 Simulator")  # v2.05
-        ui.tab("mon", label="Serial Monitor")
+        # ui.tab("mon", label="Serial Monitor")  # v5.53 (entfallen)
+        ui.tab("mon", label="Serieller Monitor")  # v5.53
         # ui.tab("arduinocfg", label="ARDUINO Einstellungen")  # v4.51 (entfallen: Reiter ohne Kopf, Aufruf ueber die Optionen / Hardware Optionen)
         # ui.tab("config", label="Programm Einstellungen")  # v4.51 (entfallen: Aufruf ueber das Menue Einstellungen)
         arduinocfg_tab = ui.tab("arduinocfg", label="ARDUINO Einstellungen")  # v4.51
@@ -2857,7 +2971,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             with connect_arrow:  # v4.14
                 with ui.menu():  # v4.14
                     ui.menu_item(tr("Verbinden"), on_click=lambda: connect_arduino())  # v4.51 (vorher Menue Lichtmaschine)
-                    ui.menu_item(tr("Verbindung trennen"), on_click=lambda: disconnect_arduino())  # v4.14
+                    ui.menu_item(tr("Trennen"), on_click=lambda: disconnect_arduino())  # v4.14, v5.42: wie der Knopf
                     ui.menu_item(tr("Neu verbinden"), on_click=lambda: reconnect_arduino())  # v4.14
                     # ui.menu_item(tr("Board wechseln …"), on_click=lambda: change_board())  # v4.14  # v5.26 (entfallen)
                     ui.menu_item(tr("Gerät wechseln …"), on_click=lambda: change_board())  # v4.14  # v5.26: Gerät statt Board
@@ -2871,7 +2985,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         # connect_btn.tooltip("Verbindung zum Arduino herstellen (wie Lichtmaschine → Verbinden). Rot: keine Verbindung, grün: verbunden. Trennen: Menü Lichtmaschine → Trennen")  # v2.01  # v3.83  # v3.84 (entfallen)
         # connect_btn.tooltip("Verbindung zur Lichtmaschine herstellen (wie ARDUINO → Verbinden). Rot: keine Verbindung, grün: verbunden. Trennen: Pfeil neben dem Knopf oder Menü ARDUINO → Trennen")  # v2.01  # v3.83  # v4.14  # v4.18 (entfallen)
         # connect_btn.tooltip("Verbindung zur Lichtmaschine herstellen (wie Lichtmaschine → Verbinden). Rot: keine Verbindung, grün: verbunden. Trennen: Pfeil neben dem Knopf oder Menü Lichtmaschine → Trennen")  # v4.18  # v4.51 (entfallen)
-        connect_btn.tooltip(tr("Verbindung zur Lichtmaschine herstellen. Rot: keine Verbindung, grün: verbunden. Trennen, neu verbinden und mehr: Pfeil neben dem Knopf"))  # v4.51
+        connect_btn.tooltip(tr("Ohne Verbindung: mit der Lichtmaschine verbinden. Mit Verbindung: Trennen. Neu verbinden und mehr: Pfeil neben dem Knopf"))  # v4.51, v5.42
         web_fullscreen.button()                                       # Vollbild ein und aus: neben Beenden, in jedem Reiter erreichbar und auch im Vollbild sichtbar  # v1.81
         # ui.button("Beenden", on_click=quit_program, icon="power_settings_new").props("color=negative outline dense").classes("mll-quit")  # v3.78 (entfallen)
         with ui.column().classes("items-end gap-0 mll-quitcol"):  # v3.78: unter dem Knopf Beenden die Version der MobaLedLib (nur mit der ARDUINO IDE)
@@ -2909,7 +3023,15 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             status_label.set_text(text)
         status_label.style(f"color: {color}")
         # conn = getattr(ctrl, "connectstatus_text", "")  # v2.91 (entfallen)
-        conn = translate_connect_status(getattr(ctrl, "connectstatus_text", ""))  # v2.91
+        try:  # v5.42
+            _conn_now = bool(ctrl.is_connection_open())  # v5.42
+        except Exception:                                  # noqa: BLE001  # v5.42
+            _conn_now = False  # v5.42
+        try:  # v5.42
+            _sheet_port = _stored_ports()[0]  # v5.42
+        except Exception:                                  # noqa: BLE001  # v5.42
+            _sheet_port = ""  # v5.42
+        conn = translate_connect_status(getattr(ctrl, "connectstatus_text", ""), connect_device_label(ctrl, _conn_now, _sheet_port))  # v2.91, v5.27, v5.42: Typ und Anschluss immer sichtbar
         if conn_label.text != conn:
             conn_label.set_text(conn)
         conn_label.style("color: " + STATUS_COLORS.get(str(getattr(ctrl, "connectstatus_fg", "")).lower(), "#616161"))
@@ -2917,10 +3039,23 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             connected = bool(ctrl.is_connection_open())  # v2.01
         except Exception:                                  # noqa: BLE001  # v2.01
             connected = False  # v2.01
+        _busy = bool(getattr(ctrl, "connecting", False))  # v5.56: Verbindungsaufbau laeuft: beide Knoepfe grau, gesperrt, Verbinden...
+        if _busy != state.get("connecting_shown"):  # v5.56
+            state["connecting_shown"] = _busy  # v5.56
+            if _busy:  # v5.56
+                connect_btn.set_text(tr("Verbinden..."))  # v5.56
+                connect_btn.props("color=grey"); connect_btn.disable()  # v5.56
+                connect_arrow.props("color=grey"); connect_arrow.disable()  # v5.56
+            else:  # v5.56
+                connect_btn.enable()  # v5.56
+                connect_arrow.enable()  # v5.56
+                state["connected_shown"] = None  # v5.56: Text und Farbe neu setzen
+        if _busy:  # v5.56
+            return  # v5.56
         if state.get("connected_shown") != connected:                   # Knopf Mit ARDUINO verbinden: rot ohne Verbindung, gruen mit Verbindung  # v2.01
             state["connected_shown"] = connected  # v2.01
             # connect_btn.set_text("Mit ARDUINO verbunden" if connected else "Mit ARDUINO verbinden")  # v2.01  # v3.83 (entfallen)
-            connect_btn.set_text(tr("Mit Lichtmaschine verbunden") if connected else tr("Mit Lichtmaschine verbinden"))  # v3.83
+            connect_btn.set_text(tr("Trennen") if connected else tr("Mit Lichtmaschine verbinden"))  # v3.83, v5.42: mit Verbindung heisst der Knopf Trennen
             connect_btn.props("color=positive" if connected else "color=negative")  # v2.01
             connect_arrow.props("color=positive" if connected else "color=negative")  # v4.14
             if connected:  # v4.14: die Verbindung merken: beim naechsten Start wird sie wiederhergestellt
@@ -3619,7 +3754,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if getattr(src, "esp32_wlan", None):  # v3.40: gleiche WLAN-Einstellungen wie das Original
             dst.esp32_wlan = dict(src.esp32_wlan)
         if getattr(src, "esp32_options", None):  # v3.94
-            dst.esp32_options = dict(src.esp32_options)  # v3.94
+            dst.esp32_options = {k: v for k, v in src.esp32_options.items() if k != "lnet_license"}  # v3.94  # v5.51: die Bestaetigung der LNet-Lizenz gilt nur fuer das eigene Blatt
         dst.set_tab_color(getattr(src, "tab_color", ""))  # wie in Excel: die Kopie hat dieselbe Reiterfarbe  # v2.63
         return dst  # v2.63
 
@@ -6532,6 +6667,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         logger.info("Zwischengespeicherter Stand vom %s: Auswahl %s", when, choice)  # v3.70
         if choice == "restore":
             await run_command(lambda: wb.Load(filename=path), "Wiederherstellen", live=False)()
+            await connection_after_restore()  # v5.42: Board oder Anschluss im wiederhergestellten Blatt koennen andere sein
         else:
             remove_autosave()
             M25.Col_from_Sheet = ''  # v3.70: Spaltennummern des aktiven Blatts neu einlesen
@@ -6843,9 +6979,10 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         after_connect()  # v2.01
 
     async def connect_from_header():  # v2.01
-        """Knopf Mit ARDUINO verbinden: ohne Verbindung wie ARDUINO -> Verbinden; mit Verbindung geschieht nichts (Trennen im Menue ARDUINO)"""  # v2.01
+        """Knopf Mit Lichtmaschine verbinden: ohne Verbindung verbinden; mit Verbindung trennen (v5.42)"""  # v2.01
         try:  # v2.01
             if ctrl.is_connection_open():  # v2.01
+                await disconnect_arduino()  # v5.42: der Knopf heisst dann Trennen
                 return  # v2.01
         except Exception:                                  # noqa: BLE001  # v2.01
             pass  # v2.01
@@ -6881,20 +7018,15 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         except Exception:                                  # noqa: BLE001  # v4.14
             return False  # v4.14
 
-    def _silent_connect(port=None, wlan=None, dtr=None, esp32=None):  # v4.14
-        """Im Hintergrund-Thread: ohne Dialoge verbinden. esp32=(Adresse, Passwort): per WLAN, sonst USB (port) bzw. wie ctrl.connect."""  # v4.14
-        ctrl.quiet, ctrl.dtr_override = True, dtr  # v4.14
+    def _silent_connect(port=None, wlan=None, dtr=None, esp32=None, verify=None):  # v4.14, v5.42
+        """Im Hintergrund-Thread: ohne Dialoge verbinden (ctrl.connect_silent: unter der Verbindungs-Sperre; eine schon offene Verbindung bleibt, es entsteht nie eine zweite).
+        esp32=(Adresse, Passwort): per WLAN, sonst USB (port) bzw. wie ctrl.connect. verify: Funktion ohne Argument, False = wieder trennen."""  # v4.14, v5.42
+        # ctrl.quiet, ctrl.dtr_override = True, dtr  # v4.14  # v5.42 (entfallen: gemeinsame Attribute, zwei gleichzeitige Aufrufe stoerten sich; jetzt in ctrl.connect_silent unter der Sperre)
         try:  # v4.14
-            if esp32:  # v4.14
-                ctrl.connect_esp32(esp32[0], esp32[1])  # v4.14
-            else:  # v4.14
-                ctrl.connect(port=port, wlan=wlan)  # v4.14
-            return bool(ctrl.is_connection_open())  # v4.14
+            return bool(ctrl.connect_silent(port=port, wlan=wlan, dtr=dtr, esp32=esp32, verify=verify))  # v5.42
         except Exception:                                  # noqa: BLE001  # v4.14
             logger.info("Stilles Verbinden fehlgeschlagen", exc_info=True)  # v4.14
             return False  # v4.14
-        finally:  # v4.14
-            ctrl.quiet, ctrl.dtr_override = False, None  # v4.14
 
     def _sheet_board_type():  # v4.90 (Issue 59): Typ der Lichtmaschine laut Blatt (Build Optionen): "ESP32", "Pico", "Nano" oder "" (nicht eingetragen)
         try:  # v4.90
@@ -6946,7 +7078,39 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
         if own.upper() in ("NO DEVICE", "COM?") or own.upper().startswith("IP:"):  # v4.14
             own = ""  # v4.14
         # return own or one(M25.COMPort_COL), one(M25.COMPrtR_COL)  # v4.14  # v4.90 (entfallen: die globale Einstellung stand vor dem Blatt)
+        if _port_hint_flag():  # v5.42: negative Zahl im Blatt = Hinweis: zuerst dieser Anschluss (COM<n>)
+            hint = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL)).strip().lstrip("*").strip()  # v5.42
+            return ("COM" + hint[1:]) if os.name == "nt" else "", one(M25.COMPrtR_COL)  # v5.42
         return one(M25.COMPort_COL) or own, one(M25.COMPrtR_COL)  # v4.90 (Issue 59): der Anschluss des aktiven Blatts hat Vorrang vor der globalen Einstellung
+
+    def _port_hint_flag() -> bool:  # v5.42: Blatt hat im Anschluss der Lichtmaschine eine negative Zahl (Hinweis fuer den Auto-Reconnect)
+        try:  # v5.42
+            raw = str(state["ws"].Cells(M02.SH_VARS_ROW, M25.COMPort_COL)).strip().lstrip("*").strip()  # v5.42
+        except Exception:                                  # noqa: BLE001  # v5.42
+            return False  # v5.42
+        return raw.startswith("-") and raw[1:].isdigit()  # v5.42
+
+    def _store_hint_port(port=""):  # v5.50: Der Anschluss im Blatt war eine negative Zahl (Hinweis) und die Verbindung ist zustande gekommen: den gefundenen Anschluss (COM3) ins Blatt eintragen
+        try:  # v5.50
+            if not _port_hint_flag() or state["ws"] is None or getattr(ctrl, "ARDUINO_IP", False):  # v5.50
+                return  # v5.50
+            found = str(getattr(ctrl, "ARDUINO_current_portname", "") or port or "").strip()  # v5.50
+            if not found or found.upper().startswith("IP:") or found.upper() in ("NO DEVICE", "COM?"):  # v5.50
+                return  # v5.50
+            state["ws"].CellDict[M02.SH_VARS_ROW, M25.COMPort_COL] = found  # v5.50
+            logger.info("Anschluss-Hinweis: Geraet gefunden, Anschluss %s ins Blatt eingetragen", found)  # v5.50
+        except Exception:                                  # noqa: BLE001  # v5.50
+            logger.debug("Anschluss nicht ins Blatt eingetragen", exc_info=True)  # v5.50
+
+    def _connected_type() -> str:  # v5.42: Typ der offenen Verbindung aus der Startmeldung ('LEDs_AutoProg Ver 3: PICO ...'): "ESP32", "Pico" oder "Nano"
+        msg = str(getattr(ctrl, "ARDUINO_startmessage", "") or "")  # v5.42: ARDUINO_boardtype ist immer leer
+        m = re.search(r"Ver \d+: (\S+)", msg)  # v5.42
+        tok = m.group(1).upper() if m else ""  # v5.42
+        return "ESP32" if tok == "ESP32" else ("Pico" if tok == "PICO" else "Nano")  # v5.42
+
+    def _connected_type_ok() -> bool:  # v5.42: passt der verbundene Typ zum Blatt?
+        want = _sheet_board_type()  # v5.42
+        return (not want) or _connected_type() == want  # v5.42
 
     async def startup_autoconnect():  # v4.14
         """Beim Start (parallel zum Laden der Tabellen, im eigenen Thread): 1. die Verbindung wiederherstellen, die beim letzten Beenden aktiv war;
@@ -6966,10 +7130,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             logger.debug("WLAN-Ziel nicht ermittelbar", exc_info=True)  # v4.14
         logger.info("Automatisch verbinden: letzte Verbindung aktiv=%s, Anschluss '%s', LNet/DCC '%s', WLAN-Ziel %s", last, own_port, other_port, target[0] if target else "-")  # v4.14
         ok, what = False, ""  # v4.14
-        if last and (target or _port_present(own_port)):  # v4.14
+        hint = _port_hint_flag()  # v5.42
+        if (last or hint) and (target or _port_present(own_port)):  # v4.14, v5.42: der Hinweis zaehlt wie die letzte Verbindung
             what = target[0] if target else own_port  # v4.14
-            ok = await run.io_bound(_silent_connect, None if target else own_port, True if target else False)  # v4.14: mit WLAN-Ziel zuerst WLAN (dann USB), sonst USB am eingestellten Anschluss
-        if not ok and not ctrl.is_connection_open():  # v4.14
+            ok = await run.io_bound(_silent_connect, None if target else own_port, True if target else False, None, None, _connected_type_ok if hint else None)  # v4.14: mit WLAN-Ziel zuerst WLAN (dann USB), sonst USB am eingestellten Anschluss; v5.42: am Hinweis-Anschluss ein anderes Geraet = wieder trennen (unter der Sperre)
+        if not ok and not ctrl.is_connection_open() and not hint:  # v4.14, v5.42: mit Hinweis keine Suche (der Anwender sucht wie bisher)
             # found = await run.io_bound(_search_lichtmaschine, own_port, other_port)  # v4.14  # v4.90 (entfallen)
             found = await run.io_bound(_search_lichtmaschine, own_port, other_port, _sheet_board_type())  # v4.90: Typ des Blatts beachten
             if found:  # v4.14
@@ -6983,13 +7148,63 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                     except Exception:                      # noqa: BLE001  # v4.14
                         logger.debug("Anschluss nicht gespeichert", exc_info=True)  # v4.14
         if ok:  # v4.14
+            if hint:  # v5.50
+                _store_hint_port(what)  # v5.50
             ui.notify(tr("Mit der Lichtmaschine verbunden ({port}).", port=what), type="positive")  # v4.14
             after_connect()  # v4.14
         else:  # v4.14
             logger.info("Automatisch verbinden: keine Verbindung hergestellt")  # v4.14
 
+    async def connection_after_restore():  # v5.42
+        """Nach 'Zwischengespeicherter Stand' wiederherstellen: Typ (Nano, ESP32, Pico) oder Anschluss im Blatt koennen andere sein als die offene Verbindung.
+        Dann die Verbindung trennen und die Lichtmaschine des Blatts suchen und verbinden (Autoconnect). Ohne offene Verbindung geschieht nichts."""
+        try:  # v5.42
+            if not ctrl.is_connection_open() or state["ws"] is None:  # v5.42
+                return  # v5.42
+            sheet_type = _sheet_board_type()  # v5.42: "ESP32", "Pico", "Nano" oder "" (nicht eingetragen)
+            conn_type = _connected_type()  # v5.42
+            type_changed = bool(sheet_type) and sheet_type != conn_type  # v5.42
+            sheet_port, other_port = _stored_ports()  # v5.42
+            current = str(getattr(ctrl, "ARDUINO_current_portname", "") or "").strip()  # v5.42
+            via_ip = bool(getattr(ctrl, "ARDUINO_IP", False))  # v5.42
+            port_changed = (not via_ip) and bool(sheet_port) and current.upper() != sheet_port.upper()  # v5.42
+            logger.info("Wiederhergestellt: Blatt-Typ '%s' (offen '%s'), Anschluss '%s' (offen '%s')", sheet_type or "-", conn_type, sheet_port or "-", current or "-")  # v5.42
+            if not (type_changed or port_changed):  # v5.42
+                return  # v5.42
+            hint_now = _port_hint_flag()  # v5.42
+
+            def _reconnect_for_sheet():  # v5.42: im Hintergrund-Thread; Trennen und Neu verbinden unter derselben Sperre (kein anderer Verbindungsaufbau dazwischen)
+                with ctrl._conn_lock:  # v5.42
+                    ctrl.disconnect()  # v5.42
+                    if sheet_port and not type_changed and _port_present(sheet_port):  # v5.42: gleicher Typ, Anschluss im Rechner da
+                        if _silent_connect(sheet_port, False, True if conn_type == "Pico" else None):  # v5.42
+                            return sheet_port  # v5.42
+                    if not hint_now:  # v5.42: sonst die Lichtmaschine des Blatt-Typs suchen (nicht bei Hinweis)
+                        found = _search_lichtmaschine(sheet_port, other_port, sheet_type)  # v5.42
+                        if found:  # v5.42
+                            dev, typ = found  # v5.42
+                            if _silent_connect(dev, False, True if typ == "Pico" else None):  # v5.42
+                                return dev  # v5.42
+                return ""  # v5.42
+            what = await run.io_bound(_reconnect_for_sheet)  # v5.42
+            ok = bool(what)  # v5.42
+            if ok:  # v5.42
+                if hint_now:  # v5.50
+                    _store_hint_port(what)  # v5.50
+                try:  # v5.42
+                    ctrl.setConfigData("serportname", what)  # v5.42
+                except Exception:                      # noqa: BLE001  # v5.42
+                    logger.debug("Anschluss nicht gespeichert", exc_info=True)  # v5.42
+                ui.notify(tr("Mit der Lichtmaschine verbunden ({port}).", port=what), type="positive")  # v5.42
+                after_connect()  # v5.42
+            else:  # v5.42
+                logger.info("Wiederhergestellt: keine passende Lichtmaschine gefunden")  # v5.42
+                ui.notify(tr("Die Verbindung wurde getrennt, weil Typ oder Anschluss im wiederhergestellten Stand anders sind. Bitte „Mit Lichtmaschine verbinden“ drücken."), type="warning")  # v5.42
+        except Exception:                                  # noqa: BLE001  # v5.42
+            logger.debug("Verbindung nach dem Wiederherstellen nicht angepasst", exc_info=True)  # v5.42
+
     # (Fassung 4.90/4.91 von sync_connection_to_sheet ersetzt in 4.92)
-    async def sync_connection_to_sheet(ws):  # v4.90 (Issue 59)  # v4.92: auch WLAN (ESP32) und der Wechsel zwischen WLAN und USB
+    async def sync_connection_to_sheet(ws, force=False, restart=True):  # v4.90 (Issue 59)  # v5.61: force = auch beim selben Anschluss neu verbinden (Direktmodus des Monitors -> EFFECT Mode)  # v4.92: auch WLAN (ESP32) und der Wechsel zwischen WLAN und USB
         """Blattwechsel: Gehoert zum neuen Blatt eine andere Verbindung (USB-Anschluss oder ESP32 per WLAN) als die offene, die Verbindung schliessen und die des Blatts aufbauen.
         Ohne Verbindung im Blatt (kein Anschluss, kein WLAN-Ziel) oder ohne offene Verbindung geschieht nichts."""  # v4.90
         try:  # v4.90
@@ -7003,15 +7218,17 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 target = wifi_target()  # v4.92: ESP32 mit WLAN und OTA im aktiven Blatt
             except Exception:                              # noqa: BLE001  # v4.92
                 logger.debug("WLAN-Ziel nicht ermittelbar", exc_info=True)  # v4.92
-            if target is None and not has_usb:  # v4.92: das Blatt hat keine eigene Verbindung: Verbindung bleibt
-                return  # v4.92
             current = str(getattr(ctrl, "ARDUINO_current_portname", "") or "").strip()  # v4.90
             via_ip = bool(getattr(ctrl, "ARDUINO_IP", False))  # v4.92
+            if force and target is None and not has_usb and current and not via_ip:  # v5.61: Blatt ohne Anschluss: im EFFECT Mode am bisherigen Anschluss neu verbinden
+                sheet_port, has_usb = current, True  # v5.61
+            if target is None and not has_usb:  # v4.92: das Blatt hat keine eigene Verbindung: Verbindung bleibt
+                return  # v4.92
             logger.info("Blattwechsel %s: USB-Anschluss '%s', WLAN-Ziel %s, offene Verbindung '%s' (WLAN: %s)", ws.Name, sheet_port if has_usb else "-", target[0] if target else "-", current, via_ip)  # v4.91  # v4.92
             if target is not None:  # v4.92
-                if via_ip and current == target[0]:  # v4.92: schon mit diesem ESP32 verbunden
+                if via_ip and current == target[0] and not force:  # v4.92: schon mit diesem ESP32 verbunden
                     return  # v4.92
-            elif not via_ip and current.upper() == sheet_port.upper():  # v4.92: schon mit diesem Anschluss verbunden
+            elif not via_ip and current.upper() == sheet_port.upper() and not force:  # v4.92: schon mit diesem Anschluss verbunden
                 return  # v4.92
             for _ in range(50):                            # laeuft noch ein Befehl: kurz warten  # v4.90
                 if not state["busy"]:  # v4.90
@@ -7030,31 +7247,35 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 ok = await run.io_bound(_switch_connection, sheet_port, _sheet_board_type() == "Pico")  # v4.90
                 what = sheet_port  # v4.92
                 if ok:  # v4.92
+                    _store_hint_port(sheet_port)  # v5.50: negative Zahl im Blatt (Hinweis): den gefundenen Anschluss eintragen
                     try:  # v4.90
                         ctrl.setConfigData("serportname", sheet_port)  # v4.90
                     except Exception:                      # noqa: BLE001  # v4.90
                         logger.debug("Anschluss nicht gespeichert", exc_info=True)  # v4.90
             if ok:  # v4.92
                 ui.notify(tr("Mit der Lichtmaschine verbunden ({port}).", port=what), type="positive")  # v4.90
-                after_connect()  # v4.90
+                if restart:  # v5.62: beim Reiterwechsel startet der Reiter den Direktmodus danach selbst
+                    after_connect()  # v4.90
             else:  # v4.92
                 logger.info("Blattwechsel: keine Verbindung hergestellt")  # v4.92
         except Exception:                                  # noqa: BLE001  # v4.90
             logger.debug("Verbindung nicht an das Blatt angepasst", exc_info=True)  # v4.90
 
     def _switch_wifi(host, password):  # v4.92: im Hintergrund-Thread
-        try:  # v4.92
-            ctrl.disconnect()  # v4.92
-        except Exception:                                  # noqa: BLE001  # v4.92
-            logger.debug("Trennen vor dem Wechsel fehlgeschlagen", exc_info=True)  # v4.92
-        return _silent_connect(None, None, None, (host, password))  # v4.92
+        with ctrl._conn_lock:  # v5.42: Trennen und Verbinden zusammen (kein anderer Verbindungsaufbau dazwischen)
+            try:  # v4.92
+                ctrl.disconnect()  # v4.92
+            except Exception:                              # noqa: BLE001  # v4.92
+                logger.debug("Trennen vor dem Wechsel fehlgeschlagen", exc_info=True)  # v4.92
+            return _silent_connect(None, None, None, (host, password))  # v4.92
 
     def _switch_connection(port, dtr):  # v4.90: im Hintergrund-Thread
-        try:  # v4.90
-            ctrl.disconnect()  # v4.90
-        except Exception:                                  # noqa: BLE001  # v4.90
-            logger.debug("Trennen vor dem Wechsel fehlgeschlagen", exc_info=True)  # v4.90
-        return _silent_connect(port, False, True if dtr else None)  # v4.90
+        with ctrl._conn_lock:  # v5.42: Trennen und Verbinden zusammen (kein anderer Verbindungsaufbau dazwischen)
+            try:  # v4.90
+                ctrl.disconnect()  # v4.90
+            except Exception:                              # noqa: BLE001  # v4.90
+                logger.debug("Trennen vor dem Wechsel fehlgeschlagen", exc_info=True)  # v4.90
+            return _silent_connect(port, False, True if dtr else None)  # v4.90
 
     sheet_conn_hook["fn"] = sync_connection_to_sheet  # v4.90
     ctrl.sheet_port_provider = lambda: (_stored_ports()[0] or None)  # v4.91 (Issue 59): Verbinden (Knopf, Menue, Trennen und neu Verbinden) nimmt den Anschluss des aktiven Blatts
@@ -7502,6 +7723,14 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     _wfo.arduino_settings_handler = open_arduino_settings  # v4.52: Knopf auf dem Reiter Entwicklungsumgebung der Optionen
     _wfo.ota_upload_handler = lambda: web_esp32_ota.open_dialog(pio=ota_arduino.Find_PIO() if ota_options.Is_PlatformIO() else None)  # v4.52: Knopf auf dem Reiter WLAN (OTA)
 
+    async def open_firmware_install():  # v5.49 (Issue 75)
+        """Menue Werkzeuge, Firmware installieren …: das Fenster mit dem Reiter Firmware Installation der Hardware Optionen"""  # v5.49
+        await run_command(lambda: __import__("proggen.F00_mainbuttons", fromlist=["x"]).UserForm_Options.Show(view="firmware"), "Firmware installieren")()  # v5.49
+
+    async def open_maintenance():  # v5.49 (Issue 75)
+        """Menue Werkzeuge, Wartung …: Entwicklungsumgebung (PlatformIO oder ARDUINO-IDE) und Update der Bibliotheken, vorher Reiter der Hardware Optionen"""  # v5.49
+        await run_command(lambda: __import__("proggen.F00_mainbuttons", fromlist=["x"]).UserForm_Options.Show(view="wartung"), "Wartung")()  # v5.49
+
     MENU = {
         "Datei": [
             ("Speichern (Strg+S)", permanent_save),  # v4.38 (Issue 49)
@@ -7553,9 +7782,16 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ("Spezial", lambda: open_settings_group("Spezialeinstellungen")),  # v4.51
             ("Erweiterungen …", open_extensions),  # v4.51: Schritt 2 verschiebt die Erweiterungen hierher, bis dahin das Optionenfenster auf dem Reiter Erweiterungen
             None,  # v4.51
-            ("Datenübertragung", lambda: __import__("_web.web_table_sync", fromlist=["open_dialog"]).open_dialog(on_changed=refresh_after_transfer)),  # v4.89 (Pull Request 57)
+            # ("Datenübertragung", lambda: __import__("_web.web_table_sync", fromlist=["open_dialog"]).open_dialog(on_changed=refresh_after_transfer)),  # v4.89 (Pull Request 57)  # v5.49 (entfallen: jetzt im Menue Werkzeuge)
             ("Einstellungen sichern …", export_settings),  # v4.24  # v4.51 (aus dem Menue Datei)
             ("Einstellungen übernehmen …", import_settings),  # v4.24  # v4.51 (aus dem Menue Datei)
+        ],
+        "Werkzeuge": [  # v5.49 (Issue 75, Juergen): Datenuebertragung, Firmware und Wartung stehen nicht mehr in den Einstellungen und Hardware Optionen; im Anfaenger Modus ausgeblendet
+            ("Datenübertragung", lambda: __import__("_web.web_table_sync", fromlist=["open_dialog"]).open_dialog(on_changed=refresh_after_transfer)),  # v4.89 (Pull Request 57)  # v5.49 (aus dem Menue Einstellungen)
+            ("Firmware installieren …", open_firmware_install),  # v5.49
+            ("ESP32-Firmware über WLAN hochladen …", lambda: web_esp32_ota.open_dialog(pio=ota_arduino.Find_PIO() if ota_options.Is_PlatformIO() else None)),  # v5.49 (auch im Reiter WLAN (OTA))
+            None,  # v5.49
+            ("Wartung …", open_maintenance),  # v5.49: Entwicklungsumgebung (PlatformIO, ARDUINO-IDE), Zwischenspeicher, Update der Bibliotheken
         ],
         "Hilfe": [
             ("Hilfe öffnen", run_command(open_help, "Hilfe")),
@@ -7571,7 +7807,10 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                           ("Raspberry Pi neu starten ...", lambda: power_action(True))]
     with menu_slot:
         for title, items in MENU.items():
-            with ui.button(tr(title)).props("flat no-caps dense").classes("q-px-sm"):
+            # with ui.button(tr(title)).props("flat no-caps dense").classes("q-px-sm"):  # v5.49 (entfallen)
+            with ui.button(tr(title)).props("flat no-caps dense").classes("q-px-sm") as menu_button:  # v5.49
+                if title == "Werkzeuge":  # v5.49: das ganze Menue im Anfaenger Modus ausblenden (apply_optional_tabs)
+                    menu_elems["werkzeuge"] = menu_button  # v5.49
                 with ui.menu():
                     for entry in items:
                         if entry is None:
@@ -7698,7 +7937,19 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
     mon_container = ui.column().classes("w-full").style("flex: 1 1 0; min-height: 0; overflow: auto; flex-wrap: nowrap")
     with mon_container:
         # web_fullscreen.button()                         # Vollbild ein und aus (entfallen: ein Knopf in der Kopfzeile)  # v1.81
-        web_serial_page.build(ctrl, run_command)
+        def _serial_status():  # v5.52: derselbe Text und dieselbe Farbe wie neben dem zentralen Verbindungsknopf (refresh_status)
+            try:
+                _open = bool(ctrl.is_connection_open())
+            except Exception:                                  # noqa: BLE001
+                _open = False
+            try:
+                _sheet = _stored_ports()[0]
+            except Exception:                                  # noqa: BLE001
+                _sheet = ""
+            return (translate_connect_status(getattr(ctrl, "connectstatus_text", ""), connect_device_label(ctrl, _open, _sheet)),
+                    str(getattr(ctrl, "connectstatus_fg", "")).lower())
+        web_serial_page.build(ctrl, run_command, {"toggle": connect_from_header, "status": _serial_status, "sheet_port": lambda: _stored_ports()[0],
+                                                  "texts": (tr("Verbinden"), tr("Trennen"))})  # v5.52  # v5.53: der Knopf heisst nur Verbinden
     mon_container.set_visibility(False)
     mark("Serial Monitor")
 
@@ -7978,6 +8229,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             state["sound"].tab_unselected()                # laufenden Impuls beenden, Direktmodus beenden  # v1.95
         if old_tab == "dcc" and new_tab != "dcc" and state.get("dcc") is not None:  # v1.95
             state["dcc"].tab_unselected()  # v1.95
+        if monitor_left_for_sheet(old_tab, new_tab):  # v5.60, v5.62: der Serielle Monitor ist der Direktmodus und kann mit einem anderen Anschluss verbunden sein: zurueck in den EFFECT Mode mit dem Anschluss des Blatts (nichts, wenn schon richtig verbunden); vor dem Start des Direktmodus der Seite
+            try:  # v5.62
+                await sync_connection_to_sheet(state["ws"], force=bool(getattr(ctrl, "monitor_connected", False)), restart=False)  # v5.61, v5.62
+            except Exception:                              # noqa: BLE001  # v5.62
+                logger.warning("Verbindung beim Verlassen des Seriellen Monitors nicht umgestellt", exc_info=True)  # v5.62
         if new_tab in ("farb", "servo1", "servo2", "sound") and old_tab != new_tab and not state["busy"]:  # v3.25: Seiten mit Direktmodus verbinden selbst
             try:  # v3.25
                 if ctrl.is_connection_open():  # v5.38: Verbindung da: Merker fuer den fehlgeschlagenen Versuch loeschen
@@ -8534,7 +8790,10 @@ def main():
                 "title": "MobaLedLib Studio", "favicon": favicon if os.path.isfile(favicon) else None}
     if "reconnect_timeout" in inspect.signature(ui.run).parameters:      # aeltere NiceGUI-Versionen kennen den Parameter nicht
         run_args["reconnect_timeout"] = RECONNECT_TIMEOUT
-    ui.run(**run_args)
+    try:  # v5.42
+        ui.run(**run_args)
+    except KeyboardInterrupt:  # v5.42: Strg+C ist kein Fehler; ohne diese Behandlung kam ein Traceback (uvicorn/asyncio)
+        logger.info("Beendet mit Strg+C")  # v5.42
     # Ab hier ist der Server beendet (Knopf "Beenden", Strg+C oder systemctl stop)
     root = globals().get("_hidden_root")
     if root is not None:

@@ -1,12 +1,13 @@
-# Datei-Version: 1.00 (2026-11-23) - test_identify.py
+# Datei-Version: 1.01 (2026-11-27) - test_identify.py
 # ----------------------------------------------------------------------------------------------
 # Name:           test_identify.py
 # Path:           test_identify.py
-# Version:        1.00
-# Last Update:    2026-11-23
+# Version:        1.01
+# Last Update:    2026-11-27
 # Author:         Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.01  2026-11-27  ESP32: Remove_Mainboard_LED_Defines entfernt die Zeilen #undef/#define Mainboard_LEDn aus dem Konfigurationstext, andere Boards und andere Zeilen bleiben (M06 1.23)
 #   1.00  2026-11-23  Neu: Test von M06.Write_Pico_Mainboard_LED_Defines (Identify, Pico): fehlende Mainboard_LED1..3 werden als SI_0 geschrieben,
 #                     von der Tabelle definierte (auch D3/D4/D5) nicht; andere Boards schreiben nichts; Proc_Special_Functions schreibt #undef vor jedes Mainboard_LEDn der Tabelle
 # ----------------------------------------------------------------------------------------------
@@ -117,8 +118,32 @@ def test_undef():
     check("LED 13: Heartbeat-Zeilen bleiben, #undef Mainboard_LED13 davor", ok and cmd.startswith("#undef  Mainboard_LED13 ") and "LED_HEARTBEAT_PIN A3" in cmd, cmd)
 
 
+def test_esp32_mainboard_led_defines():
+    cfg = ("  RGB_Heartbeat(5)\r\n"
+           "#undef  Mainboard_LED1   /* no warning \"redefined\" if the LED is used more than once */\r\n"
+           "  #define Mainboard_LED1  3 /* Excel row 11 */\r\n"
+           "  #undef  Mainboard_LED2   /* no warning */\r\n"
+           "  #define Mainboard_LED2  INCH_DCC_33_ONOFF /* Excel row 12 */\r\n"
+           "  #undef  LED_HEARTBEAT_PIN  /* Use the heartbeat LED at pin A3 */\r\n"
+           "  #define LED_HEARTBEAT_PIN A3\r\n"
+           "  Button(INCH_DCC_33_ONOFF)\r\n")
+    ns = {"M02": types.SimpleNamespace(HT_PICO="PICO", HT_ESP32="ESP32", HT_NANO="NANO"), "M02a": types.SimpleNamespace(Get_BoardTyp=lambda: "ESP32")}
+    exec(load_function("Remove_Mainboard_LED_Defines"), ns)
+    out = ns["Remove_Mainboard_LED_Defines"](cfg)
+    check("ESP32: keine #undef/#define Mainboard_LEDn mehr", "Mainboard_LED" not in out, out)
+    check("ESP32: die uebrigen Zeilen bleiben (Heartbeat, Makros)", "LED_HEARTBEAT_PIN A3" in out and "RGB_Heartbeat(5)" in out and "Button(INCH_DCC_33_ONOFF)" in out, out)
+    check("ESP32: Zeilenenden bleiben", out.count("\r\n") == 4, out)
+    ns["M02a"] = types.SimpleNamespace(Get_BoardTyp=lambda: "NANO")
+    check("Nano: der Text bleibt unveraendert", ns["Remove_Mainboard_LED_Defines"](cfg) == cfg)
+    ns["M02a"] = types.SimpleNamespace(Get_BoardTyp=lambda: "PICO")
+    check("Pico: der Text bleibt unveraendert", ns["Remove_Mainboard_LED_Defines"](cfg) == cfg)
+    ns["M02a"] = types.SimpleNamespace(Get_BoardTyp=lambda: "ESP32")
+    check("ESP32: letzte Zeile ohne Zeilenende", ns["Remove_Mainboard_LED_Defines"]("  A\r\n  #define Mainboard_LED3  1") == "  A\r\n")
+
+
 if __name__ == "__main__":
     test()
     test_undef()
+    test_esp32_mainboard_led_defines()
     print("\n%d Pruefungen, %d Fehler" % (checks, failures))
     sys.exit(1 if failures else 0)

@@ -66,6 +66,7 @@ class FirmwareDeviceTests(unittest.TestCase):
         self.form._rows, self.form._sel_dev, self.form._prev_devs, self.form._old_comport = [], None, None, None
         self.form._stored_port = ""
         self.form._show_unknown = False
+        self.form._fw_platform, self.form._sel_user = "", False
         self.form._fw_mode = True
 
     def tearDown(self):
@@ -80,7 +81,7 @@ class FirmwareDeviceTests(unittest.TestCase):
         self.assertEqual({r["typ"] for r in self.form._rows}, {"Pico"})
 
     def test_unknown_ports_with_checkbox(self):
-        self.form._show_unknown = True                                                 # das Kontrollkaestchen ist in der Firmware-Auswahl von Anfang an aktiv
+        self.form._show_unknown = True                                                 # Kontrollkaestchen eingeschaltet
         self.form._compute_new()
         rows = {r["dev"]: r["typ"] for r in self.form._rows}
         self.assertEqual(rows, {"COM5": "Pico", "COM6": "Pico", "COM8": "unbekannt"})  # Nano und ESP32 bleiben ausgeschlossen
@@ -93,6 +94,117 @@ class FirmwareDeviceTests(unittest.TestCase):
         self.assertTrue(self.form._board_view()["image"])                              # Pico: Bild
         self.form._sel_dev = "COM6"
         self.assertEqual(self.form._board_view()["image"], "")                         # Andere MobaLedLib Geraete: kein Bild
+
+    def test_device_with_same_platform_as_firmware_is_preferred(self):
+        self.form._fw_platform = "MLL512V1"
+        self.form._info["COM6"] = (0, {"kind": "servo", "type": "PICOSERVO", "ver": "1.0", "platform": "MLL512V1"}, 1)
+        self.form._info["COM5"] = (0, {"platform": "PICO", "ver": "1.0"}, 1)
+        self.form._compute_new()
+        self.assertEqual(self.form._sel_dev, "COM6")                                   # COM5 waere sonst die erste Zeile
+        self.form._sel_dev, self.form._sel_user = "COM5", True                         # eigene Wahl des Anwenders bleibt
+        self.form._compute_new()
+        self.assertEqual(self.form._sel_dev, "COM5")
+
+    def test_without_platform_the_first_device_is_selected(self):
+        self.form._fw_platform = ""
+        self.form._info["COM6"] = (0, {"kind": "servo", "type": "PICOSERVO", "ver": "1.0", "platform": "MLL512V1"}, 1)
+        self.form._compute_new()
+        self.assertEqual(self.form._sel_dev, "COM5")
+
+    def test_identity_string_is_parsed_tolerantly(self):
+        kv = self.M07New._Kv
+        for typ in ("PICOSERVO", "PICOSOUND", "PICO2X3"):                              # die Zeilen der Geraete
+            self.assertEqual(kv("~MLLINFO type=%s platform=MLL512V1 ver=1.1\r\n" % typ, "~MLLINFO "),
+                             {"type": typ, "platform": "MLL512V1", "ver": "1.1"})
+        base = {"type": "PICOSERVO", "platform": "MLL512V1", "ver": "1.1"}
+        cases = [
+            "~MLLINFO type=PICOSERVO platform=MLL512V1 ver=1.1 neu=abc",               # unbekannter Schluessel wird ignoriert
+            "~MLLINFO neu=abc type=PICOSERVO platform=MLL512V1 ver=1.1 nochmehr=1=2",
+            "~MLLINFO type=PICOSERVO platform=MLL512V1 ver=1.1 allein",                # Eintrag ohne =
+            "~MLLINFO TYPE=picoservo Platform=MLL512V1 VER=1.1",                       # Gross-/Kleinschreibung
+            "~MLLINFO type=\"PICOSERVO\" platform='MLL512V1' ver=1.1",                  # Anfuehrungszeichen
+            "~MLLINFO type=PICOSERVO,platform=MLL512V1;ver=1.1",                       # Komma und Semikolon
+            "rst:0x1 (POWERON) ~MLLINFO   type=PICOSERVO   platform=MLL512V1\tver=1.1\x00",   # Zeichen davor, mehrere Trenner, Steuerzeichen
+            "~MLLINFO type = PICOSERVO platform = MLL512V1 ver = 1.1",                 # Leerzeichen um das =
+        ]
+        for line in cases:
+            got = kv(line, "~MLLINFO ")
+            for key, value in base.items():
+                self.assertEqual(got.get(key), value, line)
+        self.assertIsNone(kv("~MLLINFO", "~MLLINFO "))                                  # Echo des Befehls ohne Angaben
+        self.assertEqual(kv("~MLLINFO ", "~MLLINFO "), {})
+        self.assertEqual(self.M07New.Parse_Kv("a=1 a=2"), {"a": "1"})                  # doppelter Schluessel: der erste gilt
+        self.assertEqual(self.M07New.Parse_Kv(None), {})
+
+    def test_allowed_protocols_come_from_the_machine_list(self):
+        from _web import web_startpage as SP
+        self.assertEqual(SP.protocols_for_platform("PICO"), ["DCC"])                     # PicoZero und MoLLi: nur DCC
+        self.assertEqual(SP.protocols_for_platform("ESP32"), ["DCC", "LNet", "CAN", "Selectrix"])
+        self.assertEqual(SP.protocols_for_platform("AM328"), ["DCC", "LNet", "CAN", "Selectrix"])   # Classic: alle (Mini nur DCC), Vereinigung
+        self.assertIsNone(SP.protocols_for_platform("MLL512V1"))                         # kein Lichtmaschinen-Eintrag (isCentral aus)
+        self.assertIsNone(SP.protocols_for_platform(None))
+
+    def test_missing_or_empty_image_is_detected(self):
+        from _web import web_startpage as SP
+        self.assertTrue(SP.image_exists(ROOT, "LED_image.png"))
+        self.assertFalse(SP.image_exists(ROOT, ""))                                     # leer: leeres Bild
+        self.assertFalse(SP.image_exists(ROOT, None))
+        self.assertFalse(SP.image_exists(ROOT, "gibt_es_nicht.png"))                   # Datei fehlt: leeres Bild
+        self.assertFalse(SP.image_exists(ROOT, "../csv/Lichtmaschinen_prop.json"))     # nur Dateien aus dem Ordner images
+
+    def test_devices_and_platforms_are_separate_lists(self):
+        from _web import web_startpage as SP
+        machines = SP.load_machines(ROOT)
+        self.assertEqual([m["key"] for m in machines], ["Classic", "Mini", "Pro", "PicoZero", "MoLLi"])   # nur Lichtmaschinen
+        self.assertTrue(all("isCentral" not in m for m in machines))
+        platforms = {m["platform"]: m for m in SP.load_platforms(ROOT)}
+        self.assertEqual(set(platforms), {"MLL512V1", "MLLS88GWV1"})
+        for entry in platforms.values():
+            self.assertEqual(set(entry), {"platform", "name", "text", "image"})
+        self.assertIn("Selectrix", SP.supported_protocols("Classic"))                    # Feld protocols (frueher centrals)
+        self.assertNotIn("Selectrix", SP.supported_protocols("PicoZero"))
+        self.assertEqual(SP.machine_for_port_type("Pico"), "PicoZero")
+
+    def test_platform_name_and_image(self):
+        import json
+        import tempfile
+        from _web import web_startpage as SP
+        with tempfile.TemporaryDirectory() as base:
+            os.makedirs(os.path.join(base, "csv"))
+            os.makedirs(os.path.join(base, "images"))
+            open(os.path.join(base, "images", "mit.png"), "wb").write(b"x")
+            data = {"devices": [{"key": "A", "name": "Lichtmaschine A", "platform": "PICO", "board": "Pico", "protocols": ["DCC"]}],
+                    "platforms": [{"platform": "P1", "name": "Mit Bild", "image": "mit.png"}, {"platform": "P2", "name": "Ohne Bild", "image": ""},
+                                  {"platform": "P3", "name": "Datei fehlt", "image": "fehlt.png"}]}
+            with open(os.path.join(base, "csv", "Lichtmaschinen_prop.json"), "w", encoding="utf-8") as fh:
+                json.dump(data, fh)
+            self.assertEqual(SP.platform_name("P1", base), "Mit Bild")
+            self.assertEqual(SP.platform_name("p2", base), "Ohne Bild")                  # Gross-/Kleinschreibung egal
+            self.assertEqual(SP.platform_name("PICO", base), "Lichtmaschine A")          # nicht in platforms: die devices
+            self.assertIsNone(SP.platform_name("UNBEKANNT", base))
+            self.assertEqual(SP.platform_image("P1", base), "mit.png")
+            self.assertIsNone(SP.platform_image("P2", base))                             # kein Bild eingetragen
+            self.assertIsNone(SP.platform_image("P3", base))                             # Datei nicht gefunden
+            self.assertIsNone(SP.platform_image("PICO", base))                           # devices haben hier kein Plattform-Bild
+            self.assertIsNone(SP.platform_image("", base))
+
+    def test_dialog_image_comes_from_platforms_when_available(self):
+        from _web import web_startpage as SP
+        original = SP.platform_image
+        SP.platform_image = lambda plat, base_dir=None: "PICO_image.png" if plat == "MLL512V1" else None
+        try:
+            self.form._compute_new()
+            self.form._info["COM6"] = (0, {"kind": "servo", "type": "PICOSERVO", "ver": "1.0", "platform": "MLL512V1"}, 1)
+            self.M07.SERVO_PORTS["COM6"] = "1.0"
+            self.form._compute_new()
+            self.form._sel_dev = "COM6"
+            self.assertEqual(self.form._board_view()["image"], "/mll_images/PICO_image.png")       # Bild der Plattform, auch bei 'Andere MobaLedLib Geraete'
+            self.form._info["COM6"] = (0, {"kind": "servo", "type": "PICOSERVO", "ver": "1.0", "platform": "UNBEKANNT"}, 1)
+            self.assertEqual(self.form._board_view()["image"], "")                                  # kein Bild bekannt: wie bisher keines
+            self.form._sel_dev = "COM5"
+            self.assertTrue(self.form._board_view()["image"])                                       # Pico: Bild des Boards
+        finally:
+            SP.platform_image = original
 
     def test_other_mobaledlib_devices_are_selectable(self):
         self.M07.SERVO_PORTS["COM6"] = "Servo"                                         # als Servo-Modul erkannt

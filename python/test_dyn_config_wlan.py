@@ -1,11 +1,12 @@
-# Datei-Version: 1.05 (2026-11-22) - test_dyn_config_wlan.py
+# Datei-Version: 1.06 (2026-11-26) - test_dyn_config_wlan.py
 # Name: test_dyn_config_wlan.py
 # Path: test_dyn_config_wlan.py
-# Version: 1.05
-# Last Update: 2026-11-22
+# Version: 1.06
+# Last Update: 2026-11-26
 # Author: Harold Linke
 # Licence: LGPL V2.1
 # History of Change:
+#   1.06 2026-11-26 Testumgebung von Compile_and_Upload_ESP32_Setup um Ensure_Git und subprocess ergaenzt (seit M08_ARDUINO 1.33 gebraucht); vorher 3 Fehler in UploadFlowTests.
 #   1.05 2026-11-22 Drei WLAN-Versuche, Erfolg im dritten Versuch, Abbruch nach drei Fehlern.
 #   1.04 2026-11-22 Verzoegerten Firmware-Neustart absichern; insgesamt 14 Tests.
 #   1.03 2026-11-22 Abschlusspruefung bei verlorener END-Antwort.
@@ -273,7 +274,9 @@ class UploadFlowTests(unittest.TestCase):
         ctrl = MagicMock()
         ctrl.execute_upload = True
         env = dict(M42=dyn, Last_Upload={}, M07=MagicMock(), M25=MagicMock(), M02=SimpleNamespace(Ino_Dir_LED="LEDs_AutoProg"),
-                   M28=MagicMock(), os=__import__("os"), GetWorkbookPath=lambda: ".", Find_PIO=lambda: "pio", Write_PIO_Project=MagicMock())
+                   # M28=MagicMock(), os=__import__("os"), GetWorkbookPath=lambda: ".", Find_PIO=lambda: "pio", Write_PIO_Project=MagicMock())  # v1.06 (entfallen)
+                   M28=MagicMock(), os=__import__("os"), GetWorkbookPath=lambda: ".", Find_PIO=lambda: "pio", Write_PIO_Project=MagicMock(),  # v1.06
+                   Ensure_Git=lambda *a, **k: True, subprocess=__import__("subprocess"))  # v1.06
         code = compile(ast.Module(body=[node], type_ignores=[]), str(source), "exec")
         with patch("proggen.M06_Write_Header.Create_HeaderFile", header.Create_HeaderFile), patch("headless.headless_esp32_ota.build_platformio_project", backend.build_platformio_project), patch("headless.headless_esp32_ota.upload", backend.upload):
             exec(code, env)

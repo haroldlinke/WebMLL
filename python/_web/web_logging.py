@@ -1,4 +1,4 @@
-# Datei-Version: 1.05 (2026-10-27) - web_logging.py
+# Datei-Version: 1.06 (2026-11-26) - web_logging.py  # v1.06: die Meldung 'Prozess beendet' kommt nicht mehr vom Logger webmobaledlib.crash (sah nach einem Absturz aus), sondern von webmobaledlib.exit
 """Protokoll (Logging) der Web-Oberflaeche, im gleichen Stil wie im Original pyMobaLedLib.py.
 
 Die Originalmodule benutzen den Standard-Logger (logging.getLogger(__name__)) und schreiben bis zur Stufe DEBUG. Damit dieses Protokoll
@@ -204,7 +204,7 @@ def install_crash_hooks() -> None:
     sys.excepthook = excepthook
     threading.excepthook = thread_hook
     sys.unraisablehook = unraisable
-    atexit.register(lambda: log.info("Prozess %s beendet", os.getpid()))
+    atexit.register(lambda: logging.getLogger("webmobaledlib.exit").info("Prozess %s ordnungsgemaess beendet", os.getpid()))  # v1.06: eigener Name, nicht webmobaledlib.crash
 
 
 async def _lag_monitor(interval: float = 1.0, warn_after: float = 1.0) -> None:

@@ -1,5 +1,5 @@
 ====== MobaLedLib Studio – Verbinden und Übertragen ======
-//Seitenstand 1.18 (2026-11-24), gilt für Version 5.12//
+//Seitenstand 1.19 (2026-11-26), gilt für Version 5.49//
 
 Wenn deine Tabelle fertig ist, überträgst du sie auf die **Lichtmaschine**. Auf dieser Seite steht, wie du die Lichtmaschine **einstellst**, **verbindest**, das Programm **überträgst** und was bei Problemen hilft.
 
@@ -20,7 +20,7 @@ Das Programm muss wissen, **welche Lichtmaschine** du hast und **an welchem USB-
   - **Zur Erkennung:** Der Knopf **Board und USB Port erkennen** ersetzt seit **3.82** den Haken **Automatisch erkennen**. Er sucht selbst an **allen USB-Anschlüssen** (es muss vorher weder ein Board noch ein Anschluss eingestellt sein) und erkennt **Nano**, **ESP32** und **Raspberry Pico**. Bei einem Nano spricht das Programm den **Bootloader** an und erkennt **alt (57600 Baud)** und **neu (115200 Baud)**; es stellt **Nano Normal (old Bootloader)** oder **Nano (neue Version)** passend ein. Findet es mehrere Boards, nimmt es das **erste** und zeigt die anderen im Fenster von **USB Port erkennen** mit an. Das Fenster sagt dir also, was gefunden wurde; du kannst es übernehmen oder einen anderen Typ wählen. Eine Datei, in der noch das alte Merkmal „AutoDet“ gespeichert ist, stellt das Board beim Hochladen **nicht mehr** selbst um. Wer die Abfrage des Bootloaders **nicht** möchte, nimmt den Haken **Bootloader des Nano beim Prüfen erkennen** in den [[anleitungen:mobaledlibstudio:wz_programm_einstellungen|Programm Einstellungen]] (Spezialeinstellungen) weg.
   - Schließe das Fenster mit **Schließen**.
 
-Das Fenster **ARDUINO-IDE Einstellungen** (Optionen, Reiter Entwicklungsumgebung) hat damit **nichts** zu tun. Es ist nur für die **ARDUINO IDE** (siehe [[anleitungen:mobaledlibstudio:wz_arduino_einstellungen|ARDUINO Einstellungen]]).
+Das Fenster **ARDUINO-IDE Einstellungen** (Werkzeuge → Wartung) hat damit **nichts** zu tun. Es ist nur für die **ARDUINO IDE** (siehe [[anleitungen:mobaledlibstudio:wz_arduino_einstellungen|ARDUINO Einstellungen]]).
 
 ===== Die Lichtmaschine verbinden =====
 

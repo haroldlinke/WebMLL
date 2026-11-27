@@ -1,15 +1,18 @@
-# Datei-Version: 1.03 (2026-11-14) - web_form_firmware.py
+# Datei-Version: 1.06 (2026-11-26) - web_form_firmware.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_firmware.py
 # Path:           _web/web_form_firmware.py
-# Version:        1.03
-# Last Update:    2026-11-14
-# Author:         Harold Linke
+# Version:        1.06
+# Last Update:    2026-11-26
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-28  Neu: Firmware-Dialog fuer den Raspberry Pi Pico (Select_Firmware_Form der Version K)
 #   1.01  2026-11-12  Excel-Programm 3.5.0L3: Knopf Firmware laden (Download aus dem Internet, danach wird die neue Firmware vorgewaehlt); der Dialog oeffnet auch ohne Firmware-Dateien (mit Hinweis, Installieren gesperrt)
 #   1.02  2026-11-12  Knopf: 'Firmware herunterladen' (vorher 'Firmware laden')
+#   1.06  2026-11-26  Die Liste ist hoeher (400 statt 280 px) und breiter, der rechte Teil mit Version und Beschreibung schmaler (so breit wie die beiden Knoepfe Installieren und Abbrechen). Zeilen mit '# v1.06'
+#   1.05  2026-11-26  Die Ueberschrift einer Plattform zeigt den Namen aus csv/Lichtmaschinen_prop.json (Suche nach platform, Feld name); wird nichts gefunden, steht wie bisher die Plattform. Zeilen mit '# v1.05'
+#   1.04  2026-11-26  Die Firmware-Liste ist nach Plattform gruppiert (Ueberschrift je Plattform, Feld platform der Beschreibung; ohne Angabe 'Ohne Plattform'). Zeilen mit '# v1.04'
 #   1.03  2026-11-14  Dialog Firmware installieren: Installieren links, Abbrechen rechts
 # ----------------------------------------------------------------------------------------------
 
@@ -24,6 +27,19 @@ from _web import web_dialogs as wd
 from _web.web_i18n import tr
 
 logger = logging.getLogger(__name__)
+
+
+def platform_title(plat):  # v1.05
+    """Ueberschrift einer Plattform in der Firmware-Liste: der Name des Geraets aus csv/Lichtmaschinen_prop.json (Suche nach platform), sonst die Plattform selbst, ohne Angabe 'Ohne Plattform'"""
+    if not plat:
+        return tr("Ohne Plattform")
+    try:
+        from _web import web_startpage as SP
+        name = SP.platform_name(plat)
+    except Exception:                                  # noqa: BLE001
+        logger.debug("Name der Plattform nicht ermittelt", exc_info=True)
+        name = None
+    return name or plat
 
 
 async def firmware_async(groups: list, folder: str, download=None, rescan=None, texts=None):  # v1.01
@@ -55,10 +71,11 @@ async def firmware_async(groups: list, folder: str, download=None, rescan=None, 
                         ui.label(tr("Im Ordner {ordner} gibt es keine Firmware-Dateien (*.uf2). Die fertigen Firmware-Dateien gehören in diesen Ordner (Unterordner MobaLedLib/firmware des Sketchbook-Ordners).", ordner=folder)).style("white-space: pre-wrap")  # v1.01
                         return  # v1.01
                     with ui.row().classes("w-full no-wrap items-start"):
-                        with ui.scroll_area().classes("w-1/2").style("height: 280px; border: 1px solid #e0e0e0"):
-                            radio = ui.radio({i: line(g) for i, g in enumerate(groups)}, value=state["i"])  # v1.01 (vorher value=0)
-                        with ui.column().classes("w-1/2"):
-                            version = ui.select({j: v["version"] for j, v in enumerate(groups[state["i"]]["versions"])}, value=state["j"], label=tr("Version")).classes("w-64")  # v1.01
+                        with ui.scroll_area().classes("grow").style("height: 400px; min-width: 0; border: 1px solid #e0e0e0"):  # v1.06: hoeher und breiter (vorher w-1/2, 280 px)
+                            # radio = ui.radio({i: line(g) for i, g in enumerate(groups)}, value=state["i"])  # v1.01 (vorher value=0)  # v1.04 (entfallen: Liste mit Ueberschrift je Plattform)
+                            list_box = ui.column().classes("w-full gap-0")  # v1.04
+                        with ui.column().style("width: 232px; flex: none"):  # v1.06: schmaler, so breit wie die Knoepfe Installieren und Abbrechen (vorher w-1/2)
+                            version = ui.select({j: v["version"] for j, v in enumerate(groups[state["i"]]["versions"])}, value=state["j"], label=tr("Version")).classes("w-full")  # v1.01  # v1.06 (vorher w-64)
                             current = groups[state["i"]]["versions"][state["j"]]  # v1.01
                             short = ui.label(current["short"]).classes("text-subtitle1")  # v1.01
                             detail = ui.label(current["detail"]).style("white-space: pre-wrap")  # v1.01
@@ -68,19 +85,35 @@ async def firmware_async(groups: list, folder: str, download=None, rescan=None, 
                         short.set_text(v["short"])
                         detail.set_text(v["detail"])
 
-                    def pick_group(e):
-                        if e.value is None:
-                            return
-                        state["i"], state["j"] = int(e.value), 0                                 # eine andere Firmware: ihre hoechste Version
+                    def pick_group(i):  # v1.04: Zeile der Liste angeklickt
+                        state["i"], state["j"] = int(i), 0                                       # eine andere Firmware: ihre hoechste Version
                         version.set_options({j: v["version"] for j, v in enumerate(groups[state["i"]]["versions"])}, value=0)
                         refresh()
+                        render_groups()
+
+                    def render_groups():  # v1.04: nach Plattform gruppiert
+                        list_box.clear()
+                        with list_box:
+                            last = None
+                            for i, g in enumerate(groups):
+                                plat = g.get("platform") or ""
+                                if plat != last or i == 0:
+                                    last = plat
+                                    ui.label(platform_title(plat)).classes("w-full px-2 py-1 text-bold bg-grey-2")  # v1.05
+                                selected = i == state["i"]
+                                row = ui.element("div").classes("w-full px-2 py-1 cursor-pointer" + (" bg-blue-1" if selected else ""))
+                                row.on("click", lambda i=i: pick_group(i))
+                                with row:
+                                    with ui.row().classes("items-center no-wrap gap-2"):
+                                        ui.icon("radio_button_checked" if selected else "radio_button_unchecked").classes("text-primary")
+                                        ui.label(line(g))
 
                     def pick_version(e):
                         if e.value is None:
                             return
                         state["j"] = int(e.value)
                         refresh()
-                    radio.on_value_change(pick_group)
+                    render_groups()  # v1.04
                     version.on_value_change(pick_version)
 
             build()  # v1.01

@@ -1,12 +1,13 @@
-# Datei-Version: 1.15 (2026-11-26) - M06_Write_Header_SW.py
+# Datei-Version: 1.16 (2026-11-27) - M06_Write_Header_SW.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header_SW.py
 # Path:           proggen/M06_Write_Header_SW.py
-# Version:        1.15
-# Last Update:    2026-11-26
+# Version:        1.16
+# Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.16  2026-11-27  Im Modus MLL_DYNAMIC_CONFIG stehen TOTAL_SWITCHES_A bis D und TOTAL_VARIABLES zwischen //MLLDYN_BEGIN und //MLLDYN_END (Informationswerte, nicht Teil der Firmware). Zeilen mit '# v1.16'
 #   1.15  2026-11-26  Makro aus Lib_Macros ohne den Kommentar der Zelle (Text nach dem §) lesen, sonst passen die Parameternamen (Val1§...) nicht (Makro Button). Zeile mit '# v1.15'
 #   1.13  2026-11-25  Pico mit aelterer PicoFastLED.h (ohne showColor) uebersetzte nicht: Hilfsmakro MLL_CLEAR_CONTROLLER, bei Pico ohne MLL_HAS_SHOWCOLOR wird clearLeds(256) benutzt (Log von Harold, Pico, Kompilierfehler showColor)
 #   1.12  2026-11-24  Pull Request 63 (Juergen, Issue 62): Konfiguration getrennt von der Firmware: beim Start werden MLL_CLEAR_LED_CNT (256, mit LONG_LED_ADDR 1000) schwarze Pixel je Controller ausgegeben (showColor), damit auch physisch angeschlossene, nicht mehr konfigurierte LEDs ausgehen. Zeilen mit '# v1.12'
@@ -1406,6 +1407,8 @@ def Write_Switches_Header_File_Part_A(fp, Channel):
             VBFiles.writeText(fp, '#define START_SEND_INPUTS ' + M30.AddSpaceToLen(Min_Channel, 41) + '// Start address of all switches/variables', '\n')
             VBFiles.writeText(fp, '#define TOTAL_SEND_INPUTS ' + M30.AddSpaceToLen(Total_Send_Inputs, 41) + '// Number of used switches/variables', '\n')  # v1.10
     
+    if M42.Active():  # v1.16: Informationswerte der Konfiguration, nicht der Firmware
+        VBFiles.writeText(fp, DC.MARK_BEGIN, '\n')  # v1.16
     VBFiles.writeText(fp, '#define TOTAL_SWITCHES_A  ' + M30.AddSpaceToLen(To_Eight(Used_AButton_Channels * 16), 41) + '// Number of used inputs for analog keyboard', '\n')
     if Right(CTR_Cha_Name_1, 1) == 'B':
         VBFiles.writeText(fp, '#define TOTAL_SWITCHES_B  ' + M30.AddSpaceToLen(To_Eight(CTR_Channels_1 * List_Lenght(But_Inp_List_1)), 41) + '// Number of used inputs for keyboard 1', '\n')
@@ -1417,6 +1420,8 @@ def Write_Switches_Header_File_Part_A(fp, Channel):
     
     VBFiles.writeText(fp, '#define TOTAL_SWITCHES_D  ' + M30.AddSpaceToLen(SwitchD_InpCnt, 41) + '// Number of used inputs for main board switches', '\n')
     VBFiles.writeText(fp, '#define TOTAL_VARIABLES   ' + M30.AddSpaceToLen(List_Lenght(DstVar_List), 41) + '// Number of used variables', '\n')
+    if M42.Active():  # v1.16
+        VBFiles.writeText(fp, DC.MARK_END, '\n')  # v1.16
     # 19.01.21 Juergen      
     if True:
         # FastLED initialisation                                                

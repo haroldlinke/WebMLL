@@ -22,7 +22,7 @@ Cell_DCC;K2;Start LedNr;Start LedNr;Start LedNr;Start LedNr;Start LedNr;Start Le
 Cell_DCC;L2;LEDs;LEDs;LEDs;LEDs;LEDs;LEDs;LEDs
 Cell_DCC;M2;InCnt;InCnt;InCnt;InCnt;InCnt;InCnt;InCnt
 Cell_DCC;N2;Loc InCh;Loc InCh;Loc InCh;Loc InCh;Loc InCh;Loc InCh;Loc InCh
-Cell_SX;D2;Channel oder Name [0..99];Channel or name [0..99];Kanaal of naam [0..99];Chaîne ou nom [0..99];Canale o nome [0..99];Canal o nombre [0..99];Kanal eller navn [0..99]
+Cell_SX;D2;Channel oder Name [1..99];Channel or name [1..99];Kanaal of naam [1..99];Chaîne ou nom [1..99];Canale o nome [1..99];Canal o nombre [1..99];Kanal eller navn [1..99]
 Cell_SX;E2;Bitposition [1..8];Bit position [1..8];Bitpositie [1..8];Position du bit [1..8];Bit position [1..8];Bit position [1..8];Bitposition [1..8]
 Cell_SX;F2;Typ;Type;Type;Type;English;Type;Type
 Cell_SX;G2;Start- wert;Start- val;Startwaarde;Valeur de départ;Start- val;Start- val;Start

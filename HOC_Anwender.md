@@ -1,9 +1,100 @@
-Datei-Version: 1.139 (2026-11-26) - HOC_Anwender.md
-Stand: Version 5.54
+Datei-Version: 1.154 (2026-11-26) - HOC_Anwender.md
+Stand: Version 5.69
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Version 5.69 (2026-11-27)
+
+Fehler behoben:
+- Beim ESP32 schreibt das Programm die Zeilen `#undef Mainboard_LEDn` und `#define Mainboard_LEDn ...` des Makros Mainboard_LED nicht mehr in die Datei LEDs_AutoProg.h (der ESP32 hat diese LEDs nicht).
+
+## Version 5.68 (2026-11-27)
+
+Neue Funktionen:
+- Die erzeugte Datei LEDs_AutoProg.h enthält beim schnellen Update (ESP32, Pico) die Eingangskanal-Defines („Input channel defines …“) und die Zählwerte TOTAL_SWITCHES_A bis D und TOTAL_VARIABLES zwischen den Zeilen //MLLDYN_BEGIN und //MLLDYN_END. Änderungen daran gehören damit zur Konfiguration und nicht zur Firmware.
+
+## Version 5.67 (2026-11-27)
+
+Fehler behoben:
+- Der Doppelklick auf Name und Beleuchtung öffnet die Makroauswahl jetzt auch dann, wenn der Schalter früher (vor 5.27, damals standardmäßig aus) gespeichert war. Der alte Wert „aus“ wird einmal auf „an“ gesetzt; wer danach selbst ausschaltet, bleibt bei „aus“. Den Makrotext bearbeitest du mit Umschalt + Doppelklick, F2, Enter oder dem Kontextmenü.
+
+## Version 5.66 (2026-11-27)
+
+Fehler behoben:
+- Nach Setup übertragen standen bei mehreren Zeilen mit derselben Adresse nur die Ein/Aus-Tasten der Zeile mit Startwert 1 auf „ein“, die anderen Zeilen mit dieser Adresse blieben auf „aus“. Jetzt sind alle Tasten dieser Adresse eingeschaltet.
+
+## Version 5.65 (2026-11-27)
+
+Neue Funktionen:
+- Setup übertragen mit eingeschaltetem schnellem Upload (Schnelles Update): Ist schon im EFFECT Mode mit demselben Anschluss verbunden, bleibt die Verbindung bestehen und wird nicht geschlossen und neu geöffnet.
+
+## Version 5.64 (2026-11-27)
+
+Fehler behoben:
+- Der Serielle Monitor hing beim Verbinden mit unbekannten Geräten, die nicht oder nicht wie erwartet antworten. Der Test auf den EFFECT Mode ist jetzt auf 250 ms begrenzt, danach gilt der DIRECT Mode.
+
+## Version 5.63 (2026-11-27)
+
+Neue Funktionen:
+- Der Serielle Monitor versucht zuerst im EFFECT Mode zu verbinden (schneller Test, höchstens 250 ms). Antwortet das Gerät nicht, liest er nur mit (DIRECT Mode).
+
+## Version 5.62 (2026-11-27)
+
+Neue Funktionen:
+- Auch der Wechsel vom Seriellen Monitor in Farb Test, Servo Test, Sound Test, DCC Keyboard oder Patterngenerator baut die Verbindung im EFFECT Mode mit dem Anschluss des Blatts neu auf, außer es ist schon richtig im EFFECT Mode verbunden.
+
+## Version 5.61 (2026-11-27)
+
+Neue Funktionen:
+- Der Serielle Monitor zeigt „Verbunden mit COMx - DIRECT Mode“, denn er liest nur mit. Eine bestehende Verbindung im EFFECT Mode bleibt beim Wechsel in den Monitor unverändert. Beim Wechsel zurück in den Programm Generator wird eine Monitor-Verbindung im EFFECT Mode neu aufgebaut.
+
+## Version 5.60 (2026-11-27)
+
+Neue Funktionen:
+- Wer vom Seriellen Monitor in den Programm Generator wechselt, wird wieder mit dem Board und Anschluss des Blatts verbunden, außer es ist derselbe Anschluss wie im Monitor.
+
+## Version 5.59 (2026-11-27)
+
+Neue Funktionen:
+- Nach einem Verbindungsabbruch (zum Beispiel USB abgezogen) verbindet das Programm automatisch neu, sobald der Anschluss wieder da ist. Trennst du selbst mit dem Knopf, bleibt es getrennt.
+
+## Version 5.58 (2026-11-27)
+
+Neue Funktionen:
+- Der Status nach einem Verbindungsabbruch nennt wie „Nicht verbunden“ auch Gerät und Anschluss, zum Beispiel „Verbindung verloren - Pro/COM3“.
+
+## Version 5.57 (2026-11-27)
+
+Neue Funktionen:
+- Das Programm erkennt, wenn die Verbindung abbricht (zum Beispiel USB ausgesteckt): Die Knöpfe werden rot, der Status zeigt „Verbindung verloren“ und im Seriellen Monitor steht eine Zeile dazu (nicht mit echtem Abziehen an allen Systemen geprüft).
+
+## Version 5.56 (2026-11-26)
+
+Neue Funktionen:
+- Serieller Monitor: Beim Wechsel des Anschlusses zeigen Knopf und Status jeden Schritt („Nicht verbunden“, „Verbindungsaufbau ...“, verbunden), die Ausgaben der vorherigen Verbindung werden gelöscht. Während des Verbindungsaufbaus sind die Verbindungsknöpfe (Kopfzeile und Serieller Monitor) grau und gesperrt.
+- Serieller Monitor: ein Verbindungsknopf (rot: verbinden, grün: Trennen) mit derselben Statusanzeige wie der zentrale Knopf; die Portauswahl zeigt Typ und Untertyp nach der USB-Kennung.
+- Firmware installieren: die Liste ist nach Plattform gruppiert, die Geräteauswahl wählt ein Gerät derselben Plattform vor.
+- Beim Wechsel des Protokolls auf LNet müssen die Lizenzbestimmungen bestätigt werden (einmal je Blatt).
+
+Fehler behoben:
+- Der Serielle Monitor zeigt jetzt auch die Ausgaben eines Pico (Hardware-Signale nach dem Gerät am Anschluss; nicht an einem Gerät geprüft).
+- Im Protokoll steht beim normalen Beenden nicht mehr `webmobaledlib.crash`, sondern `webmobaledlib.exit`.
+
+## Version 5.50 bis 5.52 der Arbeitskopie (Jürgen)
+
+Neue Funktionen:
+- Das Fenster „Kompilieren und Hochladen“ lässt sich an der Titelzeile verschieben (Doppelklick: Ausgangsposition).
+- Im Dialog „Firmware herunterladen“ lässt sich auch eine lokale ZIP-Datei mit Firmware installieren (gleiches Auswahlfeld wie bei Update Testversion).
+- Firmware installieren (Pico) nutzt die Geräteauswahl; es werden nur Pico-Geräte gelistet, auch unbekannte und andere MobaLedLib Geräte sind wählbar.
+
+Korrekturen:
+- Selectrix: Channel 1 bis 99 und Bitposition 1 bis 8 werden geprüft (Eingabe und Header-Erzeugung); der Build mit leerem Eingang ist behoben.
+- DCC, LNet und CAN: die Adresse 0 ist nicht erlaubt.
+- Ein negativer Anschluss (-3) dient beim Hochladen und Setup übertragen als Hinweis auf COM3; wird das Gerät dort gefunden, steht der Anschluss danach im Blatt, sonst öffnet sich die Geräteauswahl.
+- Abbrechen in der Geräteauswahl schließt auch das Fenster Kompilieren und Hochladen; `COM?` steht nicht mehr in der Liste, OK ohne Auswahl ändert das Blatt nicht.
+- PGF-Import in ein verstecktes Blatt blendet es wieder ein.
 
 ## Version 5.54 (2026-11-26)
 

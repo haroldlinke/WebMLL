@@ -1,5 +1,5 @@
-Datei-Version: 1.58 (2026-11-26) - LIESMICH_Wiki_Gesamt.md
-Gilt für Version 5.39
+Datei-Version: 1.59 (2026-11-26) - LIESMICH_Wiki_Gesamt.md
+Gilt für Version 5.49
 
 # Wiki-Kapitel „MobaLedLib Studio“: alle Seiten, Stand 4.93
 
@@ -17,6 +17,7 @@ Dieses Paket enthält **alle 41 Seiten** in ihrer neuesten Fassung (Seitenstand 
 
 ## Neu seit Stand 4.79 (Stand 4.93)
 
+* **Menü Werkzeuge (5.49, Issue 75):** Datenübertragung, Firmware installieren, ESP32-Firmware über WLAN und Wartung (Entwicklungsumgebung) stehen im neuen Menü Werkzeuge, im Anfänger Modus ausgeblendet. Seiten angepasst: `wz_datenuebertragung` (1.03), `werkzeuge` (1.14), `modus` (1.07), `arduino_ide` (1.05), `ota` (1.09), `wz_arduino_einstellungen` (1.09), `pg_arduino` (1.19).
 * **Neue Seite `wz_datenuebertragung` (1.00):** Datenübertragung zwischen Rechnern (Menü Einstellungen → Datenübertragung). Verlinkt von `wz_programm_einstellungen` (1.17) und `werkzeuge` (1.11). `pg_arduino` (1.16): Verbindung folgt dem Blatt, Pico-Auswahl, keine flackernden Knöpfe. `pg_tabelle` (1.10): Markierung nach Einfügen, Löschen, Duplizieren, Verschieben. `seiten_update` (1.08) nachgeführt.
 * **Mini-Farbtest in der grafischen Ansicht (4.83):** `pg_grafisch` (Seitenstand 1.06): F3 oder Rechtsklick bei einem Makro ConstRGB. `pg_tabelle` (1.09): Mini-Farbtest für andere Makros sendet beim Öffnen nichts (4.82).
 * **Tabelle (4.84 bis 4.88):** Nach Einfügen, Löschen, Duplizieren und Verschieben bleibt die Ansicht ruhig, die betroffene Zeile ist markiert.

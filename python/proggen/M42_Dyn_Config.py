@@ -1,12 +1,13 @@
-# Datei-Version: 1.12 (2026-11-25) - M42_Dyn_Config.py
+# Datei-Version: 1.13 (2026-11-27) - M42_Dyn_Config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M42_Dyn_Config.py
 # Path:           proggen/M42_Dyn_Config.py
-# Version:        1.12
-# Last Update:    2026-11-25
+# Version:        1.13
+# Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.13  2026-11-27  Reuse_Connection: ist schon im EFFECT Mode mit demselben Anschluss verbunden, wird die Konfiguration ueber diese Verbindung uebertragen (Try_Config_Only shared), ohne sie zu schliessen und neu zu oeffnen. Zeilen mit '# v1.13'
 #   1.12  2026-11-25  Schnelles Update (serial_cfg) je Blatt: Option_Enabled liest zuerst esp32_options des aktiven Blattes, Set_Sheet_Option schreibt dorthin. Zeilen mit '# v1.12'
 #   1.11  2026-11-25  Clear_Found_Port: der gefundene Anschluss eines frueheren Uploads wird vor jedem Upload geloescht (sonst haette ein anderes Board den Anschluss eines frueheren Pico ins Blatt bekommen koennen). Zeilen mit '# v1.11'
 #   1.10  2026-11-24  Nach dem Upload merkt sich After_Full_Flash den gefundenen Anschluss (Funktion Found_Port), M08 traegt ihn ins Blatt ein. Zeilen mit '# v1.10'
@@ -319,11 +320,22 @@ def _wlan_attempts(operation, *, after_flash=False):  # v1.05
             return _fallback("Die Konfiguration konnte nicht übertragen werden ({reason}). Es wird das ganze Programm hochgeladen.", reason=error)  # v1.05
 
 
-def Try_Config_Only(ComPort, *, host="", password=""):  # v1.05
+def Reuse_Connection(ComPort):  # v1.13
+    """True, wenn der Controller schon im EFFECT Mode (nicht Serial Monitor/DIRECT Mode) ueber USB mit genau diesem Anschluss verbunden ist: dann bleibt die Verbindung fuer die Uebertragung offen."""
+    c = PG.global_controller
+    try:
+        return bool(c.is_connection_open() and not getattr(c, "ARDUINO_IP", False) and not getattr(c, "monitor_connected", False)
+                    and str(getattr(c, "ARDUINO_current_portname", "") or "").strip().upper() == str(ComPort or "").strip().upper()
+                    and hasattr(c, "cfg_lines"))
+    except Exception:                                      # noqa: BLE001
+        return False
+
+
+def Try_Config_Only(ComPort, *, host="", password="", shared=False):  # v1.05  # v1.13
     _open_output()  # v1.05
     if host:  # v1.05
         return _wlan_attempts(lambda: _try_config_once(ComPort, host=host, password=password))  # v1.05
-    return _try_config_once(ComPort)  # v1.05: USB bleibt bei einem Versuch
+    return _try_config_once(ComPort, shared=shared)  # v1.05: USB bleibt bei einem Versuch  # v1.13
 
 
 # def Try_Config_Only(ComPort):  # v1.02 (entfallen)
@@ -359,14 +371,17 @@ def _send_config(link, blob, host="", password=""):  # v1.04
         raise  # v1.04: ohne gueltigen Nachweis bleibt die Uebertragung fehlgeschlagen
 
 
-def _try_config_once(ComPort, *, host="", password=""):  # v1.05
+def _try_config_once(ComPort, *, host="", password="", shared=False):  # v1.05  # v1.13
     """True wenn das Geraet die Firmware dieser Kopfdatei hat und die Konfiguration uebertragen wurde (oder schon aktuell ist). Sonst False: dann das ganze Programm hochladen."""
     blob = _state["blob"]
     t0 = time.time()  # v1.01
     # _open_output()  # v1.05 (entfallen: Ausgabe bleibt zwischen Versuchen erhalten)
     try:
         # link = DC.Link(ComPort, dtr=_state["pico"])  # v1.02 (entfallen)
-        link = DC.TcpLink(host, password) if host else DC.Link(ComPort, dtr=_state["pico"])  # v1.02
+        if shared and not host:  # v1.13: die offene Verbindung benutzen
+            link = DC.SharedLink(PG.global_controller)  # v1.13
+        else:  # v1.13
+            link = DC.TcpLink(host, password) if host else DC.Link(ComPort, dtr=_state["pico"])  # v1.02
     except Exception as e:                                 # noqa: BLE001
         if host:  # v1.05
             raise DC.DynConfigError(str(e)) from e  # v1.05

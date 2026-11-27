@@ -1,12 +1,15 @@
-# Datei-Version: 1.20 (2026-11-25) - M06_Write_Header.py
+# Datei-Version: 1.23 (2026-11-27) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.20
-# Last Update:    2026-11-25
+# Version:        1.23
+# Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.23  2026-11-27  ESP32: die Zeilen '#undef Mainboard_LEDn' und '#define Mainboard_LEDn ...' (Makro Mainboard_LED) werden nicht in die Kopfdatei geschrieben (Remove_Mainboard_LED_Defines); der ESP32 hat keine Mainboard LEDs an diesen Pins. Zeilen mit '# v1.23'
+#   1.22  2026-11-27  Im Modus MLL_DYNAMIC_CONFIG stehen die Zeilen 'Input channel defines for local inputs and expert users' (INCH_xxx) zwischen //MLLDYN_BEGIN und //MLLDYN_END (wie die Tabelle der externen Adressen), M06_Write_Header_SW 1.16 ebenso TOTAL_SWITCHES_A bis D und TOTAL_VARIABLES. Zeilen mit '# v1.22'
+#   1.21  2026-11-26  Selectrix: Channel 1 bis 99 und Bitposition 1 bis 8 sind erlaubt (Channel 0 und alles andere ist ein Fehler, das Header file wird nicht erzeugt); eine Zeile mit Channel aber ohne Bitposition ist ebenfalls ein Fehler. DCC, LNet, CAN: Adresse 0 ist nicht erlaubt (Fehler wie in M20 1.19), die Sonderbehandlung der Adresse 0 (v1.03) entfaellt. AddressExists: die Liste der Adressen beginnt leer (vorher mit dem Element 0, Erase setzte nur Nullen). Zeilen mit '# v1.21'
 #   1.20  2026-11-26  ESP32: Displaytyp aus den Blatteinstellungen (esp32_options['oled_typ']) als '#define OLED_TYP 1|2' zusammen mit UI_MLLTime. Zeilen mit '# v1.20'
 #   1.18  2026-11-25  Einstellungen des Blattes: READ_LDR und ENABLE_STORE_STATUS() fuer alle Plattformen, nur die Display-Einstellung (UI_MLLTime) bleibt in #ifdef ESP32. Zeilen mit '# v1.18'
 #   1.17  2026-11-23  Identify (Juergen Winkler): ESP32: die drei Status LEDs (WS2811) sind das erste Pixel von LED Kanal 7; Add_Status_LED_Macro legt den Kanal mit ConstRGB an, wenn der
@@ -156,7 +159,8 @@ InChTxt = String()                                      # List of all defined DC
 Undefined_Input_Var = String()                          # List of all undefined input variables in the first step
 Undef_Input_Var_Row = String()
 
-AddrList = vbObjectInitialize(objtype=Long)
+# AddrList = vbObjectInitialize(objtype=Long)  # v1.21 (entfallen: begann mit dem Element 0)
+AddrList = []                                          # v1.21: bereits belegte Eingangsadressen (siehe AddressExists)
 LocInChNr = Long()
 CurrentCounterId = Long()
 Ext_AddrTxt = String()
@@ -199,7 +203,8 @@ def Init_HeaderFile_Generation():
 
     Nr = Long()
     
-    Erase(AddrList)
+    # Erase(AddrList)  # v1.21 (entfallen: setzte nur Nullen)
+    del AddrList[:]  # v1.21
     M25.Make_sure_that_Col_Variables_match()
     LocInChNr = 0
     CurrentCounterId = 0
@@ -305,6 +310,14 @@ def Write_Pico_Mainboard_LED_Defines(fp, Config_Txt):  # v1.17
         VBFiles.writeText(fp, '#ifndef Mainboard_LED' + str(Nr), '\n')  # v1.17
         VBFiles.writeText(fp, '#define Mainboard_LED' + str(Nr) + ' SI_0                       // Pico: mainboard LED ' + str(Nr) + ' is an output and off (blinks with ~MLLIDENT, MLLIdentify.h)', '\n')  # v1.17
         VBFiles.writeText(fp, '#endif', '\n')  # v1.17
+def Remove_Mainboard_LED_Defines(Config_Txt):  # v1.23
+#-------------------------------------------------------  # v1.23
+    """ESP32: die Zeilen '#undef Mainboard_LEDn' und '#define Mainboard_LEDn <Kanal>' aus dem Makro Mainboard_LED() gehoeren nicht in die Kopfdatei (der ESP32 hat keine Mainboard LEDs an diesen Pins,
+    die Defines verwiesen ausserdem auf Eingangskanaele). Andere Boards: der Text bleibt unveraendert. Die uebrigen Zeilen, auch '#undef LED_HEARTBEAT_PIN', bleiben."""
+    import re  # v1.23
+    if M02a.Get_BoardTyp() != M02.HT_ESP32:  # v1.23
+        return Config_Txt  # v1.23
+    return re.sub(r'(?m)^[ \t]*#[ \t]*(?:undef|define)[ \t]+Mainboard_LED\w*\b[^\r\n]*(?:\r?\n|\Z)', '', Config_Txt)  # v1.23
 #-------------------------------------------------------
 def ExpandName(Variablename):
 #-------------------------------------------------------
@@ -320,23 +333,12 @@ def ExpandName(Variablename):
 #-------------------------------------------------------
 def AddressExists(Addr):
 #-------------------------------------------------------
-    global AddrList
-    
-    _fn_return_value = False
-    
-    a = Variant()
-    #------------------------------------------------------
     # ToDo: Überlappungen prüfen wenn InCnt > 1
-    if not M30.IsArrayEmpty(AddrList):
-        for a in AddrList:
-            if a == Addr:
-                _fn_return_value = True
-                return _fn_return_value
-        AddrList = vbObjectInitialize((UBound(AddrList) + 1,), int, AddrList)
-    else:
-        AddrList = vbObjectInitialize((0,), int, AddrList)
-    AddrList[UBound(AddrList)] = Addr
-    return _fn_return_value
+    # v1.21: einfache Liste. Vorher begann sie mit dem Element 0 (vbObjectInitialize, Erase setzte nur Nullen): die Adresse 0 (Selectrix Channel 0, Bitposition 1) galt als schon vorhanden
+    if Addr in AddrList:
+        return True
+    AddrList.append(Addr)
+    return False
 
 #-------------------------------------------------------
 def Clear_MaxLEDNr():
@@ -1469,19 +1471,19 @@ def ProcessLine(r, sx, addressOffset, LEDsOffset, LEDsInUse, MaxLEDNrInSheet):
             if sx: 
                 # *** Selectrix ***
                 Bit_P = P01.Cells(r, M25.SX_Bitposi_Col)
-                if Bit_P != '' and P01.val(P01.Cells(r, M25.InCnt___Col)) > 0:
-                    if P01.Cells(r, M25.SX_Channel_Col) != '':
-                        SX_Ch = M25.Get_First_Number_of_Range(r, M25.SX_Channel_Col)
-                        # ToDo: SX_Ch wird nur dann aktualisiert wenn Bit pos vorhanden ist und InCnt > 0. Ist das gut ?
-                    if SX_Ch >= 0 and SX_Ch <= 99:
-                        if int(Bit_P) >= 1 and int(Bit_P) <= 8:
-                            Addr = SX_Ch * 8 + int(Bit_P) - 1
-                            Addr = Addr + addressOffset
-                            AddrComment = 'SX ' + M30.AddSpaceToLenLeft(SX_Ch, 2) + ',' + str(Bit_P) + ': '
-                        else:
-                            Add_to_Err(P01.Cells(r, M25.SX_Bitposi_Col), 'Wrong bitpos " & bp & " in row ' + str(r))
+                if P01.val(P01.Cells(r, M25.InCnt___Col)) > 0:  # v1.21: Zeilen ohne Eingang (InCnt 0) werden nicht geprueft
+                    # Channel 1 bis 99 und Bitposition 1 bis 8; alles andere ist ein Fehler (das Header file wird nicht erzeugt)
+                    SX_Ch = M25.Get_First_Number_of_Range(r, M25.SX_Channel_Col)  # v1.21
+                    Bit_Txt = Trim(str(Bit_P))  # v1.21
+                    if not (IsNumeric(SX_Ch) and SX_Ch == int(SX_Ch) and 1 <= SX_Ch <= 99):  # v1.21
+                        Add_to_Err(P01.Cells(r, M25.SX_Channel_Col), M09.Get_Language_Str('Der Selectrix Channel in Zeile ') + str(r) + M09.Get_Language_Str(' ist ungültig. Erlaubt sind die Channel 1 bis 99.'))  # v1.21
+                    elif not (Bit_Txt.isdigit() and 1 <= int(Bit_Txt) <= 8):  # v1.21
+                        Add_to_Err(P01.Cells(r, M25.SX_Bitposi_Col), M09.Get_Language_Str('Die Bitposition in Zeile ') + str(r) + M09.Get_Language_Str(' ist ungültig oder fehlt. Erlaubt sind die Bitpositionen 1 bis 8.'))  # v1.21
                     else:
-                        Add_to_Err(P01.Cells(r, M25.SX_Channel_Col), 'Wrong SX channel in row ' + str(r))
+                        SX_Ch = int(SX_Ch)  # v1.21
+                        Addr = SX_Ch * 8 + int(Bit_Txt) - 1
+                        Addr = Addr + addressOffset
+                        AddrComment = 'SX ' + M30.AddSpaceToLenLeft(SX_Ch, 2) + ',' + str(Bit_P) + ': '
             else:
                 # *** DCC, LNet or CAN ***
                 if M25.Page_ID == 'DCC':
@@ -1500,7 +1502,8 @@ def ProcessLine(r, sx, addressOffset, LEDsOffset, LEDsInUse, MaxLEDNrInSheet):
                     Addr = - 1
                     # No address given of InCnt <= 0 or empty
                 # elif Addr >= 1 and Addr + addressOffset <= MaxAddr:  # v1.03 (entfallen)
-                elif Addr >= 0 and Addr + addressOffset <= MaxAddr:                                    # 08.12.25: Juergen  # v1.03
+                # elif Addr >= 0 and Addr + addressOffset <= MaxAddr:                                    # 08.12.25: Juergen  # v1.03  # v1.21 (entfallen)
+                elif Addr >= 1 and Addr + addressOffset <= MaxAddr:                                    # v1.21: Adresse 0 ist nicht erlaubt
                     # Valid adress range
                     Addr = Addr + addressOffset
                 else:
@@ -1824,9 +1827,13 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
         VBFiles.writeText(fp, '', '\n')
         VBFiles.writeText(fp, '', '\n')
     # Ext_AddrTxt_Used
+    if DynMode:  # v1.22: die Eingangskanaele gehoeren zur Konfiguration, nicht zur Firmware
+        VBFiles.writeText(fp, DC.MARK_BEGIN, '\n')  # v1.22
     VBFiles.writeText(fp, '// Input channel defines for local inputs and expert users', '\n')
     # 05.10.19: Moved out of the if because the local inputs are also stored here
     VBFiles.writeText(fp, InChTxt, '\n')
+    if DynMode:  # v1.22
+        VBFiles.writeText(fp, DC.MARK_END, '\n')  # v1.22
     VBFiles.writeText(fp, '', '\n')
     
     fret, Channel = M06SW.Write_Switches_Header_File_Part_A(fp, Channel)
@@ -1883,6 +1890,7 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
                     VBFiles.writeText(fp, f'#ifndef {symbol}\n#define {define}\n#endif', '\n')  # v1.10
             # VBFiles.writeText(fp, '#endif', '\n')  # v1.10  # v1.18 (entfallen: steht jetzt vor den Defines)
 
+    ConfigTxt = Remove_Mainboard_LED_Defines(ConfigTxt)  # v1.23: ESP32: keine Mainboard LED Defines in der Kopfdatei
     if DynMode:  # v1.07: die Firmware sieht nur die Praeprozessor-Zeilen der Konfiguration, die Makros stehen im Zweig CONFIG_ONLY
         VBFiles.writeText(fp, '// Preprocessor settings from the configuration', '\n')  # v1.07
         for cfgline in ConfigTxt.splitlines():  # v1.07

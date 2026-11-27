@@ -15,6 +15,7 @@ Prueft ohne Browser: die ZIP-Pruefung (kein ZIP, keine *.uf2), das sichere Entpa
 Meldungen, Rueckgabe zum Vorwaehlen). Die Oberflaeche (Auswahlfeld) ist hier nicht Teil des Tests."""
 import asyncio
 import io
+import json
 import os
 import sys
 import tempfile
@@ -74,6 +75,44 @@ class HeadlessTests(unittest.TestCase):
         self.assertEqual(HFD.entry_from_file("Ordner/Blink-V1.0.uf2")["name"], "Blink")
         self.assertEqual(HFD.entry_from_file("seltsam.uf2")["name"], "")
         self.assertTrue(HFD.entry_from_file("")["local"])                     # nie leer: der Aufrufer wertet 'leer' als Abbruch
+
+
+class ScanTests(unittest.TestCase):
+    def test_groups_are_sorted_by_platform(self):
+        import headless.headless_pico as HP
+        with tempfile.TemporaryDirectory() as folder:
+            def add(name, version, platform):
+                open(os.path.join(folder, "%s-V%s.uf2" % (name, version)), "wb").write(b"x")
+                desc = {"name": name, "version": version, "DE": {"short": name, "detail": ""}}
+                if platform:
+                    desc["platform"] = platform
+                with open(os.path.join(folder, "%s-V%s.desc" % (name, version)), "w", encoding="utf-8") as fh:
+                    json.dump(desc, fh)
+            add("Zeta", "1.0", "AAA")
+            add("Alpha", "1.0", "ZZZ")
+            add("Beta", "1.0", "AAA")
+            add("Beta", "1.1", "AAA")
+            add("Ohne", "1.0", "")
+            groups = HP.scan_firmware(folder, "DE")
+            self.assertEqual([(g["platform"], g["base"]) for g in groups], [("AAA", "Beta"), ("AAA", "Zeta"), ("ZZZ", "Alpha"), ("", "Ohne")])
+            self.assertEqual([v["version"] for v in groups[0]["versions"]], ["1.1", "1.0"])
+            self.assertEqual(groups[0]["versions"][0]["platform"], "AAA")
+
+
+class PlatformTitleTests(unittest.TestCase):
+    def test_title_uses_name_from_json_or_falls_back_to_platform(self):
+        from _web import web_form_firmware as WFF
+        with open(os.path.join(ROOT, "csv", "Lichtmaschinen_prop.json"), encoding="utf-8") as fh:
+            data = json.load(fh)
+        names = {}
+        for entry in data["platforms"] + data["devices"]:                           # erst platforms, dann devices
+            names.setdefault(entry["platform"], entry["name"])
+        self.assertIn("MLL512V1", names)
+        for platform, name in names.items():
+            self.assertEqual(WFF.platform_title(platform), name, platform)          # Name aus Lichtmaschinen_prop.json
+            self.assertEqual(WFF.platform_title(platform.lower()), name, platform)  # Gross-/Kleinschreibung egal
+        self.assertEqual(WFF.platform_title("UNBEKANNT_V9"), "UNBEKANNT_V9")        # nichts gefunden: wie bisher die Plattform
+        self.assertEqual(WFF.platform_title(""), "Ohne Plattform")
 
 
 class FlowTests(unittest.TestCase):

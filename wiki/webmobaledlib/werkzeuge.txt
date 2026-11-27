@@ -1,5 +1,5 @@
 ====== MobaLedLib Studio – Die Werkzeug-Reiter ======
-//Seitenstand 1.13 (2026-11-24), gilt für Version 5.12//
+//Seitenstand 1.14 (2026-11-26), gilt für Version 5.49//
 
 Neben dem [[anleitungen:mobaledlibstudio:programmgenerator|Programmgenerator]] hat MobaLedLib Studio weitere **Reiter** mit Werkzeugen. Mit ihnen **testest du Farben, Servos und Sound**, stellst Geräte ein und siehst, was die Lichtmaschine sendet. Du brauchst sie nicht für ein erstes Programm. Sie helfen aber, wenn du Farben aussuchen oder ein Gerät in Betrieb nehmen willst.
 
@@ -16,7 +16,7 @@ Neben dem [[anleitungen:mobaledlibstudio:programmgenerator|Programmgenerator]] h
 
 Kein Reiter mehr (seit 4.51): [[anleitungen:mobaledlibstudio:wz_programm_einstellungen|Programm Einstellungen]] (Menü **Einstellungen**: Sprache, Schrift, Darstellung und weitere Einstellungen) und [[anleitungen:mobaledlibstudio:wz_arduino_einstellungen|ARDUINO-IDE Einstellungen]] (Fenster in **Hardware Optionen**, Reiter **Entwicklungsumgebung**; nur nötig, wenn du die ARDUINO IDE statt PlatformIO benutzt).
 
-Tabellen von einem anderen Rechner holen (Menü **Einstellungen → Datenübertragung**, seit 4.89): siehe [[anleitungen:mobaledlibstudio:wz_datenuebertragung|Datenübertragung]].
+Tabellen von einem anderen Rechner holen (Menü **Werkzeuge → Datenübertragung**, seit 4.89): siehe [[anleitungen:mobaledlibstudio:wz_datenuebertragung|Datenübertragung]].
 
 Die Seiten [[anleitungen:mobaledlibstudio:patterngenerator|Timeline Editor]] und [[anleitungen:mobaledlibstudio:programmgenerator|Programm Generator]] haben eigene Beschreibungen.
 

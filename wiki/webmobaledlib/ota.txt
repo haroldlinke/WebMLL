@@ -1,5 +1,5 @@
 ====== MobaLedLib Studio – ESP32 per WLAN und OTA ======
-//Seitenstand 1.08 (2026-11-24), gilt für Version 5.12//
+//Seitenstand 1.09 (2026-11-26), gilt für Version 5.49//
 
 Mit einer **Lichtmaschine ESP32** musst du das USB-Kabel nicht mehr dauernd benutzen. Das Programm kann den ESP32 über das **WLAN** verbinden, die **Einstellungen** und die **Firmware** übertragen (**OTA**, //Over the Air//) und die Testseiten (Farb Test, Servo, Sound, Testschalter) ohne Kabel bedienen. Das **erste Mal** brauchst du das USB-Kabel, danach geht alles über das WLAN.
 
@@ -63,7 +63,7 @@ Der ESP32 merkt sich das WLAN. Du musst diese Schritte nur wiederholen, wenn du 
 
 ===== Schnelles Update über WLAN (seit 4.71) =====
 
-Mit **PlatformIO** und dem Haken **Schnelles Update** (Hardware Optionen, Reiter **Entwicklungsumgebung**) überträgt das Programm über WLAN nur noch die **Konfiguration** (gesicherter Kanal mit dem OTA-Passwort, Beitrag von moosbewohner). Passt die Firmware im ESP32, entfällt das Übersetzen. Ist die Konfiguration unverändert, wird nichts gesendet. Bei Übertragungsfehlern gibt es bis zu drei Versuche, danach wird alles hochgeladen. **Einmal** muss die angepasste Firmware auf den ESP32 (USB oder WLAN). Ändern sich Hostname, OTA-Passwort, OTA-Schalter oder die Netzwerkeinstellungen, wird die Firmware ebenfalls neu übertragen. Mehr dazu: [[anleitungen:mobaledlibstudio:pg_arduino#schnelles_update_nur_die_konfiguration_uebertragen|Verbinden und Übertragen]].
+Mit **PlatformIO** und dem Haken **Schnelles Update** (Menü **Werkzeuge → Wartung**) überträgt das Programm über WLAN nur noch die **Konfiguration** (gesicherter Kanal mit dem OTA-Passwort, Beitrag von moosbewohner). Passt die Firmware im ESP32, entfällt das Übersetzen. Ist die Konfiguration unverändert, wird nichts gesendet. Bei Übertragungsfehlern gibt es bis zu drei Versuche, danach wird alles hochgeladen. **Einmal** muss die angepasste Firmware auf den ESP32 (USB oder WLAN). Ändern sich Hostname, OTA-Passwort, OTA-Schalter oder die Netzwerkeinstellungen, wird die Firmware ebenfalls neu übertragen. Mehr dazu: [[anleitungen:mobaledlibstudio:pg_arduino#schnelles_update_nur_die_konfiguration_uebertragen|Verbinden und Übertragen]].
 
 ===== Die Firewall =====
 

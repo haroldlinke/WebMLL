@@ -1,12 +1,18 @@
-# Datei-Version: 1.05 (2026-11-26) - web_startpage.py
+# Datei-Version: 1.13 (2026-11-26) - web_startpage.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_startpage.py
 # Path:           _web/web_startpage.py
-# Version:        1.05
+# Version:        1.13
 # Last Update:    2026-11-26
-# Author:         Harold Linke
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.13  2026-11-26  isCentral entfaellt: csv/Lichtmaschinen_prop.json hat die Listen devices (Lichtmaschinen) und platforms (Plattformen anderer MobaLedLib Geraete: platform, name, text, image); load_platforms, platform_name (zuerst platforms, dann devices), platform_image. Zeilen mit '# v1.13'
+#   1.12  2026-11-26  platform_name: Name des Geraets (name) zu einer Plattform aus csv/Lichtmaschinen_prop.json, fuer die Ueberschriften der Firmware-Auswahl. Zeilen mit '# v1.12'
+#   1.11  2026-11-26  Hat ein Eintrag in csv/Lichtmaschinen_prop.json kein Bild (image leer) oder fehlt die Bilddatei im Ordner images, zeigt die Kachel eine leere Flaeche in der Groesse des Bildes (kein kaputtes Bildsymbol, keine verschobene Kachel; image_exists). Zeilen mit '# v1.11'
+#   1.10  2026-11-26  Die Liste in csv/Lichtmaschinen_prop.json heisst devices (vorher Lichtmaschinen; der alte Name wird noch gelesen). Zeilen mit '# v1.10'
+#   1.09  2026-11-26  protocols_for_platform: die Protokolle, die die Lichtmaschinen einer Plattform (AM328, ESP32, PICO) unterstuetzen (Einstellung protocols in csv/Lichtmaschinen_prop.json); die Hardware Optionen bieten nur diese Protokolle an. Zeilen mit '# v1.09'
+#   1.08  2026-11-26  Feld centrals heisst protocols (supported_centrals: supported_protocols; eine aeltere Datei mit centrals wird noch gelesen); neues Feld isCentral: nur Lichtmaschinen (true) erscheinen als Kachel, andere MobaLedLib Geraete (false) nicht. Zeilen mit '# v1.08'
 #   1.00  2026-11-25  Neu: Startseite fuer Einsteiger (Version 5.23). Auswahl der Modellbahnzentrale (DCC, Selectrix, LNet, CAN, ohne Zentrale) und der
 #   1.01  2026-11-25  Korrektur: Auswahl der Lichtmaschine brach mit 'unsupported format character' ab (50% im Format-String, Schrittnummern der Anleitung)
 #   1.02  2026-11-25  Auswahl der Zentrale: Text 'LocoNet' durch 'LNet-Zentrale' ersetzt (Begriff LocoNet ist geschuetzt)
@@ -15,6 +21,8 @@
 #                     Startprogramme/<Lichtmaschine>[_<Zentrale>].MLL_pgf), Haken "nicht mehr anzeigen" (Einstellung ShowStartPage), Hinweis zum Anfaenger Modus
 #   1.03  2026-11-26  Reihenfolge: erst die Lichtmaschine, dann die Zentrale (nur die von der Lichtmaschine unterstuetzten); Lichtmaschinen aus csv/Lichtmaschinen_prop.json (jedes Produkt eine Kachel); Anrede Du statt Sie
 #   1.04  2026-11-26  Lichtmaschinen berichtigt: Mini (Nano, nur DCC), Pico Zero (alle Zentralen), MoLLi (Pico, nur DCC) je eine Kachel
+#   1.07  2026-11-26  Eigene Bilder fuer Lichtmaschine Mini und MoLLi (images/Mini_image.png, images/MoLLi_image.png; eingebaute Liste und csv/Lichtmaschinen_prop.json 1.03)
+#   1.06  2026-11-26  Pico Zero unterstuetzt nur DCC (Selectrix, LNet und CAN sind auf der Hardware nicht vorhanden; csv/Lichtmaschinen_prop.json 1.02 und eingebaute Liste)
 #   1.05  2026-11-26  Alle Kacheln (Lichtmaschinen und Zentralen) gleich gross: Raster statt Zeile mit Umbruch, die letzte Zeile wird nicht breiter, Kacheln einer Zeile gleich hoch
 # ----------------------------------------------------------------------------------------------
 """Startseite fuer Einsteiger.
@@ -40,14 +48,17 @@ CENTRALS = (
     ("CAN", "CAN", "Märklin CAN-Bus", "CAN"),
     ("None", "Ohne Zentrale", "Es wird die Tabelle DCC benutzt", "DCC"),
 )
-# Lichtmaschinen: kommen aus csv/Lichtmaschinen_prop.json (load_machines). Jeder Eintrag ist ein Dictionary mit key, name, platform, board, centrals, text, program, image, detect.
+# Lichtmaschinen: kommen aus csv/Lichtmaschinen_prop.json (load_machines). Jeder Eintrag ist ein Dictionary mit key, name, platform, board, protocols, text, program, image, detect.
 # Diese Liste gilt, wenn die Datei fehlt oder fehlerhaft ist.
 DEFAULT_MACHINES = (
-    {"key": "Classic", "name": "Lichtmaschine Classic", "platform": "AM328", "board": "Nano", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": "Nano"},
-    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "centrals": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": ""},
-    {"key": "Pro", "name": "Lichtmaschine Pro", "platform": "ESP32", "board": "ESP32", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "ESP32", "program": "Pro", "image": "ESP32_image.png", "detect": "ESP32"},
-    {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "centrals": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},
-    {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "centrals": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": ""},
+    {"key": "Classic", "name": "Lichtmaschine Classic", "platform": "AM328", "board": "Nano", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": "Nano"},
+    # {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "protocols": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": ""},  # v1.07 (entfallen)
+    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "protocols": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "Mini_image.png", "detect": ""},  # v1.07
+    {"key": "Pro", "name": "Lichtmaschine Pro", "platform": "ESP32", "board": "ESP32", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "ESP32", "program": "Pro", "image": "ESP32_image.png", "detect": "ESP32"},
+    # {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},  # v1.06 (entfallen)
+    {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},  # v1.06
+    # {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": ""},  # v1.07 (entfallen)
+    {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "MoLLi_image.png", "detect": ""},  # v1.07
 )
 MACHINES_FILE = os.path.join("csv", "Lichtmaschinen_prop.json")
 MACHINES = [dict(m) for m in DEFAULT_MACHINES]        # v1.03
@@ -61,11 +72,11 @@ def load_machines(base_dir) -> list:
         import json
         with open(os.path.join(base_dir, MACHINES_FILE), "r", encoding="utf-8") as fh:
             data = json.load(fh)
-        for m in data.get("Lichtmaschinen", []):
+        for m in data.get("devices", data.get("Lichtmaschinen", [])):  # v1.10
             if not isinstance(m, dict) or not m.get("key") or not m.get("name"):
                 continue
             item = {"key": str(m["key"]), "name": str(m["name"]), "platform": str(m.get("platform", "")), "board": str(m.get("board", "")),
-                    "centrals": [str(c) for c in (m.get("centrals") or ["DCC"])], "text": str(m.get("text", "")),
+                    "protocols": [str(c) for c in (m.get("protocols", m.get("centrals")) if m.get("protocols", m.get("centrals")) is not None else ["DCC"])], "text": str(m.get("text", "")),  # v1.08
                     "program": str(m.get("program") or m["key"]), "image": str(m.get("image", "")), "detect": str(m.get("detect", ""))}
             if all(x["key"] != item["key"] for x in result):
                 result.append(item)
@@ -76,14 +87,94 @@ def load_machines(base_dir) -> list:
     return MACHINES
 
 
-def supported_centrals(machine_key) -> list:
+def supported_protocols(machine_key) -> list:
     """Zentralen (Schluessel aus CENTRALS), die die Lichtmaschine unterstuetzt, in der Reihenfolge von CENTRALS. 'Ohne Zentrale' (None) ist immer dabei.
     Ohne Lichtmaschine: leere Liste."""
     m = machine_by_key(machine_key)
     if not m:
         return []
-    wanted = {c.strip().lower() for c in m["centrals"]}
+    wanted = {c.strip().lower() for c in m["protocols"]}
     return [c[0] for c in CENTRALS if c[0] == "None" or c[0].lower() in wanted]
+
+
+def protocols_for_platform(platform):  # v1.09
+    """Protokolle (Schluessel aus CENTRALS, Reihenfolge DCC, LNet, CAN, Selectrix), die die Lichtmaschinen (devices) der Plattform (AM328, ESP32, PICO) unterstuetzen: die
+    Vereinigung der Einstellung protocols aller ihrer Eintraege in csv/Lichtmaschinen_prop.json. None, wenn die Plattform dort nicht steht (der Aufrufer entscheidet dann anders)."""
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    wanted = set()
+    found = False
+    for m in load_machines(base_dir):
+        if str(m.get("platform", "")).strip().lower() == str(platform or "").strip().lower():  # v1.13
+            found = True
+            wanted |= {str(c).strip().lower() for c in m["protocols"]}
+    if not found:
+        return None
+    return [p for p in ("DCC", "LNet", "CAN", "Selectrix") if p.lower() in wanted]
+
+
+def load_platforms(base_dir) -> list:  # v1.13
+    """Liste platforms aus csv/Lichtmaschinen_prop.json (Plattformen anderer MobaLedLib Geraete): [{"platform", "name", "text", "image"}]; Eintraege ohne platform werden uebergangen.
+    Eine fehlende oder fehlerhafte Datei ergibt eine leere Liste."""
+    result = []
+    try:
+        import json
+        with open(os.path.join(base_dir, MACHINES_FILE), "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        for m in data.get("platforms", []):
+            if isinstance(m, dict) and str(m.get("platform", "")).strip():
+                result.append({"platform": str(m["platform"]).strip(), "name": str(m.get("name", "")), "text": str(m.get("text", "")), "image": str(m.get("image", ""))})
+    except Exception:                                  # noqa: BLE001
+        logger.warning("%s nicht gelesen (platforms)", MACHINES_FILE, exc_info=True)
+        result = []
+    return result
+
+
+def _own_base_dir():  # v1.13
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def platform_entry(platform, base_dir=None):  # v1.13
+    """Eintrag aus platforms zu einer Plattform (Gross-/Kleinschreibung egal) oder None"""
+    wanted = str(platform or "").strip().lower()
+    if not wanted:
+        return None
+    for m in load_platforms(base_dir or _own_base_dir()):
+        if m["platform"].lower() == wanted:
+            return m
+    return None
+
+
+def platform_name(platform, base_dir=None):  # v1.12  # v1.13: erst platforms, dann devices
+    """Name (name) zu einer Plattform aus csv/Lichtmaschinen_prop.json: erst die Liste platforms, dann devices (jeweils der erste Eintrag mit dieser platform, Gross-/Kleinschreibung
+    egal); None, wenn nichts gefunden wird."""
+    wanted = str(platform or "").strip().lower()
+    if not wanted:
+        return None
+    base = base_dir or _own_base_dir()
+    entry = platform_entry(platform, base)
+    if entry and entry["name"]:
+        return entry["name"]
+    for m in load_machines(base):
+        if str(m.get("platform", "")).strip().lower() == wanted:
+            return m["name"]
+    return None
+
+
+def platform_image(platform, base_dir=None):  # v1.13
+    """Name der Bilddatei (Ordner images) aus platforms zu einer Plattform; None, wenn es keinen Eintrag, kein Bild oder die Datei nicht gibt (dann zeigt die Geraeteauswahl keines)"""
+    base = base_dir or _own_base_dir()
+    entry = platform_entry(platform, base)
+    if entry and image_exists(base, entry["image"]):
+        return entry["image"].strip()
+    return None
+
+
+def image_exists(base_dir, name) -> bool:  # v1.11
+    """Gibt es die Bilddatei (Ordner images im Programmordner)? Leerer Name, Pfadteile ausserhalb des Ordners oder eine fehlende Datei: False."""
+    name = str(name or "").strip()
+    if not name or os.path.basename(name) != name:
+        return False
+    return os.path.isfile(os.path.join(base_dir, "images", name))
 
 
 def board_of(machine_key) -> str:
@@ -115,7 +206,7 @@ def machine_by_key(key):
 def machine_for_port_type(port_type):
     """Typ aus der Anschlusserkennung (Nano, ESP32, Pico) -> Schluessel der Lichtmaschine; None, wenn unbekannt"""
     for m in MACHINES:
-        if m["detect"] and m["detect"] == port_type:
+        if m["detect"] and m["detect"] == port_type:  # v1.13
             return m["key"]
     return None
 
@@ -197,15 +288,18 @@ async def show_start_page(base_dir, tr, *, detect, beginner=False):
         box.on("keydown.enter", on_click)
         box.on("keydown.space.prevent", on_click)
         with box:
-            if image:
+            if image is not None:  # v1.11: None = Kachel ohne Bildflaeche (Zentralen); sonst ein Bild oder, wenn es fehlt, eine leere Flaeche gleicher Groesse
                 with ui.row().classes("w-full no-wrap justify-between items-start"):
-                    ui.image("/mll_images/" + image).props("fit=contain").style("width:110px;height:84px")
+                    if image_exists(base_dir, image):  # v1.11
+                        ui.image("/mll_images/" + image).props("fit=contain").style("width:110px;height:84px")
+                    else:  # v1.11
+                        ui.element("div").style("width:110px;height:84px;flex:none")  # v1.11: leeres Bild
                     if selected:
                         check_icon()
             ui.label(tr(title)).style("font-size:20px;font-weight:700;line-height:1.2")
             with ui.row().classes("w-full no-wrap justify-between items-center"):
                 ui.label(tr(sub)).style("font-size:14px;opacity:.8")
-                if selected and not image:
+                if selected and image is None:  # v1.11
                     check_icon()
 
     def pick_central(key):
@@ -220,7 +314,7 @@ async def show_start_page(base_dir, tr, *, detect, beginner=False):
 
     def set_machine_side_effects():                    # v1.03: eine schon gewaehlte Zentrale, die die Lichtmaschine nicht kann, wird durch DCC ersetzt
         st["notice"] = ""
-        if st["central"] and st["machine"] and st["central"] not in supported_centrals(st["machine"]):
+        if st["central"] and st["machine"] and st["central"] not in supported_protocols(st["machine"]):
             old = central_by_key(st["central"])
             st["central"] = "DCC"
             st["notice"] = tr("{lichtmaschine} unterstützt {zentrale} nicht. Es wurde DCC eingestellt.",
@@ -282,7 +376,7 @@ async def show_start_page(base_dir, tr, *, detect, beginner=False):
         with ui.column().classes("w-full").style("gap:12px"):
             ui.label(tr("1. Welche Lichtmaschine hast du?")).style("font-size:22px;font-weight:700")
             with ui.element("div").classes("w-full").style(GRID_STYLE):  # v1.05: gleich grosse Kacheln, auch in der letzten Zeile
-                for m in MACHINES:
+                for m in MACHINES:  # v1.13
                     tile(m["name"], m["text"], st["machine"] == m["key"], lambda _e=None, k=m["key"]: pick_machine(k), image=m["image"])
             with ui.row().classes("w-full items-center").style("gap:14px;padding:14px 16px;border:%s;border-radius:12px" % border):
                 ui.button(tr("Automatisch erkennen"), on_click=do_detect).props("outline no-caps").style("min-height:44px")
@@ -307,7 +401,7 @@ async def show_start_page(base_dir, tr, *, detect, beginner=False):
                     ui.label(st["notice"]).style("font-size:15px;font-weight:600").props('role=status')
                 with ui.element("div").classes("w-full").style(GRID_STYLE):  # v1.05: gleich grosse Kacheln, auch in der letzten Zeile
                     for key, name, sub, _pid in CENTRALS:
-                        if key in supported_centrals(mac["key"]):
+                        if key in supported_protocols(mac["key"]):
                             tile(name, sub, st["central"] == key, lambda _e=None, k=key: pick_central(k))
         # Schritt 3
         with ui.column().classes("w-full").style("gap:12px"):

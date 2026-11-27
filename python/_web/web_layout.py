@@ -1,12 +1,13 @@
-# Datei-Version: 1.22 (2026-11-25) - web_layout.py
+# Datei-Version: 1.23 (2026-11-27) - web_layout.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_layout.py
 # Path:           _web/web_layout.py
-# Version:        1.22
-# Last Update:    2026-11-25
+# Version:        1.23
+# Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.23  2026-11-27  Ein vor V5.27 gespeicherter Wert 'aus' fuer den Doppelklick auf Name und Beleuchtung wird einmal auf 'an' gesetzt (get_dblclick, Merker WebDblClickMacro527): bisher blieb das Feature bei Anwendern, die den Schalter frueher gespeichert hatten, aus. Danach gilt die Wahl des Anwenders. Zeilen mit '# v1.23'
 #   1.22  2026-11-25  Doppelklick auf Name und Beleuchtung oeffnet standardmaessig die Makroauswahl (wie in Excel); der Makrotext wird mit Umschalt + Doppelklick, F2, Enter oder dem Kontextmenue bearbeitet. Zeilen mit '# v1.22'
 #   1.21  2026-11-22  Dunkles Farbschema: hellere Grundflaechen, Dialoge und optionale dunkle Tabellen
 #   1.20  2026-11-18  Einstellung steuert Zellinnenabstaende statt Tabellenrahmen
@@ -41,6 +42,7 @@ import os
 
 LAYOUT_KEY = "WebLayout"
 MARGIN_KEY = "WebOuterMargin"  # v1.18
+DBLCLICK_MIGRATED_KEY = "WebDblClickMacro527"  # v1.23: Merker: der alte Wert 'aus' wurde einmal auf 'an' gesetzt
 DBLCLICK_KEY = "WebDblClickMacro"                  # Doppelklick auf Name und Beleuchtung oeffnet die Makroauswahl (Standard: an, v1.22; vorher aus)
 MODES = {"normal": "Aus (normales Layout)", "compact": "Ein (kompakt)",
          "auto": "Automatisch (kompakt, wenn das Browserfenster niedriger als 800 Pixel ist)"}
@@ -175,7 +177,20 @@ def get_dblclick(ctrl) -> bool:
     value = ctrl.getConfigData(DBLCLICK_KEY)
     if value is None or str(value).strip() == "":  # v1.22: noch nie eingestellt: an
         return True  # v1.22
-    return value is True or str(value).strip().lower() in ("1", "true", "ja", "yes", "on")
+    on = value is True or str(value).strip().lower() in ("1", "true", "ja", "yes", "on")
+    if not on and str(ctrl.getConfigData(DBLCLICK_MIGRATED_KEY)).strip().lower() not in ("1", "true"):  # v1.23: der Wert 'aus' stammt aus der Zeit, in der der Schalter standardmaessig aus war: einmal auf 'an' setzen
+        try:  # v1.23
+            ctrl.setConfigData(DBLCLICK_KEY, True)  # v1.23
+            ctrl.setConfigData(DBLCLICK_MIGRATED_KEY, True)  # v1.23
+        except Exception:  # noqa: BLE001  # v1.23
+            return False  # v1.23
+        return True  # v1.23
+    if on and str(ctrl.getConfigData(DBLCLICK_MIGRATED_KEY)).strip().lower() not in ("1", "true"):  # v1.23: Merker setzen, damit eine spaetere Wahl 'aus' bleibt
+        try:  # v1.23
+            ctrl.setConfigData(DBLCLICK_MIGRATED_KEY, True)  # v1.23
+        except Exception:  # noqa: BLE001  # v1.23
+            pass  # v1.23
+    return on
 
 
 def apply_js(mode: str) -> str:
