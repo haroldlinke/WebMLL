@@ -5,6 +5,17 @@ Stand: Version 5.60
 
 Gilt ab Version 1.39. Neueste Version oben.
 
+
+## M08 auf Basis 5.60 (2026-11-27)
+
+Neue Funktionen:
+- Gemeinsamer Uploadweg auf das aktuelle Original 5.60 aktualisiert.
+
+Korrekturen:
+- Wiederverwendung einer bestehenden EFFECT-Verbindung und aktuelle Geräte-/Abbruchbehandlung bleiben erhalten.
+- Abbruch/Timeout werden nicht als Erfolg behandelt.
+
+
 ## Version 5.60 (2026-11-27), Pull Request 83 (Jueff)
 
 Korrekturen:
