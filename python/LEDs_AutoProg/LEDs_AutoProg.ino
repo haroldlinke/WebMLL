@@ -1,5 +1,6 @@
-// Datei-Version: Identify 1.03 (2026-11-23, Jürgen Winkler): Empfang ueber MllAdminReceive() (MLLAdminCommunication.h, alle Zeilen mit '~'), MllIdentUpdate() nach Set_Mainboard_LEDs(),
+// Datei-Version: Identify 1.04 (2026-11-27, Jürgen Winkler): Empfang ueber MllAdminReceive() (MLLAdminCommunication.h, alle Zeilen mit '~'), MllIdentUpdate() nach Set_Mainboard_LEDs(),
 //                ESP32: Kommentare zu LED1_PIN..LED3_PIN (Status LEDs = erstes Pixel von LED Kanal 7). Zeilen mit '// v1.03'.
+//                ESP32: Mainboard_LED1..3 (Makro) schalten die Status LEDs ueber MllStatusLedSet() wie das Identify Blinken, keine Pins. Zeilen mit '// v1.04'.
 // Datei-Version: WLAN-Konfiguration 1.02 (2026-11-22): vorhandenes MLLCFG-Protokoll auf USB und WLAN.
 /*
  MobaLedLib: LED library for model railways
@@ -1840,13 +1841,19 @@ void setup(){
 	FastPin<LED0_PIN>::setOutput();
   #endif
   #if defined(Mainboard_LED1) || defined(Mainboard_LED_D3)
-	FastPin<LED1_PIN>::setOutput();
+	#if !defined(ESP32)  // v1.04: ESP32 mainboard LEDs are status LEDs on LED channel 7 (MLLIdentify.h), no pins
+		FastPin<LED1_PIN>::setOutput();
+#endif
   #endif
   #if defined(Mainboard_LED2) || defined(Mainboard_LED_D4)
+    #if !defined(ESP32)  // v1.04: see LED1
     FastPin<LED2_PIN>::setOutput();
+    #endif
   #endif
   #if defined(Mainboard_LED3) || defined(Mainboard_LED_D5)
+    #if !defined(ESP32)  // v1.04: see LED1
     FastPin<LED3_PIN>::setOutput();
+    #endif
   #endif
   #if defined(Mainboard_LED4) || defined(Mainboard_LED_A3) // Could also be used with the CAN heart beat LED because the LED is overwritten
     FastPin<LED4_PIN>::setOutput();
@@ -1990,21 +1997,21 @@ void setup(){
     commInterface = interf;
     interf->setup(LNET_RX_PIN, LNET_TX_PIN, LNET_STATUS_PIN, stream, 1);
   #endif
-  #if !defined(Mainboard_LED1)																				  // 12.11.20: Juergen initialize Mainboard LEDs
+  #if !defined(Mainboard_LED1) && !defined(ESP32)  // v1.04: ESP32 LED1..3 are status LEDs, no pins																				  // 12.11.20: Juergen initialize Mainboard LEDs
 	#if defined(USE_NEW_LED_ARRAY)																			  // if mainboard led isn't configured at all just clear the output
 		FastPin<LED1_PIN>::setInput();
 	#else
 		pinMode(LED1_PIN, INPUT);
     #endif
   #endif
-  #if !defined(Mainboard_LED2)
+  #if !defined(Mainboard_LED2) && !defined(ESP32)
 	#if defined(USE_NEW_LED_ARRAY)
 		FastPin<LED2_PIN>::setInput();
 	#else
 		pinMode(LED2_PIN, INPUT);
     #endif
   #endif
-  #if !defined(Mainboard_LED3)
+  #if !defined(Mainboard_LED3) && !defined(ESP32)
 	#if defined(USE_NEW_LED_ARRAY)
 		FastPin<LED3_PIN>::setInput();
 	#else
@@ -2092,13 +2099,25 @@ void Set_Mainboard_LEDs()
 	FAST_SET_MAINBOARDLED(0);
   #endif
   #if defined(Mainboard_LED1)
-	FAST_SET_MAINBOARDLED(1);
+	#if defined(MLL_ESP32_STATUS_LEDS)  // v1.04: ESP32 status LED 1 (gelb) = leds[First].r, same routine as the identify blinking (MLLIdentify.h)
+		MllStatusLedSet(0, MobaLedLib.Get_Input(Mainboard_LED1) != 0);
+#elif !defined(ESP32)
+		FAST_SET_MAINBOARDLED(1);
+#endif
   #endif
   #if defined(Mainboard_LED2)
-	FAST_SET_MAINBOARDLED(2);
+	#if defined(MLL_ESP32_STATUS_LEDS)  // v1.04: LED 2 (weiss) = leds[First].g
+		MllStatusLedSet(1, MobaLedLib.Get_Input(Mainboard_LED2) != 0);
+#elif !defined(ESP32)
+		FAST_SET_MAINBOARDLED(2);
+#endif
   #endif
   #if defined(Mainboard_LED3)
-	FAST_SET_MAINBOARDLED(3);
+	#if defined(MLL_ESP32_STATUS_LEDS)  // v1.04: LED 3 (blau) = leds[First].b
+		MllStatusLedSet(2, MobaLedLib.Get_Input(Mainboard_LED3) != 0);
+#elif !defined(ESP32)
+		FAST_SET_MAINBOARDLED(3);
+#endif
   #endif
   #if defined(Mainboard_LED4)
     FAST_SET_MAINBOARDLED(4);
