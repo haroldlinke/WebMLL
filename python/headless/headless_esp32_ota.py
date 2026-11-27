@@ -1,12 +1,13 @@
-# Datei-Version: 1.14 (2026-11-24) - headless_esp32_ota.py
+# Datei-Version: 1.15 (2026-11-27) - headless_esp32_ota.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_esp32_ota.py
 # Path:           headless/headless_esp32_ota.py
-# Version:        1.14
-# Last Update:    2026-11-24
-# Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37)
+# Version:        1.15
+# Last Update:    2026-11-27
+# Author:         Harold Linke (Beitrag des Fork-Entwicklers, uebernommen in 3.37), Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.15  2026-11-27  run_streaming liest blockweise (read1, UTF-8) statt zeilenweise: Fortschrittsanzeigen mit CR kommen sofort und bleiben als Text erhalten (das Log-Fenster wertet sie aus, _web/web_ansi.py). Zeilen mit '# v1.15'
 #   1.14  2026-11-24  erase_filesystem: Dateisystem-Partition (LittleFS) des ESP32 nach vollstaendigem USB-Upload loeschen (Absturzschleife 'lfs_fs_grow_ assert failed', wenn dort ein altes Dateisystem anderer Groesse liegt); esptool-Suche als _esptool_tools
 #   1.13 2026-11-23 ESP32-Firmware aus dem von PlatformIO berechneten Build-Verzeichnis lesen, auch externe Pfade.
 #   1.12  2026-11-23  Statische IP oder DHCP fuer den ESP32: Einstellungen ip_mode/ip/gateway/mask/dns1/dns2 (validate_network, network_of), Defines MLL_WIFI_STATIC_IP im Sketch
@@ -24,6 +25,7 @@
 #   1.08  2026-11-14  WLAN-Einstellungen je Blatt (sheet_provider, Blatt-Attribut esp32_wlan), Passwoerter lokal je Geraet (Hostname), alte Einstellungen als Vorgabe
 # ----------------------------------------------------------------------------------------------
 """Upload a compiled ESP32 application using the installed Arduino core."""
+import codecs  # v1.15
 import datetime
 import logging
 import os
@@ -73,7 +75,7 @@ def run_streaming(command, report, timeout, secrets=()):  # v1.10
     Rueckgabe: Rueckgabewert des Programms. Bei Abbruch ValueError, bei Zeitueberschreitung ebenfalls."""
     _current["cancelled"] = False
     secrets = [s for s in secrets if s]
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", bufsize=1)
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)  # v1.15: Bytes, blockweise gelesen
     _current["proc"] = proc
     timed_out = []
 
@@ -83,13 +85,35 @@ def run_streaming(command, report, timeout, secrets=()):  # v1.10
     timer = Timer(timeout, on_timeout)
     timer.daemon = True
     timer.start()
+
+    # proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", bufsize=1)  # v1.15 (entfallen)
+    # for line in proc.stdout:  # v1.15 (entfallen): zeilenweise
+    #     line = line.rstrip("\r\n")
+    #     for secret in secrets:
+    #         line = line.replace(secret, "********")
+    #     if line.strip():
+    #         report(line)
+
+    def emit(part):  # v1.15: Teil der Ausgabe (bis zum letzten Zeilenende oder Ruecklauf) mit maskierten Geheimnissen weitergeben
+        for secret in secrets:
+            part = part.replace(secret, "********")
+        if part.strip():
+            report(part)
+    decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")  # v1.15
+    pending = ""  # v1.15: Rest nach dem letzten Zeilenende/Ruecklauf (wird im naechsten Block fortgesetzt)
     try:
-        for line in proc.stdout:
-            line = line.rstrip("\r\n")
-            for secret in secrets:
-                line = line.replace(secret, "********")
-            if line.strip():
-                report(line)
+        while True:  # v1.15: read1 liefert, was schon da ist; Fortschrittsanzeigen (CR ohne LF) kommen sofort
+            chunk = proc.stdout.read1(4096)
+            if not chunk:
+                break
+            pending += decoder.decode(chunk)
+            cut = max(pending.rfind("\n"), pending.rfind("\r"))
+            if cut >= 0:
+                part, pending = pending[:cut + 1], pending[cut + 1:]
+                emit(part)
+        pending += decoder.decode(b"", final=True)
+        if pending:
+            emit(pending)
         proc.wait()
     finally:
         timer.cancel()

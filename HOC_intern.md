@@ -1,5 +1,5 @@
-Datei-Version: 1.140 (2026-11-27) - HOC_intern.md
-Stand: Version 5.60
+Datei-Version: 1.141 (2026-11-27) - HOC_intern.md
+Stand: Version 5.61
 
 # webMobaLedLib: History of Change (intern, ausführlich)
 
@@ -8,6 +8,42 @@ Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Dat
 Pfade beziehen sich auf den Ordner `python`.
 
 ---
+
+## 5.61 (2026-11-27), Log-Fenster: Farben und Cursor bei PlatformIO
+
+**Ursache:** Das Fenster „Kompilieren und Hochladen“ bekam die Ausgabe der Befehle zeilenweise als reinen Text (`ui.log`). PlatformIO erkennt über die Pipe kein Terminal und schreibt deshalb weder Farben noch Fortschrittsanzeigen mit Zeilenrücklauf (CR). Mit `PLATFORMIO_FORCE_ANSI=true` schreibt es beides auch durch die Pipe. Geprüft: `pio run` ohne Projekt gibt ohne die Variable keine Steuerfolge aus, mit ihr `ESC[31m … ESC[0m` (rote Fehlermeldung).
+
+**Umsetzung:**
+- `_web/web_ansi.py` (neu): kleiner Terminal-Emulator `AnsiScreen`. Farben (16, 256, RGB, fett), CR, LF, Tab, Rückschritt, Cursor A/B/C/D/G, Löschen K/J. Andere Steuerfolgen werden ignoriert. Ausgabe als HTML mit escapten Texten und festen Farbwerten.
+- `_web/web_log.py`: Die Ausgabe läuft durch `AnsiScreen`. Das Fenster zeigt HTML-Zeilen in einer Spalte statt `ui.log`; nur der geänderte Teil wird neu aufgebaut, damit eine Fortschrittszeile an Ort und Stelle ersetzt wird. Das Protokoll (`webmobaledlib.log`) bekommt je fertiger Zeile Klartext ohne Steuerzeichen. Die Ausblendung der JmDNS-Meldungen bleibt erhalten.
+- `mlpyproggen/Prog_Generator.py`: `_pio_env()` setzt `PLATFORMIO_FORCE_ANSI=true` (eine eigene Einstellung bleibt). Die Ausgabe wird blockweise gelesen (`read1`, UTF-8) statt zeilenweise. Die Erkennung von `UnknownPackageError` prüft den zusammengefügten Text.
+- `headless/headless_esp32_ota.py`: `run_streaming` liest blockweise; Geheimnisse werden weiterhin maskiert.
+
+**Geänderte Dateien (Ordner `python`, außer den HOC-Dateien im Wurzelordner):**
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_ansi.py` | 1.00 | Neu: Terminal-Emulator (Farben, CR, Cursor, Löschen) |
+| `_web/web_log.py` | 1.16 | Fenster zeigt HTML-Zeilen, Ausgabe über `AnsiScreen`, Protokoll als Klartext |
+| `mlpyproggen/Prog_Generator.py` | 1.11 | `_pio_env` (PLATFORMIO_FORCE_ANSI), blockweises Lesen, UnknownPackageError im zusammengefügten Text |
+| `headless/headless_esp32_ota.py` | 1.15 | `run_streaming` liest blockweise |
+| `test_ansi_screen.py` | 1.00 | Neu: 20 Tests für den Emulator |
+| `webmobaledlib.py` | 5.61 | VERSION, Historie, REQUIRED_FILES (vier Dateien mit neuer Version) |
+| `install/BETATEST_Checkliste.md` | 4.37 | Punkt 434 |
+| `install/ANLEITUNG_Installation.md` | 5.61 | Absatz zum Fenster Kompilieren und Hochladen |
+| `HOC_intern.md`, `HOC_Anwender.md` | 1.141, 1.146 | Einträge zu 5.61 |
+
+**Tests:**
+- `test_ansi_screen.py`: 20 Tests, alle bestanden.
+- `python -m py_compile` für alle geänderten Python-Dateien: in Ordnung.
+- Echte PlatformIO-Ausgabe über eine Pipe: mit Variable zwei Steuerfolgen (ESC), ohne keine. Der Emulator stellt die Fehlermeldung als rote Zeile dar.
+- `WebLog(None)` ohne Oberfläche: Farben, Ersatz per CR, Ausblenden der JmDNS-Zeile, Fehlerklasse.
+
+**Nicht geprüft:**
+- Anzeige im Browser: `ui.column`, `ui.html`, Rollen, Knöpfe Schließen und Vorgang abbrechen, Neuladen der Seite (keine Browser-Umgebung).
+- Fortschrittsanzeigen mit CR von PlatformIO (dafür wäre ein Paket-Download nötig gewesen).
+- Start des Backends (`start_backend()`) nicht ausgeführt; geprüft wurde nur der Import von `_web.web_log`.
+- ESP32-Upload über `run_streaming` (kein Board), Linux, macOS, Raspberry Pi, Windows-Oberfläche.
 
 ## 2.12 (2026-10-23) - Release-Stand
 

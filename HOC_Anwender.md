@@ -1,9 +1,15 @@
-Datei-Version: 1.145 (2026-11-27) - HOC_Anwender.md
-Stand: Version 5.60
+Datei-Version: 1.146 (2026-11-27) - HOC_Anwender.md
+Stand: Version 5.61
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Version 5.61 (2026-11-27)
+
+Neue Funktionen:
+- Im Fenster **Kompilieren und Hochladen** erscheinen die Meldungen von PlatformIO jetzt mit Farben, zum Beispiel Fehler in Rot.
+- Fortschrittsanzeigen (zum Beispiel beim Laden der Pakete) werden an derselben Stelle aktualisiert und nicht untereinander geschrieben.
 
 ## Version 5.60 (2026-11-27), Pull Request 83 (Jueff)
 

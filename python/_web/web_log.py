@@ -1,12 +1,13 @@
-# Datei-Version: 1.15 (2026-11-26) - web_log.py
+# Datei-Version: 1.16 (2026-11-27) - web_log.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_log.py
 # Path:           _web/web_log.py
-# Version:        1.15
-# Last Update:    2026-11-26
-# Author:         Harold Linke
+# Version:        1.16
+# Last Update:    2026-11-27
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.16  2026-11-27  Farben und Cursor im Log-Fenster: die Ausgabe von PlatformIO (mit PLATFORMIO_FORCE_ANSI) wird im Terminal-Emulator web_ansi ausgewertet (Farben innerhalb einer Zeile, Fortschrittsanzeigen mit CR werden an Ort und Stelle ersetzt). Die Zeilen werden als HTML gezeigt, nicht mehr mit ui.log; das Protokoll erhaelt Klartext. Zeilen mit '# v1.16'
 #   1.15  2026-11-26  Beim Verschieben des Fensters hakte es, wenn gleichzeitig Meldungen kamen: die Zeilen werden gesammelt und alle 0,1 s auf einmal angezeigt; waehrend des Ziehens (Ereignis mll_log_drag) werden sie zurueckgehalten und nach dem Loslassen angezeigt; das Ziehen selbst ist leichter (ein Schritt je Bild, keine Layout-Abfrage je Mausbewegung, Zeiger-Ereignisse am Fenster). Test: test_log_drag.py. Zeilen mit '# v1.15'
 #   1.14  2026-11-26  (Fassung mit Wiederholung, bis der Browser das Fenster aufgebaut hat) Das Fenster Kompilieren und Hochladen schwebt und laesst sich an der Titelzeile verschieben (die Seite dahinter bleibt bedienbar); die Position bleibt beim erneuten Oeffnen erhalten, Doppelklick auf die Titelzeile setzt sie zurueck. Zeilen mit '# v1.14'
 #   1.13  2026-11-25  Issue 60 (Rueckmeldung zu 5.12): Knoepfe Vorgang abbrechen und Schliessen flackerten weiter beim Setup uebertragen: Zaehler der ruhigen Abfragen wird bei neuem Lauf und show() zurueckgesetzt; solange in den letzten 3 s Ausgabe kam, gilt der Vorgang als laufend
@@ -33,9 +34,11 @@ from __future__ import annotations
 import logging
 import os
 import re  # v1.06
+import threading  # v1.16
 import time  # v1.13
 
 from _web import web_dialogs as wd
+from _web.web_ansi import AnsiScreen  # v1.16: Terminal-Emulator (Farben, CR, Cursor)
 try:  # v1.05
     from _web.web_i18n import tr  # v1.05
 except ImportError:                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch  # v1.05
@@ -120,7 +123,14 @@ _DRAG_JS = """
 class WebLog:
     def __init__(self, controller):
         self.ctrl = controller
-        self.lines: list[tuple[str, str]] = []        # (Text, Klassen) fuer spaeteres Oeffnen
+        # self.lines: list[tuple[str, str]] = []        # (Text, Klassen) fuer spaeteres Oeffnen  # v1.16 (entfallen)
+        # self._pending = []  # v1.15 (entfallen, v1.16)
+        self._screen = AnsiScreen(max_rows=3000, on_line_end=self._on_line_end)  # v1.16: Inhalt des Fensters (Terminal-Emulator)
+        self._lock = threading.Lock()  # v1.16: der Worker-Thread schreibt, der Ereignis-Thread zeigt an
+        self._view = []  # v1.16: HTML der Zeilen, die im Browser stehen
+        self._elems = []  # v1.16: die dazu gehoerenden Elemente
+        self._client = None  # v1.16: Browser-Sitzung des Fensters (zum Rollen)
+        self._noise_count = 0  # v1.06
         self._log = None
         self._dialog = None
         self._loop = None
@@ -134,14 +144,15 @@ class WebLog:
         self._btn_cancel = None  # v1.08
         self._btn_close = None  # v1.08
         self.run_id = 0  # v1.09: wird mit jedem neuen Lauf (delete_text_from_textwindow) hochgezaehlt
-        self._pending = []  # v1.15: Zeilen, die noch nicht im Fenster stehen (nur im Ereignis-Thread benutzt)
         self._flush_scheduled = False  # v1.15
         self._dragging = False  # v1.15: der Anwender verschiebt gerade das Fenster
         self._drag_since = 0.0  # v1.15
 
     # ------------------------------------------------------------------ Schnittstelle der Tk-Seite
     def delete_text_from_textwindow(self):
-        self.lines.clear()
+        # self.lines.clear()  # v1.16 (entfallen)
+        with self._lock:  # v1.16
+            self._screen.clear()  # v1.16: neuer Lauf, leerer Inhalt
         self._noise_count = 0  # v1.06
         arduino_log.info("----- %s: neuer Lauf -----", self.title)
         self._running = True  # v1.08: neuer Lauf
@@ -150,8 +161,9 @@ class WebLog:
         self.run_id += 1  # v1.09
         self._on_loop(self._apply_running)  # v1.08
         self._on_loop(self._cancel_close)
-        self._on_loop(self._pending.clear)  # v1.15
-        self._on_loop(lambda: self._log.clear() if self._log is not None else None)
+        self._on_loop(self._request_flush)  # v1.16: die Anzeige leert sich beim naechsten Abgleich
+        # self._on_loop(self._pending.clear)  # v1.15 (entfallen, v1.16)
+        # self._on_loop(lambda: self._log.clear() if self._log is not None else None)  # v1.16 (entfallen)
 
     def add_text_to_textwindow(self, text="", nl="", highlight=None):
         classes = HIGHLIGHT_CLASSES.get(highlight, "")
@@ -162,20 +174,23 @@ class WebLog:
         txt = str(text) + str(nl)
         if txt == "":
             return
-        if txt.endswith("\n"):                 # ein abschliessender Zeilenumbruch erzeugt keine Leerzeile
-            txt = txt[:-1]
-        for line in txt.split("\n"):
-            if is_ide_network_noise(line):                          # v1.06: Netzwerkmeldungen der IDE nicht anzeigen
-                self._noise_count = getattr(self, "_noise_count", 0) + 1  # v1.06
-                if self._noise_count == 1:  # v1.06
-                    arduino_log.info("Meldungen der ARDUINO IDE zum Netzwerk (JmDNS) werden nicht angezeigt und nicht protokolliert")  # v1.06
-                continue  # v1.06
-            self.lines.append((line, classes))
-            self._last_activity = time.monotonic()  # v1.13: Ausgabe im Gang = Vorgang laeuft
-            if line.strip():
-                arduino_log.log(logging.WARNING if highlight == "Error" else logging.INFO, "%s", line)
-            # self._on_loop(lambda l=line, c=classes: self._push(l, c))  # v1.15 (entfallen: eine Aenderung je Zeile belastete den Browser)
-            self._on_loop(lambda l=line, c=classes: self._enqueue(l, c))  # v1.15
+        self._last_activity = time.monotonic()  # v1.13: Ausgabe im Gang = Vorgang laeuft
+        # if txt.endswith("\n"):                 # ein abschliessender Zeilenumbruch erzeugt keine Leerzeile  # v1.16 (entfallen)
+        #     txt = txt[:-1]
+        # for line in txt.split("\n"):  # v1.16 (entfallen): Zeile fuer Zeile, Netzwerkmeldungen (v1.06), Protokoll, _enqueue (v1.15)
+        #     if is_ide_network_noise(line):
+        #         self._noise_count = getattr(self, "_noise_count", 0) + 1
+        #         continue
+        #     self.lines.append((line, classes))
+        #     self._last_activity = time.monotonic()
+        #     if line.strip():
+        #         arduino_log.log(logging.WARNING if highlight == "Error" else logging.INFO, "%s", line)
+        #     self._on_loop(lambda l=line, c=classes: self._enqueue(l, c))
+        # v1.16: der Text geht durch den Terminal-Emulator: Farben, CR (Fortschritt ueberschreibt die Zeile), Cursor und Loeschen.
+        # Zeilen, die mit LF enden, werden in _on_line_end protokolliert bzw. ausgeblendet (Netzwerkmeldungen der IDE).
+        with self._lock:
+            self._screen.write(txt, classes)
+        self._on_loop(self._request_flush)  # v1.16
 
     def update(self):
         pass
@@ -218,11 +233,18 @@ class WebLog:
                         # ui.button("Schließen", on_click=self._dialog.close).props("flat dense")  # v1.08 (entfallen)
                         self._btn_cancel = ui.button("Vorgang abbrechen", on_click=self._terminate).props("color=negative outline dense")  # v1.08
                         self._btn_close = ui.button("Schließen", on_click=self._dialog.close).props("flat dense")  # v1.08
-                    self._log = ui.log(max_lines=3000).classes("w-full mll-log").style(
-                        "height: 36vh; min-height: 8rem; max-height: calc(100vh - 16rem); font-family: monospace; font-size: 12px; white-space: pre")
-                for line, classes in self.lines:
-                    self._log.push(line, classes=classes or None)
-                self._pending.clear()  # v1.15: alles Bisherige steht jetzt im Fenster
+                    # self._log = ui.log(max_lines=3000).classes("w-full mll-log").style(  # v1.16 (entfallen)
+                    #     "height: 36vh; min-height: 8rem; max-height: calc(100vh - 16rem); font-family: monospace; font-size: 12px; white-space: pre")
+                    # for line, classes in self.lines:  # v1.16 (entfallen)
+                    #     self._log.push(line, classes=classes or None)
+                    # self._pending.clear()  # v1.15 (entfallen, v1.16)
+                    # v1.16: statt ui.log eine Spalte mit HTML-Zeilen (Farben innerhalb einer Zeile); Rollen ueber _scroll_down
+                    self._log = ui.column().classes("w-full mll-log").style(
+                        "height: 36vh; min-height: 8rem; max-height: calc(100vh - 16rem); overflow-y: auto; gap: 0; font-family: monospace; font-size: 12px; white-space: pre")
+                self._view = []  # v1.16: das Fenster ist neu (oder wieder geoeffnet): alle Zeilen werden gezeigt
+                self._elems = []  # v1.16
+                self._client = client  # v1.16
+                self._sync_view()  # v1.16
         self._apply_running()  # v1.08
         self._cancel_close()
         self._dialog.open()
@@ -327,9 +349,13 @@ class WebLog:
             if self._dialog is None or not self._dialog.value:        # nicht vorhanden oder schon geschlossen
                 return
             if note is not None:
-                if not self.lines or self.lines[-1][0] != note:
-                    self.lines.append((note, "text-grey-7"))
-                    self._push(note, "text-grey-7")
+                # if not self.lines or self.lines[-1][0] != note:  # v1.16 (entfallen)
+                #     self.lines.append((note, "text-grey-7"))
+                #     self._push(note, "text-grey-7")
+                with self._lock:  # v1.16
+                    if self._screen.last_text() != note:
+                        self._screen.write(note + "\n", "text-grey-7")
+                self._request_flush()  # v1.16
                 self._close_note = note
             else:
                 self._close_note = None
@@ -354,25 +380,85 @@ class WebLog:
     FLUSH_INTERVAL = 0.1  # v1.15: Sekunden zwischen zwei Aktualisierungen des Fensters
     DRAG_HOLD_MAX = 8.0  # v1.15: laenger werden Meldungen beim Ziehen nicht zurueckgehalten (falls das Loslassen nie ankommt)
 
-    def _enqueue(self, line, classes):  # v1.15: im Ereignis-Thread
-        self._pending.append((line, classes))
-        if not self._flush_scheduled:
-            self._flush_scheduled = True
-            loop = self._loop or wd._bridge.get("loop")
-            if loop is None:
-                self._flush_scheduled = False
-                return
-            loop.call_later(self.FLUSH_INTERVAL, self._flush)
+    # def _enqueue(self, line, classes):  # v1.15 (entfallen, v1.16): im Ereignis-Thread
+    #     self._pending.append((line, classes))
+    #     if not self._flush_scheduled:
+    #         self._flush_scheduled = True
+    #         loop = self._loop or wd._bridge.get("loop")
+    #         if loop is None:
+    #             self._flush_scheduled = False
+    #             return
+    #         loop.call_later(self.FLUSH_INTERVAL, self._flush)
+    #
+    # def _flush(self):  # v1.15: alle gesammelten Zeilen auf einmal anzeigen (entfallen, v1.16 ersetzt durch _sync_view)
+    #     pending, self._pending = self._pending, []
+    #     for line, classes in pending:
+    #         self._push(line, classes)
 
-    def _flush(self):  # v1.15: alle gesammelten Zeilen auf einmal anzeigen, nicht waehrend das Fenster gezogen wird
+    def _request_flush(self):  # v1.16: im Ereignis-Thread; die Anzeige wird in FLUSH_INTERVAL aktualisiert (Aenderungen gesammelt)
+        if self._flush_scheduled:
+            return
+        self._flush_scheduled = True
+        loop = self._loop or wd._bridge.get("loop")
+        if loop is None:
+            self._flush_scheduled = False
+            return
+        loop.call_later(self.FLUSH_INTERVAL, self._flush)
+
+    def _flush(self):  # v1.15: Anzeige aktualisieren, nicht waehrend das Fenster gezogen wird
         self._flush_scheduled = False
         if self._dragging:
             if time.monotonic() - self._drag_since < self.DRAG_HOLD_MAX:
                 return                                  # nach dem Loslassen (_on_drag) wird nachgeholt
             self._dragging = False
-        pending, self._pending = self._pending, []
-        for line, classes in pending:
-            self._push(line, classes)
+        self._sync_view()
+
+    def _sync_view(self):  # v1.16: Zeilen im Browser an den Inhalt des Terminal-Emulators angleichen; nur der geaenderte Teil wird neu aufgebaut
+        if self._log is None:
+            return
+        from nicegui import ui
+        with self._lock:
+            rows = self._screen.html_rows()
+        n = 0
+        limit = min(len(rows), len(self._view))
+        while n < limit and self._view[n] == rows[n]:
+            n += 1
+        if n == len(rows) == len(self._view):
+            return
+        try:
+            for elem in self._elems[n:]:
+                elem.delete()
+            del self._elems[n:]
+            del self._view[n:]
+            with self._log:
+                for html_row in rows[n:]:
+                    self._elems.append(ui.html(html_row, sanitize=False))  # die Zeilen sind nur feste Farben und escapte Texte (web_ansi)
+                    self._view.append(html_row)
+            self._scroll_down()
+        except RuntimeError:                               # v1.07: Browserseite wurde geschlossen/neu geladen
+            self._log = None
+            self._elems = []
+            self._view = []
+
+    def _scroll_down(self):  # v1.16: wie ui.log: die neuesten Zeilen bleiben sichtbar
+        if self._client is None or self._log is None:
+            return
+        js = ("(function(id){ const e = document.getElementById('ng-' + id) || document.getElementById('c' + id);"
+              " if (e) e.scrollTop = e.scrollHeight; })(%d);" % self._log.id)
+        try:
+            self._client.run_javascript(js)
+        except Exception:  # noqa: BLE001
+            logger.debug("Log-Fenster: Rollen nicht moeglich", exc_info=True)
+
+    def _on_line_end(self, text, is_error):  # v1.16: eine Zeile ist fertig (Worker-Thread, unter der Sperre). True: Zeile nicht zeigen
+        if is_ide_network_noise(text):  # v1.06: Netzwerkmeldungen der IDE nicht anzeigen und nicht protokollieren
+            self._noise_count = getattr(self, "_noise_count", 0) + 1
+            if self._noise_count == 1:
+                arduino_log.info("Meldungen der ARDUINO IDE zum Netzwerk (JmDNS) werden nicht angezeigt und nicht protokolliert")
+            return True
+        if text.strip():
+            arduino_log.log(logging.WARNING if is_error else logging.INFO, "%s", text.rstrip())
+        return False
 
     def _on_drag(self, e):  # v1.15: Ereignis mll_log_drag des Browsers: Ziehen beginnt (on) oder endet
         try:
@@ -384,12 +470,12 @@ class WebLog:
         if not on:
             self._flush()
 
-    def _push(self, line, classes):
-        if self._log is not None:
-            try:  # v1.07
-                self._log.push(line, classes=classes or None)
-            except RuntimeError:                           # v1.07: Browserseite wurde geschlossen/neu geladen ("client has been deleted")
-                self._log = None  # v1.07
+    # def _push(self, line, classes):  # v1.15 (entfallen, v1.16)
+    #     if self._log is not None:
+    #         try:  # v1.07
+    #             self._log.push(line, classes=classes or None)
+    #         except RuntimeError:
+    #             self._log = None  # v1.07
 
     def _on_loop(self, fn):
         loop = self._loop or wd._bridge.get("loop")

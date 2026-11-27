@@ -1,8 +1,8 @@
-# Datei-Version: 5.60 (2026-11-27) - webmobaledlib.py
+# Datei-Version: 5.61 (2026-11-27) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        5.60
+# Version:        5.61
 # Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
@@ -80,6 +80,7 @@
 #   5.57  2026-11-27  Makro-Dialog: Feld LM-Ausgang breiter (Beschriftung nicht mehr abgeschnitten) und mit Tooltip 'Nummer des Lichtmaschinen Ausgangs' (web_form_other 1.20, Web_Languages.csv)
 #   5.58  2026-11-27  Servo- und LED-Farb-Animations-Dialog: Feld Anschluss-Kanal heisst LM-Ausgang mit Tooltip; Parameterformular: LED Kanal Auswahl heisst LED RGB-Anschluss Auswahl; Wiki Begriffe: LM-Ausgang, LED RGB-Anschluss (web_form_servoanim 1.07, web_form_ledcoloranim 1.02, web_form_other 1.21, Web_Languages.csv)
 #   5.59  2026-11-27  Pull Request 82 (Jueff, dort V5.51 bis V5.69): Serieller Monitor (Verbindungsknopf, EFFECT oder DIRECT Mode, Verbindungsverlust mit automatischem Neuverbinden, Verlassen des Monitors stellt die Verbindung auf das Blatt um), Setup uebertragen mit schnellem Upload ueber die offene Verbindung, Plattformen und Protokolle (csv/Lichtmaschinen_prop.json: devices, platforms, protocols), LNet-Lizenz je Blatt, Selectrix-Pruefung, Firmware-Auswahl nach Plattform, ESP32: keine Mainboard_LED-Defines in der Kopfdatei, Doppelklick-Schalter, Sync_Toggle_Buttons_by_Address. Zeilen im Code behalten die Marker # v5.51 bis # v5.69 des PR; die Dateien web_params (Stand 5.51) und web_tabs sind zusammengefuehrt
+#   5.61  2026-11-27  Farben und Cursor im Log-Fenster (Kompilieren und Hochladen): PlatformIO schreibt mit PLATFORMIO_FORCE_ANSI Farben und Fortschrittsanzeigen, das Fenster wertet sie aus (web_ansi 1.00, web_log 1.16, Prog_Generator 1.11, headless_esp32_ota 1.15; REQUIRED_FILES ergaenzt). Nicht am Board und nicht im Browser getestet
 #   5.60  2026-11-27  Pull Request 83 (Jueff, dort Identify 1.04): ESP32: das Makro Mainboard_LED(n, InCh) schaltet die drei Status LEDs der Hauptplatine ueber MllStatusLedSet() (wie das Identify Blinken); keine Pins mehr (LEDs_AutoProg.ino, Zeilen mit '// v1.04'; nicht kompiliert, nicht am Board getestet)
 #   5.38  2026-11-26  Ohne Lichtmaschine kam die Meldung 'Fehler beim Oeffnen der Verbindung' bei jedem Wechsel auf einen Reiter mit Direktmodus (Farb Test, Servo Test, Sound Test): das automatische Verbinden beim Reiterwechsel scheitert jetzt nur einmal mit Meldung, danach wird nicht mehr versucht, bis eine Verbindung besteht oder der Anwender selbst verbindet (Menue, Testtasten)
 #   5.37  2026-11-26  Farb Test: Knopf 'Farb Test beenden' unten rechts (web_colorcheck 1.13); Set_ColTab oeffnet den Farb Test auch ohne Lichtmaschine, kein Anschluss noetig (M60_CheckColors 1.01); Parameterformular: Flags (OptCtrPar, CtrMode, RandMode) als aufklappbare Hakenliste (web_form_other 1.17, Web_Languages.csv)
@@ -730,6 +731,7 @@ REQUIRED_FILES = {  # v1.75
     "_web/web_form_other.py": "1.20",  # v5.57
     "_web/web_form_servoanim.py": "1.07", "_web/web_form_ledcoloranim.py": "1.02", "_web/web_form_other.py": "1.21",  # v5.58
     "proggen/M06_Write_Header.py": "1.23", "proggen/M07_COM_Port.py": "1.20", "proggen/M08_ARDUINO.py": "1.40", "proggen/M18_Save_Load.py": "1.08", "proggen/M20_PageEvents_a_Functions.py": "1.20", "headless/headless_protocol_switch.py": "1.01", "_web/web_form_comport.py": "1.51", "_web/web_log.py": "1.15", "_web/web_form_options.py": "1.79", "headless/headless_firmware_dl.py": "1.01", "_web/web_form_firmware_download.py": "1.03", "_web/web_form_firmware.py": "1.06", "_web/web_startpage.py": "1.13", "_web/web_serial.py": "1.31", "_web/web_serial_page.py": "1.07", "proggen/M07_COM_Port_New.py": "1.29", "headless/headless_pico.py": "1.03", "headless/headless_dyn_config.py": "1.08", "proggen/M42_Dyn_Config.py": "1.13", "_web/web_layout.py": "1.23", "proggen/M06_Write_Header_SW.py": "1.16", "_web/web_logging.py": "1.06", "_web/web_tabs.py": "1.41",  # v5.59 (Pull Request 82, Jueff, dort V5.51 bis V5.69)
+    "_web/web_log.py": "1.16", "_web/web_ansi.py": "1.00", "mlpyproggen/Prog_Generator.py": "1.11", "headless/headless_esp32_ota.py": "1.15",  # v5.61
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -1875,7 +1877,8 @@ def font_scales(ctrl) -> dict:
 # VERSION = "5.57 (2026-11-27)"  # v5.58 (entfallen)
 # VERSION = "5.58 (2026-11-27)"  # v5.59 (entfallen)
 # VERSION = "5.59 (2026-11-27)"  # v5.60 (entfallen)
-VERSION = "5.60 (2026-11-27)"  # v5.60
+# VERSION = "5.60 (2026-11-27)"  # v5.61 (entfallen)
+VERSION = "5.61 (2026-11-27)"  # v5.61
 # VERSION = "4.09 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.08 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.07 (2026-11-19)"  # v3.64 (entfallen)
