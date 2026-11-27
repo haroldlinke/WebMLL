@@ -1,12 +1,15 @@
-# Datei-Version: 1.23 (2026-11-27) - M06_Write_Header.py
+# Datei-Version: 1.26 (2026-11-27) - M06_Write_Header.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header.py
 # Path:           proggen/M06_Write_Header.py
-# Version:        1.23
+# Version:        1.26
 # Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.26  2026-11-27  Pico: auch hier keine Mainboard_LED Defines in der Kopfdatei (Firmware): Remove_Mainboard_LED_Defines gilt fuer ESP32 und Pico, Write_Pico_Mainboard_LED_Defines (SI_0) entfaellt. Die Pins kommen aus der Tabelle der Konfigurationsdatei, das Blinken (MLLIdentify.h 1.01) setzt die Pins selbst als Ausgang. Zeilen mit '# v1.26'
+#   1.25  2026-11-27  SPI (USE_SPI_COM) entfernt: die Blatteinstellung USE_SPI_Communication wird nicht mehr gelesen, #define USE_SPI_COM und Check_Switch_Lists_for_SPI_Pins entfallen. Zeilen mit '# v1.25'
+#   1.24  2026-11-27  ESP32/Pico mit Konfigurationsdatei: Pico schreibt MLL_P_MB_PIN1..3 (Pins der Mainboard LEDs 13, 12, 11) fuer die Tabelle der Konfigurationsdatei. Die Mainboard_LED Defines stehen auch beim ESP32 im Zweig CONFIG_ONLY (Tabelle .mllmb, headless_dyn_config 1.09), nur nicht mehr im Preprozessor-Teil der Firmware. Zeilen mit '# v1.24'
 #   1.23  2026-11-27  ESP32: die Zeilen '#undef Mainboard_LEDn' und '#define Mainboard_LEDn ...' (Makro Mainboard_LED) werden nicht in die Kopfdatei geschrieben (Remove_Mainboard_LED_Defines); der ESP32 hat keine Mainboard LEDs an diesen Pins. Zeilen mit '# v1.23'
 #   1.22  2026-11-27  Im Modus MLL_DYNAMIC_CONFIG stehen die Zeilen 'Input channel defines for local inputs and expert users' (INCH_xxx) zwischen //MLLDYN_BEGIN und //MLLDYN_END (wie die Tabelle der externen Adressen), M06_Write_Header_SW 1.16 ebenso TOTAL_SWITCHES_A bis D und TOTAL_VARIABLES. Zeilen mit '# v1.22'
 #   1.21  2026-11-26  Selectrix: Channel 1 bis 99 und Bitposition 1 bis 8 sind erlaubt (Channel 0 und alles andere ist ein Fehler, das Header file wird nicht erzeugt); eine Zeile mit Channel aber ohne Bitposition ist ebenfalls ein Fehler. DCC, LNet, CAN: Adresse 0 ist nicht erlaubt (Fehler wie in M20 1.19), die Sonderbehandlung der Adresse 0 (v1.03) entfaellt. AddressExists: die Liste der Adressen beginnt leer (vorher mit dem Element 0, Erase setzte nur Nullen). Zeilen mit '# v1.21'
@@ -294,28 +297,29 @@ def Add_Status_LED_Macro():  # v1.17
         ConfigTxt = ConfigTxt + M30.AddSpaceToLen(Cmd, 300) + ' */' + vbCrLf  # v1.17
     Status_LED_Offset = Start_LED_Channel(Ch)  # v1.17
 #-------------------------------------------------------  # v1.17
-def Write_Pico_Mainboard_LED_Defines(fp, Config_Txt):  # v1.17
+# def Write_Pico_Mainboard_LED_Defines(fp, Config_Txt):  # v1.17  # v1.26 (entfallen)
 #-------------------------------------------------------  # v1.17
-    """Pico (Konfiguration getrennt, MLL_IDENTIFY): MLLIdentify.h laesst die drei LEDs der Hauptplatine (Pins LED1_PIN..LED3_PIN = 13, 12, 11) blinken
-    und setzt voraus, dass die Pins Ausgaenge sind. Das sind sie nur, wenn Mainboard_LED1..3 definiert ist (setup() in LEDs_AutoProg.ino).
-    Mainboard_LEDn ist die Nummer des Eingangskanals, dessen Zustand die LED zeigt (Set_Mainboard_LEDs), nicht der Pin: fehlende Defines werden
-    deshalb mit SI_0 (immer 0, LED aus) geschrieben. Definiert die Tabelle die LED selbst (Mainboard_LED(1, ...), auch als D3/D4/D5),
-    wird nichts geschrieben: sonst warnt der Compiler 'Mainboard_LED1 redefined'. Zur Sicherheit stehen die Zeilen zusaetzlich in #ifndef."""
-    import re  # v1.17
-    if M02a.Get_BoardTyp() != M02.HT_PICO:  # v1.17
-        return  # v1.17
-    for Nr, Alias in ((1, 'D3'), (2, 'D4'), (3, 'D5')):  # v1.17
-        if re.search(r'^\s*#\s*define\s+Mainboard_LED(' + str(Nr) + '|_' + Alias + r')\b', Config_Txt, re.MULTILINE):  # v1.17
-            continue  # v1.17: in der Tabelle definiert
-        VBFiles.writeText(fp, '#ifndef Mainboard_LED' + str(Nr), '\n')  # v1.17
-        VBFiles.writeText(fp, '#define Mainboard_LED' + str(Nr) + ' SI_0                       // Pico: mainboard LED ' + str(Nr) + ' is an output and off (blinks with ~MLLIDENT, MLLIdentify.h)', '\n')  # v1.17
-        VBFiles.writeText(fp, '#endif', '\n')  # v1.17
+#     """Pico (Konfiguration getrennt, MLL_IDENTIFY): MLLIdentify.h laesst die drei LEDs der Hauptplatine (Pins LED1_PIN..LED3_PIN = 13, 12, 11) blinken  # v1.26 (entfallen)
+#     und setzt voraus, dass die Pins Ausgaenge sind. Das sind sie nur, wenn Mainboard_LED1..3 definiert ist (setup() in LEDs_AutoProg.ino).  # v1.26 (entfallen)
+#     Mainboard_LEDn ist die Nummer des Eingangskanals, dessen Zustand die LED zeigt (Set_Mainboard_LEDs), nicht der Pin: fehlende Defines werden  # v1.26 (entfallen)
+#     deshalb mit SI_0 (immer 0, LED aus) geschrieben. Definiert die Tabelle die LED selbst (Mainboard_LED(1, ...), auch als D3/D4/D5),  # v1.26 (entfallen)
+#     wird nichts geschrieben: sonst warnt der Compiler 'Mainboard_LED1 redefined'. Zur Sicherheit stehen die Zeilen zusaetzlich in #ifndef."""  # v1.26 (entfallen)
+#     import re  # v1.17  # v1.26 (entfallen)
+#     if M02a.Get_BoardTyp() != M02.HT_PICO:  # v1.17  # v1.26 (entfallen)
+#         return  # v1.17  # v1.26 (entfallen)
+#     for Nr, Alias in ((1, 'D3'), (2, 'D4'), (3, 'D5')):  # v1.17  # v1.26 (entfallen)
+#         if re.search(r'^\s*#\s*define\s+Mainboard_LED(' + str(Nr) + '|_' + Alias + r')\b', Config_Txt, re.MULTILINE):  # v1.17  # v1.26 (entfallen)
+#             continue  # v1.17: in der Tabelle definiert  # v1.26 (entfallen)
+#         VBFiles.writeText(fp, '#ifndef Mainboard_LED' + str(Nr), '\n')  # v1.17  # v1.26 (entfallen)
+#         VBFiles.writeText(fp, '#define Mainboard_LED' + str(Nr) + ' SI_0                       // Pico: mainboard LED ' + str(Nr) + ' is an output and off (blinks with ~MLLIDENT, MLLIdentify.h)', '\n')  # v1.17  # v1.26 (entfallen)
+#         VBFiles.writeText(fp, '#endif', '\n')  # v1.17  # v1.26 (entfallen)
 def Remove_Mainboard_LED_Defines(Config_Txt):  # v1.23
 #-------------------------------------------------------  # v1.23
-    """ESP32: die Zeilen '#undef Mainboard_LEDn' und '#define Mainboard_LEDn <Kanal>' aus dem Makro Mainboard_LED() gehoeren nicht in die Kopfdatei (der ESP32 hat keine Mainboard LEDs an diesen Pins,
+    """ESP32 und Pico (Pins und Status LEDs stehen in der Tabelle der Konfigurationsdatei): die Zeilen '#undef Mainboard_LEDn' und '#define Mainboard_LEDn <Kanal>' aus dem Makro Mainboard_LED() gehoeren nicht in die Kopfdatei (der ESP32 hat keine Mainboard LEDs an diesen Pins,
     die Defines verwiesen ausserdem auf Eingangskanaele). Andere Boards: der Text bleibt unveraendert. Die uebrigen Zeilen, auch '#undef LED_HEARTBEAT_PIN', bleiben."""
     import re  # v1.23
-    if M02a.Get_BoardTyp() != M02.HT_ESP32:  # v1.23
+    # if M02a.Get_BoardTyp() != M02.HT_ESP32:  # v1.23  # v1.26 (entfallen)
+    if M02a.Get_BoardTyp() not in (M02.HT_ESP32, M02.HT_PICO):  # v1.26
         return Config_Txt  # v1.23
     return re.sub(r'(?m)^[ \t]*#[ \t]*(?:undef|define)[ \t]+Mainboard_LED\w*\b[^\r\n]*(?:\r?\n|\Z)', '', Config_Txt)  # v1.23
 #-------------------------------------------------------
@@ -1697,6 +1701,9 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
         VBFiles.writeText(fp, '#define MLL_P_CONTROLLER_COUNT ' + str(len(Controllers)), '\n')  # v1.12
         # VBFiles.writeText(fp, '#define MLL_P_CONTROLLER_CONFIG ' + ', '.join(str(Pin) + ',' + str(Off) + ',' + str(Cnt) for _Ch, Pin, Off, Cnt in Controllers) + '   // Pin,LEDOffset,LEDCount per controller', '\n')  # v1.12  # v1.17 (entfallen)
         VBFiles.writeText(fp, '#define MLL_P_CONTROLLER_CONFIG ' + ', '.join(str(Pin) + ',' + str(Ch) + ',' + str(Off) + ',' + str(Cnt) for Ch, Pin, Off, Cnt in Controllers) + '   // Pin,LEDChannel,LEDOffset,LEDCount per controller', '\n')  # v1.17
+        if M02a.Get_BoardTyp() == M02.HT_PICO:  # v1.24: Pins der Mainboard LEDs (Tabelle MLL_MB_TAB in der Konfigurationsdatei, headless_dyn_config.py)
+            for Nr, Pin in ((1, 13), (2, 12), (3, 11)):  # v1.24: wie LED1_PIN..LED3_PIN in LEDs_AutoProg.ino (Pico)
+                VBFiles.writeText(fp, '#define MLL_P_MB_PIN' + str(Nr) + ' ' + str(Pin), '\n')  # v1.24
         VBFiles.writeText(fp, '#ifdef CONFIG_ONLY', '\n')  # v1.12
         VBFiles.writeText(fp, '#define NUM_LEDS ' + str(NumLeds) + '                      // Number of LEDs: only used to check the LED numbers when the configuration is compiled', '\n')  # v1.12
         VBFiles.writeText(fp, '#endif', '\n')  # v1.12
@@ -1748,11 +1755,12 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     if (_select64 == 'J') or (_select64 == 'Y') or (_select64 == '1'):
         VBFiles.writeText(fp, '#define RECEIVE_LED_COLOR_PER_RS232' + vbCrLf, '\n')
         # 21.12.22 replace vbcr with vbcrlf
-    if M28.Get_Bool_Config_Var('USE_SPI_Communication') or M25.Page_ID == 'CAN':
+    # if M28.Get_Bool_Config_Var('USE_SPI_Communication') or M25.Page_ID == 'CAN':  # v1.25 (entfallen)
+    if M25.Page_ID == 'CAN':  # v1.25: SPI (USE_SPI_COM) wird nicht mehr unterstuetzt
         # 14.05.20: Change the heartbeat LED pin
         # 04.10.20: Added: Page_ID = "CAN"
-        if M28.Get_Bool_Config_Var('USE_SPI_Communication'):
-            VBFiles.writeText(fp, '#define USE_SPI_COM                    // Use the SPI bus for the communication in addition to the RS232 if J13 is closed. If no DCC commands are configured the A1 pin of the DCC Arduino is disabled', '\n')
+        # if M28.Get_Bool_Config_Var('USE_SPI_Communication'):  # v1.25 (entfallen)
+            # VBFiles.writeText(fp, '#define USE_SPI_COM                    // Use the SPI bus for the communication in addition to the RS232 if J13 is closed. If no DCC commands are configured the A1 pin of the DCC Arduino is disabled', '\n')  # v1.25 (entfallen)
         if M02a.Get_BoardTyp() == M02.HT_AM328: # ' 23.12.24 Jürgen: A3 is only in use with Nano board
             if M06SW.PIN_A3_Is_Used():
                 VBFiles.writeText(fp, '#define LED_HEARTBEAT_PIN -1           // Disable the heartbeat pin because it\'s used for the SwitchB or SwitchC', '\n')
@@ -1765,11 +1773,11 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
  
     
     if Ext_AddrTxt_Used():
-        if M28.Get_Bool_Config_Var('USE_SPI_Communication'):
-            # 16.05.20:
-            if M06SW.Check_Switch_Lists_for_SPI_Pins() == False:
-                VBFiles.closeFile(fp)
-                return _fn_return_value
+        # if M28.Get_Bool_Config_Var('USE_SPI_Communication'):  # v1.25 (entfallen)
+            # # 16.05.20:  # v1.25 (entfallen)
+            # if M06SW.Check_Switch_Lists_for_SPI_Pins() == False:  # v1.25 (entfallen)
+                # VBFiles.closeFile(fp)  # v1.25 (entfallen)
+                # return _fn_return_value  # v1.25 (entfallen)
         VBFiles.writeText(fp, '#define USE_EXT_ADDR', '\n')
         if InStr(M02.Prog_for_Right_Ardu, ' ' + M25.Page_ID + ' ') > 0:
             VBFiles.writeText(fp, '#define USE_RS232_OR_SPI_AS_INPUT      // Use the RS232 or SPI Input to read DCC/SX commands from the second Arduino and from the PC (The SPI is only used if enabled with USE_SPI_COM)', '\n')
@@ -1890,13 +1898,14 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
                     VBFiles.writeText(fp, f'#ifndef {symbol}\n#define {define}\n#endif', '\n')  # v1.10
             # VBFiles.writeText(fp, '#endif', '\n')  # v1.10  # v1.18 (entfallen: steht jetzt vor den Defines)
 
-    ConfigTxt = Remove_Mainboard_LED_Defines(ConfigTxt)  # v1.23: ESP32: keine Mainboard LED Defines in der Kopfdatei
+    ConfigTxt_Full = ConfigTxt  # v1.24: mit den Mainboard LED Defines (Zweig CONFIG_ONLY, Tabelle .mllmb)
+    ConfigTxt = Remove_Mainboard_LED_Defines(ConfigTxt)  # v1.23: ESP32: keine Mainboard LED Defines in der Kopfdatei (Firmware)
     if DynMode:  # v1.07: die Firmware sieht nur die Praeprozessor-Zeilen der Konfiguration, die Makros stehen im Zweig CONFIG_ONLY
         VBFiles.writeText(fp, '// Preprocessor settings from the configuration', '\n')  # v1.07
         for cfgline in ConfigTxt.splitlines():  # v1.07
             if re.match(r'\s*#\s*(if|ifdef|ifndef|elif|else|endif|define|undef|include)\b', cfgline):  # v1.07
                 VBFiles.writeText(fp, cfgline, '\n')  # v1.07
-        Write_Pico_Mainboard_LED_Defines(fp, ConfigTxt)  # v1.17
+        # Write_Pico_Mainboard_LED_Defines(fp, ConfigTxt)  # v1.17  # v1.26 (entfallen)
         write_esp32_options()  # v1.07
         VBFiles.writeText(fp, '', '\n')  # v1.07
         VBFiles.writeText(fp, DC.MARK_BEGIN, '\n')  # v1.07
@@ -1906,7 +1915,8 @@ def Write_Header_File_and_Upload_to_Arduino(CreateFilesOnly=False, LEDsInUse=Non
     VBFiles.writeText(fp, '// *** Configuration array which defines the behavior of the LEDs ***', '\n')
     VBFiles.writeText(fp, 'MobaLedLib_Configuration()', '\n')
     VBFiles.writeText(fp, '  {', '\n')
-    VBFiles.writeText(fp, ConfigTxt, '\n')
+    # VBFiles.writeText(fp, ConfigTxt, '\n')  # v1.24 (entfallen)
+    VBFiles.writeText(fp, ConfigTxt_Full if DynMode else ConfigTxt, '\n')  # v1.24: im Modus MLL_DYNAMIC_CONFIG steht der volle Text nur im Zweig CONFIG_ONLY
     if not DynMode:  # v1.07
         write_esp32_options()  # v1.07
     VBFiles.writeText(fp, '  EndCfg // End of the configuration', '\n')

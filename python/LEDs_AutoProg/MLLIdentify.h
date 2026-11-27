@@ -1,4 +1,5 @@
 // MLLIdentify.h - Erkennung der gewaehlten Zentrale in der Auswahl des COM Ports (nur ESP32 und Pico) und Status LEDs des ESP32
+// Version 1.01 (2026-11-27): Pico: die Pins der Mainboard LEDs werden beim Start des Blinkens Ausgang (die Kopfdatei definiert Mainboard_LED1..3 nicht mehr)
 // Version 1.00 (2026-11-23): Neu
 // Author: Jürgen Winkler
 //   - Zentrale-Erkennung im COM-Port-Dialog: Blinken der 3 Mainboard-LEDs bei ~MLLIDENT 1, Stop bei ~MLLIDENT 0
@@ -6,7 +7,7 @@
 //   - ESP32: Status LEDs sind 3 WS2811-Bytes (GRB) auf LED Kanal 7 (gelb=r, weiss=g, blau=b), keine Pins
 //   - Pico: Status LEDs an physischen Pins LED1_PIN/LED2_PIN/LED3_PIN (Mainboard_LED1/2/3)
 //   - LED-Bus-Pins werden nicht angesteuert (Konfiguration via MLL_DYNAMIC_CONFIG / MLL_LED_BUS_PINS)
-//   - LED-Zustand vor dem Blinken speichern, beim Stopp direkt wiederherstellen (ESP32: Bytes in leds[], Pico: Pegel der Pins; die Pins sind immer Ausgaenge)
+//   - LED-Zustand vor dem Blinken speichern, beim Stopp direkt wiederherstellen (ESP32: Bytes in leds[], Pico: Pegel der Pins; die Pins werden beim Start Ausgang)
 //   - MllIdentUpdate() wird aus MLLMainLoop() nach Set_Mainboard_LEDs() und vor FastLED.show() aufgerufen (LEDs_AutoProg.ino)
 //   - Kein Fallback auf Modul-LED (MLL_IDENT_MODULE_LED entfernt)
 //   - MLL_ESP32_STATUS_LEDS Define fuer ESP32-spezifische WS2811 Status LEDs
@@ -114,7 +115,7 @@ static unsigned long mllIdentLastCmd = 0;
 #if defined(MLL_ESP32_STATUS_LEDS)
   static uint8_t mllIdentSavedR = 0, mllIdentSavedG = 0, mllIdentSavedB = 0;
 #else
-  // Ausgangspegel jedes Pins beim Start von Ident; die Pins sind immer Ausgaenge
+  // Ausgangspegel jedes Pins beim Start von Ident; die Pins werden dabei Ausgang
   static bool mllIdentSavedLevel[3] = { false, false, false };
 #endif
 
@@ -188,7 +189,9 @@ static void MllIdentStart()
     }
   #else
     for (uint8_t i = 0; i < sizeof(mllIdentPins); ++i)
-      mllIdentSavedLevel[i] = digitalRead(mllIdentPins[i]);  // Ausgaenge, gelesen wird der aktuelle Pegel
+      if (mllIdentMask & (1 << i)) pinMode(mllIdentPins[i], OUTPUT);  // nur Pins, die blinken (nicht die LED Busse)
+    for (uint8_t i = 0; i < sizeof(mllIdentPins); ++i)
+      mllIdentSavedLevel[i] = digitalRead(mllIdentPins[i]);  // gelesen wird der aktuelle Pegel
   #endif
 
   mllIdentActive = true;

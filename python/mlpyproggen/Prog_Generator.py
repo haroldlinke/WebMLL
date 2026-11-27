@@ -1,9 +1,9 @@
-# Datei-Version: 1.10 (2026-11-19) - Prog_Generator.py
+# Datei-Version: 1.13 (2026-11-27) - Prog_Generator.py
 # ----------------------------------------------------------------------------------------------
 # Name:           Prog_Generator.py
 # Path:           mlpyproggen/Prog_Generator.py
-# Version:        1.10
-# Last Update:    2026-11-19
+# Version:        1.13
+# Last Update:    2026-11-27
 # Author:         Harold Linke
 # Licence:        LGPL V2.1
 # History of Change:
@@ -18,6 +18,8 @@
 #   1.08  2026-11-03  start_ARDUINO_program_cmd: Parameter title ersetzt die Ueberschrift 'Kompilieren und Hochladen gestartet' (fertige Dateien werden nicht kompiliert)
 #   1.09  2026-11-15  Knopfleiste: Umschalttaste beim Klick merken (Simulator: Umschalt + Zum Arduino schicken)
 #   1.10  2026-11-19  Vorgang abbrechen beendet den ganzen Prozessbaum (Shell und arduino-cli/avrdude/pio), der COM-Port wird sofort frei (Issue 15)
+#   1.12  2026-11-27  Setup uebertragen: der Text am Anfang des Log-Fensters ('Preparation of Program Started') ist uebersetzt (csv/Web_Languages.csv); start_ARDUINO_program_cmd: neuer Parameter preface (der Grund fuer das ganze Programm nach einem Rueckfall vom schnellen Upload wird auch angezeigt, wenn das Fenster geleert wird). Zeilen mit '# v1.12'
+#   1.13  2026-11-27  start_ARDUINO_program_cmd: der Parameter preface (1.12) entfaellt wieder, M08 leert das Fenster nach einem Rueckfall vom schnellen Upload gar nicht mehr. Zeilen mit '# v1.13'
 # ----------------------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 #
@@ -447,6 +449,15 @@ def _drain_output(process, page, timeout=2.0, collector=None):  # v1.04
         page.add_text_to_textwindow(line + "\n")  # v1.02
     if data:  # v1.02
         page.update()  # v1.02
+
+
+def _tr(text, **values):  # v1.12
+    """Text in der eingestellten Sprache (Katalog csv/Web_Languages.csv); ohne die Web-Uebersetzung bleibt er deutsch"""  # v1.12
+    try:  # v1.12
+        from _web.web_i18n import tr  # v1.12
+        return tr(text, **values)  # v1.12
+    except Exception:                                      # noqa: BLE001  # v1.12
+        return text.format(**values) if values else text  # v1.12
 
 
 class Prog_GeneratorPage(tk.Frame):
@@ -905,7 +916,8 @@ class Prog_GeneratorPage(tk.Frame):
     def upload_to_ARDUINO_Button_click(self, event=None):
         self.arduinoMonitorPage=self.controller.getFramebyName ("ARDUINOMonitorPage")
         self.arduinoMonitorPage.delete_text_from_textwindow()        
-        self.arduinoMonitorPage.add_text_to_textwindow("\n\n*******************************************************\n"+ "Preparation of Program Started" +"\n*******************************************************\n\n")
+        # self.arduinoMonitorPage.add_text_to_textwindow("\n\n*******************************************************\n"+ "Preparation of Program Started" +"\n*******************************************************\n\n")  # v1.12 (entfallen)
+        self.arduinoMonitorPage.add_text_to_textwindow("\n\n*******************************************************\n"+ _tr("Vorbereitung des Programms gestartet") +"\n*******************************************************\n\n")  # v1.12
         self.controller.showFramebyName("ARDUINOMonitorPage")
         self.arduinoMonitorPage.update()
         F00.Arduino_Button_Click()
@@ -922,7 +934,9 @@ class Prog_GeneratorPage(tk.Frame):
             self.Show_Status_for_a_while(M09.Get_Language_Str('Programm erfolgreich hochgeladen. Kompilieren und Hochladen dauerte ') + P01.Format(self.upload_duration, 'hh:mm:ss'), '00:02:00')
     
     # def start_ARDUINO_program_cmd(self,startfile,arduino_type="Left", empty_text=True, show_intro=True):  # v1.08 (entfallen)
-    def start_ARDUINO_program_cmd(self,startfile,arduino_type="Left", empty_text=True, show_intro=True, title=""):  # v1.08
+    # def start_ARDUINO_program_cmd(self,startfile,arduino_type="Left", empty_text=True, show_intro=True, title=""):  # v1.08  # v1.12 (entfallen)
+    # def start_ARDUINO_program_cmd(self,startfile,arduino_type="Left", empty_text=True, show_intro=True, title="", preface=""):  # v1.12  # v1.13 (entfallen)
+    def start_ARDUINO_program_cmd(self,startfile,arduino_type="Left", empty_text=True, show_intro=True, title=""):  # v1.13
         self.Update_Compile_Time(Start=True)
         macrodata = self.controller.MacroDef.data.get("ARDUINOMonitorPage",{})
         self.ARDUINO_message1 = macrodata.get("Message_1","")
@@ -931,6 +945,8 @@ class Prog_GeneratorPage(tk.Frame):
         self.arduinoMonitorPage=self.controller.getFramebyName ("ARDUINOMonitorPage")
         if empty_text:
             self.arduinoMonitorPage.delete_text_from_textwindow()
+        # if preface:  # v1.12: Grund fuer das ganze Programm (Rueckfall vom schnellen Upload) steht auch nach dem Leeren im Fenster  # v1.13 (entfallen)
+            # self.arduinoMonitorPage.add_text_to_textwindow(preface if preface.endswith('\n') else preface + "\n")  # v1.12  # v1.13 (entfallen)
         self.controller.showFramebyName("ARDUINOMonitorPage")
         logging.debug(repr(startfile))
         

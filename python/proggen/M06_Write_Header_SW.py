@@ -1,12 +1,13 @@
-# Datei-Version: 1.16 (2026-11-27) - M06_Write_Header_SW.py
+# Datei-Version: 1.17 (2026-11-27) - M06_Write_Header_SW.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M06_Write_Header_SW.py
 # Path:           proggen/M06_Write_Header_SW.py
-# Version:        1.16
+# Version:        1.17
 # Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.17  2026-11-27  Check_one_Switch_Lists_for_SPI_Pins und Check_Switch_Lists_for_SPI_Pins entfernt (SPI wird nicht mehr unterstuetzt). Zeilen mit '# v1.17'
 #   1.16  2026-11-27  Im Modus MLL_DYNAMIC_CONFIG stehen TOTAL_SWITCHES_A bis D und TOTAL_VARIABLES zwischen //MLLDYN_BEGIN und //MLLDYN_END (Informationswerte, nicht Teil der Firmware). Zeilen mit '# v1.16'
 #   1.15  2026-11-26  Makro aus Lib_Macros ohne den Kommentar der Zelle (Text nach dem §) lesen, sonst passen die Parameternamen (Val1§...) nicht (Makro Button). Zeile mit '# v1.15'
 #   1.13  2026-11-25  Pico mit aelterer PicoFastLED.h (ohne showColor) uebersetzte nicht: Hilfsmakro MLL_CLEAR_CONTROLLER, bei Pico ohne MLL_HAS_SHOWCOLOR wird clearLeds(256) benutzt (Log von Harold, Pico, Kompilierfehler showColor)
@@ -464,36 +465,36 @@ def Test():
     Debug.Print(Replace('Aber    Hallo', '  ', ' '))
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Sw_List - ByVal 
-def Check_one_Switch_Lists_for_SPI_Pins(Sw_List):
-    _fn_return_value = False
-    Pin = Variant()
-    #---------------------------------------------------------------------------------------
-    Sw_List = ' ' + Sw_List + ' '
-    for Pin in Split('10 11 12', ' '):
-        if InStr(Sw_List, ' ' + Pin + ' ') > 0:
-            P01.MsgBox(Replace(M09.Get_Language_Str('Fehler: Der Arduino Pin \'#1#\' kann nicht als Ein- oder Ausgang werden wenn ' + 'DCC, LNet oder Selectrix Daten per SPI Bus gelesen werden. Es muss ein anderer Anschluss verwendet ' + 'werden oder die SPI Kommunikation in der \'Config\' Seite deaktiviert werden.' + vbLf + 'Achtung: Die beiden Arduinos müssen dann per RS232 verbunden sein.'), "#1#", Pin), vbCritical, 'Fehler: Ungültiger Arduino Pin erkannt')
-            return _fn_return_value
-    _fn_return_value = True
-    return _fn_return_value
+# def Check_one_Switch_Lists_for_SPI_Pins(Sw_List):  # v1.17 (entfallen)
+    # _fn_return_value = False  # v1.17 (entfallen)
+    # Pin = Variant()  # v1.17 (entfallen)
+    # #---------------------------------------------------------------------------------------  # v1.17 (entfallen)
+    # Sw_List = ' ' + Sw_List + ' '  # v1.17 (entfallen)
+    # for Pin in Split('10 11 12', ' '):  # v1.17 (entfallen)
+        # if InStr(Sw_List, ' ' + Pin + ' ') > 0:  # v1.17 (entfallen)
+            # P01.MsgBox(Replace(M09.Get_Language_Str('Fehler: Der Arduino Pin \'#1#\' kann nicht als Ein- oder Ausgang werden wenn ' + 'DCC, LNet oder Selectrix Daten per SPI Bus gelesen werden. Es muss ein anderer Anschluss verwendet ' + 'werden oder die SPI Kommunikation in der \'Config\' Seite deaktiviert werden.' + vbLf + 'Achtung: Die beiden Arduinos müssen dann per RS232 verbunden sein.'), "#1#", Pin), vbCritical, 'Fehler: Ungültiger Arduino Pin erkannt')  # v1.17 (entfallen)
+            # return _fn_return_value  # v1.17 (entfallen)
+    # _fn_return_value = True  # v1.17 (entfallen)
+    # return _fn_return_value  # v1.17 (entfallen)
 
-def Check_Switch_Lists_for_SPI_Pins():
-    global SwitchA_InpCnt, SwitchB_InpCnt, SwitchC_InpCnt, SwitchD_InpCnt,SwitchA_InpLst,SwitchB_InpLst,SwitchC_InpLst,SwitchD_InpLst
-    _fn_return_value = False
-    #-----------------------------------------------------------
-    if SwitchA_InpCnt > 0:
-        if Check_one_Switch_Lists_for_SPI_Pins(SwitchA_InpLst) == False:
-            return _fn_return_value
-    if SwitchB_InpCnt > 0:
-        if Check_one_Switch_Lists_for_SPI_Pins(SwitchB_InpLst) == False:
-            return _fn_return_value
-    if SwitchC_InpCnt > 0:
-        if Check_one_Switch_Lists_for_SPI_Pins(SwitchC_InpLst) == False:
-            return _fn_return_value
-    if SwitchD_InpCnt > 0:
-        if Check_one_Switch_Lists_for_SPI_Pins(SwitchD_InpLst) == False:
-            return _fn_return_value
-    _fn_return_value = True
-    return _fn_return_value
+# def Check_Switch_Lists_for_SPI_Pins():  # v1.17 (entfallen)
+    # global SwitchA_InpCnt, SwitchB_InpCnt, SwitchC_InpCnt, SwitchD_InpCnt,SwitchA_InpLst,SwitchB_InpLst,SwitchC_InpLst,SwitchD_InpLst  # v1.17 (entfallen)
+    # _fn_return_value = False  # v1.17 (entfallen)
+    # #-----------------------------------------------------------  # v1.17 (entfallen)
+    # if SwitchA_InpCnt > 0:  # v1.17 (entfallen)
+        # if Check_one_Switch_Lists_for_SPI_Pins(SwitchA_InpLst) == False:  # v1.17 (entfallen)
+            # return _fn_return_value  # v1.17 (entfallen)
+    # if SwitchB_InpCnt > 0:  # v1.17 (entfallen)
+        # if Check_one_Switch_Lists_for_SPI_Pins(SwitchB_InpLst) == False:  # v1.17 (entfallen)
+            # return _fn_return_value  # v1.17 (entfallen)
+    # if SwitchC_InpCnt > 0:  # v1.17 (entfallen)
+        # if Check_one_Switch_Lists_for_SPI_Pins(SwitchC_InpLst) == False:  # v1.17 (entfallen)
+            # return _fn_return_value  # v1.17 (entfallen)
+    # if SwitchD_InpCnt > 0:  # v1.17 (entfallen)
+        # if Check_one_Switch_Lists_for_SPI_Pins(SwitchD_InpLst) == False:  # v1.17 (entfallen)
+            # return _fn_return_value  # v1.17 (entfallen)
+    # _fn_return_value = True  # v1.17 (entfallen)
+    # return _fn_return_value  # v1.17 (entfallen)
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: Dest_InpLst - ByRef 
 def Set_PinNrLst_if_Matching(line, Name, Dest_InpLst, PinTyp, MaxCnt):

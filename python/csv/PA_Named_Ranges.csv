@@ -61,7 +61,6 @@ Std_Boards_Ver;Libraries;8;3;;;StCh_FreeBits_BpC;=Main!$E$36;;
 Test_Language;Lib_Macros;18;1;;;TimerBytes;=Main!$H$44;;
 TimerBytes;Main;8;44;;;;;;
 Use_Excel_Console;Config;3;27;;;Wert_ausgeschaltet;=Main!$E$9;;
-USE_SPI_Communication;Config;3;26;;;Wert_Min;=Main!$E$7;;
 Use_TreeView_for_Macros;Config;3;11;;;Wert0;=Main!$E$7;;
 Wait_at_End;Check Box 10;;;;;WertMax;=Main!$E$8;;
 Wert_ausgeschaltet;Main;5;9;;;;;;

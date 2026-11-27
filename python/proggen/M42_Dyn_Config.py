@@ -1,12 +1,14 @@
-# Datei-Version: 1.13 (2026-11-27) - M42_Dyn_Config.py
+# Datei-Version: 1.15 (2026-11-27) - M42_Dyn_Config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M42_Dyn_Config.py
 # Path:           proggen/M42_Dyn_Config.py
-# Version:        1.13
+# Version:        1.15
 # Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.15  2026-11-27  _open_output leert das Ausgabefenster nicht mehr: der Starttext von Setup uebertragen (Vorbereitung des Programms gestartet) blieb sonst nicht stehen. Zeilen mit '# v1.15'
+#   1.14  2026-11-27  Fallback_Text: der Grund fuer den Rueckfall auf das ganze Programm (die Zeilen, die der schnelle Weg ins Ausgabefenster geschrieben hat) geht an M08 und wird nach dem Leeren des Fensters wieder angezeigt. Zeilen mit '# v1.14'
 #   1.13  2026-11-27  Reuse_Connection: ist schon im EFFECT Mode mit demselben Anschluss verbunden, wird die Konfiguration ueber diese Verbindung uebertragen (Try_Config_Only shared), ohne sie zu schliessen und neu zu oeffnen. Zeilen mit '# v1.13'
 #   1.12  2026-11-25  Schnelles Update (serial_cfg) je Blatt: Option_Enabled liest zuerst esp32_options des aktiven Blattes, Set_Sheet_Option schreibt dorthin. Zeilen mit '# v1.12'
 #   1.11  2026-11-25  Clear_Found_Port: der gefundene Anschluss eines frueheren Uploads wird vor jedem Upload geloescht (sonst haette ein anderes Board den Anschluss eines frueheren Pico ins Blatt bekommen koennen). Zeilen mit '# v1.11'
@@ -52,7 +54,8 @@ log = logging.getLogger("webmobaledlib.arduino")
 
 OPTION_KEY = "serial_cfg"
 
-_state = {"active": False, "off": False, "tools": None, "tools_checked": False, "env": "", "pico": False, "sig": "", "blob": None, "blob_file": "", "output": False}  # v1.01
+# _state = {"active": False, "off": False, "tools": None, "tools_checked": False, "env": "", "pico": False, "sig": "", "blob": None, "blob_file": "", "output": False}  # v1.01  # v1.14 (entfallen)
+_state = {"active": False, "off": False, "tools": None, "tools_checked": False, "env": "", "pico": False, "sig": "", "blob": None, "blob_file": "", "output": False, "lines": [], "fallback": False}  # v1.01  # v1.14
 
 
 def Option_Enabled():
@@ -247,6 +250,7 @@ def _page():  # v1.01
 
 def _out(text, highlight=None):  # v1.01
     """Zeile im Ausgabefenster (und damit im Protokoll)"""  # v1.01
+    _state["lines"].append(text)  # v1.14: merken, falls das Fenster spaeter geleert wird (Fallback_Text)
     page = _page()  # v1.01
     if page is None:  # v1.01
         log.info(text)  # v1.01
@@ -263,10 +267,11 @@ def _out(text, highlight=None):  # v1.01
 def _open_output():  # v1.01
     """Ausgabefenster fuer den schnellen Weg oeffnen und leeren"""  # v1.01
     _state["output"] = True  # v1.01
+    _state["lines"], _state["fallback"] = [], False  # v1.14: neuer Versuch
     page = _page()  # v1.01
     try:  # v1.01
         page.set_title(_t("Schnelles Update: Konfiguration übertragen"))  # v1.01
-        page.delete_text_from_textwindow()  # v1.01
+        # page.delete_text_from_textwindow()  # v1.01 (entfallen v1.15: der Aufrufer hat das Fenster schon geleert und den Starttext geschrieben)
         PG.global_controller.showFramebyName("ARDUINOMonitorPage")  # v1.01
     except Exception:                                      # noqa: BLE001  # v1.01
         log.debug("Ausgabefenster nicht zu oeffnen", exc_info=True)  # v1.01
@@ -286,6 +291,14 @@ def Output_Written():  # v1.01
     return _state["output"]  # v1.01
 
 
+def Fallback_Text():  # v1.14
+    """Die Zeilen, die der schnelle Weg ins Ausgabefenster geschrieben hat (der Grund fuer das ganze Programm), einmal; leer, wenn kein Rueckfall stattfand. M08 gibt sie beim Start des ganzen Programms aus, auch wenn das Fenster dabei geleert wird."""  # v1.14
+    if not _state["fallback"]:  # v1.14
+        return ""  # v1.14
+    _state["fallback"] = False  # v1.14
+    return "\n".join(t for t in _state["lines"] if t != "")  # v1.14
+
+
 def _progress():  # v1.01
     """Fortschrittsanzeige in 25-%-Schritten (die Datei hat nur wenige KB)"""  # v1.01
     nxt = [25]  # v1.01
@@ -301,6 +314,7 @@ def _progress():  # v1.01
 def _fallback(text, **values):  # v1.01
     """Der schnelle Weg geht nicht: Grund anzeigen, dann laedt M08 das ganze Programm hoch"""  # v1.01
     _out(_t(text, **values))  # v1.01
+    _state["fallback"] = True  # v1.14: M08 laedt das ganze Programm hoch
     _restore_title()  # v1.01
     return False  # v1.01
 

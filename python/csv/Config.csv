@@ -32,6 +32,5 @@
 ;Bibliotheken an anderer Stelle installiert: ;Nein;;;;;
 ;Umstellung der Sprache:;-1;;;;;
 ;;;;;;;
-;Verwende SPI Kommunikation: ;0;;;;;
 ;Arduino Ausgaben in Excel Fenster:;0;;;;;
 ;PlatformIO Build verwenden;0;;;;;

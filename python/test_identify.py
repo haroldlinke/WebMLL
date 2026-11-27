@@ -1,12 +1,13 @@
-# Datei-Version: 1.01 (2026-11-27) - test_identify.py
+# Datei-Version: 1.02 (2026-11-27) - test_identify.py
 # ----------------------------------------------------------------------------------------------
 # Name:           test_identify.py
 # Path:           test_identify.py
-# Version:        1.01
+# Version:        1.02
 # Last Update:    2026-11-27
 # Author:         Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.02  2026-11-27  Pico: keine Mainboard_LED Defines mehr in der Kopfdatei (M06 1.26): Write_Pico_Mainboard_LED_Defines entfaellt, Remove_Mainboard_LED_Defines gilt auch fuer den Pico; MLLIdentify.h 1.01 setzt die Pins als Ausgang
 #   1.01  2026-11-27  ESP32: Remove_Mainboard_LED_Defines entfernt die Zeilen #undef/#define Mainboard_LEDn aus dem Konfigurationstext, andere Boards und andere Zeilen bleiben (M06 1.23)
 #   1.00  2026-11-23  Neu: Test von M06.Write_Pico_Mainboard_LED_Defines (Identify, Pico): fehlende Mainboard_LED1..3 werden als SI_0 geschrieben,
 #                     von der Tabelle definierte (auch D3/D4/D5) nicht; andere Boards schreiben nichts; Proc_Special_Functions schreibt #undef vor jedes Mainboard_LEDn der Tabelle
@@ -42,55 +43,12 @@ def load_function(name):
     return ast.get_source_segment(src, fn)
 
 
-class FakeFiles:
-    def __init__(self):
-        self.lines = []
-
-    def writeText(self, fp, text, end):
-        self.lines.append(text)
-
-
-def run(board, config_txt):
-    files = FakeFiles()
-    m02 = types.SimpleNamespace(HT_PICO="PICO", HT_ESP32="ESP32", HT_NANO="NANO")
-    m02a = types.SimpleNamespace(Get_BoardTyp=lambda: board)
-    ns = {"VBFiles": files, "M02": m02, "M02a": m02a}
-    exec(load_function("Write_Pico_Mainboard_LED_Defines"), ns)
-    ns["Write_Pico_Mainboard_LED_Defines"](None, config_txt)
-    return files.lines
-
-
-def defined(lines):
-    return [l.split()[1] for l in lines if l.startswith("#define")]
-
-
 def test():
-    out = run("PICO", "  RGB_Heartbeat(#LED)\r\n")
-    check("Pico ohne eigene Defines: Mainboard_LED1..3 werden geschrieben", defined(out) == ["Mainboard_LED1", "Mainboard_LED2", "Mainboard_LED3"], out)
-    check("Wert ist SI_0 (Eingangskanal immer 0), nicht der Pin", all(l.split()[2] == "SI_0" for l in out if l.startswith("#define")), out)
-
-    cfg = "  // Mainboard_LED(1, SI_1)\r\n  #define Mainboard_LED1 SI_1                                     /* ... */\r\n  #define Mainboard_LED3 INCH_DCC_5_RED\r\n"
-    out = run("PICO", cfg)
-    check("Pico: von der Tabelle definierte LED 1 und 3 werden nicht noch einmal definiert", defined(out) == ["Mainboard_LED2"], out)
-
-    out = run("PICO", "#define Mainboard_LED_D4 5\r\n")
-    check("Pico: alter Name Mainboard_LED_D4 zaehlt als LED 2", defined(out) == ["Mainboard_LED1", "Mainboard_LED3"], out)
-
-    out = run("PICO", "#define Mainboard_LED13 5\r\n#define Mainboard_LED10 SI_1\r\n")
-    check("Pico: Mainboard_LED13 oder 10 zaehlt nicht als LED 1", defined(out) == ["Mainboard_LED1", "Mainboard_LED2", "Mainboard_LED3"], out)
-
-    out = run("PICO", "// #define Mainboard_LED1 5   (Kommentar)\r\n")
-    check("Pico: auskommentierte Zeile zaehlt nicht", defined(out) == ["Mainboard_LED1", "Mainboard_LED2", "Mainboard_LED3"], out)
-
-    out = run("PICO", "#define Mainboard_LED1 SI_1\r\n#define Mainboard_LED2 SI_1\r\n#define Mainboard_LED3 SI_1\r\n")
-    check("Pico: alle drei in der Tabelle: nichts schreiben", out == [], out)
-
-    for board in ("ESP32", "NANO"):
-        check("%s: nichts schreiben" % board, run(board, "") == [])
-
-    out = run("PICO", "")
-    check("Pico: jede erzeugte Zeile steht in #ifndef ... #endif", out[0::3] == ["#ifndef Mainboard_LED1", "#ifndef Mainboard_LED2", "#ifndef Mainboard_LED3"]
-          and out[2::3] == ["#endif"] * 3, out)
+    m06 = open(os.path.join(HERE, "proggen", "M06_Write_Header.py"), encoding="utf-8").read()
+    code = [l for l in m06.splitlines() if not l.lstrip().startswith("#")]
+    check("Pico: Write_Pico_Mainboard_LED_Defines ist entfallen (nicht mehr definiert, nicht aufgerufen)", not any("Write_Pico_Mainboard_LED_Defines" in l for l in code))
+    ident = open(os.path.join(HERE, "LEDs_AutoProg", "MLLIdentify.h"), encoding="utf-8").read()
+    check("Pico: MLLIdentify.h setzt die blinkenden Pins als Ausgang", "pinMode(mllIdentPins[i], OUTPUT)" in ident)
 
 
 def proc_special(cmd):
@@ -112,8 +70,6 @@ def test_undef():
     ok, cmd = proc_special("Mainboard_LED(D3, INCH_DCC_1_RED)")
     lines = [l.strip() for l in cmd.replace("\r\n", "\n").split("\n")]
     check("Tabelle Mainboard_LED(D3, ...): D3 wird LED 1, #undef Mainboard_LED1", ok and lines[0].startswith("#undef  Mainboard_LED1 ") and lines[1].split()[:3] == ["#define", "Mainboard_LED1", "INCH_DCC_1_RED"], cmd)
-    out = run("PICO", "  " + cmd + "  /* Excel row 5 */\r\n")
-    check("Pico: Zeile mit #undef zaehlt als in der Tabelle definiert", defined(out) ==["Mainboard_LED2", "Mainboard_LED3"], out)
     ok, cmd = proc_special("Mainboard_LED(13, SI_1)")
     check("LED 13: Heartbeat-Zeilen bleiben, #undef Mainboard_LED13 davor", ok and cmd.startswith("#undef  Mainboard_LED13 ") and "LED_HEARTBEAT_PIN A3" in cmd, cmd)
 
@@ -136,7 +92,8 @@ def test_esp32_mainboard_led_defines():
     ns["M02a"] = types.SimpleNamespace(Get_BoardTyp=lambda: "NANO")
     check("Nano: der Text bleibt unveraendert", ns["Remove_Mainboard_LED_Defines"](cfg) == cfg)
     ns["M02a"] = types.SimpleNamespace(Get_BoardTyp=lambda: "PICO")
-    check("Pico: der Text bleibt unveraendert", ns["Remove_Mainboard_LED_Defines"](cfg) == cfg)
+    out = ns["Remove_Mainboard_LED_Defines"](cfg)
+    check("Pico: keine #undef/#define Mainboard_LEDn mehr, die uebrigen Zeilen bleiben", "Mainboard_LED" not in out and "LED_HEARTBEAT_PIN A3" in out and "RGB_Heartbeat(5)" in out, out)
     ns["M02a"] = types.SimpleNamespace(Get_BoardTyp=lambda: "ESP32")
     check("ESP32: letzte Zeile ohne Zeilenende", ns["Remove_Mainboard_LED_Defines"]("  A\r\n  #define Mainboard_LED3  1") == "  A\r\n")
 

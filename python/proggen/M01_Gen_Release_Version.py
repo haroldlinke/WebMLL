@@ -2,7 +2,7 @@
 #
 #         Write header
 #
-# * Version: 4.15
+# * Version: 4.16
 # * Author: Harold Linke
 # * Date: March 13, 2022
 # * Copyright: Harold Linke 2021
@@ -241,7 +241,7 @@ def __Set_Config_Default_Values_for_Release():
     M28.Set_String_Config_Var('MaxTime_House', '')
     M28.Set_String_Config_Var('DCC_Offset', '')
     M28.Set_String_Config_Var('Color_Test_Mode', '1')
-    M28.Set_String_Config_Var('USE_SPI_Communication', '0')
+    # M28.Set_String_Config_Var('USE_SPI_Communication', '0')  # v4.16 (entfallen)
     M28.Set_String_Config_Var('Use_Excel_Console', '0')
     M28.Set_String_Config_Var('LEDNr_Display_Type', '1')
     M28.Set_String_Config_Var('Expert_Mode_aktivate', '')

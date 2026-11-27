@@ -1,12 +1,13 @@
-# Datei-Version: 1.05 (2026-11-27) - test_dyn_config.py
+# Datei-Version: 1.06 (2026-11-27) - test_dyn_config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           test_dyn_config.py
 # Path:           test_dyn_config.py
-# Version:        1.05
+# Version:        1.06
 # Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.06  2026-11-27  Format 8: Anzahl der Mainboard LEDs im Parameter-Block, Aufbau und ungueltige Mainboard LEDs, Bau der Konfigurationsdatei mit der Tabelle (build_blob). Zeilen mit '# v1.06'
 #   1.05  2026-11-27  Eingangskanal-Defines und TOTAL_SWITCHES_* stehen zwischen den Marken MLLDYN: die Signatur beruecksichtigt die Nummern weiterhin (headless_dyn_config 1.08). Zeilen mit '# v1.05'
 #   1.04  2026-11-27  Uebertragung ueber die schon offene Verbindung (SharedLink, M42.Reuse_Connection): die Verbindung wird nicht geschlossen. Zeilen mit '# v1.04'
 #   1.03  2026-11-23  Konfigurationsdatei Format 7: Controller-Tabelle mit LED-Kanal (vier Werte je Controller), LED-Kanal 16 und eine Tabelle mit drei Werten werden abgelehnt. Zeilen
@@ -50,7 +51,7 @@ def test_format():
     magic, ver, _, ram, l0, l1, l2, l3, l4, l5, crc, sig = DC.BLOB_HEADER.unpack(blob[:DC.BLOB_HEADER.size])
     check("Kopf 52 Bytes", DC.BLOB_HEADER.size == 52)
     # check("Kennung, Version, RAM", magic == b"MLLC" and ver == 5 and ram == 9)  # v1.03 (entfallen)
-    check("Kennung, Version, RAM", magic == b"MLLC" and ver == DC.BLOB_VERSION == 7 and ram == 9)  # v1.03
+    check("Kennung, Version, RAM", magic == b"MLLC" and ver == DC.BLOB_VERSION == 8 and ram == 9)  # v1.03  # v1.06: Format 8
     check("Laengen", (l0, l1, l2, l3, l4, l5) == (3, 1, 0, 2, 3, 0))
     check("CRC ueber die Nutzdaten", crc == zlib.crc32(blob[52:]) & 0xFFFFFFFF)
     check("Signatur im Kopf an Position 36", sig.decode() == SIG and blob[36:52].decode() == SIG)
@@ -61,7 +62,15 @@ def test_format():
     # check("Parameter: Aufbau", params == struct.pack("<HHHB3HB", 123, 7, 40, 3, 100, 20, 3, 2) + struct.pack("<BHHBHH", 27, 0, 100, 16, 120, 3) + b",100,20,3\0Ver 3 x\0", params)  # v1.03 (entfallen)
     # for bad in ({"num_leds": 70000}, {"channels": [1] * 17}, {"channels": [70000]}, {"controller_count": 2, "controllers": [[27, 0, 1]]},  # v1.03 (entfallen)
                 # {"num_leds": 10, "controllers": [[27, 5, 6]]}, {"num_leds": 10, "controllers": [[256, 0, 1]]}, {"num_leds": 17, "controllers": [[1, i, 1] for i in range(17)]}):  # v1.03 (entfallen)
-    check("Parameter: Aufbau", params == struct.pack("<HHHB3HB", 123, 7, 40, 3, 100, 20, 3, 2) + struct.pack("<BBHHBBHH", 27, 0, 0, 100, 16, 2, 120, 3) + b",100,20,3\0Ver 3 x\0", params)  # v1.03
+    check("Parameter: Aufbau", params == struct.pack("<HHHB3HB", 123, 7, 40, 3, 100, 20, 3, 2) + struct.pack("<BBHHBBHH", 27, 0, 0, 100, 16, 2, 120, 3) + struct.pack("<B", 0) + b",100,20,3\0Ver 3 x\0", params)  # v1.03  # v1.06: Anzahl Mainboard LEDs (0)
+    mb_params = DC.pack_params({"num_leds": 1, "controller_count": 0, "mainboard": [(255, 1, 1000), (13, 2, 7)]})  # v1.06
+    check("Mainboard LEDs: Aufbau (Anzahl, Pin, LED-Nummer, Eingang)", mb_params[-(1 + 8 + 2):] == b"\x02" + struct.pack("<BBH", 255, 1, 1000) + struct.pack("<BBH", 13, 2, 7) + b"\0\0", mb_params)  # v1.06
+    for bad in ({"mainboard": [(255, 4, 1)]}, {"mainboard": [(256, 1, 1)]}, {"mainboard": [(13, 1, 70000)]}, {"mainboard": [(13, 1, 1)] * 9}):  # v1.06
+        try:
+            DC.pack_params(bad)
+            check("ungueltige Mainboard LEDs werden abgelehnt: %s" % bad, False)
+        except DC.DynConfigError:
+            check("ungueltige Mainboard LEDs werden abgelehnt: %s" % bad, True)
     for bad in ({"num_leds": 70000}, {"channels": [1] * 17}, {"channels": [70000]}, {"controller_count": 2, "controllers": [[27, 0, 0, 1]]},  # v1.03
                 {"num_leds": 10, "controllers": [[27, 0, 5, 6]]}, {"num_leds": 10, "controllers": [[256, 0, 0, 1]]}, {"num_leds": 10, "controllers": [[27, 16, 0, 1]]}, {"num_leds": 17, "controllers": [[1, 0, i, 1] for i in range(17)]}):  # v1.03
         try:
@@ -221,6 +230,33 @@ def test_build():
         check("RAM-Groesse 7 und Signatur", head[3] == 7 and head[11].decode() == SIG)
         check("Nutzdaten: Config und Startwerte", blob[52:57] == bytes([1, 2, 3, 4, 5]) and blob[57:63] == struct.pack("<HBHB", 300, 1, 301, 1))
         check("Parameter aus der Kopfdatei im Blob", blob[63:] == DC.pack_params(DC.parse_params(MINI_H)) and head[9] == len(blob) - 63 and b"Ver 3 mini\0" in blob[63:], blob[63:])
+
+
+MB_ADD = """#define MLL_P_MB_PIN1 13
+#define MLL_P_MB_PIN2 12
+#ifdef CONFIG_ONLY
+#define Mainboard_LED1 3
+#define Mainboard_LED2 1000
+#endif
+"""  # v1.06
+
+
+def test_build_mainboard():  # v1.06: der Abschnitt .mllmb darf vom Linker nicht entfernt werden (Mainboard LEDs waren immer aus)
+    tools = DC.find_avr_tools([], [])  # v1.06
+    if not tools:  # v1.06
+        print("uebersprungen: keine AVR-Werkzeuge (Arduino15/PlatformIO) gefunden")  # v1.06
+        return  # v1.06
+    with tempfile.TemporaryDirectory() as t:  # v1.06
+        sk = os.path.join(t, "LEDs_AutoProg")  # v1.06
+        os.makedirs(sk)  # v1.06
+        header = MINI_H + MB_ADD  # v1.06
+        with open(os.path.join(sk, "LEDs_AutoProg.h"), "w", encoding="utf-8") as fh:  # v1.06
+            fh.write(header)  # v1.06
+        lib = os.path.join(ROOT, "libraries", "MobaLedLib", "src")  # v1.06
+        blob = DC.build_blob(sk, lib, tools, os.path.join(sk, "dyn"), SIG)  # v1.06
+        params = DC.parse_params(header)  # v1.06
+        params["mainboard"] = [(13, 1, 3), (12, 2, 1000)]  # v1.06
+        check("Mainboard LEDs: Tabelle (Pin, LED, Eingang) steht im Parameter-Block", blob[63:] == DC.pack_params(params), blob[63:])  # v1.06
 
 
 # ---------------------------------------------------------------- Protokoll mit Ersatzgeraet
@@ -488,7 +524,7 @@ def test_translation():
 
 
 if __name__ == "__main__":
-    for f in (test_format, test_signature, test_params, test_paths, test_build, test_protocol, test_inch_defines_inside_the_markers, test_shared_connection, test_output, test_translation):
+    for f in (test_format, test_signature, test_params, test_paths, test_build, test_build_mainboard, test_protocol, test_inch_defines_inside_the_markers, test_shared_connection, test_output, test_translation):
         try:
             f()
         except Exception as e:                              # noqa: BLE001

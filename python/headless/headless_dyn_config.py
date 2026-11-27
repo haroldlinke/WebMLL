@@ -1,12 +1,13 @@
-# Datei-Version: 1.08 (2026-11-27) - headless_dyn_config.py
+# Datei-Version: 1.09 (2026-11-27) - headless_dyn_config.py
 # ----------------------------------------------------------------------------------------------
 # Name:           headless_dyn_config.py
 # Path:           headless/headless_dyn_config.py
-# Version:        1.08
+# Version:        1.09
 # Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.09  2026-11-27  Mainboard LEDs (ESP32/Pico) in der Konfigurationsdatei: Abschnitt .mllmb (Pin, LED-Nummer, Eingang) wird im Parameter-Block gepackt, BLOB_VERSION 8; main() verweist auf die Tabelle, sonst entfernt der Linker den Abschnitt (Mainboard LEDs waren immer aus). Zeilen mit '# v1.09'
 #   1.08  2026-11-27  normalize_header: die Namen der Eingangskanaele (INCH_xxx) werden auch aus den Zeilen zwischen //MLLDYN_BEGIN und //MLLDYN_END gelesen (dort stehen jetzt die Eingangskanal-Defines), sonst bliebe die Ersetzung durch die Nummer aus und eine Aenderung der Nummern ginge an der Signatur vorbei. Zeilen mit '# v1.08'
 #   1.07  2026-11-27  SharedLink: die Konfiguration ueber die schon offene Verbindung (EFFECT Mode, derselbe Anschluss) uebertragen, ohne sie zu schliessen und neu zu oeffnen; Link.read ruft _fill. Zeilen mit '# v1.07'
 #   1.06  2026-11-24  wait_for_port: Device-Pfad, Seriennummer und Location werden in einer Schleife ueber die Ports geprueft. Zeilen mit '# v1.06'
@@ -59,7 +60,9 @@ SIG_SALT = "mlldyn-5"                       # bei Aenderungen am Format der Konf
 BLOB_MAGIC = b"MLLC"
 # BLOB_VERSION = 2  # v1.01 (entfallen)
 # BLOB_VERSION = 5  # v1.01  # v1.03 (entfallen)
-BLOB_VERSION = 7  # v1.03: entspricht MLL_CFG_VERSION in MLLDynConfig.h
+BLOB_VERSION = 8  # v1.03: entspricht MLL_CFG_VERSION in MLLDynConfig.h  # v1.09 (8: Mainboard LEDs im Abschnitt Parameter)
+MAX_MAINBOARD_LEDS = 8  # v1.09: entspricht MLL_MAX_MB in MLLDynConfig.h
+MAINBOARD_TAB_LEN = 12  # v1.09: Abschnitt .mllmb: drei Eintraege zu 4 Bytes (Pin, LED-Nummer 0 = frei, Eingang u16)
 SIG_LEN = 16
 # BLOB_HEADER = struct.Struct("<4sBBH5II16s")  # v1.01 (entfallen)
 BLOB_HEADER = struct.Struct("<4sBBH6II16s")  # Kennung, Version, reserviert, RAM, Laenge Config/Ext/Store/L2V/Startwerte/Parameter, CRC32 der Nutzdaten, Signatur der Firmware  # v1.01
@@ -201,6 +204,11 @@ def pack_params(params):  # v1.01
     out = struct.pack("<HHHB", num_leds, start_send, total_send, len(channels)) + b"".join(struct.pack("<H", c) for c in channels)  # v1.01
     # out += struct.pack("<B", controller_count) + b"".join(struct.pack("<BHH", pin, offset, count) for pin, offset, count in controllers)  # v1.01  # v1.03 (entfallen)
     out += struct.pack("<B", controller_count) + b"".join(struct.pack("<BBHH", pin, led_channel, offset, count) for pin, led_channel, offset, count in controllers)  # v1.03: 4 Werte pro Controller
+    # v1.09: Mainboard LEDs (ESP32/Pico): u8 Anzahl, je Eintrag u8 Pin (255 = Status LED des ESP32 auf LED Kanal 7), u8 LED-Nummer (1..3), u16 Eingang
+    mainboard = [tuple(m) for m in (params.get("mainboard") or [])]  # v1.09
+    if len(mainboard) > MAX_MAINBOARD_LEDS or any(not (0 <= pin <= 0xFF and 1 <= nr <= 3 and 0 <= inp <= 0xFFFF) for pin, nr, inp in mainboard):  # v1.09
+        raise DynConfigError("Mainboard LEDs der Konfiguration sind ungueltig (%d Eintraege)" % len(mainboard))  # v1.09
+    out += struct.pack("<B", len(mainboard)) + b"".join(struct.pack("<BBH", pin, nr, inp) for pin, nr, inp in mainboard)  # v1.09
     for key in ("leds_per_channel", "start_msg"):  # v1.01
         out += str(params.get(key) or "").encode("utf-8") + b"\0"  # v1.01
     return out  # v1.01
@@ -217,8 +225,16 @@ def build_blob(sketch_dir, lib_src, tools, workdir, sig):
     src = ["#define CONFIG_ONLY", "", "#include <Arduino.h>"]
     if os.path.isfile(os.path.join(sketch_dir, "MP3.h")):
         src.append('#include "MP3.h"')
-    src += ['#include "LEDs_AutoProg.h"', "", "int main()", "{",
+    # v1.09: Mainboard LEDs (ESP32/Pico) als Tabelle im Abschnitt .mllmb: der Compiler setzt Mainboard_LEDn (Eingangskanal) und die Pins um
+    src += ['#include "LEDs_AutoProg.h"', "", "#ifndef MLL_P_MB_PIN1", "#define MLL_P_MB_PIN1 255", "#endif", "#ifndef MLL_P_MB_PIN2", "#define MLL_P_MB_PIN2 255", "#endif",
+            "#ifndef MLL_P_MB_PIN3", "#define MLL_P_MB_PIN3 255", "#endif",
+            '__attribute__((used, section(".mllmb"))) const uint8_t MLL_MB_TAB[%d] = {' % MAINBOARD_TAB_LEN,
+            "#if defined(Mainboard_LED1)", "  MLL_P_MB_PIN1, 1, (uint8_t)(Mainboard_LED1), (uint8_t)((uint16_t)(Mainboard_LED1) >> 8),", "#else", "  0, 0, 0, 0,", "#endif",
+            "#if defined(Mainboard_LED2)", "  MLL_P_MB_PIN2, 2, (uint8_t)(Mainboard_LED2), (uint8_t)((uint16_t)(Mainboard_LED2) >> 8),", "#else", "  0, 0, 0, 0,", "#endif",
+            "#if defined(Mainboard_LED3)", "  MLL_P_MB_PIN3, 3, (uint8_t)(Mainboard_LED3), (uint8_t)((uint16_t)(Mainboard_LED3) >> 8),", "#else", "  0, 0, 0, 0,", "#endif",
+            "};", "", "int main()", "{",
             "  int r = (int)&Config[0] + (int)&MLL_ConfigRamSize;",
+            "  r += (int)&MLL_MB_TAB[0];",  # v1.09: ohne Verweis entfernt der Linker den Abschnitt .mllmb (--gc-sections)
             "#if defined(USE_EXT_ADDR)", "  r += (int)&Ext_Addr[0];", "#endif",
             "#if defined(USE_LED_TO_VAR)", "  r += (int)&LED2Var_Tab[0];", "#endif",
             "#if defined(MLL_HAS_STORE_VALUES)", "  r += (int)&Store_Values[0];", "#endif",
@@ -262,12 +278,18 @@ def build_blob(sketch_dir, lib_src, tools, workdir, sig):
     store = section(SECTIONS[2], False)
     l2v = section(SECTIONS[3], False)
     start = section(SECTIONS[4], False)
+    mb_raw = section(".mllmb", False)  # v1.09
+    if mb_raw and len(mb_raw) != MAINBOARD_TAB_LEN:  # v1.09
+        raise DynConfigError("Abschnitt .mllmb hat die falsche Laenge (%d Bytes)" % len(mb_raw))  # v1.09
+    mainboard = [(mb_raw[i], mb_raw[i + 1], mb_raw[i + 2] | mb_raw[i + 3] << 8) for i in range(0, len(mb_raw), 4) if mb_raw[i + 1]]  # v1.09: LED-Nummer 0 = nicht benutzt
     ram = section(RAM_SECTION, True)
     if len(ram) < 2:
         raise DynConfigError("Abschnitt %s ist leer" % RAM_SECTION)
     ram_size = struct.unpack("<H", ram[:2])[0]
     with open(os.path.join(sketch_dir, HEADER_FILE), "r", encoding="utf-8", errors="replace") as fh:  # v1.01
-        params = pack_params(parse_params(fh.read()))  # v1.01
+        params_dict = parse_params(fh.read())  # v1.01
+    params_dict["mainboard"] = mainboard  # v1.09
+    params = pack_params(params_dict)  # v1.01
     # return pack_blob(config, ext, store, l2v, start, ram_size, sig)  # v1.01 (entfallen)
     return pack_blob(config, ext, store, l2v, start, ram_size, sig, params)  # v1.01
 

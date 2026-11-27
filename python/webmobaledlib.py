@@ -1,8 +1,8 @@
-# Datei-Version: 5.60 (2026-11-27) - webmobaledlib.py
+# Datei-Version: 5.61 (2026-11-27) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        5.60
+# Version:        5.61
 # Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
@@ -81,6 +81,7 @@
 #   5.58  2026-11-27  Servo- und LED-Farb-Animations-Dialog: Feld Anschluss-Kanal heisst LM-Ausgang mit Tooltip; Parameterformular: LED Kanal Auswahl heisst LED RGB-Anschluss Auswahl; Wiki Begriffe: LM-Ausgang, LED RGB-Anschluss (web_form_servoanim 1.07, web_form_ledcoloranim 1.02, web_form_other 1.21, Web_Languages.csv)
 #   5.59  2026-11-27  Pull Request 82 (Jueff, dort V5.51 bis V5.69): Serieller Monitor (Verbindungsknopf, EFFECT oder DIRECT Mode, Verbindungsverlust mit automatischem Neuverbinden, Verlassen des Monitors stellt die Verbindung auf das Blatt um), Setup uebertragen mit schnellem Upload ueber die offene Verbindung, Plattformen und Protokolle (csv/Lichtmaschinen_prop.json: devices, platforms, protocols), LNet-Lizenz je Blatt, Selectrix-Pruefung, Firmware-Auswahl nach Plattform, ESP32: keine Mainboard_LED-Defines in der Kopfdatei, Doppelklick-Schalter, Sync_Toggle_Buttons_by_Address. Zeilen im Code behalten die Marker # v5.51 bis # v5.69 des PR; die Dateien web_params (Stand 5.51) und web_tabs sind zusammengefuehrt
 #   5.60  2026-11-27  Pull Request 83 (Jueff, dort Identify 1.04): ESP32: das Makro Mainboard_LED(n, InCh) schaltet die drei Status LEDs der Hauptplatine ueber MllStatusLedSet() (wie das Identify Blinken); keine Pins mehr (LEDs_AutoProg.ino, Zeilen mit '// v1.04'; nicht kompiliert, nicht am Board getestet)
+#   5.61  2026-11-27  Blattwechsel (sync_connection_to_sheet): hat das Blatt keine eigene Verbindung und gehoert die offene Verbindung zu einer anderen Lichtmaschine (Typ aus der Startmeldung), wird sie getrennt; ist das Geraet des Blatts nicht erreichbar (Anschluss fehlt, WLAN-Ziel antwortet nicht, Hinweis-Anschluss mit anderem Typ), bleibt keine Verbindung zum bisherigen Geraet stehen (Meldung); meldet sich am eingestellten Anschluss ein anderer Typ als im Blatt, kommt eine Warnung. Zeilen mit '# v5.61'
 #   5.38  2026-11-26  Ohne Lichtmaschine kam die Meldung 'Fehler beim Oeffnen der Verbindung' bei jedem Wechsel auf einen Reiter mit Direktmodus (Farb Test, Servo Test, Sound Test): das automatische Verbinden beim Reiterwechsel scheitert jetzt nur einmal mit Meldung, danach wird nicht mehr versucht, bis eine Verbindung besteht oder der Anwender selbst verbindet (Menue, Testtasten)
 #   5.37  2026-11-26  Farb Test: Knopf 'Farb Test beenden' unten rechts (web_colorcheck 1.13); Set_ColTab oeffnet den Farb Test auch ohne Lichtmaschine, kein Anschluss noetig (M60_CheckColors 1.01); Parameterformular: Flags (OptCtrPar, CtrMode, RandMode) als aufklappbare Hakenliste (web_form_other 1.17, Web_Languages.csv)
 #   5.36  2026-11-26  Startseite: alle Kacheln gleich gross (auch Ohne Zentrale und die letzte Lichtmaschine), Raster statt Zeilenumbruch (web_startpage 1.05)
@@ -1875,7 +1876,8 @@ def font_scales(ctrl) -> dict:
 # VERSION = "5.57 (2026-11-27)"  # v5.58 (entfallen)
 # VERSION = "5.58 (2026-11-27)"  # v5.59 (entfallen)
 # VERSION = "5.59 (2026-11-27)"  # v5.60 (entfallen)
-VERSION = "5.60 (2026-11-27)"  # v5.60
+# VERSION = "5.60 (2026-11-27)"  # v5.61 (entfallen)
+VERSION = "5.61 (2026-11-27)"  # v5.61
 # VERSION = "4.09 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.08 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.07 (2026-11-19)"  # v3.64 (entfallen)
@@ -7238,6 +7240,11 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             if force and target is None and not has_usb and current and not via_ip:  # v5.61: Blatt ohne Anschluss: im EFFECT Mode am bisherigen Anschluss neu verbinden
                 sheet_port, has_usb = current, True  # v5.61
             if target is None and not has_usb:  # v4.92: das Blatt hat keine eigene Verbindung: Verbindung bleibt
+                want, have = _sheet_board_type(), _connected_type()  # v5.61: ausser sie gehoert zu einer anderen Lichtmaschine (Typ laut Blatt, Typ aus der Startmeldung)
+                if want and _connected_type_known() and have != want and not force and not state["busy"]:  # v5.61
+                    logger.info("Blattwechsel %s: Blatt ohne eigene Verbindung, Blatt-Typ '%s', verbunden '%s': Verbindung getrennt", ws.Name, want, have)  # v5.61
+                    await run.io_bound(_disconnect_locked)  # v5.61
+                    ui.notify(tr("Die Verbindung wurde getrennt, weil das Blatt für eine andere Lichtmaschine ({want}) gilt als die verbundene ({have}).", want=want, have=have), type="warning")  # v5.61
                 return  # v4.92
             logger.info("Blattwechsel %s: USB-Anschluss '%s', WLAN-Ziel %s, offene Verbindung '%s' (WLAN: %s)", ws.Name, sheet_port if has_usb else "-", target[0] if target else "-", current, via_ip)  # v4.91  # v4.92
             if target is not None:  # v4.92
@@ -7259,7 +7266,8 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 what = target[0]  # v4.92
             if not ok and has_usb and _port_present(sheet_port):  # v4.92: kein WLAN-Ziel oder nicht erreichbar: USB-Anschluss des Blatts
                 logger.info("Blattwechsel: Verbindung %s -> %s", current, sheet_port)  # v4.90
-                ok = await run.io_bound(_switch_connection, sheet_port, _sheet_board_type() == "Pico")  # v4.90
+                hint_verify = (lambda: (not _connected_type_known()) or _connected_type_ok()) if _port_hint_flag() else None  # v5.61: Hinweis-Anschluss (negative Zahl): meldet sich dort eine andere Lichtmaschine, wieder trennen (und den Anschluss nicht ins Blatt eintragen)
+                ok = await run.io_bound(_switch_connection, sheet_port, _sheet_board_type() == "Pico", hint_verify)  # v4.90  # v5.61
                 what = sheet_port  # v4.92
                 if ok:  # v4.92
                     _store_hint_port(sheet_port)  # v5.50: negative Zahl im Blatt (Hinweis): den gefundenen Anschluss eintragen
@@ -7269,10 +7277,14 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                         logger.debug("Anschluss nicht gespeichert", exc_info=True)  # v4.90
             if ok:  # v4.92
                 ui.notify(tr("Mit der Lichtmaschine verbunden ({port}).", port=what), type="positive")  # v4.90
+                if _connected_type_known() and not _connected_type_ok():  # v5.61: am eingestellten Anschluss meldet sich ein anderer Typ als im Blatt: warnen (der Anschluss bleibt, der Anwender hat ihn eingestellt)
+                    ui.notify(tr("Achtung: Am Anschluss {port} meldet sich eine andere Lichtmaschine ({have}) als im Blatt eingestellt ({want}).", port=what, have=_connected_type(), want=_sheet_board_type()), type="warning")  # v5.61
                 if restart:  # v5.62: beim Reiterwechsel startet der Reiter den Direktmodus danach selbst
                     after_connect()  # v4.90
             else:  # v4.92
                 logger.info("Blattwechsel: keine Verbindung hergestellt")  # v4.92
+                await run.io_bound(_disconnect_locked)  # v5.61: keine Verbindung zu einer anderen Lichtmaschine stehen lassen (der Anschluss des Blatts fehlt oder meldet sich nicht)
+                ui.notify(tr("Die Verbindung zum Gerät des Blatts ({port}) ist nicht möglich. Die bisherige Verbindung wurde getrennt. Bitte „Mit Lichtmaschine verbinden“ drücken.", port=(target[0] if target else sheet_port)), type="warning")  # v5.61
         except Exception:                                  # noqa: BLE001  # v4.90
             logger.debug("Verbindung nicht an das Blatt angepasst", exc_info=True)  # v4.90
 
@@ -7284,13 +7296,26 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
                 logger.debug("Trennen vor dem Wechsel fehlgeschlagen", exc_info=True)  # v4.92
             return _silent_connect(None, None, None, (host, password))  # v4.92
 
-    def _switch_connection(port, dtr):  # v4.90: im Hintergrund-Thread
+    def _connected_type_known() -> bool:  # v5.61: gibt es eine Startmeldung der verbundenen Lichtmaschine (sonst ist der Typ unbekannt und es wird nichts getrennt oder gewarnt)
+        return bool(re.search(r"Ver \d+: \S+", str(getattr(ctrl, "ARDUINO_startmessage", "") or "")))  # v5.61
+
+    def _disconnect_locked():  # v5.61: im Hintergrund-Thread: eine offene Verbindung unter der Verbindungs-Sperre trennen
+        with ctrl._conn_lock:  # v5.61
+            try:  # v5.61
+                if ctrl.is_connection_open():  # v5.61
+                    ctrl.disconnect()  # v5.61
+            except Exception:                              # noqa: BLE001  # v5.61
+                logger.debug("Trennen fehlgeschlagen", exc_info=True)  # v5.61
+
+    # def _switch_connection(port, dtr):  # v4.90: im Hintergrund-Thread  # v5.61 (entfallen: verify fuer den Hinweis-Anschluss)
+    def _switch_connection(port, dtr, verify=None):  # v5.61: im Hintergrund-Thread
         with ctrl._conn_lock:  # v5.42: Trennen und Verbinden zusammen (kein anderer Verbindungsaufbau dazwischen)
             try:  # v4.90
                 ctrl.disconnect()  # v4.90
             except Exception:                              # noqa: BLE001  # v4.90
                 logger.debug("Trennen vor dem Wechsel fehlgeschlagen", exc_info=True)  # v4.90
-            return _silent_connect(port, False, True if dtr else None)  # v4.90
+            # return _silent_connect(port, False, True if dtr else None)  # v4.90  # v5.61 (entfallen)
+            return _silent_connect(port, False, True if dtr else None, None, verify)  # v5.61
 
     sheet_conn_hook["fn"] = sync_connection_to_sheet  # v4.90
     ctrl.sheet_port_provider = lambda: (_stored_ports()[0] or None)  # v4.91 (Issue 59): Verbinden (Knopf, Menue, Trennen und neu Verbinden) nimmt den Anschluss des aktiven Blatts

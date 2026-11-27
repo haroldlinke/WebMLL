@@ -1,9 +1,20 @@
-Datei-Version: 1.145 (2026-11-27) - HOC_Anwender.md
-Stand: Version 5.60
+Datei-Version: 1.146 (2026-11-27) - HOC_Anwender.md
+Stand: Version 5.61
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Version 5.61 (2026-11-27)
+
+Neue Funktionen:
+- Die Mainboard LEDs (Makro „LEDs der Hauptplatine steuern“) werden bei Pro (ESP32) und Pico Zero aus der Konfigurationsdatei übernommen. Eine Änderung an der Zuordnung braucht kein vollständiges Flashen mehr.
+- SPI wird nicht mehr unterstützt: Die Einstellung „Verwende SPI Kommunikation“ ist entfernt.
+
+Korrekturen:
+- Blattwechsel: Gehört das neue Blatt zu einer anderen Lichtmaschine (anderer Typ) und hat keinen eigenen Anschluss, wird die Verbindung getrennt. Ist das Gerät des Blatts nicht erreichbar, bleibt keine Verbindung zum bisherigen Gerät stehen; eine Meldung weist darauf hin. Meldet sich am eingestellten Anschluss ein anderer Typ als im Blatt, erscheint eine Warnung.
+- Setup übertragen: Die Meldung „Preparation of Program Started“ am Anfang des Protokollfensters ist übersetzt und bleibt beim schnellen Upload stehen. Muss doch das ganze Programm hochgeladen werden, bleibt der Grund im Protokollfenster sichtbar.
+- ESP32: Der Workaround für das Blockieren der LED-Ausgabe (FastLED.show) ist entfernt.
 
 ## Version 5.60 (2026-11-27), Pull Request 83 (Jueff)
 

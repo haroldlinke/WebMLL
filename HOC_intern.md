@@ -1,5 +1,5 @@
-Datei-Version: 1.140 (2026-11-27) - HOC_intern.md
-Stand: Version 5.60
+Datei-Version: 1.141 (2026-11-27) - HOC_intern.md
+Stand: Version 5.61
 
 # webMobaLedLib: History of Change (intern, ausführlich)
 
@@ -61,6 +61,57 @@ SwitchC bewusst nicht aufgenommen (nicht gewünscht); der Name lässt sich einti
 | Wiki `pg_tabelle.txt` | 1.14 | Abschnitt „Die Funktion Logic“; `seiten_update` 1.14 |
 
 Das Makro `Logic(Erg, A AND B OR …)` und `Create_Result` sind unverändert; der Baukasten erzeugt denselben Text. Nicht im Browser geprüft, nur die reinen Funktionen (Test mit 11 Ausdrücken).
+
+## 5.61 (2026-11-27), Mainboard LEDs aus der Konfigurationsdatei (ESP32, Pico), SPI entfernt, Blattwechsel, Protokollfenster bei Setup übertragen
+
+### Mainboard LEDs aus der Konfiguration
+
+**Ursache:** Die Mainboard LEDs (Makro `Mainboard_LED(n, InCh)`) standen als `#define` in der Firmware. Jede Änderung der Zuordnung änderte die Firmware-Signatur und verlangte ein volles Flashen.
+
+**Umsetzung:**
+* `headless_dyn_config.py` übersetzt die Zuordnung im C-Compiler (Abschnitt `.mllmb`, je Eintrag Pin, LED-Nummer, Eingangskanal). Die Tabelle steht im Parameter-Block der Konfigurationsdatei (Format 8, `BLOB_VERSION = 8`, `MLL_CFG_VERSION = 8`). `main()` verweist auf `MLL_MB_TAB`, sonst entfernt der Linker (`--gc-sections`) den Abschnitt und die Tabelle ist leer.
+* `MLLDynConfig.h` liest die Tabelle (`MllParseParams`). `MllMainboardSetup()` setzt die Pico-Pins auf Ausgang, `MllMainboardUpdate()` setzt sie in jedem Durchlauf. Pin 255 steht für die ESP32-Status-LEDs: sie gehen über `MllStatusLedSet()` aus `MLLIdentify.h`.
+* `LEDs_AutoProg.ino`: `Set_Mainboard_LEDs()` nutzt auf ESP32 und Pico die Tabelle für LED 1 bis 3. Die übrigen Mainboard LEDs (0, 4 bis 16) laufen wie bisher. Auf dem Nano und ohne Konfigurationsdatei bleibt alles beim Alten.
+* `M06_Write_Header.py`: Pico schreibt `MLL_P_MB_PIN1..3` (13, 12, 11). `Remove_Mainboard_LED_Defines` entfernt die `Mainboard_LED`-Defines beim ESP32 **und Pico** aus dem Preprozessor-Teil der Firmware; im Zweig `CONFIG_ONLY` bleiben sie (`ConfigTxt_Full`), weil die Tabelle `.mllmb` sie braucht. `Write_Pico_Mainboard_LED_Defines` (`#define Mainboard_LEDn SI_0`) entfällt; das Blinken der Geräteerkennung (`MLLIdentify.h` 1.01) setzt die Pico-Pins beim Start selbst auf Ausgang.
+* Alter Code für `USE_NEW_LED_ARRAY 0` entfernt (C/C++/ino/h: gelöscht, nicht auskommentiert), ebenso ältere auskommentierte Zeilen mit `(entfallen)` in `LEDs_AutoProg.ino` und `MLLDynConfig.h`.
+* Workaround für das Blockieren von `FastLED.show()` (18.01.25, `lastFastledSend`, `lastFastledFail`, `GiveGTX_sem`) gelöscht. `delayCount` und `reviveCount` bleiben für die Anzeige (`DISPLAY_FASTLED_FAULTS`) erhalten.
+
+### SPI entfernt
+
+* Der Code für `USE_SPI_COM` ist im Sketch gelöscht. Ist `USE_SPI_COM` gesetzt, bricht der Compiler mit „SPI (USE_SPI_COM) is no longer supported“ ab. Mit entfernt: `DISABLE_SPI_DELAY` und `Send_Disable_Pin_Active` (`digitalWrite(SEND_DISABLE_PIN, ...)` bleibt, es gehört zur RS232-Verbindung).
+* `M06_Write_Header.py` schreibt `USE_SPI_COM` nicht mehr; `Check_Switch_Lists_for_SPI_Pins` (`M06_Write_Header_SW.py`) entfällt; `M08_ARDUINO.py` schreibt für den DCC Arduino immer `#define USE_SPI_SLAVE 0`. Die Einstellung „Verwende SPI Kommunikation“ ist aus `csv/Config.csv` entfernt, in `csv/Named_Ranges.csv` rücken `Use_Excel_Console` (Zeile 35) und `Use_PlatformIO` (Zeile 36) nach; Einträge in `PA_Named_Ranges.csv`, `mlpyproggen/named_ranges.csv` und die Texte in `csv/Languages.csv` (13 Zeilen) gelöscht. `SPI_Pins` (CAN Modul) bleibt.
+
+### Blattwechsel: keine Verbindung zu einer falschen Lichtmaschine
+
+`sync_connection_to_sheet` (`webmobaledlib.py`): Blatt ohne eigene Verbindung und offene Verbindung zu einem anderen Typ (Startmeldung): trennen mit Meldung. Gelingt die Verbindung des Blatts nicht (Anschluss fehlt, WLAN-Ziel antwortet nicht, Hinweis-Anschluss mit anderem Typ): die bisherige Verbindung wird getrennt (`_disconnect_locked`), Meldung. Hinweis-Anschluss: `_switch_connection(verify)` prüft den Typ, ein falsches Gerät wird nicht ins Blatt eingetragen. Verbunden, aber anderer Typ als im Blatt: Warnung. Drei neue Meldungen in `csv/Web_Languages.csv`.
+
+### Protokollfenster bei Setup übertragen
+
+* Der Starttext `Preparation of Program Started` (`Prog_Generator.upload_to_ARDUINO_Button_click`) ist übersetzt: `Vorbereitung des Programms gestartet` (`_tr`, neue Zeile in `csv/Web_Languages.csv`).
+* Schneller Upload: `M42._open_output` leert das Fenster nicht mehr (der Starttext verschwand sonst). Nach einem Rückfall auf das ganze Programm leert M08 das Fenster nicht (`M42.Fallback_Text()`, `empty_text=(FastReason == "")`): der Grund („Die Firmware im Gerät passt nicht zu dieser Konfiguration …“) bleibt sichtbar.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `LEDs_AutoProg/LEDs_AutoProg.ino` | Identify 1.06 | Tabelle für ESP32/Pico (LED 1 bis 3); alter Code, SPI und FastLED-Workaround gelöscht; `#error` bei `USE_SPI_COM` |
+| `LEDs_AutoProg/MLLDynConfig.h` | 1.06 | Format 8: `mllMainboard[]`, Parser, `MllMainboardSetup()`, `MllMainboardUpdate()` |
+| `LEDs_AutoProg/MLLIdentify.h` | 1.01 | Pico: Pins beim Start des Blinkens auf Ausgang |
+| `headless/headless_dyn_config.py` | 1.09 | `.mllmb` aus dem Compiler, Parameter `mainboard`, `BLOB_VERSION = 8` |
+| `proggen/M06_Write_Header.py` | 1.26 | Pico `MLL_P_MB_PIN1..3`, `ConfigTxt_Full`, SPI entfernt, keine Mainboard_LED-Defines beim Pico |
+| `proggen/M06_Write_Header_SW.py` | 1.17 | `Check_Switch_Lists_for_SPI_Pins` entfernt |
+| `proggen/M08_ARDUINO.py` | 1.43 | `USE_SPI_SLAVE 0`; nach einem Rückfall das Fenster nicht leeren |
+| `proggen/M42_Dyn_Config.py` | 1.15 | `Fallback_Text`; `_open_output` leert nicht |
+| `proggen/M01_Gen_Release_Version.py` | 4.16 | Vorgabe `USE_SPI_Communication` entfernt |
+| `mlpyproggen/Prog_Generator.py` | 1.13 | Starttext übersetzt |
+| `webmobaledlib.py` | 5.61 | `sync_connection_to_sheet`, `_switch_connection(verify)`, `_disconnect_locked`, `_connected_type_known` |
+| `csv/Config.csv`, `csv/Named_Ranges.csv`, `csv/PA_Named_Ranges.csv`, `mlpyproggen/named_ranges.csv`, `csv/Languages.csv` | | Einstellung und Texte für SPI entfernt |
+| `csv/Web_Languages.csv` | | vier neue Zeilen |
+| `test_dyn_config.py`, `test_identify.py`, `test_sheet_connection.py`, `test_upload_output.py` | 1.06, 1.02, 1.00, 1.02 | Tests |
+| `KI_prompt/KI_ENTWICKLUNG_Prompt.md` | 1.03 | C/C++/ino/h: alter Code wird gelöscht, nicht mit `(entfallen)` markiert |
+| `install/BETATEST_Checkliste.md` | 4.37 | Punkte 434 bis 437 |
+
+**Geprüft:** `test_dyn_config.py` (201 Prüfungen, mit Blob-Build über die AVR-Werkzeuge), `test_identify.py`, `test_sheet_connection.py` (16), `test_upload_output.py` (11). Nano: Vorprozessor-Ausgabe des Sketches vor und nach den Änderungen gleich; ESP32-Firmware einmal mit einer Kopfdatei aus der Arbeitskopie übersetzt (vor der letzten Änderung an den Pico-Defines).
+
+**Nicht geprüft:** Pico-Build nach dem Wegfall der Mainboard_LED-Defines, Mainboard LEDs und Geräteerkennung am Board, Blattwechsel mit echten Geräten, Protokollfenster im Browser. Die Firmware-Signatur ändert sich: einmal vollständig flashen.
 
 ## 5.60 (2026-11-27), Pull Request 83 (Jueff): Mainboard_LED auf dem ESP32
 
