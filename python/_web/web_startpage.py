@@ -1,12 +1,18 @@
-# Datei-Version: 1.13 (2026-11-26) - web_startpage.py
+# Datei-Version: 1.17 (2026-11-28) - web_startpage.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_startpage.py
 # Path:           _web/web_startpage.py
-# Version:        1.13
-# Last Update:    2026-11-26
+# Version:        1.17
+# Last Update:    2026-11-28
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.17  2026-11-28  machine_for_port_type: devices.detect verweist jetzt auf ein Regel-Set (csv/Lichtmaschinen_prop.json 1.12); der erkannte Typ (Nano, ESP32, Pico) waehlt die
+#                     Vorgabe der Plattform (platforms.defaultDevice), sonst die erste erkennbare Lichtmaschine der Plattform. Zeilen mit '# v1.17'
+#   1.16  2026-11-28  Eingebaute Liste DEFAULT_MACHINES: Mini ohne Protokoll (protocols leer, wie csv/Lichtmaschinen_prop.json 1.11). Zeilen mit '# v1.16'
+#   1.15  2026-11-27  load_machines und load_platforms liefern sortPriority (Zahl, fehlt: 0; csv/Lichtmaschinen_prop.json 1.10), neu sort_priority. Die Kacheln der Startseite
+#                     behalten ihre Reihenfolge. Zeilen mit '# v1.15'
+#   1.14  2026-11-27  load_platforms liefert auch defaultDevice (Vorgabe der Lichtmaschine je Plattform fuer die Hardware Optionen, csv/Lichtmaschinen_prop.json 1.09). Zeilen mit '# v1.14'
 #   1.13  2026-11-26  isCentral entfaellt: csv/Lichtmaschinen_prop.json hat die Listen devices (Lichtmaschinen) und platforms (Plattformen anderer MobaLedLib Geraete: platform, name, text, image); load_platforms, platform_name (zuerst platforms, dann devices), platform_image. Zeilen mit '# v1.13'
 #   1.12  2026-11-26  platform_name: Name des Geraets (name) zu einer Plattform aus csv/Lichtmaschinen_prop.json, fuer die Ueberschriften der Firmware-Auswahl. Zeilen mit '# v1.12'
 #   1.11  2026-11-26  Hat ein Eintrag in csv/Lichtmaschinen_prop.json kein Bild (image leer) oder fehlt die Bilddatei im Ordner images, zeigt die Kachel eine leere Flaeche in der Groesse des Bildes (kein kaputtes Bildsymbol, keine verschobene Kachel; image_exists). Zeilen mit '# v1.11'
@@ -53,7 +59,8 @@ CENTRALS = (
 DEFAULT_MACHINES = (
     {"key": "Classic", "name": "Lichtmaschine Classic", "platform": "AM328", "board": "Nano", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": "Nano"},
     # {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "protocols": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": ""},  # v1.07 (entfallen)
-    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "protocols": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "Mini_image.png", "detect": ""},  # v1.07
+    # {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "protocols": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "Mini_image.png", "detect": ""},  # v1.07  # v1.16 (entfallen)
+    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "protocols": [], "text": "Arduino Nano", "program": "Classic_Mini", "image": "Mini_image.png", "detect": ""},  # v1.07  # v1.16: Mini unterstuetzt kein Protokoll (wie csv/Lichtmaschinen_prop.json 1.11)
     {"key": "Pro", "name": "Lichtmaschine Pro", "platform": "ESP32", "board": "ESP32", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "ESP32", "program": "Pro", "image": "ESP32_image.png", "detect": "ESP32"},
     # {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},  # v1.06 (entfallen)
     {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},  # v1.06
@@ -62,6 +69,14 @@ DEFAULT_MACHINES = (
 )
 MACHINES_FILE = os.path.join("csv", "Lichtmaschinen_prop.json")
 MACHINES = [dict(m) for m in DEFAULT_MACHINES]        # v1.03
+
+
+def sort_priority(value) -> int:  # v1.15
+    """Feld sortPriority (devices, platforms) als Zahl; fehlt es oder ist es keine Zahl: 0"""  # v1.15
+    try:  # v1.15
+        return int(value) if value is not None and not isinstance(value, bool) else 0  # v1.15
+    except (TypeError, ValueError):  # v1.15
+        return 0  # v1.15
 
 
 def load_machines(base_dir) -> list:
@@ -77,7 +92,8 @@ def load_machines(base_dir) -> list:
                 continue
             item = {"key": str(m["key"]), "name": str(m["name"]), "platform": str(m.get("platform", "")), "board": str(m.get("board", "")),
                     "protocols": [str(c) for c in (m.get("protocols", m.get("centrals")) if m.get("protocols", m.get("centrals")) is not None else ["DCC"])], "text": str(m.get("text", "")),  # v1.08
-                    "program": str(m.get("program") or m["key"]), "image": str(m.get("image", "")), "detect": str(m.get("detect", ""))}
+                    "program": str(m.get("program") or m["key"]), "image": str(m.get("image", "")), "detect": str(m.get("detect", "")),
+                    "sortPriority": sort_priority(m.get("sortPriority"))}  # v1.15: Reihenfolge im Menue der Hardware Optionen
             if all(x["key"] != item["key"] for x in result):
                 result.append(item)
     except Exception:                                  # noqa: BLE001
@@ -113,7 +129,7 @@ def protocols_for_platform(platform):  # v1.09
 
 
 def load_platforms(base_dir) -> list:  # v1.13
-    """Liste platforms aus csv/Lichtmaschinen_prop.json (Plattformen anderer MobaLedLib Geraete): [{"platform", "name", "text", "image"}]; Eintraege ohne platform werden uebergangen.
+    """Liste platforms aus csv/Lichtmaschinen_prop.json (Plattformen): [{"platform", "name", "text", "image", "defaultDevice", "sortPriority"}]; Eintraege ohne platform werden uebergangen.
     Eine fehlende oder fehlerhafte Datei ergibt eine leere Liste."""
     result = []
     try:
@@ -122,7 +138,11 @@ def load_platforms(base_dir) -> list:  # v1.13
             data = json.load(fh)
         for m in data.get("platforms", []):
             if isinstance(m, dict) and str(m.get("platform", "")).strip():
-                result.append({"platform": str(m["platform"]).strip(), "name": str(m.get("name", "")), "text": str(m.get("text", "")), "image": str(m.get("image", ""))})
+                # result.append({"platform": str(m["platform"]).strip(), "name": str(m.get("name", "")), "text": str(m.get("text", "")), "image": str(m.get("image", ""))})  # v1.14 (entfallen)
+                result.append({"platform": str(m["platform"]).strip(), "name": str(m.get("name", "")), "text": str(m.get("text", "")), "image": str(m.get("image", "")),  # v1.14
+                               # "defaultDevice": str(m.get("defaultDevice", "") or "").strip()})  # v1.14: Vorgabe der Lichtmaschine in den Hardware Optionen (key aus devices, leer: keine)  # v1.15 (entfallen)
+                               "defaultDevice": str(m.get("defaultDevice", "") or "").strip(),  # v1.14: Vorgabe der Lichtmaschine in den Hardware Optionen (key aus devices, leer: keine)
+                               "sortPriority": sort_priority(m.get("sortPriority"))})  # v1.15: Reihenfolge der Gruppen im Menue der Hardware Optionen
     except Exception:                                  # noqa: BLE001
         logger.warning("%s nicht gelesen (platforms)", MACHINES_FILE, exc_info=True)
         result = []
@@ -205,10 +225,18 @@ def machine_by_key(key):
 
 def machine_for_port_type(port_type):
     """Typ aus der Anschlusserkennung (Nano, ESP32, Pico) -> Schluessel der Lichtmaschine; None, wenn unbekannt"""
-    for m in MACHINES:
-        if m["detect"] and m["detect"] == port_type:  # v1.13
-            return m["key"]
-    return None
+    # for m in MACHINES:  # v1.17 (entfallen: detect verweist jetzt auf ein Regel-Set in detectionRules, nicht mehr auf den Typ)
+    #     if m["detect"] and m["detect"] == port_type:  # v1.13  # v1.17 (entfallen)
+    #         return m["key"]  # v1.17 (entfallen)
+    # return None  # v1.17 (entfallen)
+    platform = {"Nano": "AM328", "ESP32": "ESP32", "Pico": "PICO"}.get(str(port_type or ""))  # v1.17: Typ -> Plattform
+    if not platform:  # v1.17
+        return None  # v1.17
+    entry = platform_entry(platform)  # v1.17: Vorgabe der Plattform (platforms.defaultDevice), wenn sie zur Plattform gehoert
+    default = machine_by_key((entry or {}).get("defaultDevice", ""))  # v1.17
+    if default is not None and default["platform"].upper() == platform:  # v1.17
+        return default["key"]  # v1.17
+    return next((m["key"] for m in MACHINES if m["platform"].upper() == platform and m["detect"]), None)  # v1.17: sonst die erste erkennbare Lichtmaschine der Plattform
 
 
 def page_id_for(central_key) -> str:

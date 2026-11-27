@@ -1,14 +1,43 @@
 {
-  "_Datei-Version": "1.06 (2026-11-26) - Lichtmaschinen_prop.json",
-  "_Hinweis": "devices = Eigenschaften aller Lichtmaschinen-Produkte. Ein neues Produkt wird nur hier als weiterer Eintrag ergaenzt (die Startseite zeigt jeden Eintrag als eigene Kachel). Felder: key = eindeutiger Kurzname (auch Teil des Dateinamens des Startprogramms, wenn program fehlt), name = Anzeigename, platform = Plattform (AM328, ESP32, PICO), board = einzustellendes Board (Nano, ESP32, Pico), protocols = unterstuetzte Protokolle (DCC, Selectrix, LNet, CAN), text = Kurztext der Kachel, program = Name des Startprogramms im Ordner Startprogramme (ohne .MLL_pgf), image = Bild im Ordner images (leer oder nicht gefunden: leere Flaeche), detect = Typ der Anschlusserkennung (Nano, ESP32, Pico) oder leer, wenn das Produkt nicht automatisch erkannt werden kann. platforms = Plattformen anderer MobaLedLib Geraete (keine Lichtmaschinen), so wie das Geraet sie mit ~MLLINFO meldet und wie sie in den Firmware-Beschreibungen (.desc) stehen: platform, name = Anzeigename (Ueberschrift in der Firmware-Auswahl), text = Kurztext, image = Bild im Ordner images (fehlt es, zeigt die Geraeteauswahl keines).",
+  "_Datei-Version": "1.12 (2026-11-28) - Lichtmaschinen_prop.json",
+  "_Hinweis": "devices = Eigenschaften aller Lichtmaschinen-Produkte. Ein neues Produkt wird nur hier als weiterer Eintrag ergaenzt (die Startseite zeigt jeden Eintrag als eigene Kachel). Felder: key = eindeutiger Kurzname (auch Teil des Dateinamens des Startprogramms, wenn program fehlt), name = Anzeigename, platform = Plattform (AM328, ESP32, PICO), board = einzustellendes Board (Nano, ESP32, Pico), protocols = unterstuetzte Protokolle (DCC, Selectrix, LNet, CAN; leere Liste: kein Protokoll, dann ohne Protokollauswahl und ohne DCC/Selectrix/LNet Arduino), text = Kurztext der Kachel, program = Name des Startprogramms im Ordner Startprogramme (ohne .MLL_pgf), image = Bild im Ordner images (leer oder nicht gefunden: leere Flaeche), sortPriority = Reihenfolge im Menue der Hardware Optionen (hoechste Zahl zuerst, bei gleicher Zahl nach name; fehlt: 0), detect = Name des Regel-Sets in detectionRules, mit dem das Geraet am USB erkannt wird (zum Beispiel AM328, Uno, ESP32, Pico; Gross-/Kleinschreibung egal), leer: nicht erkennbar. platforms = Plattformen anderer MobaLedLib Geraete (keine Lichtmaschinen), so wie das Geraet sie mit ~MLLINFO meldet und wie sie in den Firmware-Beschreibungen (.desc) stehen: platform, name = Anzeigename (Ueberschrift in der Firmware-Auswahl), text = Kurztext, image = Bild im Ordner images (fehlt es, zeigt die Geraeteauswahl keines), sortPriority = Reihenfolge der Gruppen im Menue der Hardware Optionen (hoechste Zahl zuerst, bei gleicher Zahl nach name; fehlt: 0), defaultDevice = key der Lichtmaschine aus devices, die die Hardware Optionen fuer diese Plattform zeigen, solange im Blatt noch keine gewaehlt ist (nur, wenn ihr board zum Board des Blattes passt; sonst der erste Eintrag).",
   "devices": [
-    {"key": "Classic", "name": "Lichtmaschine Classic", "platform": "AM328", "board": "Nano", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": "Nano"},
-    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "protocols": ["DCC"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "Mini_image.png", "detect": ""},
-    {"key": "Pro", "name": "Lichtmaschine Pro", "platform": "ESP32", "board": "ESP32", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "ESP32", "program": "Pro", "image": "ESP32_image.png", "detect": "ESP32"},
-    {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico"},
-    {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "MoLLi_image.png", "detect": ""}
+    {"key": "Classic", "name": "Lichtmaschine Classic", "platform": "AM328", "board": "Nano", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Arduino Nano", "program": "Classic_Mini", "image": "LED_image.png", "detect": "AM328", "sortPriority": 20},
+    {"key": "Mini", "name": "Lichtmaschine Mini", "platform": "AM328", "board": "Nano", "protocols": [], "text": "Arduino Nano", "program": "Classic_Mini", "image": "Mini_image.png", "detect": "AM328", "sortPriority": 10},
+    {"key": "Pro", "name": "Lichtmaschine Pro", "platform": "ESP32", "board": "ESP32", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "ESP32", "program": "Pro", "image": "ESP32_image.png", "detect": "ESP32", "sortPriority": 10},
+    {"key": "PicoZero", "name": "Lichtmaschine Pico Zero", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "PICO_image.png", "detect": "Pico", "sortPriority": 20},
+    {"key": "MoLLi", "name": "Lichtmaschine MoLLi", "platform": "PICO", "board": "Pico", "protocols": ["DCC"], "text": "Raspberry Pi Pico", "program": "Pico_Zero_MoLLi", "image": "MoLLi_image.png", "detect": "Pico", "sortPriority": 10},
+    {"key": "Uno", "name": "MobaledLib Zentrale auf Arduino Uno", "platform": "AM328", "board": "Uno", "protocols": ["DCC", "Selectrix", "CAN", "LNet"], "text": "Raspberry Pi Pico", "program": "", "image": "Uno_image.png", "detect": "UNO", "sortPriority": 5}
   ],
+  "detectionRules": {
+    "_Hinweis": "Erkennung eines seriellen Anschlusses aus den USB-Daten (headless/headless_usb_detect.py). Schluessel = Name eines Regel-Sets; devices.detect verweist darauf, die Plattform ist die der verweisenden Geraete (ein Set ohne Verweis gilt als Plattform, wenn es AM328, ESP32 oder PICO heisst). Mehrere Sets koennen passen (zum Beispiel ein CH340 zu Uno und AM328): dann alle, nach priority. priority = Reihenfolge, wenn mehrere Sets passen (kleiner zuerst). filters = Liste von Filtern: ein Filter passt, wenn ALLE seine Felder passen; das Set passt, wenn EIN Filter passt. Felder: vid, pid = USB-Kennung hexadezimal (Text oder Liste); text = Teiltext in Beschreibung, Hersteller oder Produkt; hwid = Teiltext der Hardware-Kennung (Gross-/Kleinschreibung egal; bei einer Liste genuegt einer); weak = true: schwacher Filter, zaehlt nur fuer die Liste der Anschluesse einer Lichtmaschine und nur, wenn keine Plattform mit einem normalen Filter passt. Ein Filter mit einem unbekannten Feld passt nie. Fehlt detectionRules oder ist die Datei fehlerhaft, gelten die eingebauten Regeln (Stand 5.60).",
+    "PICO": {"priority": 1, "filters": [
+      {"vid": "2E8A"},
+      {"vid": "239A", "pid": "813D"},
+      {"hwid": ["VID:PID=2E8A:", "VID:PID=239A:813D", "VID_2E8A&PID_", "VID_239A&PID_813D"]}
+    ]},
+    "ESP32": {"priority": 2, "filters": [
+      {"vid": "10C4"},
+      {"text": ["CP210x", "CP2102 USB to UART"]}
+    ]},
+    "Uno": {"priority": 3, "filters": [
+      {"vid": ["2341", "2A03"], "pid": ["0043", "0001", "0243"]},
+      {"text": "Arduino Uno"},
+      {"vid": "1A86"},
+      {"text": ["CH340", "CH341"]},
+      {"text": ["USB Serial Port", "Serielles USB-Gerät", "USB Serial Device", "tty"], "weak": true}
+    ]},
+    "AM328": {"priority": 4, "filters": [
+      {"vid": ["1A86", "0403", "2341", "2A03"]},
+      {"text": ["CH340", "CH341", "Arduino", "FT232", "USB2.0-Ser"]},
+      {"hwid": "VID:PID=0403:"},
+      {"text": ["USB Serial Port", "Serielles USB-Gerät", "USB Serial Device", "tty"], "weak": true}
+    ]}
+  },
   "platforms": [
+    {"platform": "AM328", "name": "ATMega", "text": "Sound- und Servomodul", "image": "", "defaultDevice": "Classic", "sortPriority": 30},
+    {"platform": "ESP32", "name": "ESP32", "text": "Sound- und Servomodul", "image": "", "defaultDevice": "Pro", "sortPriority": 50},
+    {"platform": "PICO", "name": "Raspberry Pico", "text": "Sound- und Servomodul", "image": "", "defaultDevice": "PicoZero", "sortPriority": 40},
     {"platform": "MLL512V1", "name": "Sound/Servo", "text": "Sound- und Servomodul", "image": ""},
     {"platform": "MLLS88GWV1", "name": "S88 Gateway", "text": "S88-Melder Gateway", "image": ""}
   ]

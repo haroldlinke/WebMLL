@@ -1,12 +1,28 @@
-# Datei-Version: 1.51 (2026-11-26) - web_form_comport.py
+# Datei-Version: 1.56 (2026-11-28) - web_form_comport.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_comport.py
 # Path:           _web/web_form_comport.py
-# Version:        1.51
-# Last Update:    2026-11-26
+# Version:        1.56
+# Last Update:    2026-11-28
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.56  2026-11-28  Geraeteauswahl der Lichtmaschine: zusaetzlich zur Plattform muss der Anschluss zu einem Regel-Set passen, auf das eine Lichtmaschine mit dem Haupttyp des
+#                     Blattes verweist (devices.detect; zum Beispiel beim Uno nur das Set Uno, bei Classic AM328). Der gespeicherte Anschluss bleibt immer in der Liste.
+#                     Neu: _port_sets, _detect_sets. Zeilen mit '# v1.56'
+#   1.55  2026-11-28  Geraeteauswahl der Lichtmaschine: Bild der Lichtmaschine des Blattes (devices.image, web_form_options.sheet_device_key/device_image; bei Uno vorher das
+#                     Bild der Classic); anderes MobaLedLib Geraet gewaehlt: Bild seiner Plattform. Ohne Bild leere Flaeche, kein Rueckfall auf das Bild des Aufrufers.
+#                     Bildflaeche immer gleich gross (w-48 x 9rem), Bild eingepasst. Pico mit WLAN wie bisher. Zeilen mit '# v1.55'
+#   1.54  2026-11-27  Lichtmaschine Pico: andere MobaLedLib Geraete sind waehlbar (Gruppe heisst nur noch 'Andere MobaLedLib Geraete'); OK fragt dann nach (Sicherheitsabfrage
+#                     'Anderes MobaLedLib Gerät verwenden?', Vorgabe Nein, Nein laesst den Dialog offen). Sie werden nie von selbst gewaehlt (neu angesteckt, Vorauswahl).
+#                     Neu: _needs_confirm, confirm_other. Zeilen mit '# v1.54'
+#   1.53  2026-11-27  Lichtmaschine Pico: die Gruppe 'Andere MobaLedLib Geraete - nicht als Lichtmaschine waehlbar' (Servo-, Sound-Module ... laut ~MLLINFO) erscheint wieder
+#                     unter den Pico-Geraeten; ihre Zeilen bleiben nicht waehlbar. Bei Classic und Pro fehlt sie weiter. Zeilen mit '# v1.53'
+#   1.52  2026-11-27  Die USB-Kennung bestimmt den Typ nicht sicher (Uno und Nano, Original und Clone haben dieselben Chips): die Geraeteauswahl der Lichtmaschine zeigt nur noch Geraete
+#                     des Haupttyps, der in den Hardware Optionen eingestellt ist (Classic, Uno, Pro, Pico). Die Gruppen anderer Typen und 'Andere MobaLedLib Geraete' entfallen, ein Klick
+#                     stellt den Typ des Blattes nicht mehr um; ein unbekannter Anschluss gilt bei OK als Geraet des eingestellten Typs (keine Typabfrage). Uno: keine Bootloader-Abfrage,
+#                     Anzeige 'Uno'. Die Firmware-Auswahl (_fw_mode) bleibt unveraendert. Die schwache Nano-Erkennung (USB Serial Port, tty) und die Erkennung eines Pico-Geraets
+#                     kommen aus den Regeln detectionRules (csv/Lichtmaschinen_prop.json, headless_usb_detect). Zeilen mit '# v1.52'
 #   1.51  2026-11-26  Die Gruppe 'Andere MobaLedLib Geraete' bestimmt wieder der type (v1.50, isCentral, entfaellt). Das Bild der Geraeteauswahl kommt, wenn vorhanden, aus der Liste platforms in csv/Lichtmaschinen_prop.json (Plattform des gewaehlten Geraets laut ~MLLINFO); sonst wie bisher. Zeilen mit '# v1.51'
 #   1.50  2026-11-26  (entfallen, siehe 1.51) Die Gruppe 'Andere MobaLedLib Geraete - nicht als Lichtmaschine waehlbar' bestimmt isCentral der gemeldeten Plattform (csv/Lichtmaschinen_prop.json, M07_COM_Port_New 1.26) statt allein den type. Zeilen mit '# v1.50'
 #   1.49  2026-11-26  Firmware-Auswahl: ein gefundenes Geraet mit derselben Plattform wie die gewaehlte Firmware (platform aus ~MLLINFO) wird bevorzugt vorgewaehlt, solange der Anwender nicht selbst gewaehlt hat (SelectPicoDevice(platform=...)). Zeilen mit '# v1.49'
@@ -90,6 +106,11 @@ import textwrap
 import threading  # v1.30
 
 from _web import web_dialogs as wd
+try:  # v1.54
+    from _web.web_i18n import tr as _wtr  # v1.54: Uebersetzer der Oberflaeche (Katalog csv/Web_Languages.csv) fuer neue Texte
+except ImportError:                                   # aeltere Installation ohne web_i18n.py  # v1.54
+    def _wtr(text, **values):  # v1.54
+        return text.format(**values) if values else text  # v1.54
 
 logger = logging.getLogger(__name__)
 
@@ -250,8 +271,11 @@ async def _comport_async_new(form, spec):  # v1.11
                 with ui.column().classes("items-end gap-2").style("min-width: 200px"):
                     red_lbl = ui.label(spec["red_hint"] or "").classes("text-red-8").style("white-space: pre-line")
                     red_lbl.set_visibility(bool(spec["red_hint"]))
-                    img = ui.image(spec["image"] or "").classes("w-48")
-                    img.set_visibility(bool(spec["image"]))
+                    # img = ui.image(spec["image"] or "").classes("w-48")  # v1.55 (entfallen)
+                    # img.set_visibility(bool(spec["image"]))  # v1.55 (entfallen)
+                    with ui.element("div").classes("w-48 shrink-0").style("height: 9rem"):  # v1.55: Bildflaeche immer gleich gross; ohne Bild bleibt sie leer
+                        img = ui.image(spec["image"] or "").props("fit=contain").classes("w-full h-full")  # v1.55: Bild eingepasst
+                        img.set_visibility(bool(spec["image"]))  # v1.55
 
             sig = [None]
             selected_el = [None]  # v1.42: Zeile der Auswahl (zum Scrollen bei Pfeiltasten)
@@ -316,9 +340,9 @@ async def _comport_async_new(form, spec):  # v1.11
                     return
                 form._sel_dev = dev
                 form._sel_user = True  # v1.49: eigene Wahl des Anwenders
-                if row and row["typ"] in form._GROUPS and row["typ"] != form._sheet_group():
-                    if form._apply_group(row["typ"]):
-                        refresh_view()
+                # if row and row["typ"] in form._GROUPS and row["typ"] != form._sheet_group():  # v1.52 (entfallen: der Typ wird in den Hardware Optionen gewaehlt, die Liste zeigt nur passende Geraete)
+                #     if form._apply_group(row["typ"]):  # v1.52 (entfallen)
+                #         refresh_view()  # v1.52 (entfallen)
                 refresh_view()  # v1.46: das Bild folgt dem gewaehlten Geraet  # v1.51: auch ausserhalb der Firmware-Auswahl (Bild der Plattform)
                 form._compute_new()                                         # Ident und Blinken folgen sofort der Auswahl
                 render_list()
@@ -345,20 +369,41 @@ async def _comport_async_new(form, spec):  # v1.11
                 nav_on[0] = True  # v1.42
                 return typ
 
+            async def confirm_other(row):  # v1.54: Sicherheitsabfrage fuer ein anderes MobaLedLib Geraet als Lichtmaschine; True = trotzdem verwenden
+                nav_on[0] = False  # v1.54
+                typ_ = row.get("shown") or spec["types"].get(row["typ"], row["typ"])  # v1.54
+                with wd._bridge["client"]:  # v1.54
+                    with ui.dialog().props("persistent") as d, ui.card().classes("max-w-[560px]"):  # v1.54
+                        ui.label(spec["confirm_title"]).classes("text-h6")  # v1.54
+                        with ui.row().classes("items-start no-wrap gap-3"):  # v1.54
+                            ui.icon("warning").classes("text-orange-8 text-h4")  # v1.54
+                            ui.label(spec["confirm_text"].replace("%1", row["dev"]).replace("%2", typ_)).style("white-space: pre-line")  # v1.54
+                        with ui.row().classes("justify-end w-full"):  # v1.54
+                            ui.button(spec["yes_text"], on_click=lambda: d.submit(True)).props("outline")  # v1.54: Ja nicht als Vorgabe (Enter)
+                            ui.button(spec["no_text_confirm"], on_click=lambda: d.submit(False)).classes("mll-default mll-cancel")  # v1.54: Nein ist die Vorgabe (Enter und Esc)
+                    ok_ = await d  # v1.54
+                    wd.safe_delete(d)  # v1.54
+                nav_on[0] = True  # v1.54
+                return bool(ok_)  # v1.54
+
             async def on_ok():
                 if not form._sel_dev:  # v1.47: kein Geraet gewaehlt: wie Abbrechen, das Blatt bleibt unveraendert
                     dlg.submit(2)  # v1.47
                     return  # v1.47
                 row = form._row(form._sel_dev)
                 if row and row["typ"] == "unbekannt" and not form._fw_mode:  # v1.45: bei der Firmware-Auswahl ist ein unbekanntes Geraet erlaubt (kein Typ, kein Blatt)
-                    typ = await ask_type(row["dev"])
-                    if typ is None:
-                        return                                              # Dialog bleibt offen
-                    if form._apply_group(typ):
-                        refresh_view()
-                    row["typ"] = typ
-                elif row and row["typ"] in form._GROUPS and row["typ"] != form._sheet_group():
-                    form._apply_group(row["typ"])                           # Vorauswahl einer anderen Gruppe ohne Klick
+                    # typ = await ask_type(row["dev"])  # v1.52 (entfallen: keine Typabfrage, es gilt der Typ des Blattes)
+                    # if typ is None:  # v1.52 (entfallen)
+                    #     return                                              # Dialog bleibt offen  # v1.52 (entfallen)
+                    # if form._apply_group(typ):  # v1.52 (entfallen)
+                    #     refresh_view()  # v1.52 (entfallen)
+                    # row["typ"] = typ  # v1.52 (entfallen)
+                    row["typ"] = form._sheet_group()  # v1.52: ein unbekannter Anschluss gilt als Geraet des eingestellten Typs
+                # elif row and row["typ"] in form._GROUPS and row["typ"] != form._sheet_group():  # v1.52 (entfallen: die Liste enthaelt keine anderen Typen mehr)
+                #     form._apply_group(row["typ"])                           # Vorauswahl einer anderen Gruppe ohne Klick  # v1.52 (entfallen)
+                if form._needs_confirm(row):  # v1.54: anderes MobaLedLib Geraet als Lichtmaschine: Sicherheitsabfrage, Nein laesst den Dialog offen
+                    if not await confirm_other(row):  # v1.54
+                        return  # v1.54
                 if not form._fw_mode:  # v1.45
                     form._apply_nano_bootloader()  # v1.43: Bootloader des gewaehlten Nano in die Geraeteoptionen eintragen
                 dlg.submit(3)
@@ -495,7 +540,24 @@ def make_class(Base):
                 # text = M09.Get_Language_Str("OK, wenn die LEDs am richtigen Gerät schnell blinken.")  # v1.09  # v1.15  # v1.16: ohne den einleitenden Satz  # v1.35 (entfallen)
                 text = ""  # v1.35: kein Hinweistext mehr ueber der Geraeteliste
                 # red_hint = M09.Get_Language_Str("Tipp: Der ausgewählte Arduino blinkt schnell")  # v1.09  # v1.14 (entfallen: Hinweis ganz entfernt)
-            return {"text": text, "red_hint": red_hint, "image": self._platform_image(self._sel_dev) or self._find_image(picture)}  # v1.09  # v1.51: Bild der Plattform des gewaehlten Geraets, wenn vorhanden
+            # return {"text": text, "red_hint": red_hint, "image": self._platform_image(self._sel_dev) or self._find_image(picture)}  # v1.09  # v1.51: Bild der Plattform des gewaehlten Geraets, wenn vorhanden  # v1.55 (entfallen)
+            if picture == "PICOWL_Image":  # v1.55: Pico mit WLAN (alter Dialog): wie bisher
+                return {"text": text, "red_hint": red_hint, "image": self._platform_image(self._sel_dev) or self._find_image(picture)}  # v1.09  # v1.51
+            row_ = self._row(self._sel_dev) if self._sel_dev else None  # v1.55
+            if row_ is not None and row_["typ"] == "Servo":  # v1.55: anderes MobaLedLib Geraet gewaehlt: Bild seiner Plattform (platforms), sonst leer
+                return {"text": text, "red_hint": red_hint, "image": self._platform_image(self._sel_dev)}  # v1.55
+            return {"text": text, "red_hint": red_hint, "image": self._sheet_device_image()}  # v1.55: Bild der Lichtmaschine des Blattes (wie Hardware Optionen); '' = leere Flaeche
+
+        def _sheet_device_image(self):  # v1.55: Bild der Lichtmaschine des Blattes (devices.image laut web_form_options), '' wenn keines
+            try:  # v1.55
+                import proggen.M02a_Public as M02a  # v1.55
+                from _web import web_form_options as WO  # v1.55
+                stored = (getattr(P01.ActiveSheet, "esp32_options", None) or {}).get("device")  # v1.55
+                key = WO.sheet_device_key(M02a.Get_BoardTyp(), self._read_buildopt(), stored, M02)  # v1.55
+                return WO.device_image(key)  # v1.55
+            except Exception:                                      # noqa: BLE001  # v1.55
+                logger.debug("Bild der Lichtmaschine nicht ermittelt", exc_info=True)  # v1.55
+                return ""  # v1.55
 
         def _switch_type(self, typ):  # v1.07
             """Zentralentyp wechseln (linker Arduino): zuletzt benutzte Variante des Typs, sonst die Standardvariante. True, wenn gewechselt wurde."""
@@ -535,6 +597,7 @@ def make_class(Base):
         _info_lock = threading.Lock()  # v1.30: schuetzt Warteschlange und Abfrageliste
         _info_thread = None  # v1.30: Hintergrund-Thread der Typ- und Versionsabfrage
         _rows = []
+        _port_sets = {}  # v1.56: Anschluss -> passende Regel-Sets (aus _scan)
         _sel_dev = None
         _prev_devs = None
         _stored_port = ""
@@ -562,7 +625,11 @@ def make_class(Base):
             return str((info or {}).get("platform") or "")
 
         def _is_selectable(self, r):  # v1.45: Servo-Module (andere MobaLedLib Geraete) sind als Lichtmaschine nicht waehlbar, als Ziel der Firmware-Installation schon
-            return self._fw_mode or r["typ"] != "Servo"
+            # return self._fw_mode or r["typ"] != "Servo"  # v1.54 (entfallen)
+            return self._fw_mode or r["typ"] != "Servo" or self._sheet_group() == "Pico"  # v1.54: bei der Lichtmaschine Pico waehlbar (OK fragt nach, needs_confirm)
+
+        def _needs_confirm(self, r):  # v1.54: OK mit einem anderen MobaLedLib Geraet als Lichtmaschine: Sicherheitsabfrage
+            return bool(r) and not self._fw_mode and r["typ"] == "Servo"
 
         def _sheet_group(self):  # v1.11: Gruppe des im Blatt eingestellten Boards
             if self._fw_mode:  # v1.45: kein Blatt: alle gelisteten Geraete sind Pico-Geraete
@@ -570,6 +637,11 @@ def make_class(Base):
             import proggen.M02a_Public as M02a
             bt = M02a.Get_BoardTyp()
             return "Pro" if bt == M02.HT_ESP32 else ("Pico" if bt == M02.HT_PICO else "Classic")
+
+        def _sheet_is_uno(self):  # v1.52: Haupttyp Uno (Gruppe Classic, aber kein Nano: keine Bootloader-Abfrage, Anzeige 'Uno')
+            if self._fw_mode or self._sheet_group() != "Classic":  # v1.52
+                return False  # v1.52
+            return M02.BOARD_UNO_NORM in self._read_buildopt()  # v1.52
 
         def _row(self, dev):  # v1.11
             return next((r for r in self._rows if r["dev"] == dev), None)
@@ -582,38 +654,60 @@ def make_class(Base):
         def _classify_group(self, comport):  # v1.11
             t = M07.Classify_Port(comport)
             if not t:
-                d = str(getattr(comport, "description", "") or "")
-                if "USB Serial Port" in d or "tty" in d:                    # wie die Nano-Erkennung im Excel-Programm
-                    t = "Nano"
+                # d = str(getattr(comport, "description", "") or "")  # v1.52 (entfallen)
+                # if "USB Serial Port" in d or "tty" in d:                    # wie die Nano-Erkennung im Excel-Programm  # v1.52 (entfallen)
+                #     t = "Nano"  # v1.52 (entfallen)
+                from headless import headless_usb_detect as UD  # v1.52: schwache Regeln aus detectionRules (USB Serial Port, tty: wie die Nano-Erkennung im Excel-Programm)
+                t = UD.legacy_type(UD.platform_for_port(comport, weak=True))  # v1.52
             return {"Nano": "Classic", "ESP32": "Pro", "Pico": "Pico", "Servo": "Servo"}.get(t, "unbekannt")  # v1.19
 
         def _scan(self):  # v1.11: alle Anschluesse [(Gruppe, Anschluss, Beschreibung, USB-ID)]
             import re
+            from headless import headless_usb_detect as UD  # v1.52
             res = []
+            sets_ = {}  # v1.56: Anschluss -> passende Regel-Sets (klein, mit schwachen Regeln)
             try:
                 for cp in M07.portlist.comports(include_links=False):
                     if os.name != "nt" and re.match(r"^/dev/ttyS\d+$", str(cp.device)) and str(cp.hwid).strip().lower() in ("n/a", ""):
                         continue                                            # Linux: Platzhalter ohne Geraet
                     usb = ("%04X:%04X" % (cp.vid, cp.pid)) if cp.vid is not None and cp.pid is not None else ""  # v1.20: USB-ID wie VID:PID
                     grp = self._classify_group(cp)
-                    if self._fw_mode and not (grp in ("Pico", "Servo", "unbekannt") or cp.vid == 0x2E8A):  # v1.45: Firmware-Auswahl: Pico-Geraete, andere MobaLedLib Geraete und (mit dem Kontrollkaestchen) unbekannte Anschluesse; kein Nano, kein ESP32  # v1.46
+                    pico_usb = "PICO" in UD.platforms_for_port(cp)  # v1.52: Pico-Geraet nach den Regeln detectionRules (vorher fest: USB-Hersteller 2E8A)
+                    # if self._fw_mode and not (grp in ("Pico", "Servo", "unbekannt") or cp.vid == 0x2E8A):  # v1.45: Firmware-Auswahl: Pico-Geraete, andere MobaLedLib Geraete und (mit dem Kontrollkaestchen) unbekannte Anschluesse; kein Nano, kein ESP32  # v1.46  # v1.52 (entfallen)
+                    if self._fw_mode and not (grp in ("Pico", "Servo", "unbekannt") or pico_usb):  # v1.45: Firmware-Auswahl: Pico-Geraete, andere MobaLedLib Geraete und (mit dem Kontrollkaestchen) unbekannte Anschluesse; kein Nano, kein ESP32  # v1.46  # v1.52
                         continue  # v1.45
                     desc = str(cp.description or "").strip()
                     sn = str(getattr(cp, "serial_number", "") or "").strip()  # v1.44: Pico: Seriennummer hinter der Bezeichnung
-                    if (grp in ("Pico", "Servo") or cp.vid == 0x2E8A) and sn and sn not in desc:  # v1.44: jedes Pico-Geraet (USB-Hersteller 2E8A), auch Servo/Sound/2x3
+                    # if (grp in ("Pico", "Servo") or cp.vid == 0x2E8A) and sn and sn not in desc:  # v1.44: jedes Pico-Geraet (USB-Hersteller 2E8A), auch Servo/Sound/2x3  # v1.52 (entfallen)
+                    if (grp in ("Pico", "Servo") or pico_usb) and sn and sn not in desc:  # v1.44: jedes Pico-Geraet, auch Servo/Sound/2x3  # v1.52
                         desc = "%s %s" % (desc, sn)
                     res.append((grp, str(cp.device), desc, usb))
+                    sets_[str(cp.device)] = {s.lower() for s in UD.rule_sets_for_port(cp, weak=True)}  # v1.56
             except Exception:                                               # noqa: BLE001
                 logger.debug("Anschluesse konnten nicht gelesen werden", exc_info=True)
+            self._port_sets = sets_  # v1.56
             return res
+
+        def _detect_sets(self):  # v1.56: Regel-Sets (devices.detect) der Lichtmaschinen mit dem Haupttyp des Blattes, zum Beispiel {'uno'} oder {'am328'}; leer = keine Einschraenkung
+            try:  # v1.56
+                from _web import web_form_options as WO  # v1.56
+                main = "Uno" if self._sheet_is_uno() else {"Classic": "Classic", "Pro": "Pro", "Pico": "Pico"}.get(self._sheet_group())  # v1.56
+                from headless import headless_usb_detect as UD  # v1.56
+                existing = {k.lower() for k in UD.load_rules()}  # v1.56: nur Verweise auf vorhandene Sets; fehlt das Set (zum Beispiel UNO noch nicht angelegt), keine Einschraenkung
+                return (WO.detect_sets_for_main(main) & existing) if main else set()  # v1.56
+            except Exception:                                      # noqa: BLE001  # v1.56
+                logger.debug("Regel-Sets des Blattes nicht ermittelt", exc_info=True)  # v1.56
+                return set()  # v1.56
 
         def _compute_new(self):  # v1.11, v1.30: Liste aufbauen, Auswahl bestimmen, Ident (M07.CheckCOMPort) nachfuehren. Hier wird kein Anschluss geoeffnet
             import re
             import proggen.M07_COM_Port_New as _M07B  # v1.39
             sheet = self._sheet_group()
+            uno = self._sheet_is_uno()  # v1.52
             stored = self._stored_port
             found = self._scan()
             all_devs = {d for _t, d, _n, _u in found}
+            wanted_sets = set() if self._fw_mode else self._detect_sets()  # v1.56
             rows = []
             for typ, dev, desc, usb in found:
                 ent = self._info.get(dev)
@@ -621,6 +715,11 @@ def make_class(Base):
                     typ = sheet                                             # der im Blatt eingetragene Anschluss gilt als Board des Blattes
                 if typ == "unbekannt" and not self._show_unknown:
                     continue
+                # if not self._fw_mode and typ != "unbekannt" and typ != sheet:  # v1.52: nur Geraete des eingestellten Haupttyps (keine Gruppen anderer Typen, keine anderen MobaLedLib Geraete)  # v1.53 (entfallen)
+                if not self._fw_mode and typ != "unbekannt" and typ != sheet and not (typ == "Servo" and sheet == "Pico"):  # v1.52: nur Geraete des eingestellten Haupttyps  # v1.53: beim Pico auch 'Andere MobaLedLib Geraete' (eigene Gruppe, nicht waehlbar)
+                    continue  # v1.52
+                if wanted_sets and typ == sheet and dev != stored and dev in self._port_sets and not (self._port_sets[dev] & wanted_sets):  # v1.56: Regeln der Lichtmaschine des Blattes (devices.detect), zum Beispiel beim Uno nur das Set Uno
+                    continue  # v1.56
                 shown = None
                 if typ in ("Pro", "Pico", "Classic"):                       # v1.32/v1.33: Typ ist 'unbekannt', bis die Abfrage ihn bestaetigt (Plattform bzw. Antwort auf '#?')
                     info_ = ent[1] if ent is not None else None
@@ -634,6 +733,8 @@ def make_class(Base):
                     shown = "Nano" + self._boot_suffix(dev)
                 if typ == "Servo" and ent is not None and ent[1] is not None and ent[1].get("kind") in ("servo", "other"):  # v1.40/v1.41: der type-String des Geraets ist der Typ (bekannte Namen uebersetzt)
                     shown = OTHER_TYPE_NAMES.get(ent[1].get("type"), ent[1].get("type")) or None
+                if typ == "Classic" and uno and shown not in ("blockiert", "unbekannt"):  # v1.52: Haupttyp Uno: nicht 'Nano'
+                    shown = "Uno"  # v1.52
                 rows.append({"typ": typ, "shown": shown, "dev": dev, "desc": desc, "usb": usb, "offline": False})
             if stored and stored not in all_devs and not self._fw_mode:  # v1.45: Firmware-Auswahl: kein abwesendes Geraet in der Liste
                 rows.append({"typ": sheet, "dev": stored, "desc": "", "usb": "", "offline": True})   # das Board des Blattes steht immer in der Liste
@@ -648,13 +749,16 @@ def make_class(Base):
             selectable = [r["dev"] for r in rows if self._is_selectable(r)]  # v1.45
             sel = self._sel_dev
             if sel not in selectable:
-                new = [d for d in selectable if self._prev_devs is not None and d not in self._prev_devs and not self._row_offline(rows, d)]
+                # new = [d for d in selectable if self._prev_devs is not None and d not in self._prev_devs and not self._row_offline(rows, d)]  # v1.54 (entfallen)
+                auto = [r["dev"] for r in rows if self._is_selectable(r) and not self._needs_confirm(r)]  # v1.54: andere MobaLedLib Geraete nie von selbst waehlen
+                new = [d for d in auto if self._prev_devs is not None and d not in self._prev_devs and not self._row_offline(rows, d)]  # v1.54
                 if new:
                     sel = new[0]                                            # neu angeschlossenes Geraet wird gewaehlt
                 elif stored in [r["dev"] for r in online]:               # v1.38: der gespeicherte Anschluss nur, wenn er auch angeschlossen ist
                     sel = stored
                 else:
-                    pref = [r for r in online if r["typ"] == sheet] or online
+                    # pref = [r for r in online if r["typ"] == sheet] or online  # v1.54 (entfallen)
+                    pref = [r for r in online if r["typ"] == sheet] or [r for r in online if not self._needs_confirm(r)]  # v1.54: ein anderes MobaLedLib Geraet nur durch Klick
                     sel = pref[0]["dev"] if pref else (stored if stored in selectable else None)   # v1.38: nur ohne angeschlossenes Geraet bleibt der gespeicherte (offline) gewaehlt
             if self._fw_mode and self._fw_platform and not self._sel_user:  # v1.49: ein Geraet derselben Plattform wie die Firmware bevorzugen (die Abfrage liefert die Plattform erst nach und nach)
                 want = self._fw_platform.strip().lower()
@@ -727,7 +831,8 @@ def make_class(Base):
                     else:
                         self._info_queue.append((dev, board))
                 row_ = next((r for r in rows if r["dev"] == sel), None)    # v1.43: der gewaehlte Nano: Bootloader ermitteln (nach seiner Abfrage von Typ und Version)
-                if row_ is not None and row_["typ"] == "Classic" and not row_["offline"] and sel not in self._boot and sel not in self._boot_busy:
+                # if row_ is not None and row_["typ"] == "Classic" and not row_["offline"] and sel not in self._boot and sel not in self._boot_busy:  # v1.52 (entfallen)
+                if row_ is not None and row_["typ"] == "Classic" and not row_["offline"] and sel not in self._boot and sel not in self._boot_busy and not self._sheet_is_uno():  # v1.52: Uno: keine Bootloader-Abfrage
                     self._boot_busy.add(sel)
                     pos_ = 0
                     for i_, x_ in enumerate(self._info_queue):
@@ -841,6 +946,8 @@ def make_class(Base):
             row = self._row(dev) if dev else None
             if not board or row is None or row["typ"] != "Classic":
                 return
+            if self._sheet_is_uno():  # v1.52: Haupttyp Uno: das Blatt bleibt Uno (der Bootloader eines Uno sieht aus wie Nano neu)
+                return  # v1.52
             try:
                 import proggen.M28_Diverse as M28
                 old = M28.Get_Old_Board(True)
@@ -1100,12 +1207,18 @@ def make_class(Base):
                 tr = M09.Get_Language_Str
                 hint = tr("Zur Identifikation blinken die LEDs des ausgewählten Geräts schnell.\nEin anderes Gerät kann in der obigen Liste gewählt werden.\n"  # v1.14: Hinweis zur Liste (statt Pfeiltasten)
                           "Das Gerät kann auch nachträglich angesteckt werden.")  # v1.14
-                spec = {"title": Title, "text": view["text"], "red_hint": view["red_hint"], "image": view["image"] or image, "hint": hint, "buttons": buttons,
+                # v1.55: kein Rueckfall auf das Bild des Aufrufers (Picture, bei Uno das Bild der Classic): ohne Bild der Lichtmaschine bleibt die Flaeche leer
+                spec = {"title": Title, "text": view["text"], "red_hint": view["red_hint"], "image": view["image"], "hint": hint, "buttons": buttons,
                         "list_title": tr("Gefundene Geräte"), "unknown_text": tr(info["unknown"] or "Unbekante Ports anzeigen"),  # v1.14: Geräte statt Boards
                         # "none_text": tr("Kein Board gefunden. Bitte das Board per USB anschließen."),  # v1.15 (entfallen)
                         "none_text": tr("Kein Gerät gefunden. Bitte das Gerät per USB anschließen."),  # v1.15: Gerät statt Board
                         "col_type": tr("Typ"), "col_port": tr("Port"), "col_usb": tr("USB-ID"), "col_version": tr("Version"), "col_name": tr("USB Kennung"), "offline_text": tr("offline"),
-                        "groups": {"Classic": "Classic (Nano / Uno)", "Pro": "Pro (ESP32)", "Pico": "Pico (Raspberry Pico)", "Servo": tr("Andere MobaLedLib Geräte") if self._fw_mode else tr("Andere MobaLedLib Geräte - nicht als Lichtmaschine wählbar"),"unbekannt": tr("Unbekannt")},  # v1.45
+                        # "groups": {"Classic": "Classic (Nano / Uno)", "Pro": "Pro (ESP32)", "Pico": "Pico (Raspberry Pico)", "Servo": tr("Andere MobaLedLib Geräte") if self._fw_mode else tr("Andere MobaLedLib Geräte - nicht als Lichtmaschine wählbar"),"unbekannt": tr("Unbekannt")},  # v1.45  # v1.52 (entfallen)
+                        # "groups": {"Classic": "Uno" if self._sheet_is_uno() else "Classic (Nano)", "Pro": "Pro (ESP32)", "Pico": "Pico (Raspberry Pico)", "Servo": tr("Andere MobaLedLib Geräte") if self._fw_mode else tr("Andere MobaLedLib Geräte - nicht als Lichtmaschine wählbar"),"unbekannt": tr("Unbekannt")},  # v1.45  # v1.52: Uno ist ein eigener Haupttyp  # v1.54 (entfallen)
+                        "groups": {"Classic": "Uno" if self._sheet_is_uno() else "Classic (Nano)", "Pro": "Pro (ESP32)", "Pico": "Pico (Raspberry Pico)", "Servo": tr("Andere MobaLedLib Geräte"), "unbekannt": tr("Unbekannt")},  # v1.45  # v1.52  # v1.54: beim Pico waehlbar (mit Sicherheitsabfrage)
+                        "confirm_title": _wtr("Anderes MobaLedLib Gerät verwenden?"),  # v1.54
+                        "confirm_text": _wtr("An %1 ist keine Lichtmaschine angeschlossen, sondern ein anderes MobaLedLib Gerät (%2).\nDiese Hardware ist für die Lichtmaschine möglicherweise ungeeignet. Das Programm der Lichtmaschine kann die Firmware des Geräts überschreiben.\n\nSoll dieses Gerät wirklich als Lichtmaschine verwendet werden?"),  # v1.54
+                        "yes_text": _wtr("Ja, verwenden"), "no_text_confirm": _wtr("Nein"),  # v1.54
                         "fw_mode": self._fw_mode,  # v1.45
                         "types": {"unbekannt": tr("unbekannt"), "Servo": tr("Servo")},
                         "ask_text": tr("Um welchen Typ handelt es sich bei %1?"), "no_text": tr("Abbrechen"),

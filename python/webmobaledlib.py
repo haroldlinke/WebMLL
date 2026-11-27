@@ -1,9 +1,9 @@
-# Datei-Version: 5.60 (2026-11-27) - webmobaledlib.py
+# Datei-Version: 5.70 (2026-11-28) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        5.60
-# Last Update:    2026-11-27
+# Version:        5.70
+# Last Update:    2026-11-28
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
@@ -81,6 +81,16 @@
 #   5.58  2026-11-27  Servo- und LED-Farb-Animations-Dialog: Feld Anschluss-Kanal heisst LM-Ausgang mit Tooltip; Parameterformular: LED Kanal Auswahl heisst LED RGB-Anschluss Auswahl; Wiki Begriffe: LM-Ausgang, LED RGB-Anschluss (web_form_servoanim 1.07, web_form_ledcoloranim 1.02, web_form_other 1.21, Web_Languages.csv)
 #   5.59  2026-11-27  Pull Request 82 (Jueff, dort V5.51 bis V5.69): Serieller Monitor (Verbindungsknopf, EFFECT oder DIRECT Mode, Verbindungsverlust mit automatischem Neuverbinden, Verlassen des Monitors stellt die Verbindung auf das Blatt um), Setup uebertragen mit schnellem Upload ueber die offene Verbindung, Plattformen und Protokolle (csv/Lichtmaschinen_prop.json: devices, platforms, protocols), LNet-Lizenz je Blatt, Selectrix-Pruefung, Firmware-Auswahl nach Plattform, ESP32: keine Mainboard_LED-Defines in der Kopfdatei, Doppelklick-Schalter, Sync_Toggle_Buttons_by_Address. Zeilen im Code behalten die Marker # v5.51 bis # v5.69 des PR; die Dateien web_params (Stand 5.51) und web_tabs sind zusammengefuehrt
 #   5.60  2026-11-27  Pull Request 83 (Jueff, dort Identify 1.04): ESP32: das Makro Mainboard_LED(n, InCh) schaltet die drei Status LEDs der Hauptplatine ueber MllStatusLedSet() (wie das Identify Blinken); keine Pins mehr (LEDs_AutoProg.ino, Zeilen mit '// v1.04'; nicht kompiliert, nicht am Board getestet)
+#   5.61  2026-11-27  Hardware Optionen: die Lichtmaschine wird wieder gewaehlt (Menue aus devices der Lichtmaschinen_prop.json, gruppiert nach Plattform, Haupttyp aus board: Classic, Uno, Pro, Pico; die USB-Kennung bestimmt Uno/Nano, Original/Clone nicht sicher); anderer Haupttyp setzt den COM Port zurueck und fragt nach der Suche; die Geraeteauswahl zeigt nur Geraete des eingestellten Typs (web_form_options 1.80, web_form_comport 1.52)
+#   5.62  2026-11-27  Erkennung der Plattform eines Anschlusses aus den USB-Daten nach den Regeln detectionRules in csv/Lichtmaschinen_prop.json (neu: headless/headless_usb_detect.py) statt fester Regeln in M07_COM_Port 1.21, web_serial 1.32, web_form_comport 1.52
+#   5.63  2026-11-27  Hardware Optionen: ohne im Blatt gespeicherte Lichtmaschine zeigt das Menue die Vorgabe der Plattform (platforms.defaultDevice in csv/Lichtmaschinen_prop.json 1.09: ATMega Classic, ESP32 Pro, Raspberry Pico Pico Zero; web_form_options 1.81, web_startpage 1.14)
+#   5.64  2026-11-27  Geraeteauswahl bei Lichtmaschine Pico: die Gruppe 'Andere MobaLedLib Geraete' (nicht waehlbar) erscheint wieder (web_form_comport 1.53); Hardware Optionen: 'Gerät:' statt 'Hardware:', 'keine Schnittstelle gewählt' statt 'kein Port gewählt' (web_form_options 1.82)
+#   5.65  2026-11-27  Menue der Lichtmaschine: Reihenfolge nach sortPriority (devices und platforms in csv/Lichtmaschinen_prop.json 1.10; hoechste Zahl zuerst, sonst nach Namen; ESP32 50, Pico 40, ATMega 30; web_form_options 1.83, web_startpage 1.15)
+#   5.66  2026-11-27  Geraeteauswahl bei Lichtmaschine Pico: andere MobaLedLib Geraete sind waehlbar, OK fragt mit einer Sicherheitsabfrage nach (Vorgabe Nein) (web_form_comport 1.54)
+#   5.67  2026-11-27  Hardware Optionen: Bild und Protokolle folgen der gewaehlten Lichtmaschine (devices.image, devices.protocols); feste Bildflaeche, Bild eingepasst, ohne Bild leere Flaeche (web_form_options 1.84)
+#   5.68  2026-11-28  Geraeteauswahl: Bild der Lichtmaschine des Blattes (bei Uno vorher das Bild der Classic), ohne Bild leere Flaeche, Bildflaeche immer gleich gross (web_form_comport 1.55, web_form_options 1.85)
+#   5.69  2026-11-28  Lichtmaschine ohne Protokoll (Mini, devices.protocols leer): keine Protokollauswahl, kein DCC/Selectrix/LNet Arduino; Knopf 'Suchen' (statt 'Erkennen') rechts in der Gerätezeile (web_form_options 1.87, web_startpage 1.16, Lichtmaschinen_prop.json 1.11)
+#   5.70  2026-11-28  devices.detect verweist auf Regel-Sets in detectionRules (headless_usb_detect 1.02; Geraeteauswahl beim Uno mit den Uno-Regeln, web_form_comport 1.56, web_form_options 1.88; Startseite web_startpage 1.17); Menue Werkzeuge: Liste der USB Geraete (neu: _web/web_usb_list.py)
 #   5.38  2026-11-26  Ohne Lichtmaschine kam die Meldung 'Fehler beim Oeffnen der Verbindung' bei jedem Wechsel auf einen Reiter mit Direktmodus (Farb Test, Servo Test, Sound Test): das automatische Verbinden beim Reiterwechsel scheitert jetzt nur einmal mit Meldung, danach wird nicht mehr versucht, bis eine Verbindung besteht oder der Anwender selbst verbindet (Menue, Testtasten)
 #   5.37  2026-11-26  Farb Test: Knopf 'Farb Test beenden' unten rechts (web_colorcheck 1.13); Set_ColTab oeffnet den Farb Test auch ohne Lichtmaschine, kein Anschluss noetig (M60_CheckColors 1.01); Parameterformular: Flags (OptCtrPar, CtrMode, RandMode) als aufklappbare Hakenliste (web_form_other 1.17, Web_Languages.csv)
 #   5.36  2026-11-26  Startseite: alle Kacheln gleich gross (auch Ohne Zentrale und die letzte Lichtmaschine), Raster statt Zeilenumbruch (web_startpage 1.05)
@@ -730,6 +740,16 @@ REQUIRED_FILES = {  # v1.75
     "_web/web_form_other.py": "1.20",  # v5.57
     "_web/web_form_servoanim.py": "1.07", "_web/web_form_ledcoloranim.py": "1.02", "_web/web_form_other.py": "1.21",  # v5.58
     "proggen/M06_Write_Header.py": "1.23", "proggen/M07_COM_Port.py": "1.20", "proggen/M08_ARDUINO.py": "1.40", "proggen/M18_Save_Load.py": "1.08", "proggen/M20_PageEvents_a_Functions.py": "1.20", "headless/headless_protocol_switch.py": "1.01", "_web/web_form_comport.py": "1.51", "_web/web_log.py": "1.15", "_web/web_form_options.py": "1.79", "headless/headless_firmware_dl.py": "1.01", "_web/web_form_firmware_download.py": "1.03", "_web/web_form_firmware.py": "1.06", "_web/web_startpage.py": "1.13", "_web/web_serial.py": "1.31", "_web/web_serial_page.py": "1.07", "proggen/M07_COM_Port_New.py": "1.29", "headless/headless_pico.py": "1.03", "headless/headless_dyn_config.py": "1.08", "proggen/M42_Dyn_Config.py": "1.13", "_web/web_layout.py": "1.23", "proggen/M06_Write_Header_SW.py": "1.16", "_web/web_logging.py": "1.06", "_web/web_tabs.py": "1.41",  # v5.59 (Pull Request 82, Jueff, dort V5.51 bis V5.69)
+    "_web/web_form_options.py": "1.80", "_web/web_form_comport.py": "1.52",  # v5.61
+    "headless/headless_usb_detect.py": "1.01", "proggen/M07_COM_Port.py": "1.21", "_web/web_serial.py": "1.32",  # v5.62
+    "_web/web_form_options.py": "1.81", "_web/web_startpage.py": "1.14",  # v5.63
+    "_web/web_form_comport.py": "1.53", "_web/web_form_options.py": "1.82",  # v5.64
+    "_web/web_form_options.py": "1.83", "_web/web_startpage.py": "1.15",  # v5.65
+    "_web/web_form_comport.py": "1.54",  # v5.66
+    "_web/web_form_options.py": "1.84",  # v5.67
+    "_web/web_form_comport.py": "1.55", "_web/web_form_options.py": "1.85",  # v5.68
+    "_web/web_form_options.py": "1.87", "_web/web_startpage.py": "1.16",  # v5.69
+    "headless/headless_usb_detect.py": "1.02", "_web/web_form_comport.py": "1.56", "_web/web_form_options.py": "1.88", "_web/web_startpage.py": "1.17", "_web/web_usb_list.py": "1.00",  # v5.70
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -1875,7 +1895,17 @@ def font_scales(ctrl) -> dict:
 # VERSION = "5.57 (2026-11-27)"  # v5.58 (entfallen)
 # VERSION = "5.58 (2026-11-27)"  # v5.59 (entfallen)
 # VERSION = "5.59 (2026-11-27)"  # v5.60 (entfallen)
-VERSION = "5.60 (2026-11-27)"  # v5.60
+# VERSION = "5.60 (2026-11-27)"  # v5.60  # v5.61 (entfallen)
+# VERSION = "5.61 (2026-11-27)"  # v5.61  # v5.62 (entfallen)
+# VERSION = "5.62 (2026-11-27)"  # v5.62  # v5.63 (entfallen)
+# VERSION = "5.63 (2026-11-27)"  # v5.63  # v5.64 (entfallen)
+# VERSION = "5.64 (2026-11-27)"  # v5.64  # v5.65 (entfallen)
+# VERSION = "5.65 (2026-11-27)"  # v5.65  # v5.66 (entfallen)
+# VERSION = "5.66 (2026-11-27)"  # v5.66  # v5.67 (entfallen)
+# VERSION = "5.67 (2026-11-27)"  # v5.67  # v5.68 (entfallen)
+# VERSION = "5.68 (2026-11-28)"  # v5.68  # v5.69 (entfallen)
+# VERSION = "5.69 (2026-11-28)"  # v5.69  # v5.70 (entfallen)
+VERSION = "5.70 (2026-11-28)"  # v5.70
 # VERSION = "4.09 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.08 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.07 (2026-11-19)"  # v3.64 (entfallen)
@@ -7805,6 +7835,7 @@ def build_page(start_tab: str = "pg", fullscreen: bool = False):  # v1.82
             ("Datenübertragung", lambda: __import__("_web.web_table_sync", fromlist=["open_dialog"]).open_dialog(on_changed=refresh_after_transfer)),  # v4.89 (Pull Request 57)  # v5.49 (aus dem Menue Einstellungen)
             ("Firmware installieren …", open_firmware_install),  # v5.49
             ("ESP32-Firmware über WLAN hochladen …", lambda: web_esp32_ota.open_dialog(pio=ota_arduino.Find_PIO() if ota_options.Is_PlatformIO() else None)),  # v5.49 (auch im Reiter WLAN (OTA))
+            ("Liste der USB Geräte …", lambda: __import__("_web.web_usb_list", fromlist=["open_dialog"]).open_dialog()),  # v5.70: Daten fuer die Regeln detectionRules (csv/Lichtmaschinen_prop.json)
             None,  # v5.49
             ("Wartung …", open_maintenance),  # v5.49: Entwicklungsumgebung (PlatformIO, ARDUINO-IDE), Zwischenspeicher, Update der Bibliotheken
         ],

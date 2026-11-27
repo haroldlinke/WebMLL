@@ -1,12 +1,35 @@
-# Datei-Version: 1.79 (2026-11-26) - web_form_options.py
+# Datei-Version: 1.88 (2026-11-28) - web_form_options.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_form_options.py
 # Path:           _web/web_form_options.py
-# Version:        1.79
-# Last Update:    2026-11-26
+# Version:        1.88
+# Last Update:    2026-11-28
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.88  2026-11-28  Neu: detect_sets_for_main (Regel-Sets der Lichtmaschinen eines Haupttyps, fuer die Geraeteauswahl, web_form_comport 1.56). Zeilen mit '# v1.88'
+#   1.87  2026-11-28  Reiter Lichtmaschine: der Knopf heisst 'Suchen' (statt 'Erkennen') und steht rechts in der Gerätezeile, buendig mit der Trennlinie. Zeilen mit '# v1.87'
+#   1.86  2026-11-28  Lichtmaschine ohne Protokoll (devices.protocols leer, zum Beispiel Mini): Reiter Lichtmaschine ohne Protokollauswahl, kein Reiter DCC/Selectrix/LNet
+#                     Arduino (_web_has_protocol, protocol_ok). Zeilen mit '# v1.86'
+#   1.85  2026-11-28  Neu auf Modulebene: sheet_device_key (Lichtmaschine eines Blattes) und device_image (Bild einer Lichtmaschine), auch fuer die Geraeteauswahl
+#                     (web_form_comport 1.55). Zeilen mit '# v1.85'
+#   1.84  2026-11-27  Reiter Lichtmaschine folgt der gewaehlten Lichtmaschine (auch bei gleicher Plattform, zum Beispiel Pico Zero -> MoLLi, Classic -> Mini): Bild aus devices.image
+#                     (fehlt es oder die Datei: leere Flaeche gleicher Groesse; feste Flaeche 15 x 11,25 rem, Bild eingepasst), Protokolle aus devices.protocols (ohne Eintrag in
+#                     devices wie bisher die Plattform). Die plattformabhaengigen Einstellungen (Schnelles Update, Display) folgen wie bisher dem Board des Blattes, das beim
+#                     Wechsel umgestellt und danach neu gelesen wird. Zeilen mit '# v1.84'
+#   1.83  2026-11-27  Menue der Lichtmaschine: Gruppen nach sortPriority der platforms, Eintraege nach sortPriority der devices (csv/Lichtmaschinen_prop.json 1.10), hoechste Zahl
+#                     zuerst, bei gleicher Zahl nach Namen. Zeilen mit '# v1.83'
+#   1.82  2026-11-27  Reiter Lichtmaschine: fester Text 'Gerät:' statt 'Hardware:', '(keine Schnittstelle gewählt)' statt '(kein Port gewählt)'. Zeilen mit '# v1.82'
+#   1.81  2026-11-27  Ist im Blatt noch keine Lichtmaschine gespeichert, zeigt das Menue die Vorgabe der Plattform (platforms.defaultDevice in csv/Lichtmaschinen_prop.json:
+#                     ATMega -> Classic, Raspberry Pico -> Pico Zero), wenn sie zum Haupttyp des Blattes passt; sonst wie bisher den ersten Eintrag. Neu: default_devices.
+#                     Zeilen mit '# v1.81'
+#   1.80  2026-11-27  Reiter Lichtmaschine: die Lichtmaschine wird wieder im Dialog gewaehlt (Menue in der Hardware-Zeile), weil die USB-Kennung die Hardware nicht sicher bestimmt.
+#                     Eintraege aus devices in csv/Lichtmaschinen_prop.json, gruppiert nach Plattform (Name aus platforms), nach Namen sortiert; ohne Eintrag mit board Uno kommt
+#                     'Arduino Uno' dazu. Haupttyp aus board (Nano = Classic, Uno, ESP32 = Pro, Pico); der gewaehlte key steht im Blatt (esp32_options['device']), sonst zeigt das Menue
+#                     den ersten Eintrag des Haupttyps des Blattes. Das Auswahlfeld Hardwarevariante entfaellt (Nano alt/neu/voller Speicher bestimmt die Bootloader-Abfrage der
+#                     Geraeteauswahl). Anderer Haupttyp: Build Optionen umstellen, Verbindung trennen, COM Port im Blatt zuruecksetzen (auch zwischen Classic und Uno), danach
+#                     Rueckfrage, ob gesucht werden soll (Ja: Geraeteauswahl). Neu: device_groups, sheet_device, main_type_of, main_type_board, _web_device, _web_change_main_type.
+#                     Zeilen mit '# v1.80'
 #   1.79  2026-11-26  Wechsel des Protokolls auf LNet: der Dialog LNet Lizenzbestimmungen (private, nicht-kommerzielle Nutzung, LocoNet Personal Edition) muss bestaetigt werden; bei Abbrechen bleibt das bisherige Protokoll. Die Bestaetigung gilt je Blatt (esp32_options['lnet_license'], wird mit dem Blatt gesichert). Zeilen mit '# v1.79'
 #   1.78  2026-11-26  Reiter Lichtmaschine, Einstellungen: die erlaubten Protokolle kommen aus der Einstellung protocols in csv/Lichtmaschinen_prop.json (web_startpage.protocols_for_platform: Vereinigung der Lichtmaschinen der Plattform); ist die Plattform dort nicht eingetragen, gilt wie bisher Platform_Parameters. Zeilen mit '# v1.78'
 #   1.77  2026-11-26  Firmware installieren: die Plattform der gewaehlten Firmware geht an die Geraeteauswahl (ein Geraet derselben Plattform wird bevorzugt vorgewaehlt). Zeilen mit '# v1.77'
@@ -192,6 +215,97 @@ def _choose_detected_board_type(cands, *, light_machine):  # v1.48 (Pull Request
 
     selected = wd.call_in_loop(show_dialog, default=None)  # v1.48
     return selected if selected in types else None  # v1.48
+
+
+BOARD_MAIN_TYPE = {"nano": "Classic", "uno": "Uno", "esp32": "Pro", "pico": "Pico"}  # v1.80: Feld board der devices (csv/Lichtmaschinen_prop.json) -> Haupttyp
+UNO_DEVICE = ("Uno", "Arduino Uno", "Uno")  # v1.80: (key, Name, Haupttyp), wenn devices keinen Eintrag mit board Uno hat (Plattform AM328)
+_LAST_NANO = {}  # v1.80: zuletzt benutzte Nano-Variante (Build-Option), gilt bis zum Neustart; beim Wechsel zurueck auf Classic
+
+
+def main_type_of(board_typ, buildopt, M02):  # v1.80
+    """Haupttyp des Blattes: 'Pro' (ESP32), 'Pico', 'Uno' (Build-Option arduino:avr:uno) oder 'Classic' (Nano)."""  # v1.80
+    if board_typ == M02.HT_ESP32:  # v1.80
+        return "Pro"  # v1.80
+    if board_typ == M02.HT_PICO:  # v1.80
+        return "Pico"  # v1.80
+    return "Uno" if M02.BOARD_UNO_NORM in str(buildopt or "") else "Classic"  # v1.80
+
+
+def main_type_board(main_type, M02):  # v1.80
+    """Build-Option eines Haupttyps. Classic: die zuletzt benutzte Nano-Variante, sonst Nano (neue Version)."""  # v1.80
+    if main_type == "Classic":  # v1.80
+        return _LAST_NANO.get("board") or M02.BOARD_NANO_NEW  # v1.80
+    return {"Uno": M02.BOARD_UNO_NORM, "Pro": M02.BOARD_ESP32, "Pico": M02.BOARD_PICO}.get(main_type)  # v1.80
+
+
+def device_groups(base_dir=None):  # v1.80
+    """Eintraege des Auswahlfelds aus devices (csv/Lichtmaschinen_prop.json), gruppiert nach Plattform: [(Name der Plattform, [(key, Name, Haupttyp)])].
+    Name der Plattform aus platforms (web_startpage.platform_name), sonst die Plattform selbst. Gruppen und Eintraege nach sortPriority (hoechste zuerst), bei gleicher Zahl nach Namen.
+    Eintraege mit unbekanntem board fehlen. Ohne Eintrag mit board Uno kommt UNO_DEVICE zur Plattform AM328."""  # v1.80
+    from _web import web_startpage as SP  # v1.80
+    base = base_dir or SP._own_base_dir()  # v1.80
+    groups = {}  # v1.80: Plattform -> Eintraege
+    prio = {}  # v1.83: key -> sortPriority der Lichtmaschine
+    for m in SP.load_machines(base):  # v1.80
+        main = BOARD_MAIN_TYPE.get(str(m.get("board", "")).strip().lower())  # v1.80
+        if main:  # v1.80
+            groups.setdefault(str(m.get("platform", "")).strip() or "?", []).append((m["key"], tr(m["name"]), main))  # v1.80
+            prio[m["key"]] = SP.sort_priority(m.get("sortPriority"))  # v1.83
+    if not any(main == "Uno" for items in groups.values() for _k, _n, main in items):  # v1.80
+        groups.setdefault("AM328", []).append(UNO_DEVICE)  # v1.80
+    plat_prio = {p["platform"].upper(): p.get("sortPriority", 0) for p in SP.load_platforms(base)}  # v1.83: sortPriority der Plattformen
+    # out = [(SP.platform_name(plat, base) or plat, sorted(items, key=lambda x: x[1].lower())) for plat, items in groups.items()]  # v1.80  # v1.83 (entfallen)
+    # return sorted(out, key=lambda g: g[0].lower())  # v1.80  # v1.83 (entfallen)
+    out = [(plat_prio.get(plat.upper(), 0), SP.platform_name(plat, base) or plat,  # v1.83: hoechste sortPriority zuerst, bei gleicher Zahl nach Namen
+            sorted(items, key=lambda x: (-prio.get(x[0], 0), x[1].lower()))) for plat, items in groups.items()]  # v1.83
+    return [(name, items) for _p, name, items in sorted(out, key=lambda g: (-g[0], g[1].lower()))]  # v1.83
+
+
+def device_entry(groups, key):  # v1.80: (key, Name, Haupttyp) zu einem key oder None
+    return next((d for _g, items in groups for d in items if d[0] == key), None)  # v1.80
+
+
+def default_devices(base_dir=None):  # v1.81
+    """keys der Vorgaben je Plattform (platforms.defaultDevice in csv/Lichtmaschinen_prop.json), zum Beispiel ['Classic', 'Pro', 'PicoZero']"""  # v1.81
+    from _web import web_startpage as SP  # v1.81
+    return [p["defaultDevice"] for p in SP.load_platforms(base_dir or SP._own_base_dir()) if p.get("defaultDevice")]  # v1.81
+
+
+# def sheet_device(groups, main_type, stored_key):  # v1.80  # v1.81 (entfallen)
+def sheet_device(groups, main_type, stored_key, defaults=()):  # v1.80  # v1.81: defaults
+    """Eintrag, den das Auswahlfeld zeigt: der im Blatt gespeicherte key, wenn er zum Haupttyp des Blattes passt; sonst die Vorgabe der Plattform (defaults, platforms.defaultDevice),
+    wenn sie zum Haupttyp passt; sonst der erste Eintrag dieses Haupttyps (Reihenfolge der Anzeige)."""  # v1.80  # v1.81
+    ent = device_entry(groups, stored_key)  # v1.80
+    if ent and ent[2] == main_type:  # v1.80
+        return ent  # v1.80
+    for key in defaults or ():  # v1.81: Vorgabe der Plattform (zum Beispiel Pico Zero statt MoLLi)
+        ent = device_entry(groups, key)  # v1.81
+        if ent and ent[2] == main_type:  # v1.81
+            return ent  # v1.81
+    return next((d for _g, items in groups for d in items if d[2] == main_type), None)  # v1.80
+
+
+def detect_sets_for_main(main_type, base_dir=None):  # v1.88
+    """Regel-Sets (devices.detect, klein) der Lichtmaschinen mit diesem Haupttyp (Classic, Uno, Pro, Pico), zum Beispiel {'uno'}; leer, wenn keine einen Verweis hat"""  # v1.88
+    from _web import web_startpage as SP  # v1.88
+    return {str(m.get("detect", "")).strip().lower() for m in SP.load_machines(base_dir or SP._own_base_dir())  # v1.88
+            if str(m.get("detect", "")).strip() and BOARD_MAIN_TYPE.get(str(m.get("board", "")).strip().lower()) == main_type}  # v1.88
+
+
+def sheet_device_key(board_typ, buildopt, stored_key, M02):  # v1.85
+    """key der Lichtmaschine, die das Menue fuer ein Blatt zeigt (gespeichert, sonst Vorgabe der Plattform, sonst erster Eintrag des Haupttyps); '' wenn keine passt"""  # v1.85
+    groups = device_groups()  # v1.85
+    ent = sheet_device(groups, main_type_of(board_typ, buildopt, M02), stored_key, default_devices())  # v1.85
+    return ent[0] if ent else ""  # v1.85
+
+
+def device_image(key):  # v1.85
+    """Web-Pfad des Bildes einer Lichtmaschine (devices.image, Gross-/Kleinschreibung egal); '' wenn es keinen Eintrag, kein Bild oder die Datei nicht gibt (dann leere Flaeche)"""  # v1.85
+    from _web import web_startpage as SP  # v1.85
+    from _web import web_form_comport as wfc_  # v1.85
+    m = SP.machine_by_key(key) if key else None  # v1.85
+    name = str((m or {}).get("image", "") or "").strip()  # v1.85
+    return wfc_.find_image(os.path.splitext(name)[0]) if name else ""  # v1.85
 
 
 def tab_buttons(buttons: dict, handlers: list[str], frame_hint: str | None = None) -> list[dict]:
@@ -622,7 +736,8 @@ async def _options_async(spec: dict, st: dict):
                     # set_tab_visible(tab, vals["L"] in nano_values)  # v1.06  # v1.64 (entfallen)
                     nano = vals["L"] in nano_values  # v1.64
                 proto = vals.get("protocol") or dcc["proto"]  # v1.64: Reiter heisst wie das Protokoll (DCC/LNet Arduino), bei CAN gibt es ihn nicht
-                set_tab_visible(tab, nano and proto != "CAN")  # v1.64
+                # set_tab_visible(tab, nano and proto != "CAN")  # v1.64  # v1.86 (entfallen)
+                set_tab_visible(tab, nano and proto != "CAN" and dcc.get("proto_ok", True))  # v1.64  # v1.86: Lichtmaschine ohne Protokoll (Mini): kein DCC/Selectrix/LNet Arduino
                 if proto != "CAN" and tab.props.get("label") != proto + " Arduino":  # v1.64
                     tab.props["label"] = proto + " Arduino"  # v1.64
                     tab.update()  # v1.64
@@ -691,6 +806,7 @@ async def _options_async(spec: dict, st: dict):
                     if t.get("nano_only"):  # v1.06
                         dcc["tab"], dcc["initial"] = tab_obj, bool(t.get("visible", True))  # v1.06
                         dcc["nano"], dcc["proto"] = bool(t.get("nano", dcc["initial"])), str(vals.get("protocol") or "")  # v1.64
+                        dcc["proto_ok"] = bool(t.get("protocol_ok", True))  # v1.86
                         set_tab_visible(tab_obj, dcc["initial"])  # v1.06
                 esp_tab = ui.tab(tr("ESP Einstellungen"))  # v1.30
                 esp_tab.set_visibility(vals.get("L") == esp32_value and esp32_value is not None and not has_summary and not view_only)  # v1.30  # v1.53: mit Hauptseite stehen die Einstellungen dort
@@ -721,21 +837,45 @@ async def _options_async(spec: dict, st: dict):
                             sm = spec["pages"]["left"]["summary"]
                             with ui.row().classes("items-start w-full no-wrap gap-4"):  # v1.59: kompakt
                                 with ui.column().classes("grow gap-1"):  # v1.59
-                                    with ui.row().classes("items-baseline gap-2 no-wrap"):  # v1.62: fester Text fett, danach die gewaehlte Hardware
-                                        ui.label(sm["hw_label"]).classes("text-body1 text-bold")  # v1.62
-                                        ui.label(sm["line"]).classes("text-body1")  # v1.62
-                                    for b in t["buttons"]:  # v1.63: Knopf Erkennen unter der Hardware-Zeile
-                                        sb = ui.button(wd.clean_text(b["text"]), on_click=action(b["handler"])).props("outline no-caps dense").classes("q-px-md")  # v1.59
-                                        if b.get("label"):
-                                            sb.tooltip(b["label"])
+                                    # with ui.row().classes("items-baseline gap-2 no-wrap"):  # v1.62: fester Text fett, danach die gewaehlte Hardware  # v1.80 (entfallen)
+                                    #     ui.label(sm["hw_label"]).classes("text-body1 text-bold")  # v1.62  # v1.80 (entfallen)
+                                    #     ui.label(sm["line"]).classes("text-body1")  # v1.62  # v1.80 (entfallen)
+                                    # with ui.row().classes("items-center gap-2 no-wrap"):  # v1.80: fester Text fett, Auswahl der Lichtmaschine, danach der Port  # v1.87 (entfallen)
+                                    with ui.row().classes("items-center gap-2 no-wrap w-full"):  # v1.80  # v1.87: ganze Breite, der Knopf Suchen steht rechts (buendig mit der Trennlinie)
+                                        ui.label(sm["hw_label"]).classes("text-body1 text-bold")  # v1.80
+
+                                        def device_changed(key):  # v1.80: andere Lichtmaschine: Dialog schliessen, umstellen und (bei anderem Haupttyp) nach der Suche fragen (_web_loop)
+                                            if key and key != vals.get("device"):  # v1.80
+                                                vals["device"] = key  # v1.80
+                                                dlg.submit(("action", "__Main_Type_Changed", collect()))  # v1.80
+                                        with ui.button(sm["device_label"]).props("outline no-caps dense icon-right=expand_more").classes("q-px-md"):  # v1.80: Auswahl als Menue mit Ueberschriften je Plattform
+                                            with ui.menu().props("auto-close"):  # v1.80
+                                                for gi, (gname, items) in enumerate(sm["device_groups"]):  # v1.80: Gruppen nach Plattform, sortiert nach Namen
+                                                    if gi:  # v1.80
+                                                        ui.separator()  # v1.80
+                                                    ui.label(gname).classes("text-caption text-bold text-grey-7 q-px-md q-pt-sm")  # v1.80
+                                                    for key_, name_, _main in items:  # v1.80
+                                                        ui.menu_item(name_, on_click=lambda k=key_: device_changed(k)).classes(  # v1.80
+                                                            "q-pl-lg" + (" text-primary text-bold" if key_ == sm["device"] else ""))  # v1.80
+                                        ui.label(sm["line"]).classes("text-body1")  # v1.80
+                                        ui.space()  # v1.87: schiebt den Knopf an den rechten Rand
+                                        for b in t["buttons"]:  # v1.87: Knopf Suchen in der Gerätezeile (vorher darunter, v1.63)
+                                            sb = ui.button(wd.clean_text(b["text"]), on_click=action(b["handler"])).props("outline no-caps dense").classes("q-px-md")  # v1.59  # v1.87
+                                            if b.get("label"):  # v1.87
+                                                sb.tooltip(b["label"])  # v1.87
+                                    # for b in t["buttons"]:  # v1.63: Knopf Erkennen unter der Hardware-Zeile  # v1.87 (entfallen)
+                                    #     sb = ui.button(wd.clean_text(b["text"]), on_click=action(b["handler"])).props("outline no-caps dense").classes("q-px-md")  # v1.59  # v1.87 (entfallen)
+                                    #     if b.get("label"):  # v1.87 (entfallen)
+                                    #         sb.tooltip(b["label"])  # v1.87 (entfallen)
                                     ui.separator().classes("q-my-xs")  # v1.59
                                     ui.label(sm["config_title"]).classes("text-subtitle2")
                                     with ui.row().classes("items-center gap-3 no-wrap"):  # v1.59: Protokoll und Variante nebeneinander
-                                        ui.select(sm["protocols"], value=sm["protocol"], label=sm["protocol_label"],
-                                                  on_change=lambda e: (vals.__setitem__("protocol", e.value), update_dcc_tab())).props("outlined dense").classes("w-40").set_enabled(len(sm["protocols"]) > 1)  # v1.58 (wie v1.56)  # v1.59
-                                        if sm["variants"]:
-                                            ui.select(sm["variants"], value=vals["L"] if vals.get("L") in sm["variants"] else 2, label=sm["variant_label"],
-                                                      on_change=lambda e: vals.__setitem__("L", e.value) if e.value else None).props("outlined dense").classes("w-80")  # v1.59
+                                        if sm["protocols"]:  # v1.86: unterstuetzt die Lichtmaschine kein Protokoll (Mini), entfaellt die Auswahl
+                                            ui.select(sm["protocols"], value=sm["protocol"], label=sm["protocol_label"],
+                                                      on_change=lambda e: (vals.__setitem__("protocol", e.value), update_dcc_tab())).props("outlined dense").classes("w-40").set_enabled(len(sm["protocols"]) > 1)  # v1.58 (wie v1.56)  # v1.59  # v1.86: eingerueckt
+                                        # if sm["variants"]:  # v1.80 (entfallen: der Haupttyp steht in der Hardware-Zeile, die Nano-Variante bestimmt die Bootloader-Abfrage)
+                                        #     ui.select(sm["variants"], value=vals["L"] if vals.get("L") in sm["variants"] else 2, label=sm["variant_label"],  # v1.80 (entfallen)
+                                        #               on_change=lambda e: vals.__setitem__("L", e.value) if e.value else None).props("outlined dense").classes("w-80")  # v1.59  # v1.80 (entfallen)
                                     if sm["protocol_hint"]:  # v1.53: nur noch der Hinweis bei Selectrix
                                         ui.label(sm["protocol_hint"]).classes("text-caption text-grey-7")
                                     with ui.column().classes("gap-0"):  # v1.59: Haken eng untereinander
@@ -750,7 +890,10 @@ async def _options_async(spec: dict, st: dict):
                                         esp_panel(compact=True)  # v1.53  # v1.59
                                 if sm["image"]:
                                     # ui.image(sm["image"]).classes("w-40")  # v1.59  # v1.66 (entfallen)
-                                    ui.image(sm["image"]).classes("w-60")  # v1.59  # v1.66: Bild 50 % groesser (15rem statt 10rem)
+                                    # ui.image(sm["image"]).classes("w-60")  # v1.59  # v1.66: Bild 50 % groesser (15rem statt 10rem)  # v1.84 (entfallen)
+                                    ui.image(sm["image"]).props("fit=contain").classes("w-60 shrink-0").style("height: 11.25rem")  # v1.84: feste Flaeche, Bild eingepasst
+                                else:  # v1.84: kein passendes Bild: leere Flaeche gleicher Groesse (wie die Kacheln der Startseite)
+                                    ui.element("div").classes("w-60 shrink-0").style("height: 11.25rem")  # v1.84
                         elif t["kind"] == "arduino":
                             # with ui.row().classes("items-start no-wrap w-full"):  # v1.20 (entfallen)
                             with ui.row().classes("items-start w-full").style("flex-wrap: wrap; gap: 1rem 2rem"):  # v1.20: auf schmalen Bildschirmen rutscht die Auswahl des Boards unter die Knoepfe
@@ -911,9 +1054,65 @@ def make_class(Base):
                     # "auto_R": bool(self.Autodetect_Typ_R_CheckBox_var.get())}  # v1.04 (entfallen)
                     "auto_R": bool(self.Autodetect_Typ_R_CheckBox_var.get()),  # v1.04
                     "protocol": str(M25.Page_ID or ""),  # v1.49
+                    "device": self._web_device()[0],  # v1.80: key der Lichtmaschine (devices)
                     "use_pio": bool(M28.Get_Bool_Config_Var("Use_PlatformIO")),  # v1.04
                     "serial_cfg": bool(M42.Option_Enabled()),  # v1.32  # v1.55: Einstellung des Blattes (M42 1.08)
                     "ldr": HSS.is_set("ldr"), "store_status": HSS.is_set("store_status")}  # v1.55: Makrozeilen des Blattes
+
+        def _web_main_type(self):  # v1.80: Haupttyp der Lichtmaschine laut Blatt
+            import proggen.M02a_Public as M02a  # v1.80
+            return main_type_of(M02a.Get_BoardTyp(), P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL).Value, M02)  # v1.80
+
+        def _web_device(self, groups=None):  # v1.80: (key, Name, Haupttyp) der Lichtmaschine des Blattes; key gespeichert in esp32_options['device'] (wird mit dem Blatt gesichert)
+            groups = groups if groups is not None else device_groups()  # v1.80
+            main = self._web_main_type()  # v1.80
+            stored = (getattr(P01.ActiveSheet, "esp32_options", None) or {}).get("device")  # v1.80
+            # return sheet_device(groups, main, stored) or ("", main, main)  # v1.80  # v1.81 (entfallen)
+            return sheet_device(groups, main, stored, default_devices()) or ("", main, main)  # v1.81: ohne gespeicherte Lichtmaschine die Vorgabe der Plattform
+
+        def _web_has_protocol(self):  # v1.86: unterstuetzt die Lichtmaschine des Blattes ein Protokoll? Nein nur, wenn ihr Eintrag in devices eine leere Liste protocols hat
+            try:  # v1.86
+                from _web import web_startpage as SP  # v1.86
+                m = SP.machine_by_key(self._web_device()[0])  # v1.86
+                return m is None or bool(m.get("protocols"))  # v1.86
+            except Exception:                                      # noqa: BLE001  # v1.86
+                logger.debug("Protokolle der Lichtmaschine nicht lesbar", exc_info=True)  # v1.86
+                return True  # v1.86
+
+        def _web_change_main_type(self, new_key):  # v1.80
+            """Andere Lichtmaschine im Reiter Lichtmaschine (key aus devices). Der key wird im Blatt gespeichert. Hat sie einen anderen Haupttyp (board): Build Optionen umstellen,
+            Verbindung trennen, COM Port im Blatt zuruecksetzen (auch Classic <-> Uno), danach fragen, ob nach der Lichtmaschine gesucht werden soll (Ja: Geraeteauswahl, sie zeigt
+            nur Geraete des neuen Typs). True: Haupttyp gewechselt."""  # v1.80
+            ent = device_entry(device_groups(), new_key)  # v1.80
+            if ent is None:  # v1.80
+                return False  # v1.80
+            opts = dict(getattr(P01.ActiveSheet, "esp32_options", None) or {})  # v1.80
+            if opts.get("device") != new_key:  # v1.80
+                opts["device"] = new_key  # v1.80
+                P01.ActiveSheet.esp32_options = opts  # v1.80
+            new_main, name = ent[2], ent[1]  # v1.80
+            old_main = self._web_main_type()  # v1.80
+            board = main_type_board(new_main, M02)  # v1.80
+            if not board or new_main == old_main:  # v1.80: gleicher Haupttyp (zum Beispiel Classic -> Mini): Hardware und Port bleiben
+                return False  # v1.80
+            old_board = M28pio.Get_Old_Board(True)  # v1.80
+            if old_main == "Classic" and old_board:  # v1.80: Nano-Variante merken (alt/neu/voller Speicher) fuer den Wechsel zurueck
+                _LAST_NANO["board"] = old_board  # v1.80
+                board = main_type_board(new_main, M02)  # v1.80
+            if new_main in ("Pro", "Pico"):  # v1.80: ESP32 und Pico: die Build Optionen ersetzen (wie der Typwechsel der Geraeteauswahl, web_form_comport._switch_type)
+                P01.CellDict[M02.SH_VARS_ROW, M25.BUILDOP_COL] = board  # v1.80
+            else:  # v1.80: Nano und Uno: nur den Board-Teil ersetzen, weitere Optionen bleiben
+                M28pio.Change_Board_Typ(True, board)  # v1.80
+            try:  # v1.80: die Auswahl des Formulars nachfuehren, sonst stellt 'USB Port erkennen' (Change_Board) das alte Board wieder ein (wie v1.35)
+                self.rb_res["_L"].set(list(self.boardlist).index(board))  # v1.80
+            except (ValueError, KeyError, AttributeError):  # v1.80
+                logger.warning("Haupttyp: Board %s steht nicht in der Boardliste", board)  # v1.80
+            self._web_board_changed(True)  # v1.80: Verbindung trennen, COM Port im Blatt zuruecksetzen
+            logger.info("Optionen: Haupttyp %s -> %s (Build Optionen %r)", old_main, new_main, P01.Cells(M02.SH_VARS_ROW, M25.BUILDOP_COL).Value)  # v1.80
+            if P01.MsgBox(tr("Die Lichtmaschine wurde auf {typ} umgestellt. Der COM Port wurde zurückgesetzt.", typ=name) + "\n\n" +  # v1.80
+                          tr("Soll jetzt nach der angeschlossenen Lichtmaschine gesucht werden?"), vbQuestion + vbYesNo, tr("Hardware Optionen")) == vbYes:  # v1.80
+                getattr(self, PFX + "__Detect_LED_Port_Button_Click")()  # v1.80: Geraeteauswahl (zeigt nur Geraete des neuen Typs)
+            return True  # v1.80
 
         def _is_nano_value(self, value):  # v1.06
             """Gehoert der Wert des Radioknopfes zu einem Arduino Nano oder Uno (nicht ESP32 und nicht Pico)?"""  # v1.06
@@ -967,10 +1166,13 @@ def make_class(Base):
                     logger.debug("Anschlussliste nicht lesbar", exc_info=True)
             if not port:
                 # line = tr("Hardware: {board} (kein Port gewählt)", board=board)  # v1.62 (entfallen)
-                line = board + " (" + tr("kein Port gewählt") + ")"  # v1.62: 'Hardware:' steht als fester Text davor
+                # line = board + " (" + tr("kein Port gewählt") + ")"  # v1.62: 'Hardware:' steht als fester Text davor  # v1.80 (entfallen)
+                # line = "(" + tr("kein Port gewählt") + ")"  # v1.80: der Haupttyp steht im Auswahlfeld davor  # v1.82 (entfallen)
+                line = "(" + tr("keine Schnittstelle gewählt") + ")"  # v1.82: Schnittstelle statt Port
             else:
                 # line = tr("Hardware: {board} an {port}", board=board, port=port) + (" (" + tr("offline") + ")" if offline else "")  # v1.62 (entfallen)
-                line = tr("{board} an {port}", board=board, port=port) + (" (" + tr("offline") + ")" if offline else "")  # v1.62
+                # line = tr("{board} an {port}", board=board, port=port) + (" (" + tr("offline") + ")" if offline else "")  # v1.62  # v1.80 (entfallen)
+                line = tr("an {port}", port=port) + (" (" + tr("offline") + ")" if offline else "")  # v1.80
             cur_pid = str(M25.Page_ID or "")                       # Protokoll: Selectrix hat andere Spalten als DCC/LNet/CAN, dort ist kein Wechsel moeglich
             # pids = ["Selectrix"] if cur_pid == "Selectrix" else ["DCC", "LNet", "CAN"]  # v1.57 (entfallen)
             # proto_hint = "" if len(pids) > 1 else tr("Selectrix kann nicht auf ein anderes Protokoll umgestellt werden.")  # v1.56  # v1.57 (entfallen)
@@ -1005,26 +1207,49 @@ def make_class(Base):
             # proto_hint = tr("Dieses Protokoll wird von der gewählten Hardware nicht unterstützt. Bitte auf {liste} umstellen.", liste=", ".join(pids))  # v1.67  # v1.68 (entfallen)
             # pids.insert(0, cur_pid)  # v1.67  # v1.68 (entfallen)
             # pids = [p for p in ("DCC", "LNet", "CAN", "Selectrix") if _supports(p)] or ["DCC"]  # v1.68: Selectrix gehoert dazu, der Wechsel rechnet die Adressen um  # v1.78 (entfallen)
+            groups = device_groups()  # v1.80: Auswahl der Lichtmaschine aus devices; ESP32 nur mit PlatformIO oder dem ESP32-Paket der ARDUINO IDE (wie board_second)  # v1.84: vor Bild und Protokollen
+            if bt != M02.HT_ESP32 and not (M28pio.Is_PlatformIO() or M37.ESP32_Lib_Installed()):  # v1.80
+                groups = [(g, [d for d in items if d[2] != "Pro"]) for g, items in groups]  # v1.80
+                groups = [(g, items) for g, items in groups if items]  # v1.80
+            device = self._web_device(groups)  # v1.80
+            machine = None  # v1.84: Eintrag der gewaehlten Lichtmaschine in devices (Bild, Protokolle)
             allowed = None  # v1.78: Protokolle laut csv/Lichtmaschinen_prop.json (protocols)
             try:  # v1.78
                 from _web import web_startpage as _SP  # v1.78
-                allowed = _SP.protocols_for_platform({M02.HT_AM328: "AM328", M02.HT_ESP32: "ESP32", M02.HT_PICO: "PICO"}.get(bt))  # v1.78
+                machine = _SP.machine_by_key(device[0]) if device[0] else None  # v1.84
+                # allowed = _SP.protocols_for_platform({M02.HT_AM328: "AM328", M02.HT_ESP32: "ESP32", M02.HT_PICO: "PICO"}.get(bt))  # v1.78  # v1.84 (entfallen)
+                if machine is not None:  # v1.84: Protokolle der gewaehlten Lichtmaschine (zum Beispiel Mini nur DCC)
+                    wanted_ = {str(c).strip().lower() for c in machine.get("protocols", [])}  # v1.84
+                    allowed = [p for p in ("DCC", "LNet", "CAN", "Selectrix") if p.lower() in wanted_]  # v1.84
+                else:  # v1.84: ohne Eintrag in devices wie bisher die Plattform
+                    allowed = _SP.protocols_for_platform({M02.HT_AM328: "AM328", M02.HT_ESP32: "ESP32", M02.HT_PICO: "PICO"}.get(bt))  # v1.78
             except Exception:                                      # noqa: BLE001  # v1.78
                 logger.debug("Protokolle aus Lichtmaschinen_prop.json nicht lesbar", exc_info=True)  # v1.78
-            pids = (list(allowed) if allowed is not None else [p for p in ("DCC", "LNet", "CAN", "Selectrix") if _supports(p)]) or ["DCC"]  # v1.68  # v1.78: erst die Einstellung protocols, sonst Platform_Parameters
+            # image = ""  # v1.84: Bild der gewaehlten Lichtmaschine (devices.image); fehlt es, zeigt der Reiter eine leere Flaeche  # v1.85 (entfallen)
+            # if machine is not None and str(machine.get("image", "")).strip():  # v1.84  # v1.85 (entfallen)
+            #     image = wfc.find_image(os.path.splitext(str(machine["image"]).strip())[0])  # v1.84: Gross-/Kleinschreibung egal  # v1.85 (entfallen)
+            image = device_image(device[0])  # v1.84  # v1.85: gemeinsame Funktion (auch fuer die Geraeteauswahl); '' = leere Flaeche
+            no_protocol = machine is not None and allowed is not None and len(allowed) == 0  # v1.86: die Lichtmaschine unterstuetzt kein Protokoll (devices.protocols leer, zum Beispiel Mini)
+            # pids = (list(allowed) if allowed is not None else [p for p in ("DCC", "LNet", "CAN", "Selectrix") if _supports(p)]) or ["DCC"]  # v1.68  # v1.78: erst die Einstellung protocols, sonst Platform_Parameters  # v1.86 (entfallen)
+            pids = [] if no_protocol else ((list(allowed) if allowed is not None else [p for p in ("DCC", "LNet", "CAN", "Selectrix") if _supports(p)]) or ["DCC"])  # v1.68  # v1.78  # v1.86: ohne Protokoll keine Auswahl
             proto_hint = ""  # v1.68
-            if cur_pid and cur_pid not in pids:  # v1.68: das eingestellte Protokoll bleibt sichtbar, damit es umgestellt werden kann
+            # if cur_pid and cur_pid not in pids:  # v1.68: das eingestellte Protokoll bleibt sichtbar, damit es umgestellt werden kann  # v1.86 (entfallen)
+            if cur_pid and cur_pid not in pids and not no_protocol:  # v1.68: das eingestellte Protokoll bleibt sichtbar, damit es umgestellt werden kann  # v1.86
                 proto_hint = tr("Dieses Protokoll wird von der gewählten Hardware nicht unterstützt. Bitte auf {liste} umstellen.", liste=", ".join(pids))  # v1.68
                 pids.insert(0, cur_pid)  # v1.68
-            if cur_pid and cur_pid not in pids:
+            # if cur_pid and cur_pid not in pids:  # v1.86 (entfallen)
+            if cur_pid and cur_pid not in pids and not no_protocol:  # v1.86
                 pids.append(cur_pid)
             variants = None                                        # Board-Variante nur fuer Classic (Wert = Index der Boardliste)
-            if bt not in (M02.HT_ESP32, M02.HT_PICO):
-                # variants = {1: tr("Nano Normal (old Bootloader)"), 2: tr("Nano (neue Version)"),  # v1.60: ohne 'Lichtmaschine Classic, Mini'  # v1.61 (entfallen)
+            # if bt not in (M02.HT_ESP32, M02.HT_PICO):  # v1.80 (entfallen: keine Auswahl der Hardwarevariante mehr)
+            # groups, device: siehe oben (v1.84)
+            # variants = {1: tr("Nano Normal (old Bootloader)"), 2: tr("Nano (neue Version)"),  # v1.60: ohne 'Lichtmaschine Classic, Mini'  # v1.61 (entfallen)
                 #             3: tr("Nano (Full memory)"), 4: tr("Uno")}  # v1.61 (entfallen)
-                variants = {1: tr("Nano (alter Bootloader)"), 2: tr("Nano (neue Version)"),  # v1.61
-                            3: tr("Nano (maximaler Speicher)"), 4: tr("Uno")}  # v1.61
-            return {"line": line, "hw_label": tr("Hardware") + ":", "image": wfc.find_image(picture),  # v1.62
+                # variants = {1: tr("Nano (alter Bootloader)"), 2: tr("Nano (neue Version)"),  # v1.61  # v1.80 (entfallen)
+                #             3: tr("Nano (maximaler Speicher)"), 4: tr("Uno")}  # v1.61  # v1.80 (entfallen)
+            # return {"line": line, "hw_label": tr("Hardware") + ":", "image": wfc.find_image(picture),  # v1.62  # v1.82 (entfallen)
+            # return {"line": line, "hw_label": tr("Gerät") + ":", "image": wfc.find_image(picture),  # v1.62  # v1.82: 'Gerät:' statt 'Hardware:'  # v1.84 (entfallen)
+            return {"line": line, "hw_label": tr("Gerät") + ":", "image": image,  # v1.62  # v1.82  # v1.84: Bild der Lichtmaschine oder '' (leere Flaeche)
                     "config_title": tr("Einstellungen"),  # v1.51: vorher Weitere Einstellungen des Blattes
                     "serial_cfg_text": tr("Schnelles Update"), "fast_update": bt in (M02.HT_ESP32, M02.HT_PICO),  # v1.51
                     "esp_options": bt == M02.HT_ESP32, "ldr_text": tr("Lichtsensor aktivieren"), "store_text": tr("Schaltzustände speichern"),  # v1.54
@@ -1033,7 +1258,8 @@ def make_class(Base):
                     "protocols": {o: o for o in pids}, "protocol": cur_pid, "protocol_label": tr("Protokoll"),  # v1.66: nur 'LNet', der geschuetzte Begriff LocoNet steht nicht mehr in der Oberflaeche (5.25)
                     "protocol_hint": proto_hint,  # v1.56
                     # "variants": variants, "variant_label": tr("Board-Variante")}  # v1.66 (entfallen)
-                    "variants": variants, "variant_label": tr("Hardwarevariante")}  # v1.66: Hardwarevariante statt Board-Variante
+                    "variants": variants, "variant_label": tr("Hardwarevariante"),  # v1.66: Hardwarevariante statt Board-Variante
+                    "device_groups": groups, "device": device[0], "device_label": device[1], "main_type": device[2]}  # v1.80
 
         def _web_spec(self, first_page_only):
             import proggen.M02a_Public as M02a  # v1.06
@@ -1052,7 +1278,8 @@ def make_class(Base):
             summary = None  # v1.49: Reiter Lichtmaschine zeigt nur Board und Port; gewaehlt wird im Dialog des Knopfes Suchen
             if not wlan_device:  # v1.49
                 summary = self._board_summary(M02a)  # v1.49
-                left = [{"text": tr("Erkennen"), "handler": "__Detect_LED_Port_Button_Click", "disabled": False,  # v1.49
+                # left = [{"text": tr("Erkennen"), "handler": "__Detect_LED_Port_Button_Click", "disabled": False,  # v1.49  # v1.87 (entfallen)
+                left = [{"text": tr("Suchen"), "handler": "__Detect_LED_Port_Button_Click", "disabled": False,  # v1.49  # v1.87: Suchen statt Erkennen
                          "label": tr("Sucht die angeschlossenen Boards an allen USB Anschlüssen und zeigt sie in einer Liste. Dort werden Board und Port gewählt.")}]  # v1.49  # v1.65: Protokoll steht auf der Hauptseite
             if wlan_device and buttons.get("__Detect_LED_IP_Button_Click"):
                 left.append(dict(buttons["__Detect_LED_IP_Button_Click"][0], handler="__Detect_LED_IP_Button_Click"))
@@ -1085,7 +1312,9 @@ def make_class(Base):
                                  "buttons": tab_buttons(buttons, ["__Detect_Right_Port_Button_Click", "__ProInstall_Button_Click"]),  # v1.06
                                  # "nano_only": True, "visible": M02a.Get_BoardTyp() == M02.HT_AM328})  # v1.06  # v1.64 (entfallen)
                                  "nano_only": True, "nano": M02a.Get_BoardTyp() == M02.HT_AM328,  # v1.64: Nano und Protokoll getrennt, der Dialog rechnet die Sichtbarkeit
-                                 "visible": M02a.Get_BoardTyp() == M02.HT_AM328 and M25.Page_ID != "CAN"})  # v1.06  # v1.64
+                                 "protocol_ok": self._web_has_protocol(),  # v1.86: ohne Protokoll (Mini) kein DCC/Selectrix/LNet Arduino
+                                 # "visible": M02a.Get_BoardTyp() == M02.HT_AM328 and M25.Page_ID != "CAN"})  # v1.06  # v1.64  # v1.86 (entfallen)
+                                 "visible": M02a.Get_BoardTyp() == M02.HT_AM328 and M25.Page_ID != "CAN" and self._web_has_protocol()})  # v1.06  # v1.64  # v1.86
                     pages["right"] = {"radios": self._radios("_R"), "subtitle": subtitle, "auto_text": auto_text, "detect_text": detect_text, "detect_hint": detect_hint}  # v1.25
                     pages["left"]["nano_values"] = [v for v, _text in pages["left"]["radios"] if self._is_nano_value(v)]  # v1.06
                 files = tab_buttons(buttons, ["__Import_Button_Click", "__Save_Button_Click", "__Load_Button_Click", "__Copy_Page_Button_Click"])
@@ -1574,6 +1803,14 @@ def make_class(Base):
                         logger.exception("Optionen: Board erkennen fehlgeschlagen")  # v1.25
                         P01.MsgBox("Aktion fehlgeschlagen: " + str(ex), vbCritical, "Optionen")  # v1.25
                     continue  # v1.25
+                if handler == "__Main_Type_Changed":                      # v1.80: Auswahl des Haupttyps im Reiter Lichtmaschine geaendert
+                    _TAB["keep"] = True  # v1.80: danach wieder auf diesem Reiter
+                    try:  # v1.80
+                        self._web_change_main_type(vals.get("device"))  # v1.80
+                    except Exception as ex:                                # noqa: BLE001  # v1.80
+                        logger.exception("Optionen: Wechsel des Haupttyps fehlgeschlagen")  # v1.80
+                        P01.MsgBox("Aktion fehlgeschlagen: " + str(ex), vbCritical, "Optionen")  # v1.80
+                    continue  # v1.80
                 if handler == "__Check_PIO_Button_Click":                 # gibt es nur im Web (kein Knopf des Originals)  # v1.04
                     self._web_check_pio()  # v1.04
                     continue  # v1.09

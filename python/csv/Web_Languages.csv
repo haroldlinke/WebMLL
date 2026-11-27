@@ -2800,3 +2800,48 @@ Verbindungsaufbau ...;Connecting ...;Verbinding maken ...;Connexion en cours ...
 Verbinden...;Connecting...;Verbinding maken...;Connexion...;Connessione...;Conectando...;Forbinder...
 Verbindung verloren;Connection lost;Verbinding verloren;Connexion perdue;Connessione persa;Conexión perdida;Forbindelsen tabt
 Verbindung zu {port} verloren;Connection to {port} lost;Verbinding met {port} verloren;Connexion à {port} perdue;Connessione a {port} persa;Conexión con {port} perdida;Forbindelsen til {port} er tabt
+an {port};on {port};op {port};sur {port};su {port};en {port};på {port}
+Die Lichtmaschine wurde auf {typ} umgestellt. Der COM Port wurde zurückgesetzt.;The light machine has been changed to {typ}. The COM port has been reset.;De lichtmachine is omgezet naar {typ}. De COM-poort is teruggezet.;La machine à lumière a été changée en {typ}. Le port COM a été réinitialisé.;La macchina luci è stata cambiata in {typ}. La porta COM è stata reimpostata.;La máquina de luces se ha cambiado a {typ}. El puerto COM se ha restablecido.;Lysmaskinen er skiftet til {typ}. COM-porten er nulstillet.
+Soll jetzt nach der angeschlossenen Lichtmaschine gesucht werden?;Search for the connected light machine now?;Nu zoeken naar de aangesloten lichtmachine?;Rechercher maintenant la machine à lumière connectée ?;Cercare ora la macchina luci collegata?;¿Buscar ahora la máquina de luces conectada?;Søg nu efter den tilsluttede lysmaskine?
+Gerät;Device;Apparaat;Appareil;Dispositivo;Dispositivo;Enhed
+keine Schnittstelle gewählt;no interface selected;geen interface gekozen;aucune interface sélectionnée;nessuna interfaccia selezionata;ninguna interfaz seleccionada;ingen grænseflade valgt
+Anderes MobaLedLib Gerät verwenden?;Use another MobaLedLib device?;Ander MobaLedLib-apparaat gebruiken?;Utiliser un autre appareil MobaLedLib ?;Usare un altro dispositivo MobaLedLib?;¿Usar otro dispositivo MobaLedLib?;Bruge en anden MobaLedLib-enhed?
+"An %1 ist keine Lichtmaschine angeschlossen, sondern ein anderes MobaLedLib Gerät (%2).
+Diese Hardware ist für die Lichtmaschine möglicherweise ungeeignet. Das Programm der Lichtmaschine kann die Firmware des Geräts überschreiben.
+
+Soll dieses Gerät wirklich als Lichtmaschine verwendet werden?";"%1 is not connected to a light machine but to another MobaLedLib device (%2).
+This hardware may be unsuitable as a light machine. The light machine program may overwrite the firmware of the device.
+
+Do you really want to use this device as the light machine?";"Op %1 is geen lichtmachine aangesloten, maar een ander MobaLedLib-apparaat (%2).
+Deze hardware is mogelijk ongeschikt als lichtmachine. Het programma van de lichtmachine kan de firmware van het apparaat overschrijven.
+
+Wilt u dit apparaat echt als lichtmachine gebruiken?";"Sur %1, ce n'est pas une machine à lumière qui est connectée, mais un autre appareil MobaLedLib (%2).
+Ce matériel ne convient peut-être pas comme machine à lumière. Le programme de la machine à lumière peut écraser le firmware de l'appareil.
+
+Voulez-vous vraiment utiliser cet appareil comme machine à lumière ?";"Su %1 non è collegata una macchina luci, ma un altro dispositivo MobaLedLib (%2).
+Questo hardware potrebbe non essere adatto come macchina luci. Il programma della macchina luci può sovrascrivere il firmware del dispositivo.
+
+Vuoi davvero usare questo dispositivo come macchina luci?";"En %1 no hay conectada una máquina de luces, sino otro dispositivo MobaLedLib (%2).
+Este hardware puede no ser adecuado como máquina de luces. El programa de la máquina de luces puede sobrescribir el firmware del dispositivo.
+
+¿Quiere usar realmente este dispositivo como máquina de luces?";"På %1 er der ikke tilsluttet en lysmaskine, men en anden MobaLedLib-enhed (%2).
+Denne hardware er muligvis uegnet som lysmaskine. Lysmaskinens program kan overskrive enhedens firmware.
+
+Vil du virkelig bruge denne enhed som lysmaskine?"
+Ja, verwenden;Yes, use it;Ja, gebruiken;Oui, utiliser;Sì, usa;Sí, usar;Ja, brug den
+Liste der USB Geräte …;List of USB devices …;Lijst van USB-apparaten …;Liste des appareils USB …;Elenco dei dispositivi USB …;Lista de dispositivos USB …;Liste over USB-enheder …
+Liste der USB Geräte;List of USB devices;Lijst van USB-apparaten;Liste des appareils USB;Elenco dei dispositivi USB;Lista de dispositivos USB;Liste over USB-enheder
+Serielle USB-Anschlüsse mit den Daten, nach denen die Regeln detectionRules in csv/Lichtmaschinen_prop.json filtern (vid, pid, text = Beschreibung, Hersteller oder Produkt, hwid = Hardware-Kennung), und die passenden Regel-Sets und Lichtmaschinen.;Serial USB ports with the data the detectionRules in csv/Lichtmaschinen_prop.json filter on (vid, pid, text = description, manufacturer or product, hwid = hardware ID), and the matching rule sets and light machines.;Seriële USB-poorten met de gegevens waarop de regels detectionRules in csv/Lichtmaschinen_prop.json filteren (vid, pid, text = beschrijving, fabrikant of product, hwid = hardware-ID), en de passende regelsets en lichtmachines.;Ports USB série avec les données sur lesquelles filtrent les règles detectionRules de csv/Lichtmaschinen_prop.json (vid, pid, text = description, fabricant ou produit, hwid = identifiant matériel), ainsi que les jeux de règles et machines à lumière correspondants.;Porte USB seriali con i dati su cui filtrano le regole detectionRules in csv/Lichtmaschinen_prop.json (vid, pid, text = descrizione, produttore o prodotto, hwid = ID hardware) e i set di regole e le macchine luci corrispondenti.;Puertos USB serie con los datos por los que filtran las reglas detectionRules de csv/Lichtmaschinen_prop.json (vid, pid, text = descripción, fabricante o producto, hwid = ID de hardware), y los conjuntos de reglas y máquinas de luces correspondientes.;Serielle USB-porte med de data, som reglerne detectionRules i csv/Lichtmaschinen_prop.json filtrerer på (vid, pid, text = beskrivelse, producent eller produkt, hwid = hardware-id), og de passende regelsæt og lysmaskiner.
+Keine seriellen USB-Geräte gefunden.;No serial USB devices found.;Geen seriële USB-apparaten gevonden.;Aucun appareil USB série trouvé.;Nessun dispositivo USB seriale trovato.;No se encontraron dispositivos USB serie.;Ingen serielle USB-enheder fundet.
+Neu einlesen;Reload;Opnieuw inlezen;Relire;Rileggi;Volver a leer;Indlæs igen
+Als Text kopieren;Copy as text;Als tekst kopiëren;Copier en texte;Copia come testo;Copiar como texto;Kopiér som tekst
+In die Zwischenablage kopiert;Copied to the clipboard;Naar het klembord gekopieerd;Copié dans le presse-papiers;Copiato negli appunti;Copiado al portapapeles;Kopieret til udklipsholderen
+Hersteller;Manufacturer;Fabrikant;Fabricant;Produttore;Fabricante;Producent
+Produkt;Product;Product;Produit;Prodotto;Producto;Produkt
+Seriennummer;Serial number;Serienummer;Numéro de série;Numero di serie;Número de serie;Serienummer
+Hardware-Kennung;Hardware ID;Hardware-ID;Identifiant matériel;ID hardware;ID de hardware;Hardware-id
+Regel-Sets;Rule sets;Regelsets;Jeux de règles;Set di regole;Conjuntos de reglas;Regelsæt
+Lichtmaschinen;Light machines;Lichtmachines;Machines à lumière;Macchine luci;Máquinas de luces;Lysmaskiner
+(schwach);(weak);(zwak);(faible);(debole);(débil);(svag)
+Alle Geräte;All devices;Alle apparaten;Tous les appareils;Tutti i dispositivi;Todos los dispositivos;Alle enheder
+Auch USB-Geräte ohne seriellen Anschluss anzeigen (Spalte Anschluss leer);Also show USB devices without a serial port (Port column empty);Ook USB-apparaten zonder seriële poort tonen (kolom Poort leeg);Afficher aussi les appareils USB sans port série (colonne Port vide);Mostra anche i dispositivi USB senza porta seriale (colonna Porta vuota);Mostrar también los dispositivos USB sin puerto serie (columna Puerto vacía);Vis også USB-enheder uden seriel port (kolonnen Port tom)

@@ -1,12 +1,13 @@
-# Datei-Version: 1.20 (2026-11-26) - M07_COM_Port.py
+# Datei-Version: 1.21 (2026-11-27) - M07_COM_Port.py
 # ----------------------------------------------------------------------------------------------
 # Name:           M07_COM_Port.py
 # Path:           proggen/M07_COM_Port.py
-# Version:        1.20
-# Last Update:    2026-11-26
+# Version:        1.21
+# Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.21  2026-11-27  Erkennung der Plattform aus den USB-Daten nach den Regeln detectionRules in csv/Lichtmaschinen_prop.json (headless_usb_detect) statt fester Regeln: Classify_Port, EnumComPorts (Liste der Anschluesse; schwache Regeln wie 'USB Serial Port' und 'tty' nur, wenn keine andere Plattform passt), Find_Nano_Like_Device. Zeilen mit '# v1.21'
 #   1.20  2026-11-26  Negative Zahl im Anschluss (-3: Hinweis fuer den Auto-Reconnect) beim Hochladen und beim Setup uebertragen: Resolve_Port_Hint prueft, ob COM3 am Rechner vorhanden ist und zum Typ des Blatts passt, und traegt dann COM3 ins Blatt ein; sonst bleibt der Anschluss ungueltig und der Dialog Board und USB Port erkennen oeffnet sich (Check_USB_Port_with_Dialog), Ensure_Existing_USB_Port sucht dann kein anderes Board. Zeilen mit '# v1.20'
 #   1.19  2026-11-26  Fill_Port_From_Active_Connection: Anschluss der aktiven Verbindung (ARDUINO_current_portname) hat Vorrang vor der Einstellung serportname (Upload mit -7 in der Tabelle: Fehler 'kein PICO an COM-7')
 #   1.18  2026-11-26  Fehler behoben: 'module vb2py.logger has no attribute warning' (Upload ohne Anschluss in der Tabelle): der Name logger wurde durch from vb2py.vbdebug import * ueberschrieben, jetzt nach den Importen neu gesetzt
@@ -762,7 +763,8 @@ def EnumComPorts(Show_Unknown, ResNames, PrintDebug=True, BoardType=None):  # v1
             # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 ) ) or ( ESP_Inst == True and InStr(comport.description, 'Silicon Labs CP210x') > 0 )  or  ( PICO_Inst == True and InStr(comport.description, 'USB\\\\VID_2E8A&PID_000A\\') > 0 ):
             # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( ESP_Inst == True and ( InStr(comport.description, 'Silicon Labs CP210x') > 0 or InStr(comport.description, 'CP2102 USB to UART') > 0 or getattr(comport, 'vid', None) == 0x10C4 ) )  or  ( PICO_Inst == True and InStr(comport.hwid, 'USB VID:PID=2E8A:000A') > 0 ):  # v1.02 (entfallen)
             # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 ) ) or ( ESP_Inst == True and ( InStr(comport.description, 'Silicon Labs CP210x') > 0 or InStr(comport.description, 'CP2102 USB to UART') > 0 or getattr(comport, 'vid', None) == 0x10C4 ) )  or  ( PICO_Inst == True and ( InStr(comport.hwid, 'USB VID:PID=2E8A:') > 0 or InStr(comport.hwid, 'USB VID:PID=239A:813D') > 0 ) ):  # v1.02  # v1.05 (entfallen)
-            if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 or ( getattr(comport, 'vid', None) in NANO_LIKE_VIDS ) ) ) or ( ESP_Inst == True and ( InStr(comport.description, 'Silicon Labs CP210x') > 0 or InStr(comport.description, 'CP2102 USB to UART') > 0 or getattr(comport, 'vid', None) == 0x10C4 ) )  or  ( PICO_Inst == True and ( InStr(comport.hwid, 'USB VID:PID=2E8A:') > 0 or InStr(comport.hwid, 'USB VID:PID=239A:813D') > 0 ) ):  # v1.05
+            # if Show_Unknown or ( ESP_Inst == False and PICO_Inst == False and  (InStr(comport.description, 'CH340') > 0 or InStr(comport.description, 'Arduino') > 0 or InStr(comport.description, 'USB Serial Port') > 0 or InStr(comport.description, 'USB2.0-Ser') > 0  or InStr(comport.description, 'tty') > 0 or InStr(comport.description, 'FT232') > 0 or InStr(comport.hwid, 'VID:PID=0403:') > 0 or ( getattr(comport, 'vid', None) in NANO_LIKE_VIDS ) ) ) or ( ESP_Inst == True and ( InStr(comport.description, 'Silicon Labs CP210x') > 0 or InStr(comport.description, 'CP2102 USB to UART') > 0 or getattr(comport, 'vid', None) == 0x10C4 ) )  or  ( PICO_Inst == True and ( InStr(comport.hwid, 'USB VID:PID=2E8A:') > 0 or InStr(comport.hwid, 'USB VID:PID=239A:813D') > 0 ) ):  # v1.05  # v1.21 (entfallen)
+            if Show_Unknown or _UD().platform_for_port(comport, weak=True) == (BoardType or M02.HT_AM328):  # v1.21: Regeln detectionRules (csv/Lichtmaschinen_prop.json); schwache Regeln (USB Serial Port, tty) nur ohne anderen Treffer
                 Ports.append(comport.device)
                 ResNames.append(comport.description)
                 idx=idx+1
@@ -787,23 +789,28 @@ def Check_If_Port_is_Available(PortNr, BoardType=None):  # v1.09: BoardType wie 
     return fn_return_value
 
 # VB2PY (UntranslatedCode) Argument Passing Semantics / Decorators not supported: PortNr - ByVal 
-NANO_LIKE_VIDS = (0x1A86, 0x0403, 0x2341, 0x2A03)                        # CH340/CH341, FTDI, Arduino: Hersteller der Anschluesse, an denen ein Nano oder Uno haengt (nicht: 0x10C4 Silicon Labs CP210x der ESP32, 0x2E8A Raspberry Pi)  # v1.04
+def _UD():  # v1.21: Auswerter der USB-Regeln (headless_usb_detect), erst beim Aufruf importiert
+    from headless import headless_usb_detect  # v1.21
+    return headless_usb_detect  # v1.21
+
+NANO_LIKE_VIDS = (0x1A86, 0x0403, 0x2341, 0x2A03)                        # CH340/CH341, FTDI, Arduino: Hersteller der Anschluesse, an denen ein Nano oder Uno haengt (nicht: 0x10C4 Silicon Labs CP210x der ESP32, 0x2E8A Raspberry Pi)  # v1.04  # v1.21: nicht mehr benutzt (Regeln in csv/Lichtmaschinen_prop.json, detectionRules)
 
 SERVO_PORTS = {}  # v1.15: Anschluss -> Version, an denen ein PicoServo-Tiny (Servo-Modul, kein Lichtmaschinen-Board) antwortet (Query_Servo_Info)
 
 def Classify_Port(comport):  # v1.10: Typ eines Anschlusses (Nano / Pico / ESP32 / "") anhand VID und Beschreibung, wie die Excel-Anzeige "Andere Typen"
     if str(getattr(comport, 'device', '') or '') in SERVO_PORTS:  # v1.15: Servo-Modul erkannt: weder Lichtmaschine noch Pico
         return 'Servo'
-    desc = str(getattr(comport, 'description', '') or '')
-    hwid = str(getattr(comport, 'hwid', '') or '').upper()
-    vid = getattr(comport, 'vid', None)
-    if vid == 0x2E8A or 'VID:PID=2E8A:' in hwid or 'VID:PID=239A:813D' in hwid:
-        return 'Pico'
-    if vid == 0x10C4 or 'CP210x' in desc or 'CP2102 USB to UART' in desc:
-        return 'ESP32'
-    if vid in NANO_LIKE_VIDS or 'CH340' in desc or 'Arduino' in desc or 'FT232' in desc or 'USB2.0-Ser' in desc or 'VID:PID=0403:' in hwid:
-        return 'Nano'
-    return ''
+    # desc = str(getattr(comport, 'description', '') or '')  # v1.21 (entfallen)
+    # hwid = str(getattr(comport, 'hwid', '') or '').upper()  # v1.21 (entfallen)
+    # vid = getattr(comport, 'vid', None)  # v1.21 (entfallen)
+    # if vid == 0x2E8A or 'VID:PID=2E8A:' in hwid or 'VID:PID=239A:813D' in hwid:  # v1.21 (entfallen)
+    # return 'Pico'  # v1.21 (entfallen)
+    # if vid == 0x10C4 or 'CP210x' in desc or 'CP2102 USB to UART' in desc:  # v1.21 (entfallen)
+    # return 'ESP32'  # v1.21 (entfallen)
+    # if vid in NANO_LIKE_VIDS or 'CH340' in desc or 'Arduino' in desc or 'FT232' in desc or 'USB2.0-Ser' in desc or 'VID:PID=0403:' in hwid:  # v1.21 (entfallen)
+    # return 'Nano'  # v1.21 (entfallen)
+    # return ''  # v1.21 (entfallen)
+    return _UD().legacy_type(_UD().platform_for_port(comport))  # v1.21: Regeln detectionRules (csv/Lichtmaschinen_prop.json): Nano (AM328), ESP32, Pico oder ''
 
 
 def Other_Type_Port_List(BoardType=None):  # v1.11: Liste [(Anschluss, Typ)];  v1.10: "COM3(ESP32), COM5(Pico)" - Anschluesse anderer Zentralentypen als BoardType
@@ -841,10 +848,12 @@ def Find_Nano_Like_Device(PortNr):  # v1.04
                 continue  # v1.04
             vid = getattr(comport, "vid", None)  # v1.04
             text = (str(comport.description) + " " + str(getattr(comport, "manufacturer", "") or "") + " " + str(getattr(comport, "product", "") or ""))  # v1.04
-            if vid == 0x2E8A:  # v1.04
-                return ""  # v1.04
-            if vid in NANO_LIKE_VIDS or "CH340" in text or "CH341" in text or "Arduino" in text or "USB2.0-Serial" in text:  # v1.04
-                return str(comport.description).strip() or "Arduino"  # v1.04
+            # if vid == 0x2E8A:  # v1.04  # v1.21 (entfallen)
+            # return ""  # v1.04  # v1.21 (entfallen)
+            # if vid in NANO_LIKE_VIDS or "CH340" in text or "CH341" in text or "Arduino" in text or "USB2.0-Serial" in text:  # v1.04  # v1.21 (entfallen)
+            # return str(comport.description).strip() or "Arduino"  # v1.04  # v1.21 (entfallen)
+            if _UD().platform_for_port(comport) == "AM328":  # v1.21: Regeln detectionRules; ein Pico oder ESP32 hat Vorrang (priority)
+                return str(comport.description).strip() or "Arduino"  # v1.21
     except Exception:                                                        # noqa: BLE001  # v1.04
         Debug.Print("Find_Nano_Like_Device fehlgeschlagen")  # v1.04
     return ""  # v1.04

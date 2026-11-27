@@ -1,5 +1,5 @@
-Datei-Version: 1.140 (2026-11-27) - HOC_intern.md
-Stand: Version 5.60
+Datei-Version: 1.150 (2026-11-28) - HOC_intern.md
+Stand: Version 5.70
 
 # webMobaLedLib: History of Change (intern, ausführlich)
 
@@ -61,6 +61,209 @@ SwitchC bewusst nicht aufgenommen (nicht gewünscht); der Name lässt sich einti
 | Wiki `pg_tabelle.txt` | 1.14 | Abschnitt „Die Funktion Logic“; `seiten_update` 1.14 |
 
 Das Makro `Logic(Erg, A AND B OR …)` und `Create_Result` sind unverändert; der Baukasten erzeugt denselben Text. Nicht im Browser geprüft, nur die reinen Funktionen (Test mit 11 Ausdrücken).
+
+## 5.70 (2026-11-28), detect verweist auf Regel-Sets; Liste der USB Geräte
+
+**Planänderung des Entwicklers:** `devices.detect` verweist auf die Regel-Sets in `detectionRules` (Grund: der Uno hat vermutlich andere Regeln als der Nano, der originale Uno eine andere USB-Kennung). **Wunsch 2:** Menü Werkzeuge, neuer Eintrag „Liste der USB Geräte“ mit den für die Filter relevanten Daten; Vorgabe nur serielle USB-Geräte, Kontrollkästchen „Alle Geräte“.
+
+**Umsetzung Erkennung (headless_usb_detect 1.02):** Schlüssel von `detectionRules` = Name eines Regel-Sets (Groß-/Kleinschreibung egal). `rule_sets_for_port` liefert die passenden Sets (bisherige Logik), `devices_for_port` die Lichtmaschinen, deren `detect` darauf verweist, `platforms_for_port` deren Plattformen. Ein Set ohne verweisendes Gerät gilt als Plattform, wenn es AM328, ESP32 oder PICO heißt (eingebaute Regeln, ältere Dateien). Geräteauswahl (web_form_comport 1.56): zusätzlich zur Plattform muss der Anschluss zu einem Set passen, auf das eine Lichtmaschine mit dem Haupttyp des Blattes verweist (Uno: Set des Uno, Classic: AM328); fehlt das Set in der Datei, keine Einschränkung; der gespeicherte Anschluss bleibt immer sichtbar (`web_form_options.detect_sets_for_main`, 1.88). Startseite (web_startpage 1.17): `machine_for_port_type` wählt die Vorgabe der Plattform (`defaultDevice`), weil `detect` nicht mehr den Typ Nano/ESP32/Pico enthält. Lichtmaschinen_prop.json im Branch 1.12: Set `Uno` (2341/2A03 mit PID 0043/0001/0243, „Arduino Uno“, CH340/CH341, schwache Texte; priority 3, AM328 4), Hinweise zu `detect` und `detectionRules` neu.
+
+**Hinweis Testordner:** Die Datei des Entwicklers im Testordner (Stand 00:16) hat wieder Version 1.11 mit den alten Hinweisen, kein Set `Uno` und `"detect": "UNO"` beim Uno; `test_usb_detect.test_every_detect_has_rule_set` meldet das. Ohne Set gibt es beim Uno keine zusätzliche Einschränkung.
+
+**Umsetzung Liste der USB Geräte (neu `_web/web_usb_list.py`):** Tabelle mit Anschluss, VID, PID, Beschreibung, Hersteller, Produkt, Seriennummer, Hardware-Kennung, passenden Regel-Sets („(schwach)“, wenn nur ein schwacher Filter passt) und Lichtmaschinen. Vorgabe: serielle Anschlüsse mit USB-Kennung (pyserial). „Alle Geräte“: zusätzlich serielle Anschlüsse ohne USB (Bluetooth …) und alle USB-Geräte des Systems (Windows: `Get-CimInstance Win32_PnPEntity` mit `USB\VID_…`, Linux: `/sys/bus/usb/devices`, macOS: `system_profiler SPUSBDataType -json`; Abfrage im Hintergrund, Wartesymbol), ohne Doppelte (gleiche VID, PID, Seriennummer). Knöpfe Neu einlesen, Als Text kopieren (Tabulator getrennt, Zwischenablage), Schließen. Menü Werkzeuge (im Anfänger Modus ausgeblendet wie das ganze Menü). 16 neue Texte in 6 Sprachen.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `headless/headless_usb_detect.py` | 1.02 | Regel-Sets, `devices_for_port`, `load_links` |
+| `_web/web_form_comport.py` | 1.56 | Regeln der Lichtmaschine des Blattes |
+| `_web/web_form_options.py` | 1.88 | `detect_sets_for_main` |
+| `_web/web_startpage.py` | 1.17 | `machine_for_port_type` |
+| `_web/web_usb_list.py` | 1.00 | neu |
+| `csv/Lichtmaschinen_prop.json` | 1.12 | Set Uno, Hinweise |
+| `csv/Web_Languages.csv` | | 16 neue Zeilen |
+| `webmobaledlib.py` | 5.70 | Menüeintrag, VERSION, Verlauf, REQUIRED_FILES |
+| `test_usb_detect.py` | 1.02 | Verweise, Datenprüfung (17) |
+| `test_usb_list.py` | 1.00 | neu (6) |
+| `test_hardware_type.py` | 1.00 | Uno-Regeln (27) |
+| `install/BETATEST_Checkliste.md` | 4.46 | Punkte 443, 444 |
+
+**Geprüft:** `py_compile`; Branch: `test_usb_list` (6), `test_usb_detect` (17), `test_hardware_type` (27), `test_pico_device_dialog` (16), `test_hardware_dialog` (9), `test_port_hint`, `test_port_labels`; Testordner ebenso, außer der Datenprüfung (UNO fehlt). Die Liste aller Geräte unter Windows an diesem Rechner gelesen (25 Einträge, ohne Fenster). **Nicht geprüft:** Fenster im Browser, Linux und macOS an echten Geräten, Uno-Original an einem Gerät.
+
+## 5.69 (2026-11-28), Mini ohne Protokoll; Knopf Suchen
+
+**Wünsche des Entwicklers:** (1) Die Lichtmaschine Mini unterstützt gar kein Protokoll und damit auch keinen DCC/Selectrix Arduino; unterstützt eine Lichtmaschine kein Protokoll, die Protokollauswahl in den Einstellungen ausblenden. (2) Der Knopf „Erkennen“ heißt „Suchen“ und steht in der Gerätezeile („Gerät: … an COM3“), rechtsbündig mit der Trennlinie.
+
+**Umsetzung:** `csv/Lichtmaschinen_prop.json` 1.11: Mini `"protocols": []` (Hinweis ergänzt: leere Liste = kein Protokoll); ebenso die eingebaute Liste `DEFAULT_MACHINES` (web_startpage 1.16). `_board_summary`: Hat der Eintrag der gewählten Lichtmaschine eine leere Liste, gibt es keine Protokolle und keinen Hinweis; der Reiter zeigt das Auswahlfeld Protokoll nicht. `_web_has_protocol`: der Reiter DCC/Selectrix/LNet Arduino wird dann nicht angezeigt (`protocol_ok`, auch nicht nach `update_dcc_tab`). Das Protokoll des Blattes (Page-ID) bleibt unverändert. Ohne Eintrag in devices (eingebautes „Arduino Uno“) wie bisher die Protokolle der Plattform. Knopf: Text `tr("Suchen")` (vorhandener Katalogeintrag), Zeile `w-full` mit `ui.space()`, der Knopf steht rechts.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `csv/Lichtmaschinen_prop.json` | 1.11 | Mini ohne Protokoll, Hinweis |
+| `_web/web_form_options.py` | 1.87 | Protokollauswahl und DCC Arduino ohne Protokoll ausgeblendet (1.86); Knopf Suchen in der Gerätezeile (1.87) |
+| `_web/web_startpage.py` | 1.16 | `DEFAULT_MACHINES`: Mini ohne Protokoll |
+| `webmobaledlib.py` | 5.69 | VERSION, Verlauf, REQUIRED_FILES |
+| `test_hardware_type.py` | 1.00 | Test angepasst (26) |
+| `install/BETATEST_Checkliste.md` | 4.45 | Punkt 442 |
+
+**Geprüft:** `py_compile`; `test_hardware_type.py` (26), `test_pico_device_dialog.py` (16), `test_hardware_dialog.py` (9), `test_protocol_switch.py` (30), im Branch und im Testordner. **Nicht geprüft:** Anzeige im Browser, die Startseite mit Mini (sie bietet jetzt nur „ohne Zentrale“ an).
+
+## 5.68 (2026-11-28), Geräteauswahl: Bild der Lichtmaschine
+
+**Rückmeldung des Entwicklers (Bildschirmfoto):** Bei der Lichtmaschine Uno zeigte die Geräteauswahl das Bild der Classic.
+
+**Ursache:** `_board_view` nahm das Bild nach der Plattform (AM328 → `LED_Image`), und `ShowDialog` fiel ohne Bild auf das Bild des Aufrufers zurück (`Picture`, ebenfalls `LED_Image`).
+
+**Umsetzung:** Die Geräteauswahl zeigt das Bild der Lichtmaschine des Blattes wie die Hardware Optionen (`web_form_options.sheet_device_key` und `device_image`, neu auf Modulebene): gespeicherte Lichtmaschine, sonst Vorgabe der Plattform, sonst erster Eintrag des Haupttyps; Bild aus `devices.image`. Ist ein anderes MobaLedLib Gerät gewählt, das Bild seiner Plattform aus `platforms`. Ohne Bild eine leere Fläche; kein Rückfall auf das Bild des Aufrufers. Die Bildfläche ist immer gleich groß (w-48 × 9 rem), das Bild eingepasst. Pico mit WLAN (alter Dialog) und Firmware-Auswahl unverändert.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_form_comport.py` | 1.55 | `_sheet_device_image`, `_board_view`, feste Bildfläche |
+| `_web/web_form_options.py` | 1.85 | `sheet_device_key`, `device_image` |
+| `webmobaledlib.py` | 5.68 | VERSION, Verlauf, REQUIRED_FILES |
+| `test_hardware_type.py` | 1.00 | Test ergänzt (26) |
+| `install/BETATEST_Checkliste.md` | 4.44 | Punkt 441 |
+
+**Geprüft:** `py_compile`; `test_hardware_type.py` (26), `test_pico_device_dialog.py` (16), `test_hardware_dialog.py` (9), im Branch und im Testordner. **Nicht geprüft:** Anzeige im Browser.
+
+## 5.67 (2026-11-27), Hardware Optionen: Bild und Protokolle der gewählten Lichtmaschine
+
+**Wunsch des Entwicklers:** Wird im Menü eine andere Lichtmaschine gewählt, sollen das Bild und die plattformabhängigen Einstellungen der Seite folgen. Fehlt ein passendes Bild, eine leere Fläche zeigen; die Bildfläche immer gleich groß, Bilder einpassen.
+
+**Ursache:** Der Dialog baut sich nach der Auswahl neu auf und liest das Board des Blattes neu (bei anderem Haupttyp änderten sich Einstellungen wie Schnelles Update und Display also schon). Bild und Protokolle hingen aber nur an der Plattform: Pico Zero und MoLLi zeigten dasselbe Bild, Mini bot die Protokolle von Classic an.
+
+**Umsetzung:** `_board_summary` bestimmt die gewählte Lichtmaschine zuerst; Bild aus `devices.image` (über `find_image`, Groß-/Kleinschreibung egal), Protokolle aus `devices.protocols` (Mini, Pico Zero, MoLLi: DCC). Ohne Eintrag in devices (zum Beispiel das eingebaute „Arduino Uno“) gelten wie bisher die Protokolle der Plattform und es gibt kein Bild. Anzeige: feste Fläche 15 × 11,25 rem, Bild mit `fit=contain` eingepasst; ohne Bild eine leere Fläche gleicher Größe (wie die Kacheln der Startseite). Ist das eingestellte Protokoll nicht in der Liste, bleibt es mit dem bisherigen Hinweis sichtbar.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_form_options.py` | 1.84 | Bild, Protokolle, Bildfläche |
+| `webmobaledlib.py` | 5.67 | VERSION, Verlauf, REQUIRED_FILES |
+| `test_hardware_type.py` | 1.00 | 2 Tests ergänzt (25) |
+| `install/BETATEST_Checkliste.md` | 4.43 | Punkt 440 |
+
+**Geprüft:** `py_compile`; `test_hardware_type.py` (25), `test_pico_device_dialog.py` (16), `test_hardware_dialog.py` (9). **Nicht geprüft:** Anzeige im Browser.
+
+## 5.66 (2026-11-27), Geräteauswahl Pico: andere MobaLedLib Geräte wählbar
+
+**Wunsch des Entwicklers:** Bei der Lichtmaschine Pico sollen die anderen MobaLedLib Geräte auch wählbar sein; wählt der Anwender eines und drückt OK, kommt eine Sicherheitsabfrage (Hardware möglicherweise ungeeignet, wirklich verwenden?).
+
+**Umsetzung:** `_is_selectable` gilt für die Gruppe `Servo` auch, wenn das Blatt ein Pico ist; `_needs_confirm(row)` (nicht Firmware-Auswahl, Gruppe Servo). `on_ok` ruft dann `confirm_other`: Titel „Anderes MobaLedLib Gerät verwenden?“, Text mit Anschluss und Typ (laut `~MLLINFO`), Hinweis, dass das Programm der Lichtmaschine die Firmware des Geräts überschreiben kann; Knöpfe „Ja, verwenden“ und „Nein“ (Vorgabe Nein: Enter und Esc). Nein lässt die Geräteauswahl offen. Ein anderes MobaLedLib Gerät wird nie von selbst gewählt (neu angesteckt oder Vorauswahl), nur durch Klick oder Pfeiltasten. Die Gruppe heißt nur noch „Andere MobaLedLib Geräte“. Bei Classic und Pro erscheint sie weiter nicht.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_form_comport.py` | 1.54 | wählbar, `_needs_confirm`, `confirm_other`, keine automatische Wahl |
+| `csv/Web_Languages.csv` | | 3 neue Zeilen (6 Sprachen) |
+| `webmobaledlib.py` | 5.66 | VERSION, Verlauf, REQUIRED_FILES |
+| `test_hardware_type.py` | 1.00 | Tests ergänzt (23), Übersetzung der neuen Texte |
+| `install/BETATEST_Checkliste.md` | 4.42 | Punkt 439 |
+
+**Geprüft:** `py_compile`; `test_hardware_type.py` (23, mit Übersetzung in allen sechs Sprachen), `test_pico_device_dialog.py` (16), `test_hardware_dialog.py` (9). **Nicht geprüft:** die Sicherheitsabfrage im Browser (Oberfläche), echte Servo-/Sound-Module.
+
+## 5.65 (2026-11-27), Menü der Lichtmaschine: sortPriority
+
+**Wunsch des Entwicklers:** Feld `sortPriority` (Zahl) je Eintrag in `devices` und in `platforms`; die höchste Zahl steht zuerst, bei gleicher Zahl nach Namen. Benutzt im Menü der Lichtmaschine (Hardware Optionen). Plattformen: ESP32 50, Pico 40, ATMega 30.
+
+**Umsetzung:** `web_startpage.sort_priority` (fehlt oder keine Zahl: 0), `load_machines` und `load_platforms` liefern das Feld; `web_form_options.device_groups` sortiert Gruppen nach der Plattform und Einträge nach der Lichtmaschine, jeweils `(-sortPriority, Name)`. Sortiert wird nach dem angezeigten Namen (`name`, übersetzt), nicht nach dem Feld `text`. Die Kacheln der Startseite behalten ihre Reihenfolge. **Annahme für die Lichtmaschinen** (nicht vorgegeben): Classic 20, Mini 10, Uno 5, Pro 10, Pico Zero 20, MoLLi 10, damit die Vorgaben (`defaultDevice`) oben stehen. Ergebnis: ESP32 (Pro), Raspberry Pico (Pico Zero, MoLLi), ATMega (Classic, Mini, Uno).
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `csv/Lichtmaschinen_prop.json` | 1.10 | `sortPriority` in devices und platforms, Hinweis |
+| `_web/web_startpage.py` | 1.15 | `sort_priority`, Feld in `load_machines`/`load_platforms` |
+| `_web/web_form_options.py` | 1.83 | Sortierung in `device_groups` |
+| `webmobaledlib.py` | 5.65 | VERSION, Verlauf, REQUIRED_FILES |
+| `test_hardware_type.py` | 1.00 | Sortierung geprüft (22 Tests) |
+| `test_pico_device_dialog.py` | 1.01 | Felder von platforms |
+| `install/BETATEST_Checkliste.md` | 4.41 | Punkt 438 |
+
+**Geprüft:** `py_compile`; `test_hardware_type.py` (22), `test_pico_device_dialog.py` (16), `test_hardware_dialog.py` (9), `test_usb_detect.py` (14). **Nicht geprüft:** Anzeige im Browser.
+
+## 5.64 (2026-11-27), Geräteauswahl Pico: Andere MobaLedLib Geräte; Beschriftung Gerät
+
+**Wunsch des Entwicklers:** Bei der Lichtmaschine Pico sollen die anderen MobaLedLib Geräte (Servo-, Sound-Module, S88 Gateway … laut `~MLLINFO`) wieder in einer eigenen Gruppe erscheinen. Seit 5.61 zeigte die Geräteauswahl nur Geräte des Haupttyps.
+
+**Zweiter Wunsch:** Reiter Lichtmaschine der Hardware Optionen: fester Text „Gerät:“ statt „Hardware:“, „(keine Schnittstelle gewählt)“ statt „(kein Port gewählt)“; zwei neue Zeilen in `csv/Web_Languages.csv` (6 Sprachen; Englisch „Device“, „no interface selected“).
+
+**Umsetzung:** `_compute_new` lässt bei einem Pico-Blatt die Zeilen der Gruppe `Servo` durch. Sie stehen nach den Pico-Geräten unter „Andere MobaLedLib Geräte - nicht als Lichtmaschine wählbar“ und bleiben nicht wählbar (`_is_selectable`, Pfeiltasten überspringen sie). Bei Classic und Pro fehlt die Gruppe weiter (diese Geräte sind Pico-Geräte und werden dort nicht abgefragt).
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_form_comport.py` | 1.53 | Gruppe Servo beim Pico |
+| `_web/web_form_options.py` | 1.82 | „Gerät:“, „keine Schnittstelle gewählt“ |
+| `csv/Web_Languages.csv` | | 2 neue Zeilen |
+| `webmobaledlib.py` | 5.64 | VERSION, Verlauf, REQUIRED_FILES |
+| `test_hardware_type.py` | 1.00 | Tests angepasst (21) |
+| `install/BETATEST_Checkliste.md` | 4.40 | Punkt 437 |
+
+**Geprüft:** `py_compile`; `test_hardware_type.py` (21, Übersetzung der neuen Texte in allen sechs Sprachen), `test_hardware_dialog.py` (9), `test_pico_device_dialog.py` (16). **Nicht geprüft:** Anzeige im Browser, echte Servo-/Sound-Module.
+
+## 5.63 (2026-11-27), Hardware Optionen: Vorgabe der Lichtmaschine je Plattform
+
+**Wunsch des Entwicklers:** Ist im Blatt noch keine Lichtmaschine eingetragen (`esp32_options['device']`), soll das Menü für den Pico **Pico Zero** und für ATMega **Classic** zeigen, einstellbar in der Datei. Bisher kam der erste Eintrag nach Namen (beim Pico „Lichtmaschine MoLLi“).
+
+**Umsetzung:** `platforms` in `csv/Lichtmaschinen_prop.json` hat das Feld `defaultDevice` (key aus `devices`): AM328 → Classic, ESP32 → Pro, PICO → PicoZero. `web_startpage.load_platforms` liefert das Feld, `web_form_options.default_devices` sammelt die Vorgaben, `sheet_device` nimmt sie, wenn im Blatt nichts gespeichert ist und ihr `board` zum Board des Blattes passt (bei einem Uno-Blatt gilt die Vorgabe Classic nicht, dann der erste Eintrag mit board Uno). Gespeichert wird erst, wenn der Anwender eine Lichtmaschine wählt.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `csv/Lichtmaschinen_prop.json` | 1.09 | `defaultDevice` in platforms AM328, ESP32, PICO; Hinweis |
+| `_web/web_startpage.py` | 1.14 | `load_platforms`: Feld `defaultDevice` |
+| `_web/web_form_options.py` | 1.81 | `default_devices`, `sheet_device(..., defaults)` |
+| `webmobaledlib.py` | 5.63 | VERSION, Verlauf, REQUIRED_FILES |
+| `test_hardware_type.py` | 1.00 | 2 Tests ergänzt (20) |
+| `test_pico_device_dialog.py` | 1.01 | Felder von platforms mit defaultDevice |
+| `install/BETATEST_Checkliste.md` | 4.39 | Punkt 436 |
+
+**Geprüft:** `py_compile`; `test_hardware_type.py` (20), `test_pico_device_dialog.py` (16), `test_usb_detect.py` (14), `test_hardware_dialog.py` (9). **Nicht geprüft:** Anzeige im Browser.
+
+## 5.62 (2026-11-27), Erkennung der Plattform über Regeln in Lichtmaschinen_prop.json
+
+**Wunsch des Entwicklers:** Die Regeln, nach denen ein Anschluss anhand der USB-Daten erkannt wird, stehen je Plattform in `csv/Lichtmaschinen_prop.json` (`detectionRules`); `devices.platform` verweist auf das Filter-Set. Ein allgemeiner Auswerter liefert die passenden Plattformen. `devices.detect` wird für die Erkennung nicht benutzt (die USB-Kennung bestimmt nur die Plattform); die Startseite (`web_startpage.machine_for_port_type`) liest es weiter.
+
+**Bisherige Regeln (Stand 5.60, fest im Code):**
+- PICO: VID 2E8A (jede PID), Adafruit 239A:813D; Hardware-Kennung `VID:PID=2E8A:`, `VID:PID=239A:813D` (Windows-WMI: `VID_2E8A&PID_`, `VID_239A&PID_813D`). `M07_COM_Port.Classify_Port`, `EnumComPorts`, `web_serial.port_type`, `web_form_comport._scan` (Seriennummer, Firmware-Auswahl).
+- ESP32: VID 10C4, Beschreibung `CP210x` oder `CP2102 USB to UART`.
+- AM328 (Nano, Uno): VID 1A86 (CH340/CH341), 0403 (FTDI), 2341 und 2A03 (Arduino); Beschreibung `CH340`, `Arduino`, `FT232`, `USB2.0-Ser`; Hardware-Kennung `VID:PID=0403:`; `Find_Nano_Like_Device` zusätzlich `CH341` und `USB2.0-Serial` in Hersteller/Produkt. Schwach (nur Liste der Anschlüsse eines Nano und Nachklassifizierung in der Geräteauswahl): `USB Serial Port` (Original-Nano mit FTDI-Treiber), `tty`.
+- Reihenfolge bei mehreren Treffern: Pico vor ESP32 vor Nano.
+- Nicht übernommen: die Untertypen von `web_serial.USB_SUBTYPES` (CH340, CP2102 … nur Anzeige), `headless_pico`/`headless_dyn_config` (`PICO_VID` für den Bootmodus), `ARDUINOConfigPage` (Tk), `M08` (`'Silicon Labs CP210x'` im Text der Auswahl beim automatischen Board-Wechsel).
+
+**Umsetzung:** `detectionRules` mit `priority` und `filters`; ein Filter passt, wenn alle Felder passen (vid, pid, text, hwid), ein Set passt, wenn ein Filter passt; `weak` für schwache Filter, die nur zählen, wenn keine andere Plattform normal passt. Fehlt die Liste oder ist die Datei fehlerhaft, gelten die eingebauten Regeln (`DEFAULT_RULES`, gleich wie die Liste in der Datei). Vergleich von Texten ohne Beachtung der Groß-/Kleinschreibung, `text` in Beschreibung, Hersteller und Produkt. **Vergleich mit dem Excel-Programm** (`EnumComPorts` in `Ver_3.5.0/Source/M07_COM_Port.bas`; die Literale in `vbaProject.bin` von 3.5.0, 3.6.0 und Beta sind gleich): Excel prüft nur unter Windows den Gerätenamen (CH340, Arduino, „Serielles USB-Gerät“, „USB Serial Port“ = Nano, „Silicon Labs CP210x“ = ESP32) und den PnP-Pfad (genau `VID_2E8A&PID_000A` oder `VID_239A&PID_813D` = Pico), keine VID. Auf Wunsch des Entwicklers ist „Serielles USB-Gerät“ (und englisch „USB Serial Device“) als **schwache** AM328-Regel ergänzt (headless_usb_detect 1.01, Lichtmaschinen_prop.json 1.08): ein USB-Seriell-Gerät ohne bekannte Kennung erscheint wie in Excel in der Liste der Anschlüsse eines Classic, ein Pico bleibt Pico. Gewollte Abweichungen: Pico mit anderer PID (Excel: Nano, neu: Pico), Uno ohne Treiber unter englischem Windows und CH9102 ohne CH340 im Namen (Excel: unbekannt, neu: AM328 über die VID); ESP32 mit CH340 ist in beiden Nano (an USB nicht unterscheidbar). Der Vergleich steht als Test in `test_usb_detect.py`.
+
+**Verhaltensänderung:** In der Liste der Anschlüsse eines Nano (`EnumComPorts`) erscheint ein Pico oder ESP32 nicht mehr nur deshalb, weil seine Beschreibung `tty` oder `USB Serial Port` enthält.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `headless/headless_usb_detect.py` | 1.01 | neu: `load_rules`, `platforms_for_port`, `platform_for_port`, `legacy_type`; schwache Regel „Serielles USB-Gerät“, „USB Serial Device“ |
+| `csv/Lichtmaschinen_prop.json` | 1.08 | `detectionRules` (PICO, ESP32, AM328), Hinweis zu `detect` |
+| `proggen/M07_COM_Port.py` | 1.21 | `Classify_Port`, `EnumComPorts`, `Find_Nano_Like_Device` über die Regeln |
+| `_web/web_serial.py` | 1.32 | `port_type` über die Regeln |
+| `_web/web_form_comport.py` | 1.52 | schwache Nano-Erkennung und Pico-Erkennung über die Regeln |
+| `webmobaledlib.py` | 5.62 | VERSION, Verlauf, REQUIRED_FILES |
+| `test_usb_detect.py` | 1.01 | neu, 14 Tests (Vergleich mit den festen Regeln bis 5.60 an 15 Beispielen und mit dem Excel-Programm an 17 Windows-Bezeichnungen) |
+| `install/BETATEST_Checkliste.md` | 4.38 | Punkt 435 |
+
+**Geprüft:** `py_compile`; `test_usb_detect.py` (14), `test_hardware_type.py` (18), `test_hardware_dialog.py` (9), `test_pico_device_dialog.py` (16), `test_port_hint.py`, `test_port_labels.py`, `test_monitor_connect.py`, `test_single_connection.py`, `test_protocol_switch.py` in Ordnung. **Nicht geprüft:** echte Anschlüsse unter Windows, Linux, macOS (Beschreibungen der Treiber), Windows-WMI-Zweig `EnumComPorts_old` (unverändert, feste Regeln).
+
+## 5.61 (2026-11-27), Hardware Optionen: Lichtmaschine wieder wählen, Geräteauswahl nur passende Geräte
+
+**Problem (Rückmeldungen der Tester):** Die automatische Erkennung über die USB-Kennung bestimmt die Hardware nicht sicher. Uno und Nano (Original und Clone) haben dieselben USB-Chips (CH340, FTDI, 16U2 mit 2341). In der Geräteauswahl stellte ein Klick auf ein Gerät einer anderen Gruppe (`_apply_group`) den Typ des Blattes um; ein unbekannter Anschluss fragte nach dem Typ.
+
+**Änderung:**
+- Reiter Lichtmaschine: In der Hardware-Zeile steht wieder eine Auswahl der Lichtmaschine (Menü). Die Einträge kommen aus `devices` in `csv/Lichtmaschinen_prop.json`, gruppiert nach Plattform (Name der Gruppe aus `platforms`, Lichtmaschinen_prop.json 1.06 des Entwicklers mit den Einträgen AM328 = ATMega, ESP32, PICO = Raspberry Pico), Gruppen und Einträge nach Namen sortiert. Der Haupttyp folgt aus `board`: Nano = Classic, Uno, ESP32 = Pro, Pico. Gibt es keinen Eintrag mit `board` Uno, kommt „Arduino Uno“ zur Plattform AM328. ESP32-Einträge fehlen ohne PlatformIO und ohne ESP32-Paket der ARDUINO IDE (wie bisher die Boardliste).
+- Startwert: der im Blatt gespeicherte key (`esp32_options['device']`, wird mit dem Blatt gesichert), wenn er zum Haupttyp der Build Optionen passt, sonst der erste Eintrag dieses Haupttyps.
+- Das Auswahlfeld Hardwarevariante entfällt. Nano alt, neu oder voller Speicher bestimmt wie bisher die Bootloader-Abfrage der Geräteauswahl bei OK.
+- Andere Lichtmaschine mit anderem Haupttyp: Build Optionen umstellen (ESP32/Pico ersetzen, Nano/Uno nur den Board-Teil; zurück auf Classic die zuletzt benutzte Nano-Variante), Auswahl des Formulars nachführen (sonst stellte „USB Port erkennen“ das alte Board wieder ein, wie Issue 13), Verbindung trennen, COM Port im Blatt zurücksetzen (auch Classic <-> Uno), dann Rückfrage „Soll jetzt nach der angeschlossenen Lichtmaschine gesucht werden?“; Ja öffnet die Geräteauswahl. Gleicher Haupttyp (zum Beispiel Classic -> Mini): nur der key wird gespeichert, Port bleibt.
+- Geräteauswahl (`_compute_new`): nur Geräte des Haupttyps des Blattes; keine Gruppen anderer Typen, keine Gruppe „Andere MobaLedLib Geräte“, kein Typwechsel per Klick. Mit „Unbekannte Ports anzeigen“ gilt ein unbekanntes Gerät bei OK als Gerät des eingestellten Typs (keine Typabfrage). Uno: Gruppe „Uno“, Typspalte „Uno“, keine Bootloader-Abfrage, `_apply_nano_bootloader` lässt das Blatt auf Uno. Gilt überall, wo die Geräteauswahl der Lichtmaschine aufgeht (Hardware Optionen, Hochladen ohne Port, Start). Die Firmware-Auswahl (`_fw_mode`) bleibt unverändert.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_form_options.py` | 1.80 | Menü der Lichtmaschine (`device_groups`, `sheet_device`, `_web_device`, `_web_change_main_type`, Handler `__Main_Type_Changed`), Hardwarevariante entfällt, Zeile „an COMx“ |
+| `_web/web_form_comport.py` | 1.52 | nur Geräte des Haupttyps, `_sheet_is_uno`, keine Typabfrage, kein Typwechsel per Klick |
+| `csv/Lichtmaschinen_prop.json` | 1.06 | Fassung des Entwicklers (platforms AM328, ESP32, PICO) |
+| `csv/Web_Languages.csv` | | 3 neue Zeilen (6 Sprachen) |
+| `webmobaledlib.py` | 5.61 | VERSION, Verlauf, REQUIRED_FILES |
+| `test_hardware_type.py` | 1.00 | neu, 18 Tests |
+| `test_hardware_dialog.py` | 1.01 | Port-Tests angepasst; brachen vorher mit AttributeError ab (fehlende `_info`, `pid`) |
+| `test_pico_device_dialog.py` | 1.01 | normaler Modus nur Geräte des Typs; platforms mit AM328, ESP32, PICO |
+| `install/BETATEST_Checkliste.md` | 4.37 | Punkt 434 |
+
+**Geprüft:** `py_compile`; `test_hardware_type.py` (18, echte Arbeitsmappe und echte Formulare, Übersetzungen in allen sechs Sprachen mit `use_language`/`tr`), `test_hardware_dialog.py` (9), `test_pico_device_dialog.py` (16), weitere Tests der Verbindung und Ports (`test_port_hint`, `test_port_labels`, `test_monitor_connect`, `test_single_connection`, `test_protocol_switch`, `test_table_sync` …) in Ordnung. `test_macro_edit.py` scheitert mit 2 Fehlern auch auf main (nicht betroffen). **Nicht geprüft:** Oberfläche im Browser (Menü mit Gruppen, Neuaufbau des Dialogs nach der Auswahl), echte Hardware (Uno mit 16U2 und CH340, Nano Original und Clone, ESP32, Pico), Bootloader-Abfrage, Windows/macOS/Raspberry Pi.
 
 ## 5.60 (2026-11-27), Pull Request 83 (Jueff): Mainboard_LED auf dem ESP32
 

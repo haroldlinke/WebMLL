@@ -1,9 +1,67 @@
-Datei-Version: 1.145 (2026-11-27) - HOC_Anwender.md
-Stand: Version 5.60
+Datei-Version: 1.155 (2026-11-28) - HOC_Anwender.md
+Stand: Version 5.70
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Version 5.70 (2026-11-28)
+
+Neue Funktionen:
+- Menü Werkzeuge, **Liste der USB Geräte**: zeigt die seriellen USB-Geräte mit USB-Kennung, Bezeichnungen und welche Lichtmaschine dazu passt; mit „Alle Geräte“ alle USB-Geräte. Die Liste lässt sich als Text kopieren, zum Beispiel für eine Fehlermeldung.
+- Für jede Lichtmaschine kann in `csv/Lichtmaschinen_prop.json` eine eigene Erkennungsregel stehen (zum Beispiel für den Uno). Die Geräteauswahl zeigt dann nur die passenden Geräte.
+
+## Version 5.69 (2026-11-28)
+
+Korrekturen:
+- Hardware Optionen mit der Lichtmaschine Mini: Die Auswahl des Protokolls und der Reiter DCC Arduino entfallen, weil die Mini kein Protokoll unterstützt.
+- Der Knopf zum Suchen der Lichtmaschine heißt jetzt „Suchen“ und steht rechts in der Zeile „Gerät:“.
+
+## Version 5.68 (2026-11-28)
+
+Korrekturen:
+- Geräteauswahl: Das Bild passt zur eingestellten Lichtmaschine. Beim Uno erschien vorher das Bild der Lichtmaschine Classic; gibt es kein Bild, bleibt die Fläche leer. Alle Bilder erscheinen gleich groß.
+
+## Version 5.67 (2026-11-27)
+
+Korrekturen:
+- Hardware Optionen: Nach der Wahl einer anderen Lichtmaschine passen Bild und Protokolle zur gewählten Lichtmaschine (zum Beispiel MoLLi statt Pico Zero, Mini nur DCC). Fehlt ein Bild, bleibt die Fläche leer; alle Bilder erscheinen gleich groß.
+
+## Version 5.66 (2026-11-27)
+
+Neue Funktionen:
+- Geräteauswahl bei der Lichtmaschine Pico: Andere MobaLedLib Geräte (zum Beispiel ein Servo-Modul) lassen sich jetzt auswählen. Bei OK fragt das Programm nach, ob du dieses Gerät wirklich als Lichtmaschine verwenden willst, weil die Hardware möglicherweise nicht geeignet ist.
+
+## Version 5.65 (2026-11-27)
+
+Neue Funktionen:
+- Hardware Optionen: Die Reihenfolge im Menü der Lichtmaschine (ESP32, Raspberry Pico, ATMega und die Geräte darin) lässt sich in `csv/Lichtmaschinen_prop.json` mit sortPriority einstellen.
+
+## Version 5.64 (2026-11-27)
+
+Korrekturen:
+- Geräteauswahl bei der Lichtmaschine Pico: Andere MobaLedLib Geräte (zum Beispiel Servo- oder Sound-Module) stehen wieder in einer eigenen Gruppe. Als Lichtmaschine wählen lassen sie sich nicht.
+- Hardware Optionen: Dort steht jetzt „Gerät:“ statt „Hardware:“ und „keine Schnittstelle gewählt“ statt „kein Port gewählt“.
+
+## Version 5.63 (2026-11-27)
+
+Neue Funktionen:
+- Hardware Optionen: Ist für das Blatt noch keine Lichtmaschine gewählt, steht dort beim Pico „Lichtmaschine Pico Zero“ und beim Nano „Lichtmaschine Classic“. Die Vorgabe steht in `csv/Lichtmaschinen_prop.json` (defaultDevice).
+
+## Version 5.62 (2026-11-27)
+
+Neue Funktionen:
+- Nach welchen USB-Kennungen eine Lichtmaschine erkannt wird (Nano/Uno, ESP32, Pico), steht jetzt in der Datei `csv/Lichtmaschinen_prop.json` (Abschnitt detectionRules) und lässt sich dort ergänzen. Die Erkennung selbst ist unverändert.
+
+## Version 5.61 (2026-11-27)
+
+Neue Funktionen:
+- Hardware Optionen, Reiter Lichtmaschine: Die Lichtmaschine wird wieder ausgewählt (Classic, Mini, Pro, Pico Zero, MoLLi, Uno), gruppiert nach Plattform. Die automatische Erkennung über USB konnte zum Beispiel Uno und Nano nicht sicher unterscheiden.
+- Nach dem Wechsel auf einen anderen Typ wird der COM Port zurückgesetzt und gefragt, ob nach der Lichtmaschine gesucht werden soll.
+
+Korrekturen:
+- Die Geräteauswahl zeigt nur noch Geräte, die zur eingestellten Lichtmaschine passen. Ein Klick auf ein Gerät stellt den Typ nicht mehr um.
+- Das Feld „Hardwarevariante“ entfällt; ob ein Nano den alten oder neuen Bootloader hat, erkennt die Geräteauswahl selbst.
 
 ## Version 5.60 (2026-11-27), Pull Request 83 (Jueff)
 

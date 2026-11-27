@@ -1,8 +1,8 @@
-# Datei-Version: 1.31 (2026-11-27) - web_serial.py
+# Datei-Version: 1.32 (2026-11-27) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.31
+# Version:        1.32
 # Last Update:    2026-11-27
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
@@ -17,6 +17,7 @@
 #   1.07  2026-11-14  ESP32: Verbindung ueber WLAN mit Anmeldung per HMAC (Port 2323, connect_esp32); Schreibfehler schliesst nur die eigene Verbindung (Beitrag des Fork-Entwicklers)
 #   1.08  2026-11-14  TcpPort: ungueltiger Hostname (UnicodeError, "label too long") wird als OSError gemeldet statt abzustuerzen
 #   1.09  2026-11-14  Automatisches Verbinden (ohne Anschlussangabe): ist fuer das Blatt eine ESP32-WLAN-Verbindung eingetragen (wifi_target_provider), wird zuerst WLAN versucht, sonst USB; connect(wlan=False) erzwingt USB
+#   1.32  2026-11-27  port_type: Plattform nach den Regeln detectionRules in csv/Lichtmaschinen_prop.json (headless_usb_detect) statt fester Regeln. Zeilen mit '# v1.32'
 #   1.31  2026-11-27  cfg_lines: Zeilen mit ~MLLCFG oder ~MLLERR gehen waehrend einer Konfigurationsuebertragung (Setup uebertragen, schneller Weg) ueber die bestehende Verbindung an die Uebertragung statt in den Serial Monitor (headless_dyn_config.SharedLink). Zeilen mit '# v1.31'
 #   1.30  2026-11-27  Der schnelle Test auf den EFFECT Mode ist hart auf monitor_probe_ms begrenzt (eigener Thread, Schreib-Zeitlimit, kein flush): ein Geraet, das nicht oder nicht wie erwartet antwortet oder das Schreiben blockiert, haelt das Verbinden nicht auf. Zeilen mit '# v1.30'
 #   1.29  2026-11-27  Serial Monitor: zuerst ein schneller Test auf den EFFECT Mode (ein '#?' und hoechstens 250 ms warten, monitor_probe_ms); antwortet das Geraet mit LEDs_AutoProg, gilt die normale Verbindung (EFFECT Mode), sonst wird nur mitgelesen (DIRECT Mode). Zeilen mit '# v1.29'
@@ -222,21 +223,23 @@ def usb_subtype(vid, pid) -> str:
 
 def port_type(p) -> str:
     """Bekannter Typ des Anschlusses: 'Nano/Uno', 'ESP32', 'Pico' oder der type eines anderen MobaLedLib Geraets laut ~MLLINFO (PICOSERVO ...); '' wenn unbekannt.
-    Gleiche Regeln wie M07_COM_Port.Classify_Port (Hersteller-Kennung und Beschreibung)."""
-    vid = getattr(p, "vid", None)
-    desc = str(getattr(p, "description", "") or "")
-    hwid = str(getattr(p, "hwid", "") or "").upper()
+    Gleiche Regeln wie M07_COM_Port.Classify_Port (detectionRules in csv/Lichtmaschinen_prop.json)."""  # v1.32
+    # vid = getattr(p, "vid", None)  # v1.32 (entfallen)
+    # desc = str(getattr(p, "description", "") or "")  # v1.32 (entfallen)
+    # hwid = str(getattr(p, "hwid", "") or "").upper()  # v1.32 (entfallen)
     import sys
     other = getattr(sys.modules.get("proggen.M07_COM_Port_New"), "OTHER_TYPES", {}) or {}
     if str(getattr(p, "device", "")) in other:
         return str(other[str(p.device)])
-    if vid == 0x2E8A or "VID:PID=2E8A:" in hwid or "VID:PID=239A:813D" in hwid:
-        return "Pico"
-    if vid == 0x10C4 or "CP210x" in desc or "CP2102 USB to UART" in desc:
-        return "ESP32"
-    if vid in (0x1A86, 0x0403, 0x2341, 0x2A03) or "CH340" in desc or "Arduino" in desc or "FT232" in desc or "USB2.0-Ser" in desc or "VID:PID=0403:" in hwid:
-        return "Nano/Uno"
-    return ""
+    # if vid == 0x2E8A or "VID:PID=2E8A:" in hwid or "VID:PID=239A:813D" in hwid:  # v1.32 (entfallen)
+    #     return "Pico"  # v1.32 (entfallen)
+    # if vid == 0x10C4 or "CP210x" in desc or "CP2102 USB to UART" in desc:  # v1.32 (entfallen)
+    #     return "ESP32"  # v1.32 (entfallen)
+    # if vid in (0x1A86, 0x0403, 0x2341, 0x2A03) or "CH340" in desc or "Arduino" in desc or "FT232" in desc or "USB2.0-Ser" in desc or "VID:PID=0403:" in hwid:  # v1.32 (entfallen)
+    #     return "Nano/Uno"  # v1.32 (entfallen)
+    # return ""  # v1.32 (entfallen)
+    from headless import headless_usb_detect as UD  # v1.32: Regeln detectionRules statt fester Regeln
+    return {"AM328": "Nano/Uno", "ESP32": "ESP32", "PICO": "Pico"}.get(UD.platform_for_port(p), "")  # v1.32
 
 
 def describe_port(p) -> str:

@@ -1,12 +1,14 @@
-# Datei-Version: 1.00 (2026-11-26) - test_pico_device_dialog.py
+# Datei-Version: 1.01 (2026-11-27) - test_pico_device_dialog.py
 # ----------------------------------------------------------------------------------------------
 # Name:           test_pico_device_dialog.py
 # Path:           test_pico_device_dialog.py
-# Version:        1.00
-# Last Update:    2026-11-26
+# Version:        1.01
+# Last Update:    2026-11-27
 # Author:         Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.01  2026-11-27  Normaler Modus (web_form_comport 1.52): nur Geraete des Typs des Blattes; platforms der Lichtmaschinen_prop.json 1.06 enthaelt auch AM328, ESP32, PICO;
+#                     load_platforms liefert auch defaultDevice (web_startpage 1.14). Zeilen mit '# v1.01'
 #   1.00  2026-11-26  Neu: Geraeteauswahl fuer die Firmware-Installation des Pico (web_form_comport 1.45, _fw_mode): nur Pico-Geraete, auch unbekannte und andere MobaLedLib Geraete
 # ----------------------------------------------------------------------------------------------
 """Aufruf: python test_pico_device_dialog.py
@@ -155,12 +157,19 @@ class FirmwareDeviceTests(unittest.TestCase):
     def test_devices_and_platforms_are_separate_lists(self):
         from _web import web_startpage as SP
         machines = SP.load_machines(ROOT)
-        self.assertEqual([m["key"] for m in machines], ["Classic", "Mini", "Pro", "PicoZero", "MoLLi"])   # nur Lichtmaschinen
+        # self.assertEqual([m["key"] for m in machines], ["Classic", "Mini", "Pro", "PicoZero", "MoLLi"])   # nur Lichtmaschinen  # v1.01 (entfallen)
+        import json  # v1.01
+        with open(os.path.join(ROOT, "csv", "Lichtmaschinen_prop.json"), encoding="utf-8") as fh:  # v1.01
+            data = json.load(fh)  # v1.01
+        self.assertEqual([m["key"] for m in machines], [d["key"] for d in data["devices"]])  # v1.01: nur Lichtmaschinen (devices), auch mit weiteren Eintraegen (Uno)
+        self.assertTrue({"Classic", "Mini", "Pro", "PicoZero", "MoLLi"} <= {m["key"] for m in machines})  # v1.01
         self.assertTrue(all("isCentral" not in m for m in machines))
         platforms = {m["platform"]: m for m in SP.load_platforms(ROOT)}
-        self.assertEqual(set(platforms), {"MLL512V1", "MLLS88GWV1"})
+        # self.assertEqual(set(platforms), {"MLL512V1", "MLLS88GWV1"})  # v1.01 (entfallen)
+        self.assertEqual(set(platforms), {"AM328", "ESP32", "PICO", "MLL512V1", "MLLS88GWV1"})  # v1.01: Lichtmaschinen_prop.json 1.06 nennt auch die Plattformen der Lichtmaschinen (Namen der Gruppen in den Hardware Optionen)
         for entry in platforms.values():
-            self.assertEqual(set(entry), {"platform", "name", "text", "image"})
+            # self.assertEqual(set(entry), {"platform", "name", "text", "image"})  # v1.01 (entfallen)
+            self.assertEqual(set(entry), {"platform", "name", "text", "image", "defaultDevice", "sortPriority"})  # v1.01: web_startpage 1.14, 1.15
         self.assertIn("Selectrix", SP.supported_protocols("Classic"))                    # Feld protocols (frueher centrals)
         self.assertNotIn("Selectrix", SP.supported_protocols("PicoZero"))
         self.assertEqual(SP.machine_for_port_type("Pico"), "PicoZero")
@@ -241,8 +250,10 @@ class FirmwareDeviceTests(unittest.TestCase):
         self.form._compute_new()
         devs = [r["dev"] for r in self.form._rows]
         self.assertIn("COM3", devs)
-        self.assertIn("COM4", devs)
-        self.assertIn("COM5", devs)
+        # self.assertIn("COM4", devs)  # v1.01 (entfallen: web_form_comport 1.52 zeigt nur Geraete des Typs des Blattes)
+        # self.assertIn("COM5", devs)  # v1.01 (entfallen)
+        self.assertNotIn("COM4", devs)  # v1.01: ESP32 und Pico fehlen bei einem Classic-Blatt
+        self.assertNotIn("COM5", devs)  # v1.01
 
 
 if __name__ == "__main__":

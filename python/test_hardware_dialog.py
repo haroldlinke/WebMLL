@@ -1,12 +1,14 @@
-# Datei-Version: 1.00 (2026-11-25) - test_hardware_dialog.py
+# Datei-Version: 1.01 (2026-11-27) - test_hardware_dialog.py
 # ----------------------------------------------------------------------------------------------
 # Name:           test_hardware_dialog.py
 # Path:           test_hardware_dialog.py
-# Version:        1.00
-# Last Update:    2026-11-25
+# Version:        1.01
+# Last Update:    2026-11-27
 # Author:         Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.01  2026-11-27  Port-Tests an web_form_comport 1.52 angepasst (nur Geraete des Typs des Blattes); Ersatzwerte fuer die Firmware-Info (_info, _boot), die seit 1.18/1.43 fehlten
+#                     (die Port-Tests brachen vorher mit AttributeError ab). Zeilen mit '# v1.01'
 #   1.00  2026-11-25  Neu: Tests fuer den neuen Dialog der Lichtmaschine (web_form_comport 1.13: Liste der Boards, offline, unbekannte Ports) und die Einstellungen des
 #                     Blattes als Makrozeilen (headless_sheet_settings 1.00)
 # ----------------------------------------------------------------------------------------------
@@ -62,11 +64,17 @@ def make_form(board="AM328"):
     Base.__module__ = "fake_select_com_port"
     form = W.make_class(Base)()
     form._sheet_group = lambda: {"ESP32": "Pro", "PICO": "Pico"}.get(board, "Classic")
+    form._sheet_is_uno = lambda: False  # v1.01
+    form._info_refresh = lambda *a, **k: None  # v1.01: keine Abfrage ueber die Anschluesse
+    form._info, form._boot, form._boot_busy = {}, {}, set()  # v1.01
+    form._rows, form._sel_dev, form._prev_devs, form._old_comport, form._stored_port = [], None, None, None, ""  # v1.01
+    form._fw_mode, form._fw_platform, form._sel_user = False, "", False  # v1.01
     return form
 
 
 def port(dev, vid, desc="x"):
-    return NS(device=dev, vid=vid, description=desc, hwid="USB VID:PID=0000")
+    # return NS(device=dev, vid=vid, description=desc, hwid="USB VID:PID=0000")  # v1.01 (entfallen)
+    return NS(device=dev, vid=vid, pid=0x0001, serial_number="", description=desc, hwid="USB VID:PID=0000")  # v1.01: _scan liest seit web_form_comport 1.20/1.44 auch pid und serial_number
 
 
 class PortDialogTests(unittest.TestCase):
@@ -90,9 +98,16 @@ class PortDialogTests(unittest.TestCase):
         form = make_form()
         form._stored_port = "COM7"
         form._compute_new()
-        self.assertEqual(self.rows(form), [("Classic", "COM3", False), ("Classic", "COM7", True), ("Pro", "COM9", False), ("Pico", "COM5", False)])
-        self.assertEqual(form._sel_dev, "COM7")                             # das Board des Blattes ist vorgewaehlt, auch offline
-        self.assertEqual(FakeM07.CheckCOMPort, "999")                       # offline: nichts blinken lassen
+        # self.assertEqual(self.rows(form), [("Classic", "COM3", False), ("Classic", "COM7", True), ("Pro", "COM9", False), ("Pico", "COM5", False)])  # v1.01 (entfallen)
+        self.assertEqual(self.rows(form), [("Classic", "COM3", False), ("Classic", "COM7", True)])  # v1.01: nur Geraete des Typs des Blattes
+        # self.assertEqual(form._sel_dev, "COM7")                             # das Board des Blattes ist vorgewaehlt, auch offline  # v1.01 (entfallen)
+        # self.assertEqual(FakeM07.CheckCOMPort, "999")                       # offline: nichts blinken lassen  # v1.01 (entfallen)
+        self.assertEqual(form._sel_dev, "COM3")  # v1.01: seit web_form_comport 1.38 ist ein angeschlossenes Geraet des Typs vorgewaehlt, nicht der gespeicherte Anschluss offline
+        FakeM07.ports = [p for p in FakeM07.ports if p.device != "COM3"]  # v1.01: ohne angeschlossenes Geraet des Typs
+        form._sel_dev = None  # v1.01
+        form._compute_new()  # v1.01
+        self.assertEqual(form._sel_dev, "COM7")  # v1.01: dann der gespeicherte (offline)
+        self.assertEqual(FakeM07.CheckCOMPort, "999")  # v1.01: offline: nichts blinken lassen
 
     def test_unknown_ports_only_with_checkbox(self):
         form = make_form()
@@ -112,7 +127,8 @@ class PortDialogTests(unittest.TestCase):
     def test_new_device_is_selected(self):
         form = make_form()
         form._compute_new()
-        FakeM07.ports = FakeM07.ports + [port("COM20", 0x10C4)]
+        # FakeM07.ports = FakeM07.ports + [port("COM20", 0x10C4)]  # v1.01 (entfallen: ein ESP32 erscheint bei einem Classic-Blatt nicht mehr)
+        FakeM07.ports = FakeM07.ports + [port("COM20", 0x1A86)]  # v1.01
         form._sel_dev = "gone"
         form._compute_new()
         self.assertEqual(form._sel_dev, "COM20")
