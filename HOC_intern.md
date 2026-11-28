@@ -1,11 +1,33 @@
-Datei-Version: 1.151 (2026-11-28) - HOC_intern.md
-Stand: Version 5.65
+Datei-Version: 1.152 (2026-11-28) - HOC_intern.md
+Stand: Version 5.66
 
 # webMobaLedLib: History of Change (intern, ausführlich)
 
 Gilt ab Version 1.39. Frühere Versionen sind nicht erfasst. Basis der Versionsnummer ist `VERSION` in `webmobaledlib.py`.
 Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Datei, Version, Änderung). Neueste Version oben.
 Pfade beziehen sich auf den Ordner `python`.
+
+---
+
+## 5.66 (2026-11-28), Doppelklick in der Makroauswahl übernimmt das Makro (Jürgen Winkler)
+
+**Wunsch:** In der Makroauswahl soll ein Doppelklick auf ein Makro **Ok** auslösen.
+
+**Befund:** Der Doppelklick war im Code schon vorhanden (`tree.on("dblclick", lambda: do_ok())`, `web_macro_tree.py`), wirkte aber nicht zuverlässig. **Ursache (aus dem Code und dem Quasar-Quelltext abgeleitet, im Browser nicht beobachtet):** Ein Doppelklick besteht aus Klick, Klick und `dblclick`. Der erste Klick wählt das Makro. Der zweite trifft den schon gewählten Knoten; Quasar (`QTree.onClick`, ohne `no-selection-unset`) sendet dann `update:selected` mit `null`, NiceGUI ruft `on_select(None)`, und `ctx["selected"]` wird `None`. Das folgende `do_ok()` meldet „Bitte ein Makro auswählen.“. War beim Öffnen schon ein Makro vorgewählt, wurde es vom ersten Klick abgewählt und vom zweiten wieder gewählt, der Doppelklick auf genau dieses Makro ging also scheinbar. Bei einer Gruppe (Doppelklick klappt auf oder zu) trat derselbe Fehler auf.
+
+**Änderung:** `tree.props("no-selection-unset")` in `_tree_async`. Ein Klick auf den gewählten Knoten wählt ihn nicht mehr ab; der Doppelklick findet das Makro und `do_ok()` übernimmt es (Gruppe: auf- oder zuklappen wie bisher). **Doppelklick auf einen noch nicht gewählten Knoten (Wunsch Jürgen):** Der Doppelklick darf nicht davon abhängen, dass der erste Klick die Auswahl schon gemeldet hat. Die Vorlage des Knotens trägt jetzt `data-node-id`; der `dblclick`-Handler (`js_handler`) meldet den Knoten unter dem Mauszeiger (`emit`, bei einem Argument ist `e.args` die Zeichenkette). `on_dblclick` wählt ihn (`tree.select`, `on_select`) und ruft `do_ok()`; trifft der Doppelklick keinen Knoten (`null`), gilt die vorhandene Auswahl. **Keine Textmarkierung (Wunsch Jürgen):** der Browser markierte beim Doppelklick das Wort; `user-select: none` (und `-webkit-`) am Knotenkopf des Baums. **Unzuverlässig im Test im Browser (Jürgen: „funktioniert nicht zuverlässig“) – Ursachen und Maßnahmen:** (1) *Der Dialog wuchs bei der Auswahl.* Beschreibung (`min-height 4em`, `max-height 14em`) und Makrotext hatten keine feste Höhe; der Dialog ist mittig zentriert, deshalb rutschten die Zeilen nach dem ersten Klick (gemessen mit 11 Zeilen Beschreibung: LampenMakro5 von 361 auf 292 px, also fast 2 Zeilen). Kommt zwischen den beiden Klicks eines Doppelklicks die Antwort des Servers (Netz, Raspberry Pi, Last), trifft der zweite Klick eine andere Zeile. Jetzt feste Höhe: Beschreibung `height: 9em`, Makrotext `height: 3em`, beide mit Bildlauf; nach der Änderung bleibt die Zeile bei der Auswahl an derselben Stelle (292 vor und nach). (2) *Eine Lücke zwischen zwei Zeilen* (Kopf 29 px, Zeilenabstand 35 px, also 6 px) hat keinen Knoten; der Doppelklick meldete dann `null`, und `do_ok()` übernahm die **vorher gewählte** Zeile statt der doppelt angeklickten (im Test: Doppelklick auf Makro 5 lieferte Makro 3, das vorgewählte). Jetzt gehört eine Lücke der nächsten Zeile (bis 6 px, im `js_handler`), und gibt es keinen Knoten in der Nähe (Platz neben dem Baum), wird nichts übernommen. (3) *Bekannt, nicht geändert:* `SCROLL_JS` (1.06) zentriert das vorgewählte Makro mit `scrollIntoView({block: 'center'})` (100, 300, 700, 1500 ms nach dem Öffnen, einmal); der Baum springt dabei um etwa 90 px (mal ja, mal nein beim Öffnen; Zeitpunkt abhängig von der Animation). Bei einem langsamen Rechner kann das Springen spät kommen; Anwender sollen nach dem Öffnen mit Vorauswahl zuerst schauen, wo die Zeilen stehen.
+
+Nebenwirkung: Die Auswahl lässt sich per Klick nicht mehr aufheben, das ist ohne Folgen, weil Ok ohnehin eine Auswahl braucht. Der Makrobaum der grafischen Ansicht (`mll_graph.js`) ist ein eigener Code und nicht betroffen.
+
+| Datei | Version | Änderung |
+|---|---|---|
+| `_web/web_macro_tree.py` | 1.14 | `tree.props("no-selection-unset")`, `on_dblclick` mit `data-node-id` (Lücken gehören der nächsten Zeile), `user-select: none`, feste Höhe von Beschreibung und Makrotext |
+| `webmobaledlib.py` | 5.66 | Programmversion, Verlauf, `REQUIRED_FILES` |
+| `test_macro_tree_dblclick.py` | 1.04 | neu |
+| `install/ANLEITUNG_Installation.md` | 5.66 | Abschnitt 2.9: Doppelklick in der Makroauswahl |
+| `install/BETATEST_Checkliste.md` | 4.42 | Punkt 452 |
+
+**Tests:** `py_compile`, `test_macro_tree_dblclick.py` 1.04 (11 Tests; Quelltext: Eigenschaft gesetzt, vor dem Ereignis, Doppelklick ruft `do_ok`; Quasar kennt `noSelectionUnset`; Funktionstest von `do_ok` und `on_dblclick`, mit `ast` aus dem Quelltext geholt (nicht gewählter Knoten wird gewählt und übernommen): Makro wird mit seiner Zeile übernommen, eine Gruppe wird auf- oder zugeklappt, ohne Auswahl kommt der Hinweis). Gewünschtes Verhalten (Jürgen): ein zweiter Einzelklick auf das gewählte Makro ändert nichts, ein Doppelklick auf einen Knoten klappt die Untergruppen auf oder zu. **Im Browser geprüft (Chromium im Browser-Fenster der Entwicklungsumgebung, NiceGUI 4.0.0, echter Dialogcode `_tree_async` in einer kleinen NiceGUI-Seite mit nachgebauten Makrodaten und Beschreibungen mit 1 bis 11 Zeilen, echte Mausklicks):** Doppelklick auf ein nicht gewähltes Makro übernimmt es (Zeile stimmt), auch mit einem anderen gewählten Makro und nach einer Pause; Doppelklick auf das vorgewählte und auf ein anderes Makro bei Vorauswahl (immer die Zeile unter dem Mauszeiger); Doppelklick in die Lücke zwischen zwei Zeilen wählt die nächste Zeile; Gruppe nicht gewählt: aufklappen, nochmal: zuklappen, Dialog bleibt offen; Filter („Sub2“) und Doppelklick auf den Treffer (Zeile 34); keine Textmarkierung (`getSelection()` leer); Zeilen verrutschen bei der Auswahl nicht mehr; `no-selection-unset` und `data-node-id` wirken in NiceGUI 4. **Nicht geprüft:** das echte Programm (nur die Testseite mit nachgebauten Daten, nicht mit den Makros aus `Lib_Macros` und nicht im Worker-Thread-Ablauf), Touch und iPad, Firefox und Safari, langsame Verbindung (die Verschiebung wurde gemessen und beseitigt, ein Doppelklick mit absichtlich verzögerter Serverantwort wurde nicht ausgeführt); der Start des Backends (`start_backend()`); Windows, macOS, Raspberry Pi. Punkt 452 der Checkliste.
 
 ---
 
