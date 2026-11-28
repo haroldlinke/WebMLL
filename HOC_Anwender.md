@@ -1,9 +1,14 @@
-Datei-Version: 1.156 (2026-11-28) - HOC_Anwender.md
-Stand: Version 5.65
+Datei-Version: 1.157 (2026-11-28) - HOC_Anwender.md
+Stand: Version 5.66
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Version 5.66 (2026-11-28)
+
+Korrekturen:
+- Makroauswahl: Ein Doppelklick auf ein Makro übernimmt es jetzt wie der Knopf „Ok“, auch wenn es vorher nicht ausgewählt war. Vorher kam oft die Meldung „Bitte ein Makro auswählen.“. Ein Doppelklick auf eine Gruppe klappt sie auf oder zu. Der Doppelklick markiert keinen Text mehr. Die Makroauswahl wird beim Auswählen nicht mehr höher oder niedriger, die Liste springt also nicht mehr zwischen den beiden Klicks.
 
 ## Version 5.65 (2026-11-28), Pull Request 88 (Jueff, dort V5.61 bis V5.70): Lichtmaschine in den Hardware Optionen, Erkennung über detectionRules, Liste der USB Geräte
 

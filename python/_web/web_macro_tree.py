@@ -1,12 +1,13 @@
-# Datei-Version: 1.13 (2026-11-26) - web_macro_tree.py
+# Datei-Version: 1.14 (2026-11-28) - web_macro_tree.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_macro_tree.py
 # Path:           _web/web_macro_tree.py
-# Version:        1.13
-# Last Update:    2026-11-26
-# Author:         Harold Linke
+# Version:        1.14
+# Last Update:    2026-11-28
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
+#   1.14  2026-11-28  Doppelklick auf ein Makro loest Ok aus: der zweite Klick des Doppelklicks waehlte den schon gewaehlten Knoten wieder ab (Quasar sendet dann update:selected mit null), Ok meldete 'Bitte ein Makro auswaehlen.'; Eigenschaft no-selection-unset am Baum. Der Doppelklick meldet selbst den Knoten unter dem Mauszeiger (data-node-id, on_dblclick), er wirkt auch auf noch nicht gewaehlte Knoten; der Doppelklick markiert keinen Text mehr (user-select: none im Baum); feste Hoehe von Beschreibung und Makrotext, damit der Dialog bei der Auswahl nicht waechst und die Zeilen zwischen den beiden Klicks eines Doppelklicks nicht verrutschen (gemessen: 70 Pixel bei 11 Zeilen Beschreibung). Zeile mit '# v1.14'
 #   1.13  2026-11-26  Makrotext in der Makroauswahl ohne den Kommentar der Zelle (Text nach dem §). Zeile mit '# v1.13'
 #   1.12  2026-11-05  Anfaenger Modus: Makros aus csv/Beginner_Hidden_Macros.csv (Makro oder Gruppe) werden im Anfaenger Modus nicht angezeigt (Makrobaum, Suche, Grafik); set_beginner_check, load_hidden_rules, filter_beginner (fruehere Versionen ohne Eintrag)
 # ----------------------------------------------------------------------------------------------
@@ -231,6 +232,7 @@ async def _tree_async(items, info, preselect_row):
     with wd._bridge["client"]:
         ui.add_css("""
             .q-tree__node-header { width: 100%; }
+            .q-tree__node-header { user-select: none; -webkit-user-select: none; }  /* v1.14: ein Doppelklick markiert keinen Text */
             .q-tree__node-header.q-tree__node--selected {
                 background: #fff176 !important; color: #000 !important; font-weight: 700;
                 border-left: 4px solid #f9a825; }
@@ -244,13 +246,15 @@ async def _tree_async(items, info, preselect_row):
                 tree = ui.tree([], node_key="id", label_key="label", on_select=lambda e: on_select(e.value),
                                on_expand=lambda e: tree._props.__setitem__("expanded", list(e.value or [])))
                 tree.add_slot("default-header", r"""
-                    <div class="row items-center no-wrap">
+                    <div class="row items-center no-wrap" :data-node-id="props.node.id">
                       <q-icon v-if="props.node.icon" :name="props.node.icon" size="22px" class="q-mr-sm" />
                       <span class="text-bold">{{ props.node.label }}</span>
                       <span class="text-grey-8 q-ml-md">{{ props.node.description }}</span>
                     </div>""")
-            descr = ui.label("").classes("mll-desc").style("white-space: pre-line; min-height: 4em; max-height: 14em; overflow: auto")
-            detail = ui.label("").classes("text-grey-8").style("font-family: monospace; white-space: pre-wrap")
+            # descr = ui.label("").classes("mll-desc").style("white-space: pre-line; min-height: 4em; max-height: 14em; overflow: auto")  # v1.14 (entfallen)
+            descr = ui.label("").classes("mll-desc").style("white-space: pre-line; height: 9em; overflow: auto")  # v1.14: feste Hoehe: der Dialog waechst bei der Auswahl nicht mehr, die Zeilen rutschen zwischen den Klicks eines Doppelklicks nicht
+            # detail = ui.label("").classes("text-grey-8").style("font-family: monospace; white-space: pre-wrap")  # v1.14 (entfallen)
+            detail = ui.label("").classes("text-grey-8").style("font-family: monospace; white-space: pre-wrap; height: 3em; overflow: auto")  # v1.14: feste Hoehe wie die Beschreibung
             with ui.row().classes("justify-end w-full"):
                 ui.button("Abbrechen", on_click=lambda: dlg.submit(None)).props("flat").classes("mll-cancel")
                 ok_btn = ui.button("Ok", on_click=lambda: do_ok()).classes("mll-default")
@@ -361,7 +365,18 @@ async def _tree_async(items, info, preselect_row):
             flt.on("keydown.right", lambda: key_right())
             flt.on("keydown.left", lambda: key_left())
             flt.on_value_change(lambda e: rebuild(e.value or ""))
-            tree.on("dblclick", lambda: do_ok())
+            tree.props("no-selection-unset")                 # ein Klick auf den gewaehlten Knoten waehlt ihn nicht ab: sonst hebt der zweite Klick eines Doppelklicks die Auswahl auf und do_ok() findet kein Makro  # v1.14
+            def on_dblclick(e):  # v1.14
+                """Doppelklick: der Browser meldet den Knoten unter dem Mauszeiger (data-node-id); er wird gewaehlt und dann wie bei Ok behandelt. Eine Luecke zwischen zwei Zeilen gehoert der naechsten Zeile (bis 6 Pixel). So wirkt der Doppelklick auch, wenn der erste Klick die Auswahl noch nicht gemeldet hat."""  # v1.14
+                nid = e.args if isinstance(e.args, str) else None  # v1.14
+                if nid not in by_id:  # v1.14: kein Knoten in der Naehe des Mauszeigers (nur Platz neben dem Baum): nichts uebernehmen, sonst kaeme die vorher gewaehlte Zeile
+                    return  # v1.14
+                tree.select(nid)  # v1.14
+                on_select(nid)  # v1.14
+                do_ok()  # v1.14
+
+            # tree.on("dblclick", lambda: do_ok())  # v1.14 (entfallen)
+            tree.on("dblclick", on_dblclick, js_handler="(e) => { let h = e.target.closest('.q-tree__node-header'); if (!h) { let best = null, dist = 7; (e.currentTarget || document).querySelectorAll('.q-tree__node-header').forEach(n => { const r = n.getBoundingClientRect(); if (r.height === 0) return; const d = e.clientY < r.top ? r.top - e.clientY : (e.clientY > r.bottom ? e.clientY - r.bottom : 0); if (d < dist) { dist = d; best = n; } }); h = best; } const d = h && h.querySelector('[data-node-id]'); emit(d ? d.dataset.nodeId : null); }")  # v1.14
             rebuild("", preselect_row)
         res = await dlg
         wd.safe_delete(dlg)

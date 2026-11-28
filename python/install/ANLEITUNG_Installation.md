@@ -1,5 +1,5 @@
 # MobaLedLib Studio – Installation und Betrieb
-*Datei-Version: 5.65 (2026-11-28), gilt für Version 5.65*
+*Datei-Version: 5.66 (2026-11-28), gilt für Version 5.66*
 
 Windows · macOS · Linux-Desktop · Raspberry Pi
 
@@ -306,7 +306,7 @@ Minus) Platz.
 
 ### 2.9 Bedienung der Tabelle: Makroauswahl, Bearbeiten, Kontextmenü
 
-- **Ein Klick auf das Symbol** (Spalte „Icon“) öffnet die Makroauswahl.
+- **Ein Klick auf das Symbol** (Spalte „Icon“) öffnet die Makroauswahl. In der Makroauswahl wählt ein Klick ein Makro, ein **Doppelklick** auf ein Makro übernimmt es wie der Knopf **Ok**, auch wenn es noch nicht gewählt war (seit 5.66; bei einer Gruppe klappt der Doppelklick sie auf oder zu).
 - **Zellen von Hand bearbeiten:** **F2** oder **Enter** auf der markierten Zelle, ein **Doppelklick** (siehe unten) oder im Kontextmenü (Rechtsklick auf die Zelle) **Zelle bearbeiten**.
   Das ist zum Beispiel in der Spalte „Beleuchtung, Sound, oder andere Effekte“ oft schneller als der Dialog, um einen Parameter zu ändern.
   Bei einem erkannten Syntaxfehler kannst du den ursprünglichen Makrotext wiederherstellen oder den Text im Dialog weiter bearbeiten. Beim Wechsel auf ein anderes Makro werden Name und Symbol aktualisiert. Nach jeder Änderung des Makrotexts werden außerdem **LEDs, InCnt, LocInCh**, die Adressspalten, die Testtasten und die **Start-LEDs** neu gesetzt, wie nach dem Auswahldialog (zum Beispiel ändert sich die LED-Zahl von 6 auf 1, wenn du `ConstrWarnLightRGB6(…)` durch `ConstRGB(…)` ersetzt). Eine von Hand eingetragene Zahl in der Spalte LEDs wird dabei überschrieben; der LED Kanal und die Spalte Aktiv bleiben unverändert. Makros mit eigenem Dialog (z. B. House, ColTab, Pattern) werden nicht neu berechnet. Alle Felder werden zusammen mit dem Makrotext durch Rückgängig wiederhergestellt. Die Prüfung kontrolliert die Struktur und bei passenden Bibliotheksmakros die Parameterzahl, ersetzt aber nicht das Kompilieren.
