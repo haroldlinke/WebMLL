@@ -1,10 +1,10 @@
-# Datei-Version: 1.05 (2026-11-27) - web_servotest2.py
+# Datei-Version: 1.06 (2026-11-28) - web_servotest2.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_servotest2.py
 # Path:           _web/web_servotest2.py
-# Version:        1.05
-# Last Update:    2026-11-27
-# Author:         Harold Linke
+# Version:        1.06
+# Last Update:    2026-11-28
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-20  Neu: Seite Servo Test 2 (ServoTestPage2.py ohne Tk), Teil A: direkte Steuerung von Direct Mode Servos (Betriebsarten 1 bis 10, ENTER, Regler 0 bis 255, Zeitgeber mit CRC4). Ohne Programmieren des ATtiny (Teil B und C)
@@ -13,6 +13,7 @@
 #   1.03  2026-11-20  Issue 51: Hinweisbox mit hellem Hintergrund bekommt dunkle Schrift (im Dunklen Modus war weisser Text auf hellem Grund nicht lesbar)
 #   1.04  2026-11-27  Version 5.55: LED Kanal heisst LM-Anschluss (Feld und Hinweis)
 #   1.05  2026-11-27  Version 5.56: LM-Anschluss heisst jetzt LM-Ausgang
+#   1.06  2026-11-28  Version 5.66: LM-Ausgang ist eine Auswahlliste mit den Ausgaengen aus der Startmeldung der Lichtmaschine (ohne Verbindung 0 bis 3); Servo Modul Adresse hoechstens Anzahl der LEDs des Ausgangs - 1; Grenzen werden beim Betreten der Seite und nach dem Verbinden neu gesetzt
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Servo Test 2" (mlpyproggen/ServoTestPage2.py, Klasse ServoTestPage2, ohne Tk): Servos im Direct Mode (Variante von Eckhart, ein ATtiny
 statt des WS2811-Chips, Kommandos mit CRC4-Pruefsumme).
@@ -48,6 +49,11 @@ try:  # v1.02
 except ImportError:  # v1.02                                   # aeltere Installation ohne web_i18n.py: Text bleibt deutsch
     def description_text(text, fallback=""):  # v1.02
         return str(text or fallback or "").replace("\r", "").strip()  # v1.02
+try:  # v1.06
+    from _web.web_i18n import tr  # v1.06
+except ImportError:  # v1.06                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch
+    def tr(text, **values):  # v1.06
+        return text.format(**values) if values else text  # v1.06
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +86,8 @@ PARAM_DEFAULTS = {                    # (Text, Min, Max, Vorgabe, Hinweis) falls
     "ServoControl": ("Servo Betriebsart", 0, 10, 1, "Betriebsart des Servos"),
     "ServoCRCold": ("Fast Refresh (40 ms)", 0, 1, 0, "Refresh auf 40ms setzen (nur für Experten)"),
 }
+CHANNELS_UNKNOWN = 4                  # Zahl der LM-Ausgaenge in der Auswahl, solange die Startmeldung der Lichtmaschine fehlt (0 bis 3)  # v1.06
+TEXT_CHANNEL_HINT = "Zur Auswahl stehen die Ausgänge, die die Lichtmaschine beim Verbinden meldet. Ohne Verbindung: 0 bis 3."  # v1.06
 CONFIG_KEYS = {"ServoAddress": "Servo2Address", "ServoLEDChannel": "Servo2LEDChannel", "ServoCRCold": "Servo2FastRefresh"}     # eigene Werte dieser Seite
 
 TEXT_FALLBACK = "Testen und Konfigurieren von Servos basierend auf der Direct Mode Variante von Eckhart"
@@ -127,6 +135,7 @@ class Servo2Model:
         self.address = self._clamp("ServoAddress", self._stored("ServoAddress"))
         self.channel = self._clamp("ServoLEDChannel", self._stored("ServoLEDChannel"))
         self.fast = bool(self._clamp("ServoCRCold", self._stored("ServoCRCold")))
+        self.fit_limits()                               # gespeicherte Werte an die Ausgaenge der verbundenen Lichtmaschine anpassen  # v1.06
         self.mode = 1                                   # ServoControl: beginnt immer mit Normal
         self.position = SERVO_SCALE_MIN                 # servo_position
         self.enter_pressed = False
@@ -177,14 +186,42 @@ class Servo2Model:
         leds = self.leds_per_channel()
         return max(0, len(leds) - 1) if leds else self.definition("ServoLEDChannel")[2]
 
+    def channel_options(self):  # v1.06
+        """Werte der Auswahl LM-Ausgang: die Ausgaenge aus der Startmeldung; ohne Startmeldung 0 bis 3 (und der gemerkte Wert, falls groesser)"""  # v1.06
+        leds = self.leds_per_channel()  # v1.06
+        if leds:  # v1.06
+            return list(range(len(leds)))  # v1.06
+        return list(range(max(CHANNELS_UNKNOWN, self.channel + 1)))  # v1.06
+
+    def address_max(self, channel=None):  # v1.06
+        """Hoechste Servo Modul Adresse: Anzahl der LEDs des Ausgangs - 1 (20 LEDs: 0 bis 19); ohne Startmeldung das Maximum aus MacroParamDef"""  # v1.06
+        leds = self.leds_per_channel()  # v1.06
+        channel = self.channel if channel is None else channel  # v1.06
+        return max(0, leds[channel] - 1) if leds and 0 <= channel < len(leds) else self.definition("ServoAddress")[2]  # v1.06
+
+    def fit_limits(self):  # v1.06
+        """LM-Ausgang und Adresse in die Grenzen der verbundenen Lichtmaschine bringen; geaenderte Werte werden gemerkt. Rueckgabe: True, wenn sich etwas geaendert hat"""  # v1.06
+        channel = max(0, min(self.channel_max(), self.channel))  # v1.06
+        address = max(0, min(self.address_max(channel), self.address))  # v1.06
+        changed = (channel, address) != (self.channel, self.address)  # v1.06
+        if channel != self.channel:  # v1.06
+            self.channel = channel  # v1.06
+            self._persist("ServoLEDChannel", channel)  # v1.06
+        if address != self.address:  # v1.06
+            self.address = address  # v1.06
+            self._persist("ServoAddress", address)  # v1.06
+        return changed  # v1.06
+
     def set_address(self, value):
-        self.address = self._clamp("ServoAddress", value)
+        # self.address = self._clamp("ServoAddress", value)  # v1.06 (entfallen)
+        self.address = max(0, min(self.address_max(), self._clamp("ServoAddress", value)))  # v1.06: hoechstens die letzte LED des Ausgangs
         self._persist("ServoAddress", self.address)
         return self.address
 
     def set_channel(self, value):
         self.channel = max(0, min(self.channel_max(), _to_int(value, self.channel)))
         self._persist("ServoLEDChannel", self.channel)
+        self.fit_limits()                               # Adresse in den neuen Ausgang einpassen  # v1.06
         return self.channel
 
     def set_fast(self, value):
@@ -316,6 +353,7 @@ class Servo2Model:
         self.step_1 = False
         self.set_mode_normal = False
         self.enter_text = ENTER_TEXT
+        self.fit_limits()                               # Ausgaenge der (inzwischen) verbundenen Lichtmaschine  # v1.06
         try:
             self.ctrl.ARDUINO_begin_direct_mode()
         except Exception:                                          # noqa: BLE001
@@ -407,6 +445,8 @@ def build(ctrl, is_active=None):
         refresh_description()
         refs["guard"] = True                            # Werte vom Programm gesetzt, nicht vom Anwender
         try:
+            refs["channel"].set_options(model.channel_options(), value=model.channel)  # v1.06: Ausgaenge der verbundenen Lichtmaschine
+            refs["address"].max = model.address_max()  # v1.06: hoechste Adresse des gewaehlten Ausgangs
             refs["address"].set_value(model.address)
             refs["channel"].set_value(model.channel)
             refs["mode"].set_value(model.mode)
@@ -463,13 +503,17 @@ def build(ctrl, is_active=None):
         with ui.card().props("flat bordered").classes("w-full"):
             with ui.row().classes("w-full items-end gap-2 mll-servo2-fields"):
                 text, lo, hi, _, hint = model.definition("ServoAddress")
-                refs["address"] = ui.number(label=text, value=model.address, min=lo, max=hi, step=1, precision=0,
+                # refs["address"] = ui.number(label=text, value=model.address, min=lo, max=hi, step=1, precision=0,  # v1.06 (entfallen)
+                refs["address"] = ui.number(label=text, value=model.address, min=lo, max=model.address_max(), step=1, precision=0,  # v1.06
                                             on_change=lambda e: changed("address", e.value, model.set_address)).props("dense outlined").classes("mll-servo2-field")
                 refs["address"].tooltip(hint)
                 text, lo, hi, _, hint = model.definition("ServoLEDChannel")
-                refs["channel"] = ui.number(label=text, value=model.channel, min=lo, max=hi, step=1, precision=0,
-                                            on_change=lambda e: changed("channel", e.value, model.set_channel)).props("dense outlined").classes("mll-servo2-field")
-                refs["channel"].tooltip(hint)
+                # refs["channel"] = ui.number(label=text, value=model.channel, min=lo, max=hi, step=1, precision=0,  # v1.06 (entfallen)
+                                            # on_change=lambda e: changed("channel", e.value, model.set_channel)).props("dense outlined").classes("mll-servo2-field")  # v1.06 (entfallen)
+                # refs["channel"].tooltip(hint)  # v1.06 (entfallen)
+                refs["channel"] = ui.select(model.channel_options(), label=text, value=model.channel,  # v1.06: Auswahlliste, nur die vorhandenen Ausgaenge
+                                            on_change=lambda e: changed("channel", e.value, model.set_channel)).props("dense outlined").classes("mll-servo2-field")  # v1.06
+                refs["channel"].tooltip(tr(hint) + ". " + tr(TEXT_CHANNEL_HINT))  # v1.06
             text, _, _, _, hint = model.definition("ServoControl")
             refs["mode"] = ui.select(MODES, value=model.mode, label=text, on_change=lambda e: changed("mode", e.value, model.set_mode)).props("dense outlined").classes("w-full")
             refs["mode"].tooltip("Betriebsart des Servos: 1 Normal, 2 und 3 Training, 4 Max Speed, 5 Invers, 6 Servo zurücksetzen, 7 Werkseinstellung, 8 letzte Position zurücksetzen, 9 Oszillator trimmen")

@@ -1,10 +1,10 @@
-# Datei-Version: 1.05 (2026-11-27) - web_soundtest.py
+# Datei-Version: 1.06 (2026-11-28) - web_soundtest.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_soundtest.py
 # Path:           _web/web_soundtest.py
-# Version:        1.05
-# Last Update:    2026-11-27
-# Author:         Harold Linke
+# Version:        1.06
+# Last Update:    2026-11-28
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-21  Neu: Reiter Sound Test (mlpyproggen/SoundCheckPage.py ohne Tk): Adresse, LED Kanal, Impulslaenge, R/G/B, Senden mit Impuls, Direktmodus
@@ -13,6 +13,7 @@
 #   1.03  2026-11-20  Issue 51: Hinweisbox mit hellem Hintergrund bekommt dunkle Schrift (im Dunklen Modus war weisser Text auf hellem Grund nicht lesbar)
 #   1.04  2026-11-27  Version 5.55: LED Kanal heisst LM-Anschluss (Feld und Hinweis)
 #   1.05  2026-11-27  Version 5.56: LM-Anschluss heisst jetzt LM-Ausgang
+#   1.06  2026-11-28  Version 5.66: LM-Ausgang ist eine Auswahlliste mit den Ausgaengen aus der Startmeldung der Lichtmaschine (ohne Verbindung 0 bis 3); Soundmodul-Adresse hoechstens Anzahl der LEDs des Ausgangs - 1; Grenzen werden beim Betreten der Seite und nach dem Verbinden neu gesetzt (vorher nur beim Aufbau der Seite)
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Sound Test" (mlpyproggen/SoundCheckPage.py, Klasse SoundCheckPage, ohne Tk).
 
@@ -42,6 +43,11 @@ try:  # v1.02
 except ImportError:  # v1.02                                   # aeltere Installation ohne web_i18n.py: Text bleibt deutsch
     def description_text(text, fallback=""):  # v1.02
         return str(text or fallback or "").replace("\r", "").strip()  # v1.02
+try:  # v1.06
+    from _web.web_i18n import tr  # v1.06
+except ImportError:  # v1.06                                   # aeltere Installation ohne web_i18n.py: Texte bleiben deutsch
+    def tr(text, **values):  # v1.06
+        return text.format(**values) if values else text  # v1.06
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +65,8 @@ DEFAULTS = {                           # (Text, Min, Max, Vorgabe, Hinweis) fall
     "Sound_GREEN": ("Sound Anschluss G", 0, 255, 0, "Sound Anschluss G"),
     "Sound_BLUE": ("Sound Anschluss B", 0, 255, 0, "Sound Anschluss B"),
 }
+CHANNELS_UNKNOWN = 4                  # Zahl der LM-Ausgaenge in der Auswahl, solange die Startmeldung der Lichtmaschine fehlt (0 bis 3)  # v1.06
+TEXT_CHANNEL_HINT = "Zur Auswahl stehen die Ausgänge, die die Lichtmaschine beim Verbinden meldet. Ohne Verbindung: 0 bis 3."  # v1.06
 SEND_ON_CHANGE = ("Sound_Address", "Sound_ImpulsLength", "Sound_RED", "Sound_GREEN", "Sound_BLUE")          # ValueChangeEvent im Original
 
 CSS = """
@@ -99,8 +107,9 @@ class SoundModel:
         self.ctrl = ctrl
         self.later = later or (lambda delay, fn: asyncio.get_running_loop().call_later(delay, fn))
         self.values = {key: self._clamp(key, self._stored(key)) for key in PARAMS}
-        self.values["SoundLEDChannel"] = min(self.values["SoundLEDChannel"], self.channel_max())
+        # self.values["SoundLEDChannel"] = min(self.values["SoundLEDChannel"], self.channel_max())  # v1.06 (entfallen)
         self.pending: dict = {}          # laufende Impulse: Adresse der LED -> Haltepunkt zum Abbrechen des geplanten Endes (Liste, mehrere moegliche)
+        self.fit_limits()                # LM-Ausgang und Adresse an die Ausgaenge der verbundenen Lichtmaschine anpassen  # v1.06
 
     # ---- Parameter
     def definition(self, key):
@@ -133,10 +142,41 @@ class SoundModel:
         leds = self.leds_per_channel()
         return max(0, len(leds) - 1) if leds else self.definition("SoundLEDChannel")[2]
 
+    def channel_options(self):  # v1.06
+        """Werte der Auswahl LM-Ausgang: die Ausgaenge aus der Startmeldung; ohne Startmeldung 0 bis 3 (und der gemerkte Wert, falls groesser)"""  # v1.06
+        leds = self.leds_per_channel()  # v1.06
+        if leds:  # v1.06
+            return list(range(len(leds)))  # v1.06
+        return list(range(max(CHANNELS_UNKNOWN, self.values["SoundLEDChannel"] + 1)))  # v1.06
+
+    def address_max(self, channel=None):  # v1.06
+        """Hoechste Soundmodul-Adresse: Anzahl der LEDs des Ausgangs - 1 (20 LEDs: 0 bis 19); ohne Startmeldung das Maximum aus MacroParamDef"""  # v1.06
+        leds = self.leds_per_channel()  # v1.06
+        channel = self.values["SoundLEDChannel"] if channel is None else channel  # v1.06
+        return max(0, leds[channel] - 1) if leds and 0 <= channel < len(leds) else self.definition("Sound_Address")[2]  # v1.06
+
+    def fit_limits(self):  # v1.06
+        """LM-Ausgang und Adresse in die Grenzen der verbundenen Lichtmaschine bringen; geaenderte Werte werden gemerkt. Rueckgabe: True, wenn sich etwas geaendert hat"""  # v1.06
+        channel = max(0, min(self.channel_max(), self.values["SoundLEDChannel"]))  # v1.06
+        address = max(0, min(self.address_max(channel), self.values["Sound_Address"]))  # v1.06
+        changed = False  # v1.06
+        for key, value in (("SoundLEDChannel", channel), ("Sound_Address", address)):  # v1.06
+            if value != self.values[key]:  # v1.06
+                changed = True  # v1.06
+                self.values[key] = value  # v1.06
+                try:  # v1.06
+                    self.ctrl.setConfigData(key, value)  # v1.06
+                    self.ctrl.SaveConfigData()  # v1.06
+                except Exception:                                  # noqa: BLE001  # v1.06
+                    logger.debug("Wert %s nicht gesichert", key, exc_info=True)  # v1.06
+        return changed  # v1.06
+
     def set_value(self, key, value):
         """Wert uebernehmen (begrenzt) und merken"""
         if key == "SoundLEDChannel":
             self.values[key] = max(0, min(self.channel_max(), _to_int(value, self.values[key])))
+        elif key == "Sound_Address":  # v1.06: hoechstens die letzte LED des Ausgangs
+            self.values[key] = max(0, min(self.address_max(), self._clamp(key, value)))  # v1.06
         else:
             self.values[key] = self._clamp(key, value)
         try:
@@ -144,6 +184,8 @@ class SoundModel:
             self.ctrl.SaveConfigData()
         except Exception:                                          # noqa: BLE001
             logger.debug("Wert %s nicht gesichert", key, exc_info=True)
+        if key == "SoundLEDChannel":  # v1.06: Adresse in den neuen Ausgang einpassen
+            self.fit_limits()  # v1.06
         return self.values[key]
 
     def sound_address(self):
@@ -196,6 +238,7 @@ class SoundModel:
     def tab_selected(self):
         _SEQ[0] += 1
         ACTIVE_MODELS[self] = _SEQ[0]
+        self.fit_limits()                # Ausgaenge der (inzwischen) verbundenen Lichtmaschine  # v1.06
         try:
             self.ctrl.ARDUINO_begin_direct_mode()
         except Exception:                                          # noqa: BLE001
@@ -304,6 +347,8 @@ def build(ctrl, is_active=None, connect=None):
         refresh_description()
         refs["guard"] = True                            # vom Programm gesetzt, nicht vom Anwender: nichts senden
         try:
+            refs["fields"]["SoundLEDChannel"].set_options(model.channel_options(), value=model.values["SoundLEDChannel"])  # v1.06: Ausgaenge der verbundenen Lichtmaschine
+            refs["fields"]["Sound_Address"].max = model.address_max()  # v1.06: hoechste Adresse des gewaehlten Ausgangs
             for key, field in refs["fields"].items():
                 field.set_value(model.values[key])
         finally:
@@ -326,7 +371,14 @@ def build(ctrl, is_active=None, connect=None):
         # refresh()  # v1.01 (entfallen)
     def number(key):
         text, lo, hi, _, hint = model.definition(key)
-        max_ = model.channel_max() if key == "SoundLEDChannel" else hi
+        if key == "SoundLEDChannel":  # v1.06: Auswahlliste statt Zahlenfeld, nur die vorhandenen Ausgaenge
+            field = ui.select(model.channel_options(), label=text, value=model.values[key],  # v1.06
+                              on_change=lambda e, k=key: field_changed(k, e.value)).props("dense outlined").classes("mll-sound-field")  # v1.06
+            field.tooltip(tr(hint) + ". " + tr(TEXT_CHANNEL_HINT))  # v1.06
+            refs["fields"][key] = field  # v1.06
+            return field  # v1.06
+        # max_ = model.channel_max() if key == "SoundLEDChannel" else hi  # v1.06 (entfallen)
+        max_ = model.address_max() if key == "Sound_Address" else hi  # v1.06
         field = ui.number(label=text, value=model.values[key], min=lo, max=max_, step=1, precision=0,
                           on_change=lambda e, k=key: field_changed(k, e.value)).props("dense outlined debounce=300").classes("mll-sound-field")
         field.tooltip(hint)

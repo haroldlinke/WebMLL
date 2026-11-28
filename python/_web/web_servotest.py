@@ -1,10 +1,10 @@
-# Datei-Version: 2.10 (2026-11-27) - web_servotest.py
+# Datei-Version: 2.15 (2026-11-28) - web_servotest.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_servotest.py
 # Path:           _web/web_servotest.py
-# Version:        2.10
-# Last Update:    2026-11-27
-# Author:         Harold Linke
+# Version:        2.15
+# Last Update:    2026-11-28
+# Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
 # History of Change:
 #   1.00  2026-10-20  Neu: Seite Servo Test 1 nach ServoTestPage.py (Tk): Regler, Servo STOP, Dec/Inc mit Halten, Programmieren in vier Schritten
@@ -19,6 +19,11 @@
 #   2.08  2026-11-12  Tastatur wie im Excel-Programm 3.5.0L (UserForm_ServoPos): Pfeil hoch/runter = > und <, Bild hoch/runter = >> und <<, solange die Pfeiltasten aktiv sind (Taste gedrueckt halten = Pfeiltaste gehalten); handle_servo_key; die Seite scrollt dabei nicht
 #   2.09  2026-11-27  Version 5.55: LED Kanal heisst LM-Anschluss (Feld und Hinweis)
 #   2.10  2026-11-27  Version 5.56: LM-Anschluss heisst jetzt LM-Ausgang
+#   2.11  2026-11-28  Version 5.66: LM-Ausgang ist eine Auswahlliste mit den Ausgaengen aus der Startmeldung der Lichtmaschine (ohne Verbindung 0 bis 3); LED Nummer hoechstens Anzahl der LEDs des Ausgangs - 1; Grenzen werden beim Betreten der Seite und nach dem Verbinden neu gesetzt; gespeicherter LM-Ausgang wird auf die vorhandenen Ausgaenge begrenzt
+#   2.12  2026-11-28  Version 5.68: Regler fluessiger (wie DM Servo): es wird nur die neueste Position gesendet, und nur wenn die Sendewarteschlange leer ist (vorher ging jede Bewegung in die Warteschlange, der Servo lief alten Positionen hinterher); Regler alle 50 ms statt 100 ms; eigener Zeitgeber 50 ms fuer die wartende Position; die Position geht mit der normalen Pause je Zeichen (send_to_ARDUINO) statt der zehnfachen Servo-Pause; Befehle zum Konfigurieren (Servo waehlen, Grenzen, Geschwindigkeit) und Wackeln unveraendert mit der Servo-Pause
+#   2.13  2026-11-28  Version 5.69: Anschluss ueber 2 hinaus (Pfeil hoch bei 2) geht zur naechsten LED Nummer mit Anschluss 0, unter 0 (Pfeil runter bei 0) zur vorigen LED Nummer mit Anschluss 2, soweit die LED Nummer das zulaesst (Feld Anschluss erlaubt dafuer -1 und 3)
+#   2.14  2026-11-28  Version 5.70: Anschluss blieb nach dem Weiterschalten auf 3 oder -1 stehen: NiceGUI (ui.number, LOOPBACK = False) sendet einen im eigenen Aenderungsereignis gesetzten Wert nicht an den Browser; refresh() ruft nach set_value jetzt update() auf
+#   2.15  2026-11-28  Version 5.71: Tasten < und > neben dem Regler gedrueckt halten: die Position laeuft weiter, bis losgelassen wird oder der Endpunkt erreicht ist, und wird stufenweise schneller (HOLD_STAGES); ein kurzer Klick bleibt ein Schritt
 # ----------------------------------------------------------------------------------------------
 """Web-Version der Seite "Servo Test 1" nach dem Excel-Dialog "Servo Test und Einstellung" (UserForm der Excel-Fassung, Stand Oktober 2026).
 
@@ -80,7 +85,11 @@ def stop_all(wait=False):  # v2.03
 
 SERVO_SCALE_MIN = 10                  # Bereich des Schiebereglers (wie ServoTestPage.py: Servo_Scale_Min, Servo_Scale_Max)
 SERVO_SCALE_MAX = 210
-SERVO_RATE = 0.1                      # Sekunden: hoechstens zehn Positionen je Sekunde beim Ziehen des Reglers
+# SERVO_RATE = 0.1                      # Sekunden: hoechstens zehn Positionen je Sekunde beim Ziehen des Reglers  # v2.12 (entfallen)
+SERVO_RATE = 0.05                     # Sekunden: hoechstens 20 Positionen je Sekunde vom Regler (wie DM Servo)  # v2.12
+POSITION_TICK = 0.05                  # Zeitgeber fuer die wartende Reglerposition (gesendet wird, sobald die Sendewarteschlange leer ist)  # v2.12
+# Tasten < und > neben dem Regler gedrueckt halten (je Takt POSITION_TICK): (ab Sekunden gehalten, Schritte je Takt). Vorher nur der erste Schritt beim Druecken.  # v2.15
+HOLD_STAGES = ((0.4, 1), (1.5, 2), (3.0, 5))  # v2.15: ab 0,4 s 20 je Sekunde, ab 1,5 s 40, ab 3 s 100
 TICK = 0.1                            # Zeitgeber (StartTimer Me, 100)
 
 SRV_WAIT_TIME_CMD = 0.2               # Pause zwischen den Befehlen (Sleep 200)
@@ -132,6 +141,10 @@ PARAM_DEFAULTS = {                    # (Text im Excel-Dialog, Min, Max, Vorgabe
     "ServoLEDChannel": ("LM-Ausgang", 0, 99, 0, "LM-Ausgang an dem die Servoplatine angeschlossen ist"),  # v2.10
     "ServoChannel": ("Anschluss", 0, 2, 0, "Anschluss des Servos (RGB-Nummer des Anschlusses)"),
 }
+CHANNELS_UNKNOWN = 4                  # Zahl der LM-Ausgaenge in der Auswahl, solange die Startmeldung der Lichtmaschine fehlt (0 bis 3)  # v2.11
+TEXT_CHANNEL_HINT = "Zur Auswahl stehen die Ausgänge, die die Lichtmaschine beim Verbinden meldet. Ohne Verbindung: 0 bis 3."  # v2.11
+TEXT_HOLD = "Gedrückt halten: die Position läuft weiter und wird immer schneller."  # v2.15
+TEXT_MODULE_WRAP = "Pfeil hoch bei Anschluss 2: nächste LED Nummer mit Anschluss 0. Pfeil runter bei Anschluss 0: vorige LED Nummer mit Anschluss 2."  # v2.13
 
 TEXT_DEFAULT = ("Wählen sie zuerst die Adresse des Servos.\nMit dem Schieberegler wird die Position eingestellt.\n\n"
                 "Mit den Knöpfen unten wird der aktuelle Servo konfiguriert.")
@@ -162,6 +175,7 @@ CSS = """
 .mll-servo { max-width: 760px; margin: 0 auto; padding: 8px; }
 .mll-servo-btn { min-height: 52px; min-width: 64px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .mll-servo-wide { min-height: 52px; }
+.mll-servo-hold { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 @media (max-width: 600px) { .mll-servo-arrow { flex: 1 1 20%; min-width: 0; } }
 .mll-servo-desc { cursor: pointer; }
 .mll-servo-fields { flex-wrap: nowrap; }
@@ -190,8 +204,12 @@ class ServoModel:
         self.address = self._clamp_param("ServoAddress", self._stored("ServoAddress"))
         self.channel = self._clamp_param("ServoLEDChannel", self._stored("ServoLEDChannel"))
         self.module = self._clamp_param("ServoChannel", self._stored("ServoChannel"))
+        self.fit_limits()                   # gespeicherte Werte an die Ausgaenge der verbundenen Lichtmaschine anpassen  # v2.11
         self.position = SERVO_SCALE_MIN + (SERVO_SCALE_MAX - SERVO_SCALE_MIN) // 2        # 110
         self.pressed = None                 # Name der gehaltenen Pfeiltaste
+        self.position_pending = False       # Reglerposition wartet auf eine leere Sendewarteschlange  # v2.12
+        self.hold_direction = 0             # gehaltene Taste neben dem Regler: -1 (<), +1 (>), 0 keine  # v2.15
+        self.hold_start = 0.0               # Zeitpunkt des Drueckens  # v2.15
         self.busy = False                   # laeuft ein Ablauf mit Pausen: Zeitgeber und Tasten ruhen
         self._epoch = 0                     # wird beim Verlassen erhoeht: ein laufender Ablauf bricht dann beim naechsten Schritt ab  # v2.03
         self.min_max_active = False         # MinMaxActive
@@ -237,10 +255,31 @@ class ServoModel:
         leds = self.leds_per_channel()
         return max(0, len(leds) - 1) if leds else self.definition("ServoLEDChannel")[2]
 
+    def channel_options(self):  # v2.11
+        """Werte der Auswahl LM-Ausgang: die Ausgaenge aus der Startmeldung; ohne Startmeldung 0 bis 3 (und der gemerkte Wert, falls groesser)"""  # v2.11
+        leds = self.leds_per_channel()  # v2.11
+        if leds:  # v2.11
+            return list(range(len(leds)))  # v2.11
+        return list(range(max(CHANNELS_UNKNOWN, self.channel + 1)))  # v2.11
+
     def address_max(self, channel=None):
         leds = self.leds_per_channel()
         channel = self.channel if channel is None else channel
-        return leds[channel] if leds and 0 <= channel < len(leds) else self.definition("ServoAddress")[2]
+        # return leds[channel] if leds and 0 <= channel < len(leds) else self.definition("ServoAddress")[2]  # v2.11 (entfallen)
+        return max(0, leds[channel] - 1) if leds and 0 <= channel < len(leds) else self.definition("ServoAddress")[2]  # v2.11: hoechste LED Nummer = Anzahl - 1 (20 LEDs: 0 bis 19)
+
+    def fit_limits(self):  # v2.11
+        """LM-Ausgang und LED Nummer in die Grenzen der verbundenen Lichtmaschine bringen; geaenderte Werte werden gemerkt. Rueckgabe: True, wenn sich etwas geaendert hat"""  # v2.11
+        channel = max(0, min(self.channel_max(), self.channel))  # v2.11
+        address = max(0, min(self.address_max(channel), self.address))  # v2.11
+        changed = (channel, address) != (self.channel, self.address)  # v2.11
+        if channel != self.channel:  # v2.11
+            self.channel = channel  # v2.11
+            self._persist("ServoLEDChannel", channel)  # v2.11
+        if address != self.address:  # v2.11
+            self.address = address  # v2.11
+            self._persist("ServoAddress", address)  # v2.11
+        return changed  # v2.11
 
     def _persist(self, key, value):
         try:
@@ -276,8 +315,9 @@ class ServoModel:
     def get_current_address(self):
         return int(self.ctrl.get_lednum_offset_for_channel(self.channel)) + self.address
 
-    def send_value(self, address, module, value):
-        """SendValue: Wert an einen der drei Anschluesse (0, 1, 2); sonst nichts"""
+    def send_value(self, address, module, value, fast=False):  # v2.12: fast
+        """SendValue: Wert an einen der drei Anschluesse (0, 1, 2); sonst nichts.
+        fast: mit der normalen Pause je Zeichen (send_to_ARDUINO) statt der zehnfachen Servo-Pause; fuer die Reglerposition"""  # v2.12
         if module not in (0, 1, 2):
             return None
         values = [0, 0, 0]
@@ -287,7 +327,11 @@ class ServoModel:
         else:
             message = "#L " + "{:04x}".format(address)
         message += " " + " ".join("{:02x}".format(v) for v in values) + " " + "{:02x}".format(1) + "\n"
-        self.ctrl.send_to_ARDUINO_servo(message)
+        # self.ctrl.send_to_ARDUINO_servo(message)  # v2.12 (entfallen)
+        if fast:  # v2.12: Reglerposition mit der normalen Pause (wie DM Servo)
+            self.ctrl.send_to_ARDUINO(message)  # v2.12
+        else:  # v2.12
+            self.ctrl.send_to_ARDUINO_servo(message)  # v2.12
         return message
 
     def send_value_to_current(self, value):
@@ -336,7 +380,19 @@ class ServoModel:
 
     def module_changed(self, module):
         self.reset_position()
-        self.module = max(0, min(2, _to_int(module, self.module)))
+        # self.module = max(0, min(2, _to_int(module, self.module)))  # v2.13 (entfallen)
+        value = _to_int(module, self.module)  # v2.13
+        if value > 2:  # v2.13: ueber Anschluss 2 hinaus: naechste LED Nummer, Anschluss 0 (wenn die LED Nummer noch erhoeht werden kann)
+            if self.address < self.address_max():  # v2.13
+                self.address += 1  # v2.13
+                self._persist("ServoAddress", self.address)  # v2.13
+                value = 0  # v2.13
+        elif value < 0:  # v2.13: unter Anschluss 0: vorige LED Nummer, Anschluss 2 (wenn die LED Nummer noch verringert werden kann)
+            if self.address > 0:  # v2.13
+                self.address -= 1  # v2.13
+                self._persist("ServoAddress", self.address)  # v2.13
+                value = 2  # v2.13
+        self.module = max(0, min(2, value))  # v2.13
         self._persist("ServoChannel", self.module)
         self._check_end_settings()
         self.send_select_current_module()
@@ -356,8 +412,69 @@ class ServoModel:
         return self.send_value(self.get_current_address(), self.module, self.position)
 
     def set_position(self, position):
+        """Regler und Pfeile am Regler: neue Position merken und senden, sobald die Sendewarteschlange leer ist (nur die neueste Position, kein Stau)"""  # v2.12
         self.position = max(SERVO_SCALE_MIN, min(SERVO_SCALE_MAX, _to_int(position, self.position)))
-        return self.position_changed()
+        # return self.position_changed()  # v2.12 (entfallen)
+        self.stop_wig()  # v2.12
+        self.position_pending = True  # v2.12
+        return self.send_pending_position()  # v2.12
+
+    # ---- Tasten < und > neben dem Regler gedrueckt halten  # v2.15
+    def hold_press(self, direction):  # v2.15
+        """Taste < (-1) oder > (+1) gedrueckt: sofort ein Schritt, danach laeuft die Position im Zeitgeber weiter (hold_tick)"""  # v2.15
+        if self.busy or self.min_max_active or direction not in (-1, 1):  # v2.15
+            return None  # v2.15
+        self.hold_direction = direction  # v2.15
+        self.hold_start = self.now()  # v2.15
+        return self._hold_step(1)  # v2.15
+
+    def hold_release(self, direction=None):  # v2.15
+        """Taste losgelassen (oder Finger abgerutscht): Bewegung beenden. direction: nur diese Taste (eine andere gehaltene bleibt)"""  # v2.15
+        if direction is None or direction == self.hold_direction:  # v2.15
+            self.hold_direction = 0  # v2.15
+
+    def hold_step_size(self):  # v2.15
+        """Schritte je Takt nach der gehaltenen Zeit (HOLD_STAGES); 0 in der ersten Pause"""  # v2.15
+        held = self.now() - self.hold_start  # v2.15
+        size = 0  # v2.15
+        for since, step in HOLD_STAGES:  # v2.15
+            if held >= since:  # v2.15
+                size = step  # v2.15
+        return size  # v2.15
+
+    def hold_tick(self):  # v2.15
+        """Ein Takt der gehaltenen Taste. Rueckgabe: True, wenn sich die Position geaendert hat (die Anzeige folgt)"""  # v2.15
+        if not self.hold_direction:  # v2.15
+            return False  # v2.15
+        if self.busy or self.min_max_active:  # v2.15
+            self.hold_direction = 0  # v2.15
+            return False  # v2.15
+        size = self.hold_step_size()  # v2.15
+        if size == 0:  # v2.15
+            return False  # v2.15
+        before = self.position  # v2.15
+        self._hold_step(size)  # v2.15
+        return self.position != before  # v2.15
+
+    def _hold_step(self, size):  # v2.15
+        target = max(SERVO_SCALE_MIN, min(SERVO_SCALE_MAX, self.position + self.hold_direction * size))  # v2.15
+        if target == self.position:  # v2.15: Endpunkt erreicht
+            self.hold_direction = 0  # v2.15
+            return None  # v2.15
+        result = self.set_position(target)  # v2.15
+        if target in (SERVO_SCALE_MIN, SERVO_SCALE_MAX):  # v2.15: am Endpunkt anhalten
+            self.hold_direction = 0  # v2.15
+        return result  # v2.15
+
+    def send_pending_position(self):  # v2.12
+        """Wartende Reglerposition senden, wenn nichts anderes mehr zu senden ist. Rueckgabe: die gesendete Nachricht oder None"""  # v2.12
+        if not getattr(self, "position_pending", False) or self.busy or self.min_max_active:  # v2.12
+            return None  # v2.12
+        idle = getattr(self.ctrl, "tx_idle", None)  # v2.12
+        if idle is not None and not idle():  # v2.12: die vorige Nachricht ist noch unterwegs: spaeter (der Zeitgeber fragt wieder)
+            return None  # v2.12
+        self.position_pending = False  # v2.12
+        return self.send_value(self.get_current_address(), self.module, self.position, fast=True)  # v2.12
 
     # ---- Pfeiltasten beim Konfigurieren (Minus_Button_MouseDown ... Plus2_Button_MouseUp)
     def arrow_press(self, name):
@@ -595,6 +712,8 @@ class ServoModel:
         quiet: nur aufraeumen, nichts senden."""
         self._epoch += 1  # v2.03
         self.busy = False  # v2.03
+        self.position_pending = False  # v2.12: keine alte Reglerposition mehr senden
+        self.hold_direction = 0  # v2.15: gehaltene Taste neben dem Regler loslassen
         mine = ACTIVE_MODELS.pop(self, None)  # v2.03
         self.stop_wig()  # v2.03
         self.pressed = None  # v2.03
@@ -613,6 +732,22 @@ class ServoModel:
 
 
 # --------------------------------------------------------------------------- Oberflaeche (NiceGUI)
+class _Timers:  # v2.12
+    """Beide Zeitgeber der Seite (100 ms: Wackeln, Keep-Alive, Pfeiltasten; 50 ms: Reglerposition) werden gemeinsam ein- und ausgeschaltet (ServoPage setzt nur active)"""  # v2.12
+
+    def __init__(self, *timers):  # v2.12
+        self._timers = timers  # v2.12
+
+    @property  # v2.12
+    def active(self):  # v2.12
+        return self._timers[0].active  # v2.12
+
+    @active.setter  # v2.12
+    def active(self, value):  # v2.12
+        for t in self._timers:  # v2.12
+            t.active = value  # v2.12
+
+
 class ServoPage:
     """Rueckgabe von build: tab_selected(), tab_unselected(), model"""
 
@@ -691,8 +826,11 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
         refresh_description()  # v2.01
         refs["guard"] = True                            # die Felder aendern sich durch das Programm, nicht durch den Anwender: kein Servo waehlen, nicht wackeln
         try:
+            refs["fields"]["ServoLEDChannel"].set_options(model.channel_options(), value=model.channel)  # v2.11: Ausgaenge der verbundenen Lichtmaschine
+            refs["fields"]["ServoAddress"].max = model.address_max()  # v2.11: hoechste LED Nummer des gewaehlten Ausgangs
             for key, field in refs["fields"].items():
                 field.set_value(current(key))
+                field.update()  # v2.14: auch das Feld, dessen Aenderung gerade behandelt wird (NiceGUI sendet dessen Wert sonst nicht zurueck: ui.number hat LOOPBACK = False)
                 field.set_enabled(model.fields_enabled)
         finally:
             refs["guard"] = False
@@ -716,6 +854,14 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
             return
         model.on_timer()
 
+    def position_tick():  # v2.12
+        if is_active is not None and not is_active():  # v2.12
+            return  # v2.12
+        if model.hold_tick():  # v2.15: gehaltene Taste < oder >: Regler und Zahl folgen
+            refs["slider"].set_value(model.position)  # v2.15
+            refs["position"].set_text(str(model.position))  # v2.15
+        model.send_pending_position()  # v2.12
+
     def field_changed(key, value):
         if value is None or refs.get("guard") or _to_int(value, current(key)) == current(key):          # leer, vom Programm gesetzt oder unveraendert
             return
@@ -736,6 +882,19 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
         model.set_position(model.position + delta)
         refs["slider"].set_value(model.position)
         refs["position"].set_text(str(model.position))
+
+    def hold_button(icon, direction, tip):  # v2.15: Taste neben dem Regler: gedrueckt halten statt klicken
+        button = ui.button(icon=icon).props("outline").classes("mll-servo-wide mll-servo-hold")  # v2.15
+
+        def press(_=None, d=direction):  # v2.15
+            model.hold_press(d)  # v2.15
+            refs["slider"].set_value(model.position)  # v2.15
+            refs["position"].set_text(str(model.position))  # v2.15
+        button.on("pointerdown", press)  # v2.15
+        for event in ("pointerup", "pointercancel", "pointerleave"):  # v2.15: auch wenn der Finger abrutscht: immer loslassen
+            button.on(event, lambda e, d=direction: model.hold_release(d))  # v2.15
+        button.tooltip(tr(tip) + ". " + tr(TEXT_HOLD))  # v2.15
+        return button  # v2.15
 
     async def on_action():
         await model.action()
@@ -786,18 +945,31 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
                 refs["fields"] = {}
                 for key in ("ServoAddress", "ServoChannel", "ServoLEDChannel"):             # Reihenfolge wie im Excel-Dialog: LED Nummer, Anschluss, LED Kanal
                     text, lo, hi, _, hint = model.definition(key)
+                    if key == "ServoLEDChannel":  # v2.11: Auswahlliste statt Zahlenfeld, nur die vorhandenen Ausgaenge
+                        field = ui.select(model.channel_options(), label=text, value=current(key),  # v2.11
+                                          on_change=lambda e, k=key: field_changed(k, e.value)).props("dense outlined").classes("mll-servo-field")  # v2.11
+                        field.tooltip(tr(hint) + ". " + tr(TEXT_CHANNEL_HINT))  # v2.11
+                        refs["fields"][key] = field  # v2.11
+                        continue  # v2.11
+                    if key == "ServoAddress":  # v2.11
+                        hi = model.address_max()  # v2.11: hoechste LED Nummer des Ausgangs
+                    if key == "ServoChannel":  # v2.13: -1 und 3 erlaubt, damit Pfeil runter bei 0 und Pfeil hoch bei 2 zur vorigen/naechsten LED Nummer gehen
+                        lo, hi = lo - 1, hi + 1  # v2.13
                     field = ui.number(label=text, value=current(key), min=lo, max=hi, step=1, precision=0,
                                       on_change=lambda e, k=key: field_changed(k, e.value)).props("dense outlined").classes("mll-servo-field")  # v2.01
-                    field.tooltip(hint)
+                    # field.tooltip(hint)  # v2.13 (entfallen)
+                    field.tooltip(tr(hint) + ". " + tr(TEXT_MODULE_WRAP) if key == "ServoChannel" else hint)  # v2.13
                     refs["fields"][key] = field
         with ui.row().classes("w-full items-center no-wrap gap-2") as slider_row:
-            left = ui.button(icon="chevron_left", on_click=lambda: step_slider(-1)).props("outline").classes("mll-servo-wide")
-            left.tooltip("Position um 1 verringern")
+            # left = ui.button(icon="chevron_left", on_click=lambda: step_slider(-1)).props("outline").classes("mll-servo-wide")  # v2.15 (entfallen)
+            # left.tooltip("Position um 1 verringern")  # v2.15 (entfallen)
+            left = hold_button("chevron_left", -1, "Position um 1 verringern")  # v2.15
             slider = ui.slider(min=SERVO_SCALE_MIN, max=SERVO_SCALE_MAX, step=1, value=model.position).props("label markers=20").classes("grow")
             slider.tooltip("Position des Servos 10..210. Mit den Pfeiltasten Schritt für Schritt, Pos1 und Ende springen an den Anfang und das Ende.")
             slider.on("update:model-value", on_slide, throttle=SERVO_RATE)
-            right = ui.button(icon="chevron_right", on_click=lambda: step_slider(1)).props("outline").classes("mll-servo-wide")
-            right.tooltip("Position um 1 erhöhen")
+            # right = ui.button(icon="chevron_right", on_click=lambda: step_slider(1)).props("outline").classes("mll-servo-wide")  # v2.15 (entfallen)
+            # right.tooltip("Position um 1 erhöhen")  # v2.15 (entfallen)
+            right = hold_button("chevron_right", 1, "Position um 1 erhöhen")  # v2.15
             refs["position"] = ui.label(str(model.position)).style("min-width: 3em; text-align: right")
         refs["slider_row"], refs["slider"] = slider_row, slider
         with ui.row().classes("w-full items-center justify-center no-wrap gap-2") as arrow_row:
@@ -827,5 +999,7 @@ def build(ctrl, is_active=None, connect=None, confirm=None):  # v2.02
     ui.keyboard(on_key=on_key, repeating=False, ignore=["input", "select", "textarea"])  # v2.08: Tasten auch, wenn ein Knopf den Fokus hat
     timer = ui.timer(TICK, tick)
     timer.active = False
+    position_timer = ui.timer(POSITION_TICK, position_tick)  # v2.12: sendet die wartende Reglerposition, sobald die Sendewarteschlange leer ist
+    position_timer.active = False  # v2.12
     refresh()
-    return ServoPage(model, refresh, timer)
+    return ServoPage(model, refresh, _Timers(timer, position_timer))  # v2.12

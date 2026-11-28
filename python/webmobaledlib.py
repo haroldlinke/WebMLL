@@ -1,8 +1,8 @@
-# Datei-Version: 5.65 (2026-11-28) - webmobaledlib.py
+# Datei-Version: 5.71 (2026-11-28) - webmobaledlib.py
 # ----------------------------------------------------------------------------------------------
 # Name:           webmobaledlib.py
 # Path:           webmobaledlib.py
-# Version:        5.65
+# Version:        5.71
 # Last Update:    2026-11-28
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
@@ -86,6 +86,12 @@
 #   5.63  2026-11-27  Blattwechsel (sync_connection_to_sheet): hat das Blatt keine eigene Verbindung und gehoert die offene Verbindung zu einer anderen Lichtmaschine (Typ aus der Startmeldung), wird sie getrennt; ist das Geraet des Blatts nicht erreichbar (Anschluss fehlt, WLAN-Ziel antwortet nicht, Hinweis-Anschluss mit anderem Typ), bleibt keine Verbindung zum bisherigen Geraet stehen (Meldung); meldet sich am eingestellten Anschluss ein anderer Typ als im Blatt, kommt eine Warnung. Zeilen mit '# v5.61'
 #   5.64  2026-11-27  Jürgen Winkler: Makrotext direkt bearbeiten: Makros der Extensions (zum Beispiel EX.IRReceiverNEC(23, 0, 2)) wurden als ungueltig abgewiesen (Name mit Punkt); jetzt werden Anzahl und Werte der Argumente wie im Extension-Dialog nach Typ, Min und Max der Metadaten der Extension geprueft (headless_macro_edit 1.02); im Dialog Ungueltiger Makrotext loest Return Aenderung pruefen aus, der Cursor steht beim Oeffnen im Makrotext. Zeilen mit '# v5.61'
 #   5.65  2026-11-28  Pull Request 88 (Jueff, dort V5.61 bis V5.70): 5.61: Hardware Optionen: die Lichtmaschine wird wieder gewaehlt (Menue aus devices der Lichtmaschinen_prop.json, gruppiert nach Plattform, Haupttyp aus board: Classic, Uno, Pro, Pico; die USB-Kennung bestimmt Uno/Nano, Original/Clone nicht sicher); anderer Haupttyp setzt den COM Port zurueck und fragt nach der Suche; die Geraeteauswahl zeigt nur Geraete des eingestellten Typs (web_form_options 1.80, web_form_comport 1.52) | 5.62: Erkennung der Plattform eines Anschlusses aus den USB-Daten nach den Regeln detectionRules in csv/Lichtmaschinen_prop.json (neu: headless/headless_usb_detect.py) statt fester Regeln in M07_COM_Port 1.21, web_serial 1.32, web_form_comport 1.52 | 5.63: Hardware Optionen: ohne im Blatt gespeicherte Lichtmaschine zeigt das Menue die Vorgabe der Plattform (platforms.defaultDevice in csv/Lichtmaschinen_prop.json 1.09: ATMega Classic, ESP32 Pro, Raspberry Pico Pico Zero; web_form_options 1.81, web_startpage 1.14) | 5.64: Geraeteauswahl bei Lichtmaschine Pico: die Gruppe 'Andere MobaLedLib Geraete' (nicht waehlbar) erscheint wieder (web_form_comport 1.53); Hardware Optionen: 'Gerät:' statt 'Hardware:', 'keine Schnittstelle gewählt' statt 'kein Port gewählt' (web_form_options 1.82) | 5.65: Menue der Lichtmaschine: Reihenfolge nach sortPriority (devices und platforms in csv/Lichtmaschinen_prop.json 1.10; hoechste Zahl zuerst, sonst nach Namen; ESP32 50, Pico 40, ATMega 30; web_form_options 1.83, web_startpage 1.15) | 5.66: Geraeteauswahl bei Lichtmaschine Pico: andere MobaLedLib Geraete sind waehlbar, OK fragt mit einer Sicherheitsabfrage nach (Vorgabe Nein) (web_form_comport 1.54) | 5.67: Hardware Optionen: Bild und Protokolle folgen der gewaehlten Lichtmaschine (devices.image, devices.protocols); feste Bildflaeche, Bild eingepasst, ohne Bild leere Flaeche (web_form_options 1.84) | 5.68: Geraeteauswahl: Bild der Lichtmaschine des Blattes (bei Uno vorher das Bild der Classic), ohne Bild leere Flaeche, Bildflaeche immer gleich gross (web_form_comport 1.55, web_form_options 1.85) | 5.69: Lichtmaschine ohne Protokoll (Mini, devices.protocols leer): keine Protokollauswahl, kein DCC/Selectrix/LNet Arduino; Knopf 'Suchen' (statt 'Erkennen') rechts in der Gerätezeile (web_form_options 1.87, web_startpage 1.16, Lichtmaschinen_prop.json 1.11) | 5.70: devices.detect verweist auf Regel-Sets in detectionRules (headless_usb_detect 1.02; Geraeteauswahl beim Uno mit den Uno-Regeln, web_form_comport 1.56, web_form_options 1.88; Startseite web_startpage 1.17); Menue Werkzeuge: Liste der USB Geraete (neu: _web/web_usb_list.py)
+#   5.66  2026-11-28  Jürgen Winkler: LM-Ausgang in Servo Test, DM Servo Test und Sound Test ist eine Auswahlliste mit den Ausgaengen aus der Startmeldung der Lichtmaschine (ohne Verbindung 0 bis 3, vorher Zahlenfeld 0 bis 99); LED Nummer / Adresse hoechstens Anzahl der LEDs des Ausgangs - 1 (20 LEDs: 0 bis 19); Grenzen beim Betreten der Seite und nach dem Verbinden neu (web_servotest 2.11, web_servotest2 1.06, web_soundtest 1.06, Web_Languages.csv, test_lm_channels 1.00)
+#   5.67  2026-11-28  Jürgen Winkler: Verbinden (Knopf Mit Lichtmaschine verbinden, Menue, automatisch beim Reiter Servo/Sound/Farb Test) und der Anschluss fehlt am Rechner: gleich die Geraeteauswahl wie bei den Testtasten, ohne die Frage 'Fehler beim Oeffnen der Verbindung'; Anschluss vorhanden, aber belegt: Frage Ja/Nein mit Hinweis auf ein anderes Programm (web_serial 1.34, Web_Languages.csv, test_connect_open_error 1.00)
+#   5.68  2026-11-28  Jürgen Winkler: Servo Einstellungen: Regler fluessig wie DM Servo: nur die neueste Position wird gesendet, sobald die Sendewarteschlange leer ist (kein Stau mehr), Regler alle 50 ms, Position mit der normalen Pause je Zeichen statt der zehnfachen Servo-Pause; Konfigurieren unveraendert (web_servotest 2.12, test_servo_slider 1.00)
+#   5.69  2026-11-28  Jürgen Winkler: Servo Einstellungen: Pfeil hoch bei Anschluss 2 geht zur naechsten LED Nummer mit Anschluss 0, Pfeil runter bei Anschluss 0 zur vorigen LED Nummer mit Anschluss 2, soweit moeglich (web_servotest 2.13, Web_Languages.csv, test_servo_slider 1.01)
+#   5.70  2026-11-28  Jürgen Winkler: Servo Einstellungen: nach dem Weiterschalten (5.69) blieb im Feld Anschluss 3 oder -1 stehen; NiceGUI sendet bei ui.number (LOOPBACK = False) einen im eigenen Aenderungsereignis gesetzten Wert nicht zurueck, refresh ruft jetzt update() auf (web_servotest 2.14, test_servo_slider 1.02)
+#   5.71  2026-11-28  Jürgen Winkler: Servo Einstellungen: Tasten < und > neben dem Regler gedrueckt halten laesst die Position weiterlaufen, bis losgelassen wird oder der Endpunkt erreicht ist, stufenweise schneller (ab 0,4 s 20, ab 1,5 s 40, ab 3 s 100 Schritte je Sekunde); kurzer Klick = ein Schritt (web_servotest 2.15, Web_Languages.csv, test_servo_slider 1.03)
 #   5.38  2026-11-26  Ohne Lichtmaschine kam die Meldung 'Fehler beim Oeffnen der Verbindung' bei jedem Wechsel auf einen Reiter mit Direktmodus (Farb Test, Servo Test, Sound Test): das automatische Verbinden beim Reiterwechsel scheitert jetzt nur einmal mit Meldung, danach wird nicht mehr versucht, bis eine Verbindung besteht oder der Anwender selbst verbindet (Menue, Testtasten)
 #   5.37  2026-11-26  Farb Test: Knopf 'Farb Test beenden' unten rechts (web_colorcheck 1.13); Set_ColTab oeffnet den Farb Test auch ohne Lichtmaschine, kein Anschluss noetig (M60_CheckColors 1.01); Parameterformular: Flags (OptCtrPar, CtrMode, RandMode) als aufklappbare Hakenliste (web_form_other 1.17, Web_Languages.csv)
 #   5.36  2026-11-26  Startseite: alle Kacheln gleich gross (auch Ohne Zentrale und die letzte Lichtmaschine), Raster statt Zeilenumbruch (web_startpage 1.05)
@@ -747,6 +753,12 @@ REQUIRED_FILES = {  # v1.75
     "_web/web_form_options.py": "1.87", "_web/web_startpage.py": "1.16",  # v5.65
     "headless/headless_usb_detect.py": "1.02", "_web/web_form_comport.py": "1.56", "_web/web_form_options.py": "1.88", "_web/web_startpage.py": "1.17", "_web/web_usb_list.py": "1.00",  # v5.65
     "_web/web_serial.py": "1.33", "mlpyproggen/Prog_Generator.py": "1.13", "proggen/M06_Write_Header.py": "1.26", "proggen/M06_Write_Header_SW.py": "1.17", "proggen/M08_ARDUINO.py": "1.43", "proggen/M42_Dyn_Config.py": "1.15", "headless/headless_dyn_config.py": "1.09", "headless/headless_macro_edit.py": "1.02",  # v5.65 (Stand nach den Pull Requests 85 bis 88)
+    "_web/web_servotest.py": "2.11", "_web/web_servotest2.py": "1.06", "_web/web_soundtest.py": "1.06",  # v5.66
+    "_web/web_serial.py": "1.34",  # v5.67
+    "_web/web_servotest.py": "2.12",  # v5.68
+    "_web/web_servotest.py": "2.13",  # v5.69
+    "_web/web_servotest.py": "2.14",  # v5.70
+    "_web/web_servotest.py": "2.15",  # v5.71
 }  # v1.75
 FILE_PROBLEMS = []                                      # Zeilen der Abweichungen, gefuellt in main()  # v1.75
 
@@ -1894,7 +1906,13 @@ def font_scales(ctrl) -> dict:
 # VERSION = "5.59 (2026-11-27)"  # v5.60 (entfallen)
 # VERSION = "5.60 (2026-11-27)"  # v5.61 (entfallen)
 # VERSION = "5.61 (2026-11-28)"  # v5.65 (entfallen)
-VERSION = "5.65 (2026-11-28)"  # v5.65
+# VERSION = "5.65 (2026-11-28)"  # v5.66 (entfallen)
+# VERSION = "5.66 (2026-11-28)"  # v5.67 (entfallen)
+# VERSION = "5.67 (2026-11-28)"  # v5.68 (entfallen)
+# VERSION = "5.68 (2026-11-28)"  # v5.69 (entfallen)
+# VERSION = "5.69 (2026-11-28)"  # v5.70 (entfallen)
+# VERSION = "5.70 (2026-11-28)"  # v5.71 (entfallen)
+VERSION = "5.71 (2026-11-28)"  # v5.71
 # VERSION = "4.09 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.08 (2026-11-19)"  # v3.64 (entfallen)
 # VERSION = "4.07 (2026-11-19)"  # v3.64 (entfallen)

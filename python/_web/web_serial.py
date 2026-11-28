@@ -1,8 +1,8 @@
-# Datei-Version: 1.33 (2026-11-28) - web_serial.py
+# Datei-Version: 1.34 (2026-11-28) - web_serial.py
 # ----------------------------------------------------------------------------------------------
 # Name:           web_serial.py
 # Path:           _web/web_serial.py
-# Version:        1.33
+# Version:        1.34
 # Last Update:    2026-11-28
 # Author:         Harold Linke, Jürgen Winkler
 # Licence:        LGPL V2.1
@@ -18,6 +18,7 @@
 #   1.08  2026-11-14  TcpPort: ungueltiger Hostname (UnicodeError, "label too long") wird als OSError gemeldet statt abzustuerzen
 #   1.09  2026-11-14  Automatisches Verbinden (ohne Anschlussangabe): ist fuer das Blatt eine ESP32-WLAN-Verbindung eingetragen (wifi_target_provider), wird zuerst WLAN versucht, sonst USB; connect(wlan=False) erzwingt USB
 #   1.33  2026-11-28  Version 5.61: Fehlermeldung beim Verbinden unterscheidet: keine Antwort / unlesbare Zeichen (anderes Programm oder falsche Baudrate); Knopfname Zum Arduino schicken; Hinweis Uno wie Nano (neu). Zeilen mit # v1.32
+#   1.34  2026-11-28  Version 5.67: Verbinden scheitert beim Oeffnen: ist der Anschluss am Rechner nicht vorhanden (Geraet nicht angesteckt), oeffnet sich ohne Rueckfrage die Geraeteauswahl (wie bei den Testtasten); ist er vorhanden, aber nicht zu oeffnen, fragt das Programm mit Ja/Nein (statt Ja/Nein/Abbrechen, Nein und Abbrechen wirkten gleich) und nennt als wahrscheinlichen Grund ein anderes Programm. Zeilen mit '# v1.34'
 #   1.32  2026-11-27  port_type: Plattform nach den Regeln detectionRules in csv/Lichtmaschinen_prop.json (headless_usb_detect) statt fester Regeln. Zeilen mit '# v1.32'
 #   1.31  2026-11-27  cfg_lines: Zeilen mit ~MLLCFG oder ~MLLERR gehen waehrend einer Konfigurationsuebertragung (Setup uebertragen, schneller Weg) ueber die bestehende Verbindung an die Uebertragung statt in den Serial Monitor (headless_dyn_config.SharedLink). Zeilen mit '# v1.31'
 #   1.30  2026-11-27  Der schnelle Test auf den EFFECT Mode ist hart auf monitor_probe_ms begrenzt (eigener Thread, Schreib-Zeitlimit, kein flush): ein Geraet, das nicht oder nicht wie erwartet antwortet oder das Schreiben blockiert, haelt das Verbinden nicht auf. Zeilen mit '# v1.30'
@@ -799,8 +800,20 @@ class SerialMixin:
             # title = macro.get("connect_open_error_title", "Fehler beim Öffnen des Ports")  # v1.15 (entfallen)
             title = macro.get("connect_open_error_title", tr("Fehler beim Öffnen der Verbindung"))  # v1.15
             text = macro.get("msg_connect_open_error", "Der Port {} konnte nicht geöffnet werden.").format(port)
-            answer = self._msg(text, title, 3 + 32)       # vbYesNoCancel + vbQuestion
-            self._fail_connect()
+            # answer = self._msg(text, title, 3 + 32)       # vbYesNoCancel + vbQuestion  # v1.34 (entfallen)
+            # self._fail_connect()  # v1.34 (entfallen)
+            if not self._port_present(port):  # v1.34: Anschluss am Rechner nicht vorhanden (Geraet nicht angesteckt): gleich die Geraeteauswahl, wie bei den Testtasten (Check_USB_Port_with_Dialog)
+                self._fail_connect()  # v1.34
+                if getattr(self, "quiet", False):  # v1.34: stilles Verbinden: kein Dialog
+                    logger.info("Stilles Verbinden: Anschluss %s nicht vorhanden, keine Geraeteauswahl", port)  # v1.34
+                    return False  # v1.34
+                logger.info("Verbinden: Anschluss %s ist am Rechner nicht vorhanden, Geraeteauswahl ohne Rueckfrage", port)  # v1.34
+                answer = 6  # v1.34
+            else:  # v1.34: Anschluss vorhanden, aber nicht zu oeffnen (meist von einem anderen Programm belegt): Grund nennen, Ja/Nein
+                logger.info("Verbinden: Anschluss %s ist vorhanden, liess sich aber nicht oeffnen: %s", port, err)  # v1.34
+                text = text + "\n\n" + tr("Der Port ist vorhanden, lässt sich aber nicht öffnen. Wahrscheinlich benutzt ihn gerade ein anderes Programm (zum Beispiel ein Serial Monitor oder die ARDUINO IDE).")  # v1.34
+                answer = self._msg(text, title, 4 + 32)   # vbYesNo + vbQuestion  # v1.34
+                self._fail_connect()  # v1.34
             if answer == 6:                               # Ja: anderen Port waehlen
                 try:
                     import proggen.M07_COM_Port_New as M07New

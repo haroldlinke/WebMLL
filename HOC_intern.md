@@ -1,11 +1,164 @@
-Datei-Version: 1.151 (2026-11-28) - HOC_intern.md
-Stand: Version 5.65
+Datei-Version: 1.152 (2026-11-28) - HOC_intern.md
+Stand: Version 5.71
 
 # webMobaLedLib: History of Change (intern, ausführlich)
 
 Gilt ab Version 1.39. Frühere Versionen sind nicht erfasst. Basis der Versionsnummer ist `VERSION` in `webmobaledlib.py`.
 Pro Version: was sich geändert hat und die Tabelle der geänderten Dateien (Datei, Version, Änderung). Neueste Version oben.
 Pfade beziehen sich auf den Ordner `python`.
+
+---
+
+Pull Request (Jueff): Version 5.66 bis 5.71, Servo Einstellungen, DM Servo Test, Sound Test und Verbinden. Im Testordner einzeln entstanden; jede Version hat ihren eigenen Abschnitt.
+
+## 5.71 (2026-11-28), Servo Einstellungen: Tasten neben dem Regler gedrückt halten
+
+**Wunsch (Jürgen):** Die Tasten neben dem Regler sollen beim Halten die Position weiter verändern, bis losgelassen wird oder der Endpunkt erreicht ist, und beim längeren Halten schneller werden (wie im Excel-Programm). Nur Servo Einstellungen, nicht DM Servo.
+
+**Vorlage:** In `Ver_3.5.0/UserForm_ServoPos.frm` gibt es dafür keinen eigenen Code: die Pfeile gehören zum MSForms-Steuerelement `ScrollBarPosition`, das Wiederholen beim Halten macht Excel selbst (Werte wie `Delay` stehen in der `.frx` und sind nicht lesbar). Die Stufen hier sind deshalb ein Nachbau, keine Kopie.
+
+**Umsetzung (`_web/web_servotest.py` 2.15):**
+* `hold_press(±1)`: sofort ein Schritt, merkt Richtung und Zeitpunkt; `hold_release(richtung)`: beendet (nur die eigene Taste); `hold_tick()` im 50-ms-Zeitgeber der Reglerposition (aus 5.68): Schritte je Takt nach `HOLD_STAGES = ((0.4, 1), (1.5, 2), (3.0, 5))` (20, 40, 100 Schritte je Sekunde); am Endpunkt (10 bzw. 210) Halt. Gesendet wird über `set_position` / `send_pending_position` (nur die neueste Position, kein Stau).
+* Knöpfe: `pointerdown` drückt, `pointerup`, `pointercancel`, `pointerleave` lassen los (wie die Pfeiltasten beim Konfigurieren); kein `on_click` mehr (sonst doppelter Schritt). CSS `mll-servo-hold` (kein Markieren/Kontextmenü auf Touch-Geräten). Tooltip: bisheriger Text und `TEXT_HOLD` (neu, sechs Sprachen).
+* Beim Konfigurieren (`min_max_active`), während eines Ablaufs (`busy`) und beim Verlassen (`leave`) wird nicht weitergelaufen. `step_slider` wird nicht mehr benutzt (bleibt stehen).
+
+| Datei | Version | Änderung |
+|-|-|-|
+| `_web/web_servotest.py` | 2.15 | `hold_press`, `hold_release`, `hold_tick`, `HOLD_STAGES`, Knöpfe mit Pointer-Ereignissen |
+| `csv/Web_Languages.csv` | - | neue Zeile (sechs Sprachen) |
+| `webmobaledlib.py` | 5.71 | VERSION, History, REQUIRED\_FILES |
+| `test_servo_slider.py` | 1.03 | 10 neue Tests |
+| `install/BETATEST_Checkliste.md` | 4.47 | Punkt 456 |
+
+**Tests:** `test_servo_slider.py` (28, bestanden): mit Ersatz-Uhr: kurzer Klick = 1 Schritt, erste Pause, Stufen 1/2/5, Weiterlaufen und Halt beim Loslassen, Halt an beiden Endpunkten, Loslassen der anderen Taste ohne Wirkung, nicht beim Konfigurieren, `leave` stoppt, nur die neueste Position wird gesendet, Übersetzung; mit echtem NiceGUI: die Knöpfe haben genau `pointerdown/up/cancel/leave` (kein `click`), `pointerdown` macht einen Schritt, `pointerleave` stoppt. `test_lm_channels.py` (17) bestanden. Versionsprüfung: alles passt.
+
+**Nicht geprüft:** echter Browser und Touch-Geräte (ob `pointerleave`/`pointercancel` zuverlässig kommen), ob die Stufen angenehm sind, echter Servo.
+
+## 5.70 (2026-11-28), Servo Einstellungen: Anschluss blieb auf 3 oder -1 stehen
+
+**Rückmeldung (Jürgen):** Mit 5.69 stand nach Pfeil hoch/runter im Feld Anschluss 3 oder -1.
+
+**Ursache:** `ui.number` hat in NiceGUI `LOOPBACK = False`. Während das Änderungsereignis des Felds läuft (`handle_change` in `mixins/value_element.py`), ist `_send_update_on_value_change` aus; `refresh()` wird im `on_change` aufgerufen, das `set_value(0)` für dasselbe Feld wurde deshalb nicht an den Browser geschickt. Das Modell stand richtig (LED Nummer 6, Anschluss 0), nur die Anzeige nicht. Mein Test für 5.69 lief mit `MagicMock` statt NiceGUI und konnte das nicht finden.
+
+**Umsetzung:** `refresh()` ruft nach `field.set_value(...)` ausdrücklich `field.update()` (`_web/web_servotest.py` 2.14). Nachgestellt mit einem echten Feld: ohne `update()` keine Aktualisierung, mit `update()` geht `model-value: '0'` hinaus (kein `preserved_props`, weil der Wert vom Browser (3) abweicht).
+
+| Datei | Version | Änderung |
+|-|-|-|
+| `_web/web_servotest.py` | 2.14 | `refresh`: `update()` nach `set_value` |
+| `webmobaledlib.py` | 5.70 | VERSION, History, REQUIRED\_FILES |
+| `test_servo_slider.py` | 1.02 | 3 Tests mit echtem NiceGUI (`Client`, ganze Seite gebaut, Ereignis des Browsers eingespielt) |
+| `install/BETATEST_Checkliste.md` | 4.46 | Punkt 455 „berichtigt in 5.70“ |
+
+**Tests:** `test_servo_slider.py` (18, bestanden); die 3 neuen scheitern ohne die Korrektur (geprüft). `test_lm_channels.py` (17) bestanden. Versionsprüfung: alles passt.
+
+**Nicht geprüft:** echter Browser. **Hinweis:** dieselbe Ursache kann bei anderen Feldern auftreten, die im eigenen Änderungsereignis begrenzt werden (zum Beispiel Adresse in DM Servo Test und Sound Test über dem Maximum: steht bis zum Verlassen des Felds, dann begrenzt NiceGUI selbst beim `blur`).
+
+## 5.69 (2026-11-28), Servo Einstellungen: Anschluss schaltet zur nächsten LED Nummer weiter
+
+**Wunsch (Jürgen):** Steht Anschluss auf 2 und wird Pfeil hoch gedrückt, soll die LED Nummer erhöht werden (wenn möglich) und Anschluss auf 0 gehen. Pfeil runter bei Anschluss 0: LED Nummer verringern (wenn möglich), Anschluss 2.
+
+**Umsetzung (`_web/web_servotest.py` 2.13):**
+* Feld Anschluss erlaubt -1 bis 3 (`ui.number` min/max aus `definition("ServoChannel")` ± 1), damit Pfeil hoch bei 2 und Pfeil runter bei 0 überhaupt einen Wert liefern.
+* `module_changed`: Wert > 2 und `address < address_max()` → `address + 1`, Anschluss 0; Wert < 0 und `address > 0` → `address - 1`, Anschluss 2; sonst begrenzt auf 0 bis 2 (an der letzten LED bleibt 2, bei LED 0 bleibt 0). Die LED Nummer wird gemerkt; danach wie bisher Servo wählen und wackeln (an der neuen Adresse). `refresh()` setzt beide Felder.
+* Tooltip des Felds: bisheriger Hinweis und `TEXT_MODULE_WRAP` (neu, sechs Sprachen; „Anschluss“ wie im Katalog: Port, Poort, Port, Porta, Puerto, Port).
+* Eingetippte 3 oder -1 wirken wie die Pfeile; andere Werte außerhalb 0 bis 2 werden wie bisher begrenzt (auch 5 wirkt wie 3).
+
+| Datei | Version | Änderung |
+|-|-|-|
+| `_web/web_servotest.py` | 2.13 | `module_changed` schaltet weiter, Feld Anschluss -1 bis 3, Tooltip |
+| `csv/Web_Languages.csv` | - | neue Zeile (sechs Sprachen) |
+| `webmobaledlib.py` | 5.69 | VERSION, History, REQUIRED\_FILES |
+| `test_servo_slider.py` | 1.01 | 7 neue Tests (`ModuleWrapTests`) |
+| `install/BETATEST_Checkliste.md` | 4.45 | Punkt 455 |
+
+**Tests:** `test_servo_slider.py` (15 Tests, bestanden): 2 → 3 ergibt LED+1 / Anschluss 0 (gemerkt, Servo an der neuen Adresse gewählt), an LED 19 bleibt Anschluss 2, 0 → -1 ergibt LED-1 / Anschluss 2, an LED 0 bleibt Anschluss 0, normaler Schritt unverändert, Feld mit min -1 und max 3 (`build` mit `MagicMock`), Übersetzung in sechs Sprachen. Bestanden außerdem `test_lm_channels.py` (17). Versionsprüfung: alles passt.
+
+**Nicht geprüft:** echtes Verhalten des Zahlenfelds im Browser (Pfeiltasten der Tastatur und Pfeile am Feld, kurzes Aufblitzen von -1/3), Smartphone, echter Servo.
+
+## 5.68 (2026-11-28), Servo Einstellungen: Regler flüssig wie DM Servo
+
+**Wunsch (Jürgen):** Auf DM Servo folgen die Servos dem Regler viel flüssiger als auf Servo Einstellungen.
+
+**Ursache:**
+* DM Servo (`web_servotest2`): Der Regler merkt nur die Position (höchstens alle 50 ms); ein Zeitgeber (50 ms) sendet nur den neuesten Wert und nur bei leerer Sendewarteschlange (`tx_idle`), mit `send_to_ARDUINO` (Pause `waittime_int`, mindestens 1 ms je Zeichen, etwa 21 ms je Nachricht).
+* Servo Einstellungen (`web_servotest`): Jede Reglerbewegung (höchstens alle 100 ms) ging über `set_position` → `position_changed` → `send_value` sofort in die Warteschlange, mit `send_to_ARDUINO_servo` (LED-Anzahl × 0,2 ms je Zeichen: bei 20 LEDs 4 ms, etwa 84 ms je Nachricht; bei 200 LEDs etwa 0,8 s). Beim Ziehen kamen Nachrichten schneller als sie hinausgingen; der Servo lief den alten Positionen hinterher.
+
+**Umsetzung (`_web/web_servotest.py` 2.12):**
+* `set_position` merkt die Position (`position_pending`), beendet das Wackeln und ruft `send_pending_position()`: gesendet wird nur bei leerer Warteschlange, sonst später. Ein zweiter Zeitgeber (`POSITION_TICK` 50 ms) ruft `send_pending_position()`; beide Zeitgeber schaltet `_Timers` gemeinsam (ServoPage setzt nur `active`).
+* `SERVO_RATE` (Throttle des Reglers) 0,1 → 0,05 s.
+* `send_value(..., fast=True)` sendet mit `send_to_ARDUINO` (normale Pause). Nur die Reglerposition nutzt `fast`; Servo wählen (225/230/235), Konfigurieren (240, 245, 250, 254 …), Wackeln und `position_changed` (nach dem Wählen und beim Konfigurieren) bleiben bei `send_to_ARDUINO_servo`.
+* Beim Konfigurieren (`min_max_active`) und während eines Ablaufs (`busy`) wird keine Reglerposition gesendet; `leave()` verwirft eine wartende Position.
+* `TICK` (100 ms: Pfeiltasten, Wackeln, Keep-Alive) unverändert.
+
+| Datei | Version | Änderung |
+|-|-|-|
+| `_web/web_servotest.py` | 2.12 | `position_pending`, `send_pending_position`, `send_value(fast)`, `_Timers`, `SERVO_RATE` 0,05, `POSITION_TICK` |
+| `webmobaledlib.py` | 5.68 | VERSION, History, REQUIRED\_FILES |
+| `test_servo_slider.py` | 1.00 | neu: 8 Tests |
+| `install/BETATEST_Checkliste.md` | 4.44 | Punkt 454 |
+
+**Tests:** `test_servo_slider.py` (8 Tests, bestanden) mit dem echten `ServoModel` und einem Ersatz-Controller mit belegter/leerer Warteschlange: leere Warteschlange → sofort, mit `send_to_ARDUINO`; zwölf Bewegungen bei belegter Warteschlange → genau eine Nachricht mit der neuesten Position; Wackeln endet; Wählen und Konfigurieren weiter mit `send_to_ARDUINO_servo`; `leave` und `min_max_active` senden nichts; `build` mit `MagicMock`: zwei Zeitgeber (0,05 und 0,1 s) gemeinsam ein/aus, Throttle 0,05. Bestanden außerdem `test_lm_channels.py` (17). Versionsprüfung: alles passt.
+
+**Nicht geprüft:** echte Servoplatine. **Wichtig:** Die zehnfache Servo-Pause stammt aus dem Original (`send_to_ARDUINO_servo` in pyMobaLedLib.py, Begründung dort: „die Servoplatine braucht mehr Zeit“); ob die Reglerposition mit der normalen Pause bei allen LED-Anzahlen und Lichtmaschinen sicher ankommt, ist nicht geprüft (Checkliste 454). Falls nicht: `fast=True` in `send_pending_position` entfernen, der Rest (kein Stau, 50 ms) bleibt wirksam. Browser, Smartphone.
+
+## 5.67 (2026-11-28), Geräteauswahl statt Rückfrage, wenn der Anschluss fehlt
+
+**Wunsch (Jürgen):** Ist die Lichtmaschine nicht angesteckt, öffnet ein Klick auf eine DCC-Testtaste sofort die Geräteauswahl. Beim Servo Test und beim Knopf „Mit Lichtmaschine verbinden“ kam dagegen die Frage „Fehler beim Öffnen der Verbindung“ mit Ja/Nein/Abbrechen; Nein und Abbrechen wirken gleich. Auch dort soll gleich die Geräteauswahl kommen.
+
+**Ursache:**
+* Testtasten: `M32_DCC` ruft vor dem Senden `M07.Check_USB_Port_with_Dialog`. Bei einem Hinweis im Blatt (`-3`) sucht `Resolve_Port_Hint` den Anschluss am Rechner, findet ihn nicht und öffnet `USB_Port_Dialog`, ohne zu verbinden.
+* Knopf, Menü und automatisches Verbinden beim Reiterwechsel gehen über `connect()` → `_connect()`. `_stored_ports()` (webmobaledlib) macht aus `-3` den Anschluss `COM3`; das Öffnen scheitert (`open_error`), und `_connect` fragt mit `3 + 32` (vbYesNoCancel). Nur `answer == 6` öffnet die Geräteauswahl.
+
+**Umsetzung (`_web/web_serial.py` 1.34, Zweig `open_error` in `_connect`):**
+* Anschluss am Rechner **nicht vorhanden** (`_port_present`, aus 1.27, `list_ports.comports()`, Schreibweise egal): ohne Meldung gleich `Show_USB_Port_Dialog` wie bisher bei „Ja“ (danach `_connect(new_port)`). Beim stillen Verbinden (`quiet`) weder Meldung noch Dialog.
+* Anschluss **vorhanden**, aber nicht zu öffnen (meist belegt): Frage mit `4 + 32` (vbYesNo) und neuem Satz „Der Port ist vorhanden, lässt sich aber nicht öffnen. Wahrscheinlich benutzt ihn gerade ein anderes Programm …“ unter dem bisherigen Text aus `MobaLedTest_macrodef.json` (`msg_connect_open_error`). Ja öffnet die Geräteauswahl.
+* Die Sperre „nur einmal beim Reiterwechsel“ (5.38, `state["auto_connect_failed"]` in webmobaledlib) bleibt unverändert: auch die Geräteauswahl kommt beim Reiterwechsel nur einmal.
+* Nicht geändert: Der Weg nach der Auswahl (`_connect(new_port)`) trägt den gewählten Anschluss wie bisher nicht selbst ins Blatt ein (die Testtasten tun das über `USB_Port_Dialog`). Ob die Geräteauswahl ihn speichert, habe ich nicht geprüft. `connect_monitor` (Serial Monitor) unverändert.
+
+| Datei | Version | Änderung |
+|-|-|-|
+| `_web/web_serial.py` | 1.34 | `open_error`: fehlender Anschluss → Geräteauswahl ohne Frage; vorhandener Anschluss → Ja/Nein mit Grund |
+| `csv/Web_Languages.csv` | - | neue Zeile (sechs Sprachen) |
+| `webmobaledlib.py` | 5.67 | VERSION, History, REQUIRED\_FILES |
+| `test_connect_open_error.py` | 1.00 | neu: 7 Tests |
+| `install/BETATEST_Checkliste.md` | 4.43 | Punkt 453 |
+
+**Tests:** `test_connect_open_error.py` (7 Tests, bestanden) mit dem echten `SerialMixin._connect`, ersetzt: Öffnen (scheitert immer), Anschlussliste, `_msg`, Module der Geräteauswahl: fehlender Anschluss → keine Meldung, Geräteauswahl; Auswahl COM5 → neuer Versuch mit COM5; `quiet` → nichts; vorhandener Anschluss → eine Meldung mit `4 + 32` und dem Grund, Nein ohne Dialog, Ja mit Dialog; Zustand nach dem Fehler zurückgesetzt; der neue Satz mit dem echten Übersetzer in sechs Sprachen. Bestanden außerdem: `test_single_connection.py` (14), `test_monitor_connect.py`, `test_sheet_connection.py` (16), `test_lm_channels.py` (17). Versionsprüfung `check_file_versions`: alles passt.
+
+**Nicht geprüft:** echte Oberfläche (Geräteauswahl aus dem Knopf der Kopfzeile und beim Reiter Servo Test), echtes Gerät (abgesteckt, belegt durch ein anderes Programm), Linux/macOS (Anschlussnamen `/dev/tty…`), Raspberry Pi.
+
+## 5.66 (2026-11-28), LM-Ausgang nur mit den vorhandenen Ausgängen
+
+**Wunsch (Jürgen):** Auf der Seite Servo Test ließ das Feld LM-Ausgang Ausgänge zu, die die Lichtmaschine gar nicht hat (Startmeldung `#?LEDs_AutoProg Ver 3: AM328 3.6.0 27.11.26 22:34,20`: nur Ausgang 0). Die höchste LED Nummer soll Anzahl - 1 sein (20 LEDs: 0 bis 19).
+
+**Ursache:**
+* `web_servotest.build` baute das Feld mit `ui.number(max=hi)`. `hi` kommt aus `PARAM_DEFAULTS` / `MacroParamDef` (0 bis 99). Nur das Modell (`channel_changed` mit `channel_max()`) beachtete die Ausgänge aus `ctrl.max_ledcnt_list` (gesetzt in `web_serial.determine_ARDUINO_Properties_from_Startmessage`). Für den Anwender sah es so aus, als ginge 1 bis 99; das Programm setzte den Wert still auf 0 zurück.
+* Beim Öffnen wurde der gemerkte Wert nur auf 0 bis 99 begrenzt. Ein gemerkter Ausgang 2 bei einer Classic wurde als „2“ angezeigt, `get_lednum_offset_for_channel` rechnete aber mit Versatz 0.
+* Die Grenzen wurden nach einem späteren Verbinden nicht neu gesetzt.
+* `address_max()` gab die **Anzahl** der LEDs des Ausgangs zurück (20), nicht die höchste Nummer (19).
+* Servo Test 2 (fest 0 bis 99, Adresse ohne Grenze je Ausgang) und Sound Test (Maximum nur beim Aufbau der Seite) hatten dieselbe Bauart.
+
+**Umsetzung (je Seite gleich):**
+* `channel_options()`: die Ausgänge aus der Startmeldung (`range(len(max_ledcnt_list))`); ohne Startmeldung 0 bis 3 (`CHANNELS_UNKNOWN = 4`) und der gemerkte Wert, falls größer (der gemerkte Wert geht ohne Verbindung nicht verloren).
+* `address_max()`: `Anzahl - 1` des gewählten Ausgangs; ohne Startmeldung das Maximum aus `MacroParamDef`.
+* `fit_limits()`: LM-Ausgang und LED Nummer / Adresse in die Grenzen bringen, geänderte Werte merken. Aufruf beim Aufbau des Modells, in `tab_selected()` (damit auch nach dem Verbinden: `on_connected` ruft `tab_selected`) und nach einem Wechsel des Ausgangs.
+* Oberfläche: LM-Ausgang ist `ui.select` statt `ui.number`; `refresh()` setzt `set_options(channel_options(), value=...)` und `number.max = address_max()`. Tooltip: der bisherige Hinweis und neu „Zur Auswahl stehen die Ausgänge, die die Lichtmaschine beim Verbinden meldet. Ohne Verbindung: 0 bis 3.“ (beide einzeln mit `tr` übersetzt).
+* Sound Test: die Zeile `values["SoundLEDChannel"] = min(..., channel_max())` im Konstruktor entfällt (ersetzt durch `fit_limits`).
+* Nicht geändert: die Dialoge ServoAnim und LEDColorAnim (LM-Ausgang fest 0 bis 9; dort ist meist keine Lichtmaschine verbunden), Haus-Dialog.
+
+| Datei | Version | Änderung |
+|-|-|-|
+| `_web/web_servotest.py` | 2.11 | Auswahl LM-Ausgang, `channel_options`, `fit_limits`, `address_max` = Anzahl - 1 |
+| `_web/web_servotest2.py` | 1.06 | dasselbe; `set_address` begrenzt auf den Ausgang; `tr` importiert |
+| `_web/web_soundtest.py` | 1.06 | dasselbe für Soundmodul-Adresse; `tr` importiert |
+| `csv/Web_Languages.csv` | - | neue Zeile (sechs Sprachen) |
+| `webmobaledlib.py` | 5.66 | VERSION, History, REQUIRED\_FILES |
+| `test_lm_channels.py` | 1.00 | neu: 17 Tests |
+| `install/BETATEST_Checkliste.md` | 4.42 | Punkt 452 |
+
+**Tests:** `test_lm_channels.py` (17 Tests, bestanden): mit den echten Modellen und einem Ersatz-Controller: ein Ausgang mit 20 LEDs (Auswahl `[0]`, LED Nummer höchstens 19, Ausgang 3 wird 0), ohne Startmeldung (0 bis 3, gemerkter Ausgang 5 bleibt), gemerkte zu große Werte werden eingepasst und gemerkt, Wechsel des Ausgangs passt die Adresse an, Startmeldung erst nach dem Aufbau der Seite (`tab_selected`); `build()` mit `MagicMock` statt `nicegui` (Auswahl mit `[0]`, `max=19`, `set_options` in `refresh`); der neue Hinweis mit dem echten Übersetzer in sechs Sprachen und Deutsch unverändert. Syntax aller geänderten Dateien (`py_compile`); Versionsprüfung `check_file_versions`: alles passt. Frühere Tests zu diesen Seiten gibt es nicht.
+
+**Nicht geprüft:** echte Oberfläche im Browser (Aussehen der Auswahl in der Zeile der Felder, Smartphone), echte Lichtmaschine (Classic mit einem Ausgang, Pro mit mehreren), Start des Backends (`start_backend()` nicht ausgeführt; Start-Code nicht geändert).
 
 ---
 

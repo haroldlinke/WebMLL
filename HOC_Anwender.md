@@ -1,9 +1,36 @@
-Datei-Version: 1.156 (2026-11-28) - HOC_Anwender.md
-Stand: Version 5.65
+Datei-Version: 1.157 (2026-11-28) - HOC_Anwender.md
+Stand: Version 5.71
 
 # MobaLedLib Studio: Änderungen (Kurzfassung)
 
 Gilt ab Version 1.39. Neueste Version oben.
+
+## Version 5.71 (2026-11-28)
+
+Neue Funktionen:
+- Servo Einstellungen: Die Tasten < und > neben dem Regler lassen sich gedrückt halten; die Position läuft dann weiter und wird immer schneller, bis du loslässt oder das Ende erreicht ist.
+
+## Version 5.70 (2026-11-28)
+
+Neue Funktionen:
+- Servo Einstellungen: Pfeil hoch bei Anschluss 2 geht zur nächsten LED Nummer (Anschluss 0), Pfeil runter bei Anschluss 0 zur vorigen LED Nummer (Anschluss 2).
+
+## Version 5.68 (2026-11-28)
+
+Korrekturen:
+- Servo Einstellungen: Der Servo folgt dem Regler flüssig und ohne Nachlaufen (wie bei DM Servo).
+
+## Version 5.67 (2026-11-28)
+
+Korrekturen:
+- Ist die Lichtmaschine nicht angesteckt, öffnet „Mit Lichtmaschine verbinden“ (und der Servo Test, Sound Test, Farb Test) gleich die Geräteauswahl, wie die Testtasten.
+- Ist der Anschluss von einem anderen Programm belegt, fragt das Programm nur noch mit Ja oder Nein und nennt den wahrscheinlichen Grund.
+
+## Version 5.66 (2026-11-28)
+
+Korrekturen:
+- Servo Test, DM Servo Test und Sound Test: Der LM-Ausgang ist eine Auswahlliste mit den Ausgängen, die die Lichtmaschine meldet (ohne Verbindung 0 bis 3).
+- Die LED Nummer (Adresse) lässt sich höchstens bis zur letzten LED des Ausgangs einstellen (bei 20 LEDs: 0 bis 19).
 
 ## Version 5.65 (2026-11-28), Pull Request 88 (Jueff, dort V5.61 bis V5.70): Lichtmaschine in den Hardware Optionen, Erkennung über detectionRules, Liste der USB Geräte
 
